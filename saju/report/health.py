@@ -155,7 +155,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("5", [
         P("h5_open", "지금 나의 생활 리듬", figure="health_notice", opener=True,
-          slot=S("h5_open", f"고객이 고른 생활 리듬은 '{t['rhythm'] or '알 수 없음'}'이에요. 이 리듬이 이 사주와 어떻게 맞고 어긋나는지 한 문장(lead)으로 요약하고 설명해 주세요.", 520, "lead")),
+          slot=S("h5_open", f"고객이 고른 생활 리듬은 '{t['rhythm'] or '알 수 없음'}'이에요. 이 리듬이 이 사주와 어떻게 맞고 어긋나는지 한 문장(lead)으로 요약하고 설명해 주세요.", 440, "lead")),
         P("h5_day", "나에게 맞는 하루",
           slot=S("h5_day", "일간과 용신, 조후를 근거로 아침형·저녁형 경향과 하루 중 힘이 나는 시간, 쉬어야 하는 시간을 써 주세요.")),
         P("h5_balance", "일과 활동의 균형",
@@ -173,7 +173,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("7", [
         P("h7_open", "스트레스를 받는 방식", figure="opener", opener=True,
-          slot=S("h7_open", "이 사주가 스트레스를 받는 방식을 한 문장(lead)으로 요약하고, 넘치는 오행의 감정(body_map의 mind)을 근거로 설명해 주세요.", 620, "lead")),
+          slot=S("h7_open", "이 사주가 스트레스를 받는 방식을 한 문장(lead)으로 요약하고, 넘치는 오행의 감정(body_map의 mind)을 근거로 설명해 주세요.", 530, "lead")),
         P("h7_trigger", "마음이 흔들리는 순간",
           slot=S("h7_trigger", "합충과 십신 구성을 근거로 마음이 흔들리기 쉬운 상황(관계, 일, 돈)을 장면으로 써 주세요.")),
         P("h7_release", "마음을 푸는 방법",
@@ -223,7 +223,7 @@ def build_outline(f: dict) -> list[dict]:
         P("h12_key", "내 건강운 핵심 정리", opener=True,
           slot=S("h12_key", "이 책에서 가장 중요한 세 가지(나의 체질, 돌볼 곳, 쉬어 갈 때)를 한 문장 요약(lead)과 함께 정리해 주세요.", 640, "lead")),
         P("h12_week", "한 주의 작은 실천표",
-          slot=S("h12_week", "월요일부터 일요일까지 하루 한 가지씩 할 일과 피할 일을 정리해 주세요(when=요일).", FULL, "plan")),
+          slot=S("h12_week", "월요일부터 일요일까지 하루 한 가지씩 할 일과 피할 일을 정리해 주세요(when=요일).", 650, "plan")),
         P("h12_habit", "오늘부터 할 돌봄 습관", slot=S("h12_habit", "오늘부터 실천할 돌봄 습관 10가지를 체크리스트로 써 주세요. 한 줄에 한 가지입니다.", 600, "checklist")),
         P("h12_lucky", "나를 돕는 색·방향·공간", figure="lucky",
           slot=S("h12_lucky", "용신 기운을 근거로 옷, 침실, 책상에 쓸 색과 방향, 공간 정리법을 써 주세요.", HALF)),

@@ -155,7 +155,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("3", [
         P("c3_open", "나의 일하는 형", figure="opener", opener=True,
-          slot=S("c3_open", f"{name}님의 일하는 형을 '{t['style']}'로 한 문장 요약(lead)하고, 근거({t['style_text']})를 쉽게 풀어 주세요.", 640, "lead")),
+          slot=S("c3_open", f"{name}님의 일하는 형을 '{t['style']}'로 한 문장 요약(lead)하고, 근거({t['style_text']})를 쉽게 풀어 주세요.", 570, "lead")),
         P("c3_team", "혼자 할까, 함께 할까",
           slot=S("c3_team", "비겁·관성·식상 구성으로 혼자 일할 때와 팀으로 일할 때 각각의 모습을 장면으로 쓰고, 이 사람에게 맞는 일 방식을 써 주세요.")),
         P("c3_lead", "앞에 설까, 뒤에서 받칠까",
@@ -219,7 +219,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("9", [
         P("c9_open", "나에게 도움 되는 배움", figure="opener", opener=True,
-          slot=S("c9_open", f"인성 {c['인성']}개와 용신을 근거로 이 사람에게 도움이 되는 배움의 방향을 한 문장(lead)으로 요약하고 설명해 주세요.", 620, "lead")),
+          slot=S("c9_open", f"인성 {c['인성']}개와 용신을 근거로 이 사람에게 도움이 되는 배움의 방향을 한 문장(lead)으로 요약하고 설명해 주세요.", 560, "lead")),
         P("c9_cert", "도움 되는 공부와 자격",
           slot=S("c9_cert", "어울리는 역할과 분야에 맞춰 도움 되는 공부·자격·경력 쌓기 예시를 5가지 이상 쓰고, 언제 시작하면 좋은지 써 주세요.")),
         P("c9_how", "나에게 맞는 공부 방법",
