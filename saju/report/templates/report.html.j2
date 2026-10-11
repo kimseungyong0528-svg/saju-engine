@@ -173,7 +173,7 @@
   <tr><th>힘이 나는 계절</th><td class="left">{{ f.lucky.season }}</td></tr></table>
 {%- elif k == "lucky_items" -%}
   <table><tr><th style="width: 24%">음식</th><td class="left">{{ f.lucky.foods }}</td></tr>
-  <tr><th>물건·공간</th><td class="left">{{ f.lucky.items }}</td></tr></table>
+  <tr><th>물건·공간</th><td class="left">{{ f.lucky["items"] }}</td></tr></table>
 {%- elif k == "animals" -%}
   <table><tr><th>나의 띠</th><td>{{ P.zodiac }}띠</td></tr><tr><th>잘 맞는 띠</th><td>{{ f.lucky.animals|join(", ") }}띠</td></tr>
   <tr><th>조심할 띠</th><td>{{ f.lucky.careful_animal }}띠</td></tr></table>

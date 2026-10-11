@@ -88,6 +88,13 @@ def test_pdf_renders(tmp_path, facts):
     assert 95 <= out["pages"] <= 120
 
 
+def test_html_has_no_python_leaks(facts):
+    texts = DraftWriter().write(facts, build_outline(facts))
+    html = render_html(facts, build_outline(facts), texts)
+    assert "built-in method" not in html and "object at 0x" not in html
+    assert facts["lucky"]["items"] in html
+
+
 def test_cross_sell_follows_site_order(facts):
     from saju.report.products import cross_sell
     items = cross_sell(facts, site="https://unmyeong.test")
