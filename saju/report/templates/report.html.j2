@@ -53,7 +53,7 @@
 {%- if k == "toc" -%}
   {% for s in sections %}
   <div class="toc-sec"><span class="no">{{ secmark.get(s.no, s.no) }}</span>
-    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</a></span></div>
+    <span class="t"><a href="#sec-{{ s.no }}"><b class="tt">{{ s.title }}</b>{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</a></span></div>
   {% endfor %}
 {%- elif k == "four_pillars_diagram" -%}
   <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
