@@ -28,8 +28,8 @@ SECTIONS = [
     ("13", "내가 남긴 질문에 대한 답", ""),
     ("14", "나에게 좋은 색·숫자·방향", ""),
     ("15", "문제 해결 방법과 마지막 조언", ""),
-    ("더보기", "다른 사주도 궁금하다면", "운명서재의 다른 리포트"),
     ("부록", "부록", "용어 사전과 계산 기준"),
+    ("더보기", "다른 사주도 궁금하다면", "운명서재의 다른 리포트"),
 ]
 
 # 모든 고객에게 같은 설명(사주 기초)
@@ -327,16 +327,17 @@ def build_outline(f: dict) -> list[dict]:
              slot=_slot("s15_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
     ])
 
-    # 다른 사주 안내 (사이트 순서)
-    section("더보기", [
-        page("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True),
-    ])
-
     # 부록 (111~114쪽)
     section("부록", [
         page("glossary", "용어 사전", figure="glossary", span=3, opener=True),
         page("method", "계산 기준 안내", figure="method"),
     ])
+
+    # 다른 사주 안내 (사이트 순서) · 책의 마지막
+    section("더보기", [
+        page("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True),
+    ])
+
     return sections
 
 

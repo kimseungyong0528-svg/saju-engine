@@ -131,3 +131,9 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product-link a { color: #1f2a3d; text-decoration: underline; word-break: break-all; }
 .product-head a { text-decoration: none; }
 .product-head a.go { color: #1f2a3d; text-decoration: underline; }
+.product .price { white-space: nowrap; }
+.product .price s { color: #6b6152; }
+.product .price em { font-style: normal; font-weight: 700; color: #b2452f; margin: 0 1mm; }
+.product .price strong { color: #1f1b16; }
+a.go { color: #1f2a3d; text-decoration: underline; white-space: nowrap; }
+.end-mark { text-align: center; font-family: "Song Myung"; color: #9e2f22; margin-top: 4mm; }

@@ -1,6 +1,6 @@
 """리포트 끝에 넣는 다른 상품 안내.
 
-순서와 이름, 소개 문구, 가격은 운명서재 화면(unmyeong-preview-v32.html의 PRODUCTS)과 같다.
+순서와 이름, 소개 문구, 판매가·정가는 운명서재 화면(unmyeong-preview-v32.html의 PRODUCTS)과 같다.
 링크는 화면의 상품 소개 주소 형식(#/f/{id}/intro)을 따른다. 사이트 주소는 SAJU_SITE_URL로 정한다.
 """
 
@@ -11,23 +11,28 @@ import os
 SITE_URL = os.environ.get("SAJU_SITE_URL", "https://example.com").rstrip("/")
 
 PRODUCTS = [
-    {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "인생총운", "price": 49800,
+    {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "인생총운", "price": 49800, "original": 110000,
      "line": "지나온 나를 이해하고 앞으로의 길을 만나다"},
-    {"id": "romance", "name": "금월선녀의 연애사주", "category": "연애", "price": 29800,
+    {"id": "romance", "name": "금월선녀의 연애사주", "category": "연애", "price": 29800, "original": 55000,
      "line": "다음 사랑은 어떤 모습으로 올까요"},
-    {"id": "reunion", "name": "금월선녀의 재회사주", "category": "재회", "price": 29800,
+    {"id": "reunion", "name": "금월선녀의 재회사주", "category": "재회", "price": 29800, "original": 55000,
      "line": "끝나지 않은 마음, 다시 이어질 수 있을까"},
-    {"id": "intimate", "name": "금월선녀의 깊은 궁합", "category": "연애", "price": 29800,
+    {"id": "intimate", "name": "금월선녀의 깊은 궁합", "category": "연애", "price": 29800, "original": 55000,
      "line": "말하지 못한 마음까지, 우리 얼마나 닮았을까"},
-    {"id": "wealth", "name": "금월선녀의 재물운", "category": "금전", "price": 29800,
+    {"id": "wealth", "name": "금월선녀의 재물운", "category": "금전", "price": 29800, "original": 55000,
      "line": "내 삶의 결실은 언제 익어갈까요"},
-    {"id": "career", "name": "금월선녀의 직업·이직운", "category": "금전", "price": 29800,
+    {"id": "career", "name": "금월선녀의 직업·이직운", "category": "금전", "price": 29800, "original": 55000,
      "line": "나에게 맞는 일, 움직여야 할 순간"},
-    {"id": "business", "name": "금월선녀의 사업운", "category": "금전", "price": 29800,
+    {"id": "business", "name": "금월선녀의 사업운", "category": "금전", "price": 29800, "original": 55000,
      "line": "내가 키우는 일, 사업의 다음 장을 읽다"},
-    {"id": "health", "name": "금월선녀의 건강운", "category": "건강", "price": 29800,
+    {"id": "health", "name": "금월선녀의 건강운", "category": "건강", "price": 29800, "original": 55000,
      "line": "나의 몸과 마음, 돌봄의 리듬을 찾다"},
 ]
+
+
+def discount_percent(p: dict) -> int:
+    """화면과 같은 계산: (정가 - 판매가) / 정가, 반올림."""
+    return round((p["original"] - p["price"]) / p["original"] * 100)
 
 
 def product_url(pid: str, site: str | None = None) -> str:
@@ -86,4 +91,5 @@ def hooks(f: dict) -> dict[str, str]:
 def cross_sell(f: dict, current: str = "lifetime", site: str | None = None) -> list[dict]:
     h = hooks(f)
     return [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),
-             "price_text": f"{p['price']:,}원"} for p in PRODUCTS if p["id"] != current]
+             "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
+             "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]

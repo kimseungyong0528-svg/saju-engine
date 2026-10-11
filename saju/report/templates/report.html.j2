@@ -186,10 +186,11 @@
   <p>평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요. 이름이나 '바로 보기'를 누르면 운명서재의 해당 페이지로 이동해요.</p>
   {% for p in more %}
   <div class="product">
-    <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="sub">{{ p.price_text }} · <a class="go" href="{{ p.url }}">바로 보기</a></span></div>
+    <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="price"><s>{{ p.original_text }}</s> <em>{{ p.discount }}%</em> <strong>{{ p.price_text }}</strong></span></div>
     <p class="product-line">{{ p.line }}</p>
-    <p>{{ p.hook }}</p>
+    <p>{{ p.hook }} <a class="go" href="{{ p.url }}">바로 보기 →</a></p>
   </div>{% endfor %}
+  <p class="end-mark">運命書齋 · 금월선녀</p>
 {%- elif k == "glossary" -%}
   <dl class="glossary">{% for t, d in glossary_sorted %}<dt>{{ t }}</dt><dd>{{ d }}</dd>{% endfor %}</dl>
 {%- elif k == "raw_table" -%}

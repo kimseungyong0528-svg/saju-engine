@@ -34,7 +34,7 @@ def test_facts_sample(facts):
 
 def test_outline_has_15_sections_and_plan_pages(facts):
     secs = build_outline(facts)
-    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["더보기", "부록"]
+    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["부록", "더보기"]
     planned = sum(p["span"] for p in all_pages(secs))
     assert 108 <= planned <= 120
     ids = [p["id"] for p in all_pages(secs)]
@@ -94,4 +94,5 @@ def test_cross_sell_follows_site_order(facts):
     assert [p["id"] for p in items] == ["romance", "reunion", "intimate", "wealth", "career", "business", "health"]
     assert items[0]["url"] == "https://unmyeong.test/#/f/romance/intro"
     assert all(p["hook"] for p in items)
+    assert items[0]["original_text"] == "55,000원" and items[0]["discount"] == 46 and items[0]["price_text"] == "29,800원"
     assert "재성이 없어서" in next(p for p in items if p["id"] == "wealth")["hook"]
