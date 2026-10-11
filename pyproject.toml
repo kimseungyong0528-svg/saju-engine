@@ -1,0 +1,22 @@
+[project]
+name = "saju-engine"
+version = "0.1.0"
+description = "운명서재 사주 엔진: 만세력, 사주팔자, 오행, 십신, 대운"
+requires-python = ">=3.11"
+dependencies = [
+    "ephem>=4.1",
+    "korean-lunar-calendar>=0.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "sxtwl>=2.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["saju*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
