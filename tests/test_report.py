@@ -34,7 +34,7 @@ def test_facts_sample(facts):
 
 def test_outline_has_15_sections_and_plan_pages(facts):
     secs = build_outline(facts)
-    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["부록"]
+    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["더보기", "부록"]
     planned = sum(p["span"] for p in all_pages(secs))
     assert 108 <= planned <= 120
     ids = [p["id"] for p in all_pages(secs)]
@@ -48,7 +48,7 @@ def test_draft_writer_fills_every_slot(facts):
         for s in sl:
             assert s["id"] in texts
     html = render_html(facts, secs, texts)
-    assert "홍길동 님" in html and "경진" in html
+    assert "홍길동 님" in html and "庚辰" in html
 
 
 def test_claude_writer_request_shape(facts, monkeypatch):
@@ -74,6 +74,10 @@ def test_claude_writer_request_shape(facts, monkeypatch):
     assert all(c["tool_choice"]["name"] == "write_pages" for c in calls)
     assert all(c["system"][1].get("cache_control") for c in calls)
     assert set(texts) == {s["id"] for sl in slots_by_section(secs).values() for s in sl}
+    # 마지막 장은 앞 장의 글을 받아 맨 나중에 쓴다
+    last = calls[-1]
+    assert "s15_qa" in last["tools"][0]["input_schema"]["properties"]
+    assert "앞 장에서 쓴 글" in last["messages"][0]["content"]
 
 
 def test_pdf_renders(tmp_path, facts):
@@ -82,3 +86,12 @@ def test_pdf_renders(tmp_path, facts):
     out = make_lifetime_report(analyze_person(SAMPLE, current_year=2026), ORDER, tmp_path / "r.pdf")
     assert (tmp_path / "r.pdf").stat().st_size > 100_000
     assert 95 <= out["pages"] <= 120
+
+
+def test_cross_sell_follows_site_order(facts):
+    from saju.report.products import cross_sell
+    items = cross_sell(facts, site="https://unmyeong.test")
+    assert [p["id"] for p in items] == ["romance", "reunion", "intimate", "wealth", "career", "business", "health"]
+    assert items[0]["url"] == "https://unmyeong.test/#/f/romance/intro"
+    assert all(p["hook"] for p in items)
+    assert "재성이 없어서" in next(p for p in items if p["id"] == "wealth")["hook"]

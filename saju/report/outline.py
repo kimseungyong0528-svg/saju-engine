@@ -28,6 +28,7 @@ SECTIONS = [
     ("13", "내가 남긴 질문에 대한 답", ""),
     ("14", "나에게 좋은 색·숫자·방향", ""),
     ("15", "문제 해결 방법과 마지막 조언", ""),
+    ("더보기", "다른 사주도 궁금하다면", "운명서재의 다른 리포트"),
     ("부록", "부록", "용어 사전과 계산 기준"),
 ]
 
@@ -123,7 +124,6 @@ def build_outline(f: dict) -> list[dict]:
         page("what_is_saju", "사주란 무엇인가", static="what_is_saju", figure="four_pillars_diagram"),
         page("five_elements", "오행(나무·불·흙·쇠·물)이란", static="five_elements", figure="element_cycle"),
         page("stems_branches", "천간과 지지(띠)란", static="stems_branches", figure="stems_branches"),
-        page("symbols", "책에 나오는 기호 설명", figure="symbols"),
         page("chart", "나의 사주표", figure="pillars",
              slot=_slot("chart", f"{name}님의 사주팔자 여덟 글자를 소개하고, 일간이 {dm['stem']}({dm['element_name']})이라는 것과 그 뜻을 쉽게 설명해 주세요.", HALF)),
         page("chart_detail", "나의 사주 상세표", figure="pillars_detail",
@@ -307,17 +307,34 @@ def build_outline(f: dict) -> list[dict]:
 
     # 15. 해결 방법과 마지막 조언 (107~110쪽)
     section("15", [
-        page("s15_solve", "지금 고민별 해결 방법", span=2, opener=True,
-             slot=_slot("s15_solve", "일, 돈, 관계, 건강 고민별로 이 사주에 맞는 해결 방법을 정리해 주세요.", FULL * 2 - 100)),
-        page("s15_summary", "전체 요약", figure="summary_table",
-             slot=_slot("s15_summary", "책 전체 내용을 주제별 한 줄씩 요약해 주세요.", HALF, "bullets")),
-        page("s15_last", "마지막 조언", slot=_slot("s15_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요.", FULL - 100)),
+        page("s15_key", "지금 내 사주에서 가장 중요한 세 가지", opener=True,
+             slot=_slot("s15_key", "이 책 전체에서 가장 중요한 세 가지(타고난 힘, 지금 운의 흐름, 꼭 고칠 습관)를 한 문장 요약(lead)과 함께 정리해 주세요.", 600, "lead")),
+        page("s15_work", "일·직업 해결 방법",
+             slot=_slot("s15_work", "일과 직업 고민에 대한 해결 방법을 모두 모아 주세요. 앞 장의 보완법을 빠짐없이 포함하고, 언제 무엇을 할지까지 구체적으로 써 주세요.")),
+        page("s15_money", "돈 해결 방법",
+             slot=_slot("s15_money", "돈 고민에 대한 해결 방법을 모두 모아 주세요. 버는 법, 지키는 법, 조심할 해와 그때 할 일까지 구체적으로 써 주세요.")),
+        page("s15_love", "연애·결혼·사람 관계 해결 방법",
+             slot=_slot("s15_love", "연애, 결혼, 가족, 인간관계 고민에 대한 해결 방법을 모두 모아 주세요. 미혼과 기혼 모두에게 맞게 경우를 나눠 써 주세요.")),
+        page("s15_health", "건강·마음 해결 방법",
+             slot=_slot("s15_health", "몸과 마음을 지키는 방법을 모두 모아 주세요. 스트레스 대처, 잠, 계절별 습관을 생활 습관 중심으로 써 주세요. 병명은 쓰지 않습니다.")),
+        page("s15_plan", "시기별 행동 계획", figure="plan",
+             slot=_slot("s15_plan", "먼저 앞으로 6년의 큰 흐름과 대운이 바뀌는 시점을 설명하는 문단(notes, 약 250자)을 쓰고, 해마다 할 일(do)과 피할 일(avoid)을 한 줄씩 정리해 주세요.", 680, "plan")),
+        page("s15_qa", "걱정을 덜어 주는 문답", span=2,
+             slot=_slot("s15_qa", "이 사주를 가진 사람이 가장 많이 할 걱정 6~8가지를 질문(q)으로 쓰고, 사주 근거와 현실적인 대처법으로 불안을 풀어 주는 답(a)을 써 주세요. 주문 때 남긴 질문과 관련된 걱정을 먼저 다룹니다.", FULL * 2 - 150, "qa")),
+        page("s15_habits", "운을 키우는 생활 습관", figure="habits",
+             slot=_slot("s15_habits", "용신과 이 사주의 약한 점을 바탕으로 매일·매주·매달 실천할 습관 10가지를 체크리스트로 써 주세요. 한 줄에 한 가지, 바로 할 수 있는 행동으로 씁니다.", 520, "checklist")),
+        page("s15_last", "마지막 조언", figure="summary_table",
+             slot=_slot("s15_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
+    ])
+
+    # 다른 사주 안내 (사이트 순서)
+    section("더보기", [
+        page("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True),
     ])
 
     # 부록 (111~114쪽)
     section("부록", [
         page("glossary", "용어 사전", figure="glossary", span=3, opener=True),
-        page("raw", "만세력 원본 표", figure="raw_table"),
         page("method", "계산 기준 안내", figure="method"),
     ])
     return sections

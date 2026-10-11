@@ -24,6 +24,14 @@
   <ul style="margin:0; padding-left: 6mm">{% for b in t.bullets %}<li>{{ b|bullet }}</li>{% endfor %}</ul></div>
   <div style="border-top: 1pt dashed #8a7550; padding-top: 3mm; margin-top: 4mm">
     <div class="han" style="color: #9e2f22; font-size: 16pt">금월선녀의 한마디</div><p>{{ t.word|para }}</p></div>
+{%- elif pg.slot.format == "plan" -%}
+  {% for x in t.notes or [] %}<p>{{ x|para }}</p>{% endfor %}
+  <table class="compact"><tr><th style="width: 23%">언제</th><th class="left">할 일</th><th class="left">피할 일</th></tr>
+  {% for r in t.rows %}<tr><th>{{ r.when }}</th><td class="left">{{ r.do }}</td><td class="left">{{ r.avoid }}</td></tr>{% endfor %}</table>
+{%- elif pg.slot.format == "qa" -%}
+  {% for it in t["items"] %}<div class="qa"><p class="q">Q. {{ it.q }}</p><p class="a">{{ it.a|para }}</p></div>{% endfor %}
+{%- elif pg.slot.format == "checklist" -%}
+  <ul class="checklist">{% for b in t %}<li>{{ b|bullet }}</li>{% endfor %}</ul>
 {%- elif pg.slot.format == "fortune" -%}
   <p class="fortune-sum">{{ t.summary|para }}</p>
   {% for it in t["items"] %}<p class="item"><span class="item-label">{{ it.label }}</span><br>{{ it.text|para }}</p>{% endfor %}
@@ -44,8 +52,8 @@
 {%- set k = pg.figure -%}
 {%- if k == "toc" -%}
   {% for s in sections %}
-  <div class="toc-sec"><span class="no">{{ s.no if s.no != "부록" else "附" }}</span>
-    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no != "부록" %} <span class="s">— {{ s.subtitle }}</span>{% endif %}</a></span></div>
+  <div class="toc-sec"><span class="no">{{ secmark.get(s.no, s.no) }}</span>
+    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no not in secmark %} <span class="s">— {{ s.subtitle }}</span>{% endif %}</a></span></div>
   {% endfor %}
 {%- elif k == "four_pillars_diagram" -%}
   <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
@@ -174,6 +182,14 @@
   <tr><th>사주의 틀</th><td class="left">{{ f.strength.label }} · {{ f.gyeokguk.name }}</td></tr>
   <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
   <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
+{%- elif k == "cross_sell" -%}
+  <p>평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요. 이름이나 '바로 보기'를 누르면 운명서재의 해당 페이지로 이동해요.</p>
+  {% for p in more %}
+  <div class="product">
+    <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="sub">{{ p.price_text }} · <a class="go" href="{{ p.url }}">바로 보기</a></span></div>
+    <p class="product-line">{{ p.line }}</p>
+    <p>{{ p.hook }}</p>
+  </div>{% endfor %}
 {%- elif k == "glossary" -%}
   <dl class="glossary">{% for t, d in glossary_sorted %}<dt>{{ t }}</dt><dd>{{ d }}</dd>{% endfor %}</dl>
 {%- elif k == "raw_table" -%}
@@ -206,10 +222,10 @@
   {% for pg in sec.pages if pg.figure != "cover" %}
   <section class="page" id="{{ 'sec-' ~ sec.no if loop.first else pg.id }}" data-pid="{{ pg.id }}"><span class="customer">{{ f.person.name }} 님</span>
     {% if pg.opener %}
-    <div class="sec-head"><span class="sec-no">{{ sec.no if sec.no != "부록" else "附" }}</span>
+    <div class="sec-head"><span class="sec-no">{{ secmark.get(sec.no, sec.no) }}</span>
       <div><div class="sec-title bookmark">{{ sec.title }}</div>{% if sec.subtitle %}<div class="sec-sub">{{ sec.subtitle }}</div>{% endif %}</div></div>
     {% endif %}
-    <h2>{{ pg.title }}</h2>
+    {% if not (pg.opener and pg.title == sec.title) %}<h2>{{ pg.title }}</h2>{% endif %}
     {% if pg.static and pg.static in static %}{% for x in static[pg.static] %}<p>{{ x|para }}</p>{% endfor %}{% endif %}
     {% if pg.figure and pg.figure not in ("wrap", "opener") %}{{ figure(pg, sec) }}{% endif %}
     {% if pg.figure == "wrap" %}{{ term_box(sec.terms) }}{% endif %}

@@ -164,15 +164,15 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
             "age_text": f"{p['age_from']}~{p['age_to']}세",
             "score": luck_score(p["ganzhi"], p["relations"], good, excess),
             "relations_text": _relations_text(p["relations"]),
-            # 지금 대운과 다음 세 대운은 2쪽, 나머지는 1쪽
-            "pages": 2 if 0 <= i - max(current_idx, 0) <= 3 else 1,
+            # 지금 대운과 다음 두 대운은 2쪽, 나머지는 1쪽
+            "pages": 2 if 0 <= i - max(current_idx, 0) <= 2 else 1,
         })
 
     # 세운: 주문한 해부터 6년
     sewoon = [dict(s, score=luck_score(s["ganzhi"], s["relations"], good, excess),
                    relations_text=_relations_text(s["relations"]),
                    animal=K.BRANCH_ANIMAL[s["ganzhi"][1]],
-                   pages=2 if i < 2 else 1)
+                   pages=2 if i == 0 else 1)
               for i, s in enumerate(x for x in an["sewoon"] if x["year"] >= order.order_date.year)][:6]
 
     # 월운: 주문한 날이 속한 달부터 12개월

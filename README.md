@@ -77,7 +77,8 @@ python -m saju.report --name 홍길동 --sex male --birth 1990-05-15 --time 10:3
 | `report/render.py`, `templates/` | 동양풍 도안(한지 바탕, 14pt 이상) HTML → WeasyPrint PDF |
 
 - 글 규칙: 비유 없이 쉬운 말, 용어는 처음 나올 때 괄호 풀이, 계산 결과에 있는 값만 사용, 병명·투자·사망 단정 금지.
-- 쪽수: 한 쪽 글 약 650자 기준. 나이와 사주에 따라 113~118쪽 사이로 나와요(`tests/test_report.py`).
+- 쪽수: 한 쪽 글 약 760자 기준. 나이와 사주에 따라 약 114~121쪽.
+- 15장(해결 방법과 마지막 조언)은 앞 장 글을 모두 받아 맨 나중에 써요. 끝에 사이트 순서대로 다른 상품 7개 안내(`report/products.py`, 사이트 주소는 `SAJU_SITE_URL`).
 - 글꼴: 고운바탕, 송명(SIL OFL, `report/fonts/`).
 
 ## 다음 단계

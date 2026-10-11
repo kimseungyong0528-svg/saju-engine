@@ -11,6 +11,7 @@ from markupsafe import Markup, escape
 
 from . import knowledge as K
 from .outline import STATIC
+from .products import cross_sell
 from ..constants import STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ZODIAC_ANIMALS, ELEMENTS, STEM_ELEMENT
 
 HERE = Path(__file__).parent
@@ -95,8 +96,12 @@ _INLINE_LABEL = re.compile(r'(?<=[.!?"”’);])\s+([가-힣][가-힣 ]{0,9}):\s
 _LEAD_LABEL = re.compile(r'^([^:<>]{1,24}):\s+')
 
 
+_START_LABEL = re.compile(r'^([가-힣][가-힣 ]{0,7}):\s*')
+
+
 def para(text: str) -> Markup:
     html = str(escape(text))
+    html = _START_LABEL.sub(r'<b class="label">\1:</b> ', html, count=1)
     return Markup(_INLINE_LABEL.sub(r'<br><b class="label">\1:</b> ', html))
 
 
@@ -127,13 +132,14 @@ def _used_glossary(f: dict) -> list[tuple[str, str]]:
     return sorted((n, K.GLOSSARY[n]) for n in names if n in K.GLOSSARY)
 
 
-def render_html(facts: dict, sections: list[dict], texts: dict) -> str:
+def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | None = None) -> str:
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
     env.filters["para"] = para
     env.filters["bullet"] = bullet
     tpl = env.get_template("report.html.j2")
     return tpl.render(
         f=facts, sections=sections, texts=texts, static=STATIC, kb=_kb(),
+        more=cross_sell(facts, site=site_url), secmark={"부록": "附", "더보기": "續"},
         glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts),
         svg={"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
              "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])},
