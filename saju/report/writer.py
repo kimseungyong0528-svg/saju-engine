@@ -126,6 +126,25 @@ FINAL_RULES = """[이 장은 책의 결론입니다]
 
 def facts_digest(f: dict) -> dict:
     """AI에게 보낼 사주 계산 결과(필요한 것만)."""
+    d = _digest(f)
+    if f.get("romance"):
+        d["연애 재료"] = romance_digest(f["romance"])
+    return d
+
+
+def romance_digest(r: dict) -> dict:
+    keep = ("love_signs", "love_score", "score")
+    return {
+        **{k: r[k] for k in ("spouse_group", "spouse_gods", "spouse_count", "spouse_seats", "main_seat", "day_branch",
+                             "day_branch_relations", "peach", "peach_branches", "best_years", "best_months", "careful_months",
+                             "marriage_periods", "status", "experience")},
+        "연도별 인연": [{"year": y["year"], "ganzhi": y["ganzhi"], **{k: y[k] for k in keep}} for y in r["years"]],
+        "달별 인연": [{"start_text": m["start_text"], "ganzhi": m["ganzhi"], **{k: m[k] for k in keep}} for m in r["months"]],
+        "대운별 인연": [{"age_text": p["age_text"], "ganzhi": p["ganzhi"], "state": p["state"], **{k: p[k] for k in keep}} for p in r["periods"]],
+    }
+
+
+def _digest(f: dict) -> dict:
     return {
         "고객": f["person"], "주문": f["order"], "불확실한 점": f["uncertainties"],
         "사주표": [{k: p.get(k) for k in ("label", "ganzhi", "hanja", "stem_element", "branch_element",
@@ -184,6 +203,11 @@ def previous_text(texts: dict, limit: int = 20000) -> str:
 
 
 class ClaudeWriter:
+    # 상품마다 바꿔 쓰는 글쓰기 규칙(기본값은 평생사주)
+    style = STYLE_RULES
+    final_section = FINAL_SECTION
+    final_rules = FINAL_RULES
+
     def __init__(self, model: str = DEFAULT_MODEL, api_key: str | None = None, max_workers: int = 6,
                  final_model: str = FINAL_MODEL, effort: str = EFFORT):
         import anthropic
@@ -198,7 +222,7 @@ class ClaudeWriter:
         schema = strict_schema({"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
                                 "required": [s["id"] for s in slots]})
         system = [
-            {"type": "text", "text": STYLE_RULES.format(name=f["person"]["name"])},
+            {"type": "text", "text": self.style.format(name=f["person"]["name"])},
             {"type": "text", "text": "사주 계산 결과:\n" + json.dumps(facts_digest(f), ensure_ascii=False),
              "cache_control": {"type": "ephemeral"}},
         ]
@@ -208,7 +232,7 @@ class ClaudeWriter:
         }
         ask = "아래 장의 칸을 모두 채워 JSON으로 답해 주세요. 칸 id가 키입니다.\n" + json.dumps(brief, ensure_ascii=False)
         if previous:
-            ask = FINAL_RULES + "\n앞 장에서 쓴 글:\n" + previous + "\n\n" + ask
+            ask = self.final_rules + "\n앞 장에서 쓴 글:\n" + previous + "\n\n" + ask
         model = self.final_model if previous else self.model
         # 글이 길어서 스트리밍으로 받는다(요청 시간 초과 방지)
         with self.client.messages.stream(
@@ -232,13 +256,13 @@ class ClaudeWriter:
         jobs = slots_by_section(sections)
         out: dict = {}
         # 마지막 장(15)은 앞 장의 보완법·조언을 모아야 하므로 나머지를 다 쓴 뒤에 쓴다
-        first = {no: sl for no, sl in jobs.items() if no != FINAL_SECTION}
+        first = {no: sl for no, sl in jobs.items() if no != self.final_section}
         with ThreadPoolExecutor(self.max_workers) as ex:
             futures = {no: ex.submit(self._section, f, by_no[no], sl) for no, sl in first.items()}
             for no, fut in futures.items():
                 out.update(fut.result())
-        if FINAL_SECTION in jobs:
-            out.update(self._section(f, by_no[FINAL_SECTION], jobs[FINAL_SECTION], previous_text(out)))
+        if self.final_section in jobs:
+            out.update(self._section(f, by_no[self.final_section], jobs[self.final_section], previous_text(out)))
         return out
 
 

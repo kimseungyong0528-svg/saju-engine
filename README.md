@@ -96,6 +96,19 @@ python -m saju.report --name 홍길동 --sex male --birth 1990-05-15 --time 10:3
 - 15장(해결 방법과 마지막 조언)은 앞 장 글을 모두 받아 맨 나중에 써요. 끝에 사이트 순서대로 다른 상품 7개 안내(`report/products.py`, 사이트 주소는 `SAJU_SITE_URL`).
 - 글꼴: 고운바탕, 송명(SIL OFL, `report/fonts/`).
 
+## 연애사주
+
+```bash
+python -m saju.report --product romance --name 이수아 --sex female --birth 2002-04-17 --time 08:40 \
+    --region 1100000000 --relationship "지금은 솔로예요" --experience "1~2번" \
+    --question "다음 연애는 언제 시작될까요?" --out romance.pdf
+```
+
+- 목차 10장, 약 50쪽(목차 원본: 프로젝트 `plan/romance-report-toc.md`). 평생사주와 같은 엔진·도안·글쓰기 방식.
+- `report/romance.py`: 연애 재료(배우자 별·배우자 자리·도화, 연도·달·대운별 인연 표시와 인연 점수), 목차, 글 규칙.
+- 1~9장 Haiku, 10장(마지막 조언) Opus. 끝에 다른 상품 안내(짝사랑·썸이면 깊은 궁합, 이별 후면 재회사주를 맨 위로).
+- 평생사주 결과는 바뀌지 않음(같은 입력으로 HTML과 AI 요청 내용이 v1.0.0과 글자 단위로 같음).
+
 ## 다음 단계
 
 1. 문장 검수(금지어, 계산값 대조). 실제 문장 품질은 2026-10-11 확인 완료

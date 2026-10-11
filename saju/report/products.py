@@ -64,6 +64,8 @@ def hooks(f: dict) -> dict[str, str]:
     lacking = [e["name"] for e in f["elements"] if e["status"] == "부족"]
     many = [e["name"] for e in f["elements"] if e["status"] == "많음"]
     return {
+        "lifetime": (f"{name}님의 일간은 {dm['stem']}({dm['element_name']})이고 사주의 틀은 {f['gyeokguk']['name']}이에요. "
+                     "성격, 일, 돈, 연애, 건강과 앞으로의 10년 운, 연도별·월별 운세까지 인생 전체를 한 권으로 풀어 드려요."),
         "romance": ((f"{name}님 사주에는 배우자를 뜻하는 {spouse_group}이 {n_spouse}개 있어요. " if n_spouse
                      else f"{name}님 타고난 사주에는 배우자를 뜻하는 {spouse_group}이 없어서, 인연은 운에서 들어오는 시기를 잡는 것이 중요해요. ")
                     + (f"{', '.join(peach)}도 있어 이성에게 끌림을 주는 힘이 있어요. " if peach else "")
@@ -88,8 +90,12 @@ def hooks(f: dict) -> dict[str, str]:
     }
 
 
-def cross_sell(f: dict, current: str = "lifetime", site: str | None = None) -> list[dict]:
+def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None) -> list[dict]:
+    """다른 상품 안내. 사이트 순서대로 두되, first에 든 상품은 맨 위로 올린다."""
     h = hooks(f)
-    return [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),
-             "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
-             "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
+    items = [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),
+              "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
+              "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
+    if first:
+        items.sort(key=lambda p: 0 if p["id"] in first else 1)
+    return items
