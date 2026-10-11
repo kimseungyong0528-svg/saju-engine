@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from . import knowledge as K
@@ -157,8 +158,14 @@ def facts_digest(f: dict) -> dict:
 FINAL_SECTION = "15"
 
 
-def previous_text(texts: dict, limit: int = 60000) -> str:
-    """앞 장에서 쓴 글을 마지막 장에 넘길 수 있게 한 덩어리 글로 만든다."""
+ADVICE_MARK = re.compile(r"(보완법|방법|대처법|조언|주의|팁)\s*:")
+
+
+def previous_text(texts: dict, limit: int = 20000) -> str:
+    """앞 장에서 쓴 글 가운데 마지막 장에 필요한 것만 모은다.
+
+    15장은 앞 장의 보완법·조언을 모아 쓰므로, 이름표(보완법:, 방법: 등)가 붙은 문단과
+    각 장의 요약·한 줄 정리만 넘긴다. 앞 글 전체를 넘기면 가장 비싼 모델의 읽기 비용이 몇 배로 늘어난다."""
     def flat(v):
         if isinstance(v, str):
             return [v]
@@ -167,8 +174,13 @@ def previous_text(texts: dict, limit: int = 60000) -> str:
         if isinstance(v, dict):
             return [x for i in v.values() for x in flat(i)]
         return []
-    out = "\n".join(f"[{k}] " + " ".join(flat(v)) for k, v in texts.items())
-    return out[:limit]
+    lines = []
+    for k, v in texts.items():
+        keep_all = isinstance(v, dict) and ("bullets" in v or "lead" in v or "advice" in v)
+        parts = flat(v) if keep_all else [x for x in flat(v) if ADVICE_MARK.search(x)]
+        if parts:
+            lines.append(f"[{k}] " + " ".join(parts))
+    return "\n".join(lines)[:limit]
 
 
 class ClaudeWriter:
