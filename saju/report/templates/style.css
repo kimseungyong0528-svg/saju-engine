@@ -78,7 +78,8 @@ td.left, th.left { text-align: left; }
 .fortune-head .score { margin-left: auto; text-align: right; }
 .fortune-head.past { background: #e9dfc6; color: #1f1b16; }
 .fortune-head.past .mid-han { color: #9e2f22; }
-.item { margin: 0 0 3mm; }
+.item { margin: 0 0 2mm; }
+.fortune-sum { font-weight: 700; color: #1f2a3d; }
 .item-label { font-weight: 700; color: #9e2f22; }
 
 .month { border-top: 1.5pt solid #3a2e22; padding: 2mm 0 1mm; break-inside: avoid; }
@@ -112,3 +113,6 @@ td.left, th.left { text-align: left; }
 .two-col { display: flex; gap: 5mm; } .two-col > div { flex: 1; }
 
 table.compact th, table.compact td { padding: 1mm 2.5mm; line-height: 1.35; }
+b.label { color: #9e2f22; }
+.terms p { line-height: 1.55; margin-bottom: 0.45em; }
+.month .two-col { line-height: 1.6; }

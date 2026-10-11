@@ -13,29 +13,29 @@
 {%- set t = texts.get(pg.slot.id) if pg.slot else None -%}
 {%- if t is none -%}
 {%- elif pg.slot.format == "paragraphs" -%}
-  {% for para in t %}<p>{{ para }}</p>{% endfor %}
+  {% for x in t %}<p>{{ x|para }}</p>{% endfor %}
 {%- elif pg.slot.format == "lead" -%}
-  <div class="lead">{{ t.lead }}</div>
-  {% for para in t.paragraphs %}<p>{{ para }}</p>{% endfor %}
+  <div class="lead">{{ t.lead|para }}</div>
+  {% for x in t.paragraphs %}<p>{{ x|para }}</p>{% endfor %}
 {%- elif pg.slot.format == "bullets" -%}
-  <ul>{% for b in t %}<li>{{ b }}</li>{% endfor %}</ul>
+  <ul>{% for b in t %}<li>{{ b|bullet }}</li>{% endfor %}</ul>
 {%- elif pg.slot.format == "summary" -%}
   <div class="box"><div class="note-head"><span class="seal">要</span><span class="note-title">이 장의 핵심</span></div>
-  <ul style="margin:0; padding-left: 6mm">{% for b in t.bullets %}<li>{{ b }}</li>{% endfor %}</ul></div>
+  <ul style="margin:0; padding-left: 6mm">{% for b in t.bullets %}<li>{{ b|bullet }}</li>{% endfor %}</ul></div>
   <div style="border-top: 1pt dashed #8a7550; padding-top: 3mm; margin-top: 4mm">
-    <div class="han" style="color: #9e2f22; font-size: 16pt">금월선녀의 한마디</div><p>{{ t.word }}</p></div>
+    <div class="han" style="color: #9e2f22; font-size: 16pt">금월선녀의 한마디</div><p>{{ t.word|para }}</p></div>
 {%- elif pg.slot.format == "fortune" -%}
-  <div class="lead" style="font-size: 16pt">{{ t.summary }}</div>
-  {% for it in t["items"] %}<p class="item"><span class="item-label">{{ it.label }}</span> · {{ it.text }}</p>{% endfor %}
-  <div class="box"><b>이렇게 보내세요</b> · {{ t.advice }}</div>
+  <p class="fortune-sum">{{ t.summary|para }}</p>
+  {% for it in t["items"] %}<p class="item"><span class="item-label">{{ it.label }}</span><br>{{ it.text|para }}</p>{% endfor %}
+  <p class="item"><span class="item-label">이렇게 보내세요</span><br>{{ t.advice|para }}</p>
 {%- endif -%}
 {%- endmacro %}
 
 {% macro term_box(terms) -%}
 {%- set ts = terms | select("in", glossary) | list -%}
 {%- if ts -%}
-<div class="box"><div class="note-head"><span class="seal">註</span><span class="note-title">이 말이 뭐예요?</span></div>
-{% for t in ts %}<p><b>{{ t }}</b> · {{ glossary[t] }}</p>{% endfor %}</div>
+<div class="box terms"><div class="note-head"><span class="seal">註</span><span class="note-title">이 말이 뭐예요?</span></div>
+{% for t in ts %}<p><b>{{ t }}</b><br>{{ glossary[t] }}</p>{% endfor %}</div>
 {%- endif -%}
 {%- endmacro %}
 
@@ -151,7 +151,8 @@
   <div class="month"><div class="month-head"><span class="mid-han">{{ m.hanja }}</span>
     <b>{{ m.year }}년 {{ m.month }}월 · {{ m.short }} {{ m.term }}부터</b><span class="sub" style="margin-left:auto">{{ m.score }}점</span></div>
     {% set mt = t[loop.index0] if t|length > loop.index0 else None %}
-    {% if mt %}<p>{{ mt.summary }}</p><p><span class="item-label">좋은 일</span> · {{ mt.good }}</p><p><span class="item-label">주의할 일</span> · {{ mt.careful }}</p>{% endif %}
+    {% if mt %}<p>{{ mt.summary|para }}</p>
+    <div class="two-col"><div><span class="item-label">좋은 일</span><br>{{ mt.good|para }}</div><div><span class="item-label">주의할 일</span><br>{{ mt.careful|para }}</div></div>{% endif %}
   </div>{% endfor %}
 {%- elif k == "question" -%}
   <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or "질문을 남기지 않으셨어요. 요즘 생활에 맞춰 가장 많이 궁금해하시는 내용으로 답해 드려요." }}</p></div>
@@ -209,7 +210,7 @@
       <div><div class="sec-title bookmark">{{ sec.title }}</div>{% if sec.subtitle %}<div class="sec-sub">{{ sec.subtitle }}</div>{% endif %}</div></div>
     {% endif %}
     <h2>{{ pg.title }}</h2>
-    {% if pg.static and pg.static in static %}{% for para in static[pg.static] %}<p>{{ para }}</p>{% endfor %}{% endif %}
+    {% if pg.static and pg.static in static %}{% for x in static[pg.static] %}<p>{{ x|para }}</p>{% endfor %}{% endif %}
     {% if pg.figure and pg.figure not in ("wrap", "opener") %}{{ figure(pg, sec) }}{% endif %}
     {% if pg.figure == "wrap" %}{{ term_box(sec.terms) }}{% endif %}
     {% if pg.figure != "months3" %}{{ text(pg) }}{% endif %}

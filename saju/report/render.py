@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import re
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup, escape
 
 from . import knowledge as K
 from .outline import STATIC
@@ -87,6 +90,22 @@ def _svg_life_graph(periods: list[dict], current: int) -> str:
     return "".join(parts)
 
 
+# 문장 중간에 붙은 이름표(예: "... 보세요. 보완법: ...")는 새 줄에서 시작하게 한다
+_INLINE_LABEL = re.compile(r'(?<=[.!?"”’);])\s+([가-힣][가-힣 ]{0,9}):\s*')
+_LEAD_LABEL = re.compile(r'^([^:<>]{1,24}):\s+')
+
+
+def para(text: str) -> Markup:
+    html = str(escape(text))
+    return Markup(_INLINE_LABEL.sub(r'<br><b class="label">\1:</b> ', html))
+
+
+def bullet(text: str) -> Markup:
+    """요약 줄 "제목: 설명"은 제목을 굵게, 설명은 다음 줄에."""
+    html = str(escape(text))
+    return Markup(_LEAD_LABEL.sub(r'<b>\1</b><br>', html, count=1))
+
+
 def _kb() -> dict:
     return {
         "stems": [{"name": STEMS[i], "hanja": STEMS_HANJA[i], "el": ELEMENTS[STEM_ELEMENT[i]]} for i in range(10)],
@@ -110,6 +129,8 @@ def _used_glossary(f: dict) -> list[tuple[str, str]]:
 
 def render_html(facts: dict, sections: list[dict], texts: dict) -> str:
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
+    env.filters["para"] = para
+    env.filters["bullet"] = bullet
     tpl = env.get_template("report.html.j2")
     return tpl.render(
         f=facts, sections=sections, texts=texts, static=STATIC, kb=_kb(),

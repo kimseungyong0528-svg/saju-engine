@@ -91,6 +91,12 @@ def page(pid: str, title: str, *, figure: str | None = None, slot: dict | None =
             "span": span, "opener": opener}
 
 
+def _rel_len(luck: dict) -> int:
+    """운세 카드 아래 '내 사주와의 관계' 줄이 차지하는 만큼 글을 줄인다."""
+    n = len(", ".join(luck["relations_text"]))
+    return 0 if n == 0 else 40 + n
+
+
 def _wrap(section_no: str, chapter_terms: list[str]) -> dict:
     """장 마지막 쪽: 용어 풀이 + 정리."""
     return page(f"s{section_no}_wrap", "용어 풀이와 정리", figure="wrap",
@@ -248,7 +254,7 @@ def build_outline(f: dict) -> list[dict]:
         now = " (지금)" if p["state"] == "지금" else ""
         dpages.append(page(f"dw_{i}", f"{p['age_text']} 대운{now}", figure="daewoon_card", span=p["pages"],
                            slot=_slot(f"dw_{i}", f"{p['age_text']} {p['ganzhi']}({p['hanja']}) 대운을 요약, 일, 돈, 연애, 건강, 조언 순서로 써 주세요.",
-                                      FULL * p["pages"] - 320, "fortune")))
+                                      FULL * p["pages"] - 330 - _rel_len(p), "fortune")))
         dpages[-1]["period_index"] = i
     if tail:
         dpages.append(page("dw_tail", f"{tail[0]['age_from']}세 이후 대운", figure="daewoon_tail",
@@ -260,7 +266,7 @@ def build_outline(f: dict) -> list[dict]:
     for i, s in enumerate(f["sewoon"]):
         spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0),
                            slot=_slot(f"sw_{s['year']}", f"{s['year']}년 {s['ganzhi']}({s['hanja']})년의 운세를 요약, 좋은 점, 주의할 점, 일, 돈, 연애, 좋은 달 순서로 써 주세요.",
-                                      FULL * s["pages"] - (380 if i == 0 else 320), "fortune")))
+                                      FULL * s["pages"] - (400 if i == 0 else 330) - _rel_len(s), "fortune")))
         spages[-1]["year"] = s["year"]
     section("11", spages, ["세운"])
 
@@ -272,7 +278,7 @@ def build_outline(f: dict) -> list[dict]:
             break
         label = f"{ms[0]['year']}년 {ms[0]['month']}월 ~ {ms[-1]['year']}년 {ms[-1]['month']}월" if ms[0]["year"] != ms[-1]["year"] else f"{ms[0]['year']}년 {ms[0]['month']}월 ~ {ms[-1]['month']}월"
         mpages.append(page(f"mw_{q}", f"{label} 운세", figure="months3", opener=(q == 0),
-                           slot=_slot(f"mw_{q}", "세 달 각각의 운세를 요약, 좋은 일, 주의할 일 순서로 짧게 써 주세요. 한 달에 각 항목 1~2문장입니다.", 300 if q == 0 else 360, "months")))
+                           slot=_slot(f"mw_{q}", "세 달 각각의 운세를 요약, 좋은 일, 주의할 일 순서로 짧게 써 주세요. 한 달에 각 항목 1~2문장입니다.", 230 if q == 0 else 290, "months")))
         mpages[-1]["month_range"] = [q * 3, q * 3 + len(ms)]
     section("12", mpages, ["월운", "절기"])
 

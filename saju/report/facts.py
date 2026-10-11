@@ -65,12 +65,20 @@ def luck_score(ganzhi: str, relations: list[dict], good: list[str], bad: list[st
     return max(20, min(90, score))
 
 
+def _wa(word: str) -> str:
+    """받침이 있으면 '과', 없으면 '와'."""
+    if not word:
+        return "와"
+    code = ord(word[-1]) - 0xAC00
+    return "과" if 0 <= code <= 11171 and code % 28 else "와"
+
+
 def _relations_text(relations: list[dict]) -> list[str]:
     out = []
     for r in relations:
         kind = K.relation_kind(r["type"])
         target = PILLAR_LABEL.get(r.get("with", ""), r.get("with", ""))
-        out.append(f"{target}와 {kind}")
+        out.append(f"{target}{_wa(target)} {kind}")
     return sorted(set(out))
 
 
