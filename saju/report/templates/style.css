@@ -89,8 +89,7 @@ td.left, th.left { text-align: left; }
 .toc-sec { display: flex; align-items: baseline; padding: 2.2mm 0; border-bottom: 1pt solid #d3c5a3; }
 .toc-sec .no { width: 14mm; font-family: "Song Myung"; color: #9e2f22; font-size: 17pt; }
 .toc-sec .t { flex: 1; }
-.toc-sec a { color: inherit; text-decoration: none; }
-.toc-sec a::after { content: target-counter(attr(href), page); float: right; }
+.toc-sec .t::after { content: target-counter(attr(data-target), page); float: right; }
 .toc-sec .tt { font-weight: 700; font-size: 15pt; color: #1f1b16; }
 .toc-sec .s { color: #5a5144; font-size: 14pt; font-weight: 400; }
 

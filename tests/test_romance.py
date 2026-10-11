@@ -51,3 +51,12 @@ def test_cross_sell_puts_intimate_first_for_crush():
     items = cross_sell(f, current="romance", first=R.cross_sell_order("짝사랑"))
     assert items[0]["id"] == "intimate" and len(items) == 7
     assert [p["id"] for p in cross_sell(f, current="romance")][0] == "lifetime"
+
+
+def test_cover_color_and_toc_without_links():
+    from saju.report.render import COVER, PRODUCT, render_html
+    f = _facts()
+    secs = R.build_outline(f)
+    html = render_html(f, secs, DraftWriter().write(f, secs), product="romance")
+    assert COVER["romance"]["glow_out"] in html and PRODUCT["lifetime"]["cover"] is COVER["lifetime"]
+    assert 'href="#sec-' not in html and 'data-target="#sec-1"' in html

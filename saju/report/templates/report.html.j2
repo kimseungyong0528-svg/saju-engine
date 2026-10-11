@@ -53,7 +53,7 @@
 {%- if k == "toc" -%}
   {% for s in sections %}
   <div class="toc-sec"><span class="no">{{ secmark.get(s.no, s.no) }}</span>
-    <span class="t"><a href="#sec-{{ s.no }}"><b class="tt">{{ s.title }}</b>{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</a></span></div>
+    <span class="t" data-target="#sec-{{ s.no }}"><b class="tt">{{ s.title }}</b>{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</span></div>
   {% endfor %}
 {%- elif k == "four_pillars_diagram" -%}
   <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
@@ -266,42 +266,52 @@
 {%- endmacro %}
 
 {# ── 본문 ─────────────────────────────────────── #}
+{%- set th = product.cover -%}
+<style>
+.cover { background: {{ th.glow_out }}; color: {{ th.text }}; }
+.cover .label { border-color: {{ th.line }}; box-shadow: 0 0 0 1.5mm {{ th.dark }}; }
+.cover .eight-head, .cover .eight th, .cover .brand { color: {{ th.line }}; }
+.cover .eight table { background: {{ th.table }}; }
+.cover .eight th, .cover .eight td { border-color: {{ th.line }}; }
+.cover .eight td { color: {{ th.text }}; }
+.cover .who b { color: {{ th.name }}; }
+</style>
 <section class="cover">
   <svg class="cover-art" viewBox="0 0 210 297" width="210mm" height="297mm" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <pattern id="lattice" width="12" height="12" patternUnits="userSpaceOnUse">
-        <path d="M0 6h3v-3h6v6h-3v-3" fill="none" stroke="#d8bb78" stroke-width=".25" opacity=".22"/>
-        <path d="M6 12v-3h-3v3M12 0v3h-3" fill="none" stroke="#d8bb78" stroke-width=".25" opacity=".22"/>
+        <path d="M0 6h3v-3h6v6h-3v-3" fill="none" stroke="{{ th.line }}" stroke-width=".25" opacity=".22"/>
+        <path d="M6 12v-3h-3v3M12 0v3h-3" fill="none" stroke="{{ th.line }}" stroke-width=".25" opacity=".22"/>
       </pattern>
       <radialGradient id="glow" cx="50%" cy="38%" r="60%">
-        <stop offset="0" stop-color="#2c3b55"/><stop offset="1" stop-color="#141c2a"/>
+        <stop offset="0" stop-color="{{ th.glow_in }}"/><stop offset="1" stop-color="{{ th.glow_out }}"/>
       </radialGradient>
-      <g id="cloud" fill="none" stroke="#d8bb78" stroke-width=".7" stroke-linecap="round">
+      <g id="cloud" fill="none" stroke="{{ th.line }}" stroke-width=".7" stroke-linecap="round">
         <path d="M0 8c0-4 5-6 8-3c1-4 8-5 10-1c3-3 9-1 8 4c3 0 4 4 1 5h-26c-3 0-3-5-1-5z"/>
         <path d="M6 10c2-2 5-1 5 1M15 8c2-2 6-1 6 2"/>
       </g>
-      <g id="corner" fill="none" stroke="#d8bb78" stroke-width=".6">
+      <g id="corner" fill="none" stroke="{{ th.line }}" stroke-width=".6">
         <path d="M0 0h16v4h-12v12h-4z"/><path d="M7 7h6v2h-4v4h-2z"/>
       </g>
     </defs>
     <rect width="210" height="297" fill="url(#glow)"/>
     <rect width="210" height="297" fill="url(#lattice)"/>
     <!-- 책을 묶은 실 (오침안정법) -->
-    <rect width="17" height="297" fill="#111826"/>
-    <line x1="17" y1="0" x2="17" y2="297" stroke="#d8bb78" stroke-width=".4" opacity=".6"/>
-    <g fill="#0b0f18" stroke="#d8bb78" stroke-width=".3">
+    <rect width="17" height="297" fill="{{ th.dark }}"/>
+    <line x1="17" y1="0" x2="17" y2="297" stroke="{{ th.line }}" stroke-width=".4" opacity=".6"/>
+    <g fill="{{ th.darker }}" stroke="{{ th.line }}" stroke-width=".3">
       <circle cx="9" cy="22" r="1.1"/><circle cx="9" cy="85" r="1.1"/><circle cx="9" cy="148.5" r="1.1"/>
       <circle cx="9" cy="212" r="1.1"/><circle cx="9" cy="275" r="1.1"/>
     </g>
-    <g stroke="#e9dfc6" stroke-width=".8" opacity=".85">
+    <g stroke="{{ th.thread }}" stroke-width=".8" opacity=".85">
       <line x1="9" y1="22" x2="9" y2="275"/>
       <line x1="0" y1="22" x2="9" y2="22"/><line x1="0" y1="85" x2="9" y2="85"/><line x1="0" y1="148.5" x2="9" y2="148.5"/>
       <line x1="0" y1="212" x2="9" y2="212"/><line x1="0" y1="275" x2="9" y2="275"/>
       <line x1="9" y1="22" x2="9" y2="14"/><line x1="9" y1="275" x2="9" y2="283"/>
     </g>
     <!-- 금색 이중 테두리와 모서리 무늬 -->
-    <rect x="25" y="11" width="176" height="275" fill="none" stroke="#d8bb78" stroke-width="1.1"/>
-    <rect x="28" y="14" width="170" height="269" fill="none" stroke="#d8bb78" stroke-width=".35"/>
+    <rect x="25" y="11" width="176" height="275" fill="none" stroke="{{ th.line }}" stroke-width="1.1"/>
+    <rect x="28" y="14" width="170" height="269" fill="none" stroke="{{ th.line }}" stroke-width=".35"/>
     <use href="#corner" x="31" y="17"/>
     <use href="#corner" transform="translate(195 17) scale(-1 1)"/>
     <use href="#corner" transform="translate(31 280) scale(1 -1)"/>
@@ -313,12 +323,12 @@
     <use href="#cloud" transform="translate(184 140) scale(-.9 .9)" opacity=".4"/>
     <!-- 해와 달 -->
     <circle cx="164" cy="34" r="6.5" fill="#9e2f22" opacity=".9"/>
-    <circle cx="164" cy="34" r="9" fill="none" stroke="#d8bb78" stroke-width=".3"/>
+    <circle cx="164" cy="34" r="9" fill="none" stroke="{{ th.line }}" stroke-width=".3"/>
     <path d="M56 30a7 7 0 1 0 6 11a5.5 5.5 0 1 1 -6 -11z" fill="#e9dfc6" opacity=".85"/>
     <!-- 산과 물결 -->
-    <path d="M28 248l22-20l14 12l20-24l18 18l16-14l22 22l16-12l20 18l22-16v51h-170z" fill="#111826" opacity=".75"/>
-    <path d="M28 248l22-20l14 12l20-24l18 18l16-14l22 22l16-12l20 18l22-16" fill="none" stroke="#d8bb78" stroke-width=".5" opacity=".7"/>
-    <g fill="none" stroke="#d8bb78" stroke-width=".35" opacity=".45">
+    <path d="M28 248l22-20l14 12l20-24l18 18l16-14l22 22l16-12l20 18l22-16v51h-170z" fill="{{ th.dark }}" opacity=".75"/>
+    <path d="M28 248l22-20l14 12l20-24l18 18l16-14l22 22l16-12l20 18l22-16" fill="none" stroke="{{ th.line }}" stroke-width=".5" opacity=".7"/>
+    <g fill="none" stroke="{{ th.line }}" stroke-width=".35" opacity=".45">
       <path d="M30 276q6-4 12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0"/>
       <path d="M30 281q6-4 12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0"/>
     </g>
