@@ -52,32 +52,52 @@ def test_draft_writer_fills_every_slot(facts):
 
 
 def test_claude_writer_request_shape(facts, monkeypatch):
-    """API 키 없이 요청 모양만 확인한다: 장마다 한 번, 강제 도구 호출, 계산 결과는 캐시."""
+    """API 키 없이 요청 모양만 확인한다: 장마다 한 번, 구조화 출력, 계산 결과는 캐시, 15장만 좋은 모델."""
+    import json
+    from saju.report.writer import FORMAT_SCHEMA, strict_schema
     calls = []
 
-    class FakeMessages:
-        def create(self, **kw):
-            calls.append(kw)
-            props = kw["tools"][0]["input_schema"]["properties"]
-            data = {k: DraftWriter()._one(facts, {"id": k, "format": _fmt(v), "chars": 300}) for k, v in props.items()}
-            return SimpleNamespace(content=[SimpleNamespace(type="tool_use", input=data)])
-
     def _fmt(schema):
-        from saju.report.writer import FORMAT_SCHEMA
-        return next(k for k, v in FORMAT_SCHEMA.items() if v == schema)
+        return next(k for k, v in FORMAT_SCHEMA.items() if strict_schema(v) == schema)
+
+    class FakeStream:
+        def __init__(self, kw):
+            self.kw = kw
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get_final_message(self):
+            props = self.kw["output_config"]["format"]["schema"]["properties"]
+            data = {k: DraftWriter()._one(facts, {"id": k, "format": _fmt(v), "chars": 300}) for k, v in props.items()}
+            usage = SimpleNamespace(input_tokens=10, output_tokens=20, cache_read_input_tokens=5, cache_creation_input_tokens=0)
+            return SimpleNamespace(stop_reason="end_turn", usage=usage,
+                                   content=[SimpleNamespace(type="text", text=json.dumps(data, ensure_ascii=False))])
+
+    class FakeMessages:
+        def stream(self, **kw):
+            calls.append(kw)
+            return FakeStream(kw)
 
     w = ClaudeWriter.__new__(ClaudeWriter)
-    w.client, w.model, w.max_workers = SimpleNamespace(messages=FakeMessages()), "test-model", 2
+    w.client, w.model, w.final_model, w.effort, w.max_workers, w.usage = (
+        SimpleNamespace(messages=FakeMessages()), "cheap-model", "best-model", "medium", 2, [])
     secs = build_outline(facts)
     texts = w.write(facts, secs)
     assert len(calls) == len(slots_by_section(secs))
-    assert all(c["tool_choice"]["name"] == "write_pages" for c in calls)
+    assert all("tool_choice" not in c and c["output_config"]["format"]["type"] == "json_schema" for c in calls)
+    assert all(c["output_config"]["format"]["schema"]["additionalProperties"] is False for c in calls)
     assert all(c["system"][1].get("cache_control") for c in calls)
     assert set(texts) == {s["id"] for sl in slots_by_section(secs).values() for s in sl}
-    # 마지막 장은 앞 장의 글을 받아 맨 나중에 쓴다
+    # 마지막 장은 앞 장의 글을 받아 맨 나중에, 좋은 모델로 쓴다
     last = calls[-1]
-    assert "s15_qa" in last["tools"][0]["input_schema"]["properties"]
+    assert "s15_qa" in last["output_config"]["format"]["schema"]["properties"]
     assert "앞 장에서 쓴 글" in last["messages"][0]["content"]
+    assert last["model"] == "best-model" and all(c["model"] == "cheap-model" for c in calls[:-1])
+    assert len(w.usage) == len(calls)
 
 
 def test_pdf_renders(tmp_path, facts):

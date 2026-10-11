@@ -23,7 +23,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 from . import knowledge as K
 
-DEFAULT_MODEL = os.environ.get("SAJU_WRITER_MODEL", "claude-opus-5-5")
+# 1~14장은 값싼 모델, 결론인 15장은 가장 좋은 모델로 쓴다(한 권 비용을 크게 줄이면서 결론의 품질을 지킨다).
+DEFAULT_MODEL = os.environ.get("SAJU_WRITER_MODEL", "claude-haiku-5-5")
+FINAL_MODEL = os.environ.get("SAJU_WRITER_FINAL_MODEL", "claude-opus-5-5")
+EFFORT = os.environ.get("SAJU_WRITER_EFFORT", "medium")
 
 STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 작가입니다.
 
@@ -97,6 +100,18 @@ FORMAT_SCHEMA = {
 }
 
 
+def strict_schema(node):
+    """구조화 출력은 모든 객체에 additionalProperties: false가 있어야 한다."""
+    if isinstance(node, dict):
+        out = {k: strict_schema(v) for k, v in node.items()}
+        if out.get("type") == "object":
+            out["additionalProperties"] = False
+        return out
+    if isinstance(node, list):
+        return [strict_schema(x) for x in node]
+    return node
+
+
 FINAL_RULES = """[이 장은 책의 결론입니다]
 - 앞 장에 나온 보완법과 조언을 빠짐없이 모으고, 겹치는 것은 합쳐서 더 구체적으로 씁니다.
 - 명리학의 흐름(용신, 대운·세운의 흐름)에서 벗어나지 않게, 어떤 글자·시기 때문인지 근거를 함께 씁니다.
@@ -157,16 +172,19 @@ def previous_text(texts: dict, limit: int = 60000) -> str:
 
 
 class ClaudeWriter:
-    def __init__(self, model: str = DEFAULT_MODEL, api_key: str | None = None, max_workers: int = 6):
+    def __init__(self, model: str = DEFAULT_MODEL, api_key: str | None = None, max_workers: int = 6,
+                 final_model: str = FINAL_MODEL, effort: str = EFFORT):
         import anthropic
         self.client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
         self.model = model
+        self.final_model = final_model
+        self.effort = effort
         self.max_workers = max_workers
+        self.usage: list[dict] = []   # 장마다 쓴 토큰(비용 확인용)
 
     def _section(self, f: dict, section: dict, slots: list[dict], previous: str = "") -> dict:
-        schema = {"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
-                  "required": [s["id"] for s in slots]}
-        tool = {"name": "write_pages", "description": "이 장의 각 칸에 들어갈 글을 제출합니다.", "input_schema": schema}
+        schema = strict_schema({"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
+                                "required": [s["id"] for s in slots]})
         system = [
             {"type": "text", "text": STYLE_RULES.format(name=f["person"]["name"])},
             {"type": "text", "text": "사주 계산 결과:\n" + json.dumps(facts_digest(f), ensure_ascii=False),
@@ -176,18 +194,25 @@ class ClaudeWriter:
             "장": f"{section['no']}. {section['title']}" + (f" — {section['subtitle']}" if section["subtitle"] else ""),
             "칸": [{"id": s["id"], "쪽 제목": s["title"], "쓸 내용": s["guide"], "chars": s["chars"], "형식": s["format"]} for s in slots],
         }
-        ask = "아래 장의 칸을 모두 채워 write_pages로 제출해 주세요.\n" + json.dumps(brief, ensure_ascii=False)
+        ask = "아래 장의 칸을 모두 채워 JSON으로 답해 주세요. 칸 id가 키입니다.\n" + json.dumps(brief, ensure_ascii=False)
         if previous:
             ask = FINAL_RULES + "\n앞 장에서 쓴 글:\n" + previous + "\n\n" + ask
-        msg = self.client.messages.create(
-            model=self.model, max_tokens=16000, system=system, tools=[tool],
-            tool_choice={"type": "tool", "name": "write_pages"},
+        model = self.final_model if previous else self.model
+        # 글이 길어서 스트리밍으로 받는다(요청 시간 초과 방지)
+        with self.client.messages.stream(
+            model=model, max_tokens=64000, system=system,
+            output_config={"effort": self.effort, "format": {"type": "json_schema", "schema": schema}},
             messages=[{"role": "user", "content": ask}],
-        )
-        for block in msg.content:
-            if block.type == "tool_use":
-                return block.input
-        raise RuntimeError(f"{section['no']}장 글을 받지 못했어요")
+        ) as stream:
+            msg = stream.get_final_message()
+        u = msg.usage
+        self.usage.append({"section": section["no"], "model": model, "input": u.input_tokens, "output": u.output_tokens,
+                           "cache_read": getattr(u, "cache_read_input_tokens", 0) or 0,
+                           "cache_write": getattr(u, "cache_creation_input_tokens", 0) or 0})
+        if msg.stop_reason != "end_turn":
+            raise RuntimeError(f"{section['no']}장 글이 끝까지 오지 않았어요(stop_reason={msg.stop_reason})")
+        text = next(b.text for b in msg.content if b.type == "text")
+        return json.loads(text)
 
     def write(self, f: dict, sections: list[dict]) -> dict:
         from .outline import slots_by_section
