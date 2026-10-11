@@ -248,6 +248,25 @@
   <table><tr><th style="width: 26%">나를 나타내는 글자</th><td class="left">{{ f.day_master.stem }}({{ f.day_master.hanja }}) · {{ f.day_master.image }}</td></tr>
   <tr><th>인연이 오는 해</th><td class="left">{{ r.best_years|join("년, ") }}년</td></tr>
   <tr><th>인연을 부르는 것</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.direction }}</td></tr></table>
+{%- elif k == "kv" -%}
+  <table class="compact">{% for r in pg.rows %}<tr><th style="width: 27%">{{ r[0] }}</th><td class="left">{{ r[1] }}</td></tr>{% endfor %}</table>
+  {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
+{%- elif k == "grid" -%}
+  {%- set g = pg.grid -%}
+  <table class="compact"><tr>{% for h in g.head %}<th{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}>{{ h }}</th>{% endfor %}</tr>
+  {% for row in g.rows %}<tr{% if loop.index0 in g.get("hl", []) %} style="background: #e9dfc6"{% endif %}>{% for c in row %}{% if loop.first %}<th>{{ c }}</th>{% else %}<td{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}>{{ c }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</table>
+  {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
+{%- elif k == "theme_graph" -%}
+  {{ svg.theme_graph | safe }}
+  {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
+{%- elif k == "pair_pillars" -%}
+  {%- set o = f.partner -%}
+  {% for who in [f, o] %}
+  <table class="compact"><tr><th style="width: 20%">{{ who.person.name }}</th>{% for p in who.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
+  <tr><th>천간</th>{% for p in who.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="han">{{ p.stem_hanja }}</span> {{ p.stem_ten_god or "나" }}{% endif %}</td>{% endfor %}</tr>
+  <tr><th>지지</th>{% for p in who.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="han">{{ p.branch_hanja }}</span> {{ p.branch_ten_god }}{% endif %}</td>{% endfor %}</tr></table>
+  {% endfor %}
+  {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
 {%- elif k == "glossary" -%}
   <dl class="glossary">{% for t, d in glossary_sorted %}<dt>{{ t }}</dt><dd>{{ d }}</dd>{% endfor %}</dl>
 {%- elif k == "raw_table" -%}
@@ -355,6 +374,7 @@
     <b class="customer-name">{{ P.name }} 님</b>
     <div>{{ P.birth_text }} {{ P.time_text }} · {{ P.place }}</div>
     <div>{{ P.sex_word }} · {{ P.zodiac }}띠</div>
+    {% if f.partner %}<div>함께 보는 사람 · {{ f.partner.person.name }} 님</div>{% endif %}
   </div>
   <div class="brand">運命書齋 · 운명서재 · 금월선녀</div>
 </section>

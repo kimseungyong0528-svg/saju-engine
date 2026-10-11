@@ -162,6 +162,25 @@ PRODUCT = {
     "romance": {"id": "romance", "name": "연애사주", "cover_title": "戀<br>愛<br>四<br>柱", "header": "戀愛四柱", "toc_compact": True,
                 "more_intro": "연애사주가 나의 인연을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
                 "cover": COVER["romance"]},
+    # 주제 사주(2026-10-11): 목차는 /mnt/project-files/plan/<id>-report-toc.md
+    "reunion": {"id": "reunion", "name": "재회사주", "cover_title": "再<br>會<br>四<br>柱", "header": "再會四柱", "toc_compact": True,
+                "more_intro": "재회사주가 두 사람의 다음 장을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+                "cover": COVER["reunion"]},
+    "intimate": {"id": "intimate", "name": "깊은 궁합", "cover_title": "宮<br>合", "header": "宮合", "toc_compact": True,
+                 "more_intro": "깊은 궁합이 두 사람 사이를 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+                 "cover": COVER["intimate"]},
+    "wealth": {"id": "wealth", "name": "재물운", "cover_title": "財<br>物<br>運", "header": "財物運", "toc_compact": True,
+               "more_intro": "재물운이 돈의 흐름을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+               "cover": COVER["wealth"]},
+    "career": {"id": "career", "name": "직업·이직운", "cover_title": "職<br>業<br>運", "header": "職業運", "toc_compact": True,
+               "more_intro": "직업·이직운이 나의 일을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+               "cover": COVER["career"]},
+    "business": {"id": "business", "name": "사업운", "cover_title": "事<br>業<br>運", "header": "事業運", "toc_compact": True,
+                 "more_intro": "사업운이 내가 키우는 일을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+                 "cover": COVER["business"]},
+    "health": {"id": "health", "name": "건강운", "cover_title": "健<br>康<br>運", "header": "健康運", "toc_compact": True,
+               "more_intro": "건강운이 나의 생활 리듬을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+               "cover": COVER["health"]},
 }
 
 
@@ -180,6 +199,9 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
            "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])}
     if facts.get("romance"):
         svg["love_graph"] = _svg_love_graph(facts["romance"]["periods"], facts["daewoon"]["current_index"])
+    if facts.get("theme", {}).get("periods"):
+        svg["theme_graph"] = _svg_life_graph([dict(p, score=min(90, p["t_score"])) for p in facts["theme"]["periods"]],
+                                             facts["daewoon"]["current_index"])
     return tpl.render(
         f=facts, sections=sections, texts=texts, static=static or STATIC, kb=_kb(),
         more=cross_sell(facts, current=product, site=site_url, first=first), secmark={"더보기": "續"},

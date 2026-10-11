@@ -109,9 +109,27 @@ python -m saju.report --product romance --name 이수아 --sex female --birth 20
 - 1~9장 Haiku, 10장(마지막 조언) Opus. 끝에 다른 상품 안내(짝사랑·썸이면 깊은 궁합, 이별 후면 재회사주를 맨 위로).
 - 평생사주 결과는 바뀌지 않음(같은 입력으로 HTML과 AI 요청 내용이 v1.0.0과 글자 단위로 같음).
 
+## 주제 사주 6종 (재회·깊은 궁합·재물·직업·이직·사업·건강)
+
+```bash
+# 한 사람 상품: wealth, career, business, health
+python -m saju.report --product career --name 윤서진 --sex female --birth 1993-09-05 --time 11:50 \
+    --region 1100000000 --answer concern=이직을 고민해요 --question "내년에 옮겨도 될까요?" --out career.pdf
+# 두 사람 상품: reunion, intimate (상대방 정보 필수)
+python -m saju.report --product reunion --name 박지은 --sex female --birth 1997-08-23 --time 14:20 \
+    --partner-name 정민호 --partner-sex male --partner-birth 1995-03-11 --partner-time 22:10 \
+    --answer "breakup=3~6개월 정도예요" --out reunion.pdf
+```
+
+- 상품마다 목차 12장 + 마지막 조언 뒤 "다른 사주도 궁금하다면", 50쪽 이상. 목차 원본과 가상 인터뷰·궁금한 주제 20가지는 프로젝트 `plan/<상품>-interview-topics.md`.
+- `report/theme.py`: 공통 도구(연도·달·대운 표시와 점수, 표 쪽, 그래프). `report/<상품>.py`: 그 상품의 재료, 목차, 글 규칙, 다른 상품 순서.
+- 1~11장 Haiku, 12장(마지막 조언) Opus. `--use-texts 파일.json`으로 미리 쓴 글을 넣어 API 없이 PDF를 만들 수 있음.
+- 표지 색: 재회·궁합·재물·직업은 사이트 캐릭터 옷 색, 사업·건강은 임시 색.
+- 평생사주·연애사주 결과는 바뀌지 않음(HTML 공백 한 줄 외 동일).
+
 ## 다음 단계
 
 1. 문장 검수(금지어, 계산값 대조). 실제 문장 품질은 2026-10-11 확인 완료
 2. 화면 연동 서버(`/api/intake/assess`, `/api/orders`, 토스페이먼츠, 메일 발송)
-3. 나머지 상품 리포트(궁합·재회·연애 → 재물·직업·사업 → 건강)
+3. 주제 사주 6종 실제 글 품질 확인(샘플은 API 없이 작성)
 4. 시·군·구 단위 좌표표 보강
