@@ -92,6 +92,7 @@ td.left, th.left { text-align: left; }
 .toc-sec .t::after { content: target-counter(attr(data-target), page); float: right; }
 .toc-sec .tt { font-weight: 700; font-size: 15pt; color: #1f1b16; }
 .toc-sec .s { color: #5a5144; font-size: 14pt; font-weight: 400; }
+.toc-compact .toc-sec { padding: 1.2mm 0; }
 
 .glossary { columns: 2; column-gap: 7mm; margin: 0; }
 .glossary dt { font-weight: 700; margin-top: 2mm; break-after: avoid; }
