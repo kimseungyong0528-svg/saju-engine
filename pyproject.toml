@@ -1,7 +1,7 @@
 [project]
 name = "saju-engine"
-version = "0.1.0"
-description = "운명서재 사주 엔진: 만세력, 사주팔자, 오행, 십신, 대운"
+version = "0.2.0"
+description = "운명서재 사주 엔진: 만세력, 사주팔자, 오행, 십신, 대운, 평생사주 PDF"
 requires-python = ">=3.11"
 dependencies = [
     "ephem>=4.1",
@@ -9,7 +9,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "sxtwl>=2.0"]
+report = ["jinja2>=3.1", "weasyprint>=62", "anthropic>=0.40"]
+dev = ["pytest>=8", "sxtwl>=2.0", "jinja2>=3.1", "weasyprint>=62", "anthropic>=0.40"]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -17,6 +18,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["saju*"]
+
+[tool.setuptools.package-data]
+"saju.report" = ["templates/*", "fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -3,7 +3,7 @@
 운명서재(사주 리포트 서비스)의 분석 서버에 들어갈 사주 계산 엔진입니다.
 고객이 입력한 출생 정보로 명식을 계산하고, 리포트 작성에 필요한 분석 결과를 JSON으로 돌려줍니다.
 
-## 지금 되는 것 (0.1.0)
+## 지금 되는 것
 
 - **만세력**: 24절기 시각(VSOP87 태양 위치, 1940~2050년 독립 구현과 30초 이내 일치), 음력·윤달 변환
 - **한국 표준시 이력**: 1954~1961년 UTC+8:30, 1948~1960년대·1987~1988년 서머타임, 서머타임 중복·누락 시각 경고
@@ -56,10 +56,33 @@ result = analyze_person({
 | `saju/luck.py` | 대운, 세운, 월운 |
 | `saju/pair.py` | 두 사람 비교 |
 | `saju/chart.py` | 입력 처리, 불확실성 비교, 전체 결과 |
+| `saju/report/` | 평생사주 리포트(목차 15장, 약 114쪽 PDF) |
 | `docs/product-plan.md` | 상품별 프로그램 계획 |
+
+## 평생사주 리포트 (0.2.0)
+
+```bash
+pip install -e ".[report]"
+export ANTHROPIC_API_KEY=...        # 없으면 초안 글로 만들어요(디자인 확인용)
+python -m saju.report --name 홍길동 --sex male --birth 1990-05-15 --time 10:30 \
+    --region 1100000000 --question "올해 이직해도 될까요?" --daily 직장 --out report.pdf
+```
+
+| 파일 | 하는 일 |
+|---|---|
+| `report/facts.py` | 계산 결과 → 리포트 재료(글자, 개수, 점수, 대운 지금 위치, 주문 달부터 12개월, 행운 아이템) |
+| `report/outline.py` | 확정 목차 15장을 쪽 단위로 정의. 쪽마다 제목, 그림, 글 칸(목표 글자 수) |
+| `report/writer.py` | `ClaudeWriter`: 장마다 Claude API 1회(도구 호출로 JSON 받음, 계산 결과는 프롬프트 캐시). `DraftWriter`: API 없이 초안 |
+| `report/knowledge.py` | 오행·십신·12운성·신살·합충 쉬운 말 풀이, 용어 사전 |
+| `report/render.py`, `templates/` | 동양풍 도안(한지 바탕, 14pt 이상) HTML → WeasyPrint PDF |
+
+- 글 규칙: 비유 없이 쉬운 말, 용어는 처음 나올 때 괄호 풀이, 계산 결과에 있는 값만 사용, 병명·투자·사망 단정 금지.
+- 쪽수: 한 쪽 글 약 650자 기준. 나이와 사주에 따라 113~118쪽 사이로 나와요(`tests/test_report.py`).
+- 글꼴: 고운바탕, 송명(SIL OFL, `report/fonts/`).
 
 ## 다음 단계
 
-1. 시·군·구 단위 좌표표 보강
-2. 상품별 리포트 모듈(평생사주부터), 해석 문장 생성, PDF
-3. 화면 연동 서버(`/api/intake/assess`, `/api/orders`, 토스페이먼츠, 메일 발송)
+1. Claude API 키로 실제 문장 품질 확인, 문장 검수(금지어, 글자 수, 계산값 대조)
+2. 화면 연동 서버(`/api/intake/assess`, `/api/orders`, 토스페이먼츠, 메일 발송)
+3. 나머지 상품 리포트(궁합·재회·연애 → 재물·직업·사업 → 건강)
+4. 시·군·구 단위 좌표표 보강

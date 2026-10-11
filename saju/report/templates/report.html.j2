@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>평생사주 · {{ f.person.name }}님</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+{%- set P = f.person %}
+
+{# ── 글 칸 ─────────────────────────────────────── #}
+{% macro text(pg) -%}
+{%- set t = texts.get(pg.slot.id) if pg.slot else None -%}
+{%- if t is none -%}
+{%- elif pg.slot.format == "paragraphs" -%}
+  {% for para in t %}<p>{{ para }}</p>{% endfor %}
+{%- elif pg.slot.format == "lead" -%}
+  <div class="lead">{{ t.lead }}</div>
+  {% for para in t.paragraphs %}<p>{{ para }}</p>{% endfor %}
+{%- elif pg.slot.format == "bullets" -%}
+  <ul>{% for b in t %}<li>{{ b }}</li>{% endfor %}</ul>
+{%- elif pg.slot.format == "summary" -%}
+  <div class="box"><div class="note-head"><span class="seal">要</span><span class="note-title">이 장의 핵심</span></div>
+  <ul style="margin:0; padding-left: 6mm">{% for b in t.bullets %}<li>{{ b }}</li>{% endfor %}</ul></div>
+  <div style="border-top: 1pt dashed #8a7550; padding-top: 3mm; margin-top: 4mm">
+    <div class="han" style="color: #9e2f22; font-size: 16pt">금월선녀의 한마디</div><p>{{ t.word }}</p></div>
+{%- elif pg.slot.format == "fortune" -%}
+  <div class="lead" style="font-size: 16pt">{{ t.summary }}</div>
+  {% for it in t["items"] %}<p class="item"><span class="item-label">{{ it.label }}</span> · {{ it.text }}</p>{% endfor %}
+  <div class="box"><b>이렇게 보내세요</b> · {{ t.advice }}</div>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro term_box(terms) -%}
+{%- set ts = terms | select("in", glossary) | list -%}
+{%- if ts -%}
+<div class="box"><div class="note-head"><span class="seal">註</span><span class="note-title">이 말이 뭐예요?</span></div>
+{% for t in ts %}<p><b>{{ t }}</b> · {{ glossary[t] }}</p>{% endfor %}</div>
+{%- endif -%}
+{%- endmacro %}
+
+{# ── 그림 ─────────────────────────────────────── #}
+{% macro figure(pg, sec) -%}
+{%- set k = pg.figure -%}
+{%- if k == "toc" -%}
+  {% for s in sections %}
+  <div class="toc-sec"><span class="no">{{ s.no if s.no != "부록" else "附" }}</span>
+    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no != "부록" %} <span class="s">— {{ s.subtitle }}</span>{% endif %}</a></span></div>
+  {% endfor %}
+{%- elif k == "four_pillars_diagram" -%}
+  <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
+  <tr>{% for i in [3,2,1,0] %}<td class="big-han">{{ "時日月年"[3-i] }}</td>{% endfor %}</tr>
+  <tr><td colspan="4" class="sub">사주표는 오른쪽에서 왼쪽으로 해 → 달 → 날 → 시간 순서로 읽어요</td></tr></table>
+{%- elif k == "element_cycle" -%}
+  {{ svg.element_cycle | safe }}
+{%- elif k == "stems_branches" -%}
+  <table><tr><th>천간</th>{% for s in kb.stems %}<td><span class="mid-han">{{ s.hanja }}</span><br>{{ s.name }}</td>{% endfor %}</tr>
+  <tr><th>오행</th>{% for s in kb.stems %}<td>{{ s.el }}</td>{% endfor %}</tr></table>
+  <table><tr><th>지지</th>{% for b in kb.branches[:6] %}<td><span class="mid-han">{{ b.hanja }}</span><br>{{ b.name }}</td>{% endfor %}</tr>
+  <tr><th>띠</th>{% for b in kb.branches[:6] %}<td>{{ b.animal }}</td>{% endfor %}</tr>
+  <tr><th>지지</th>{% for b in kb.branches[6:] %}<td><span class="mid-han">{{ b.hanja }}</span><br>{{ b.name }}</td>{% endfor %}</tr>
+  <tr><th>띠</th>{% for b in kb.branches[6:] %}<td>{{ b.animal }}</td>{% endfor %}</tr></table>
+{%- elif k == "symbols" -%}
+  <table>{% for a, b in static.symbols %}<tr><th style="width: 34%">{{ a }}</th><td class="left">{{ b }}</td></tr>{% endfor %}</table>
+  <div class="box"><p>이 책의 모든 계산은 {{ P.birth_text }} {{ P.time_text }}, {{ P.place }} 출생을 기준으로 했어요. 계산 방법은 맨 뒤 '계산 기준 안내'에 있어요.</p></div>
+{%- elif k == "pillars" -%}
+  <table>
+  <tr><th></th>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
+  <tr><th>천간</th>{% for p in f.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="big-han">{{ p.stem_hanja }}</span><br>{{ p.stem }} · {{ p.stem_element }}{% endif %}</td>{% endfor %}</tr>
+  <tr><th>지지</th>{% for p in f.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="big-han">{{ p.branch_hanja }}</span><br>{{ p.branch }} · {{ p.branch_element }}{% endif %}</td>{% endfor %}</tr>
+  <tr><th>띠</th>{% for p in f.pillars|reverse %}<td>{{ p.animal or "" }}</td>{% endfor %}</tr>
+  </table>
+  {% if f.uncertainties %}<div class="box">{% for u in f.uncertainties %}<p>※ {{ u }}</p>{% endfor %}</div>{% endif %}
+{%- elif k == "pillars_detail" -%}
+  <table>
+  <tr><th></th>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
+  <tr><th>간지</th>{% for p in f.pillars|reverse %}<td class="mid-han">{{ p.hanja or "?" }}</td>{% endfor %}</tr>
+  <tr><th>천간 십신</th>{% for p in f.pillars|reverse %}<td>{{ p.stem_ten_god or "" }}</td>{% endfor %}</tr>
+  <tr><th>지지 십신</th>{% for p in f.pillars|reverse %}<td>{{ p.branch_ten_god or "" }}</td>{% endfor %}</tr>
+  <tr><th>지장간</th>{% for p in f.pillars|reverse %}<td>{% for h in p.hidden_stems or [] %}{{ h.stem }}<br>{% endfor %}</td>{% endfor %}</tr>
+  <tr><th>12운성</th>{% for p in f.pillars|reverse %}<td>{{ p.twelve_stage or "" }}</td>{% endfor %}</tr>
+  </table>
+{%- elif k == "elements_bar" -%}
+  <div class="bars">{% for e in f.elements %}
+    <div class="bar-row"><span class="bar-label"><span class="han">{{ e.hanja }}</span> {{ e.name }}</span>
+    <span class="bar-track"><span class="bar-fill el-{{ e.el }}" style="display:block; width: {{ [e.pct, 1]|max }}%"></span></span>
+    <span class="bar-pct">{{ e.pct }}% {% if e.status != "보통" %}<b>{{ e.status }}</b>{% endif %}</span></div>{% endfor %}</div>
+  <p class="sub">글자 수: {% for e in f.elements %}{{ e.name }} {{ e.count }}개{% if not loop.last %} · {% endif %}{% endfor %} (계절과 자리의 힘을 반영해 비율을 계산했어요)</p>
+{%- elif k == "tengod_table" -%}
+  <table><tr><th>무리</th><th>십신</th><th class="left">뜻</th></tr>
+  {% for g in f.ten_god_groups %}<tr><th>{{ g.group }}<br><span class="sub">{{ g.label }}</span></th><td>{{ g.members }}</td><td class="left">{{ g.meaning }}</td></tr>{% endfor %}</table>
+{%- elif k == "tengod_dots" -%}
+  <table>{% for g in f.ten_god_groups %}<tr><th style="width: 22%">{{ g.group }}<br><span class="sub">{{ g.label }}</span></th>
+  <td style="width: 22%" class="dots">{{ "●" * g.n if g.n else "○" }}</td><td class="left">{{ g.note or g.meaning }}</td></tr>{% endfor %}</table>
+{%- elif k == "stage_table" -%}
+  <table class="compact">{% for name, text in kb.stages %}<tr><th style="width: 18%">{{ name }}</th><td class="left">{{ text }}</td></tr>{% endfor %}</table>
+{%- elif k == "my_stages" -%}
+  <table><tr>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
+  <tr>{% for p in f.pillars|reverse %}<td class="mid-han">{{ p.twelve_stage or "?" }}</td>{% endfor %}</tr></table>
+{%- elif k == "hidden" -%}
+  <table><tr><th>자리</th><th>지지</th><th class="left">숨은 글자(십신)</th></tr>
+  {% for p in f.pillars if not p.unknown %}<tr><th>{{ p.label }}</th><td class="mid-han">{{ p.branch_hanja }}</td><td class="left">{{ p.hidden_text }}</td></tr>{% endfor %}</table>
+{%- elif k == "relation_table" -%}
+  <table class="compact">{% for name, text in kb.relations %}<tr><th style="width: 18%">{{ name }}</th><td class="left">{{ text }}</td></tr>{% endfor %}</table>
+{%- elif k == "my_relations" -%}
+  {% if f.relations %}<table class="compact"><tr><th>관계</th><th>글자</th><th class="left">뜻</th></tr>
+  {% for r in f.relations %}<tr><th>{{ r.type }}</th><td>{{ r.chars }}</td><td class="left">{{ r.text }}</td></tr>{% endfor %}</table>
+  {% else %}<div class="box"><p>타고난 여덟 글자 안에는 서로 합치거나 부딪히는 관계가 없어요.</p></div>{% endif %}
+{%- elif k == "shinsal_table" -%}
+  <table class="compact">{% for name, text in kb.shinsal %}<tr><th style="width: 22%">{{ name }}</th><td class="left">{{ text }}</td></tr>{% endfor %}</table>
+{%- elif k == "my_shinsal" -%}
+  {% if f.shinsal %}<table class="compact"><tr><th>신살</th><th>자리</th><th class="left">뜻</th></tr>
+  {% for s in f.shinsal %}<tr><th>{{ s.name }}</th><td>{{ s.label }}</td><td class="left">{{ s.text }}</td></tr>{% endfor %}</table>
+  {% else %}<div class="box"><p>눈에 띄는 신살이 없는 사주예요.</p></div>{% endif %}
+{%- elif k == "strength" -%}
+  {{ svg.strength | safe }}
+  <table><tr><th style="width: 24%">신강·신약</th><td class="left"><b>{{ f.strength.label }}</b> ({{ f.strength.score }}점) · {{ f.strength.text }}</td></tr>
+  <tr><th>격국</th><td class="left"><b>{{ f.gyeokguk.name }}</b> · {{ f.gyeokguk.text }}</td></tr>
+  <tr><th>용신</th><td class="left"><b>{{ f.lucky.element_name }}({{ f.lucky.element }})</b> · {{ f.lucky.basis }}</td></tr></table>
+{%- elif k in ("career_years", "money_years", "love_years") -%}
+  {%- set hl = {"career_years": ["편관","정관","식신","상관"], "money_years": ["편재","정재","식신"],
+                "love_years": (["편재","정재"] if P.sex == "male" else ["편관","정관"])}[k] -%}
+  <table><tr><th>해</th><th>간지</th><th>들어오는 기운</th><th>흐름</th></tr>
+  {% for s in f.sewoon %}<tr{% if s.stem_ten_god in hl or s.branch_ten_god in hl %} style="background: #e9dfc6"{% endif %}>
+  <th>{{ s.year }}</th><td><span class="han">{{ s.hanja }}</span> {{ s.ganzhi }}</td><td>{{ s.stem_ten_god }} · {{ s.branch_ten_god }}</td><td>{{ s.score }}점</td></tr>{% endfor %}</table>
+{%- elif k == "health_notice" -%}
+  <div class="box"><p>※ {{ static.health_notice }}</p></div>
+{%- elif k == "daewoon_info" -%}
+  <table><tr><th>대운수</th><td>{{ f.daewoon.number }}세</td><th>방향</th><td>{{ f.daewoon.direction }}</td></tr></table>
+  <p class="sub">첫 대운이 {{ f.daewoon.number }}세에 시작해 10년마다 바뀌어요. {{ "앞으로 흘러가는(순행)" if f.daewoon.direction == "순행" else "거꾸로 흘러가는(역행)" }} 대운이에요.</p>
+{%- elif k == "life_graph" -%}
+  {{ svg.life_graph | safe }}
+{%- elif k == "daewoon_card" -%}
+  {%- set d = f.daewoon.periods[pg.period_index] -%}
+  <div class="fortune-head{% if d.state == '지난' %} past{% endif %}"><span class="mid-han">{{ d.hanja }}</span>
+    <span><b>{{ d.age_text }}</b> · {{ d.years_text }}<br>{{ d.stem_ten_god }} · {{ d.branch_ten_god }}</span>
+    <span class="score">{{ d.state }}<br><b>{{ d.score }}점</b></span></div>
+  {% if d.relations_text %}<p class="fortune-rel">내 사주와의 관계: {{ d.relations_text|join(", ") }}</p>{% endif %}
+{%- elif k == "daewoon_tail" -%}
+  <table>{% for d in f.daewoon.periods if d.order - 1 > [f.daewoon.current_index, 0]|max + 4 %}
+  <tr><th>{{ d.age_text }}</th><td class="mid-han">{{ d.hanja }}</td><td>{{ d.stem_ten_god }} · {{ d.branch_ten_god }}</td><td>{{ d.score }}점</td></tr>{% endfor %}</table>
+{%- elif k == "sewoon_card" -%}
+  {%- set s = (f.sewoon | selectattr("year", "equalto", pg.year) | first) -%}
+  <div class="fortune-head"><span class="mid-han">{{ s.hanja }}</span>
+    <span><b>{{ s.year }}년 {{ s.ganzhi }}년</b> · {{ s.animal }}띠 해<br>{{ s.stem_ten_god }} · {{ s.branch_ten_god }}</span>
+    <span class="score">흐름<br><b>{{ s.score }}점</b></span></div>
+  {% if s.relations_text %}<p class="fortune-rel">내 사주와의 관계: {{ s.relations_text|join(", ") }}</p>{% endif %}
+{%- elif k == "months3" -%}
+  {%- set t = texts.get(pg.slot.id, {}).get("months", []) -%}
+  {% for m in f.months[pg.month_range[0]:pg.month_range[1]] %}
+  <div class="month"><div class="month-head"><span class="mid-han">{{ m.hanja }}</span>
+    <b>{{ m.year }}년 {{ m.month }}월 · {{ m.short }} {{ m.term }}부터</b><span class="sub" style="margin-left:auto">{{ m.score }}점</span></div>
+    {% set mt = t[loop.index0] if t|length > loop.index0 else None %}
+    {% if mt %}<p>{{ mt.summary }}</p><p><span class="item-label">좋은 일</span> · {{ mt.good }}</p><p><span class="item-label">주의할 일</span> · {{ mt.careful }}</p>{% endif %}
+  </div>{% endfor %}
+{%- elif k == "question" -%}
+  <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or "질문을 남기지 않으셨어요. 요즘 생활에 맞춰 가장 많이 궁금해하시는 내용으로 답해 드려요." }}</p></div>
+{%- elif k == "yongsin" -%}
+  <div class="center"><span class="big-han" style="font-size: 54pt">{{ f.lucky.hanja }}</span><br><b>{{ f.lucky.element_name }}({{ f.lucky.element }}) 기운</b></div>
+{%- elif k == "lucky" -%}
+  <table><tr><th>행운의 색</th><td class="left">{{ f.lucky.color }}</td></tr>
+  <tr><th>행운의 숫자</th><td class="left">{{ f.lucky.numbers }}</td></tr>
+  <tr><th>좋은 방향</th><td class="left">{{ f.lucky.direction }}</td></tr>
+  <tr><th>힘이 나는 계절</th><td class="left">{{ f.lucky.season }}</td></tr></table>
+{%- elif k == "lucky_items" -%}
+  <table><tr><th style="width: 24%">음식</th><td class="left">{{ f.lucky.foods }}</td></tr>
+  <tr><th>물건·공간</th><td class="left">{{ f.lucky.items }}</td></tr></table>
+{%- elif k == "animals" -%}
+  <table><tr><th>나의 띠</th><td>{{ P.zodiac }}띠</td></tr><tr><th>잘 맞는 띠</th><td>{{ f.lucky.animals|join(", ") }}띠</td></tr>
+  <tr><th>조심할 띠</th><td>{{ f.lucky.careful_animal }}띠</td></tr></table>
+{%- elif k == "summary_table" -%}
+  <table><tr><th style="width: 26%">나를 나타내는 글자</th><td class="left">{{ f.day_master.stem }}({{ f.day_master.hanja }}) · {{ f.day_master.image }}</td></tr>
+  <tr><th>사주의 틀</th><td class="left">{{ f.strength.label }} · {{ f.gyeokguk.name }}</td></tr>
+  <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
+  <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
+{%- elif k == "glossary" -%}
+  <dl class="glossary">{% for t, d in glossary_sorted %}<dt>{{ t }}</dt><dd>{{ d }}</dd>{% endfor %}</dl>
+{%- elif k == "raw_table" -%}
+  <table><tr><th></th>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
+  <tr><th>간지</th>{% for p in f.pillars|reverse %}<td>{{ p.ganzhi or "?" }}<br><span class="han">{{ p.hanja or "" }}</span></td>{% endfor %}</tr></table>
+  <table><tr><th>대운</th>{% for d in f.daewoon.periods[:5] %}<td>{{ d.age_from }}<br>{{ d.ganzhi }}</td>{% endfor %}</tr>
+  <tr><th></th>{% for d in f.daewoon.periods[5:] %}<td>{{ d.age_from }}<br>{{ d.ganzhi }}</td>{% endfor %}</tr></table>
+  {% if f.variant_count > 1 %}<div class="box"><p>가능한 사주 후보: {{ f.variants|join(" / ") }}</p></div>{% endif %}
+{%- elif k == "method" -%}
+  <table>
+  <tr><th style="width: 30%">입력한 출생 정보</th><td class="left">{{ P.birth_text }} ({{ "양력" if P.calendar == "solar" else "음력" if P.calendar == "lunar" else "양력·음력 미상" }}) {{ P.time_text }} · {{ P.place }} · {{ P.sex_word }}</td></tr>
+  <tr><th>출생 시각 보정</th><td class="left">{{ "평균태양시(출생지 경도로 보정)" if f.options.solar_time == "mean" else "진태양시" if f.options.solar_time == "apparent" else "보정 없음" }}. 한국 표준시 변경과 서머타임 시기를 반영했어요.</td></tr>
+  <tr><th>해·달의 기준</th><td class="left">해는 입춘, 달은 절기가 드는 시각에 바뀌어요.</td></tr>
+  <tr><th>자시 기준</th><td class="left">{{ "밤 11시부터 다음 날로 봐요." if f.options.zi_rule == "23" else "자정부터 다음 날로 봐요(야자시)." }}</td></tr>
+  <tr><th>계산 버전</th><td class="left">{{ f.version }}</td></tr></table>
+  <p class="sub">만세력 사이트마다 시각 보정 방법이 달라 일부 글자가 다를 수 있어요.</p>
+{%- endif -%}
+{%- endmacro %}
+
+{# ── 본문 ─────────────────────────────────────── #}
+<section class="cover">
+  <div class="title">平生四柱</div>
+  <div class="subtitle">평생사주</div>
+  <div class="stamp">{{ f.day_master.hanja }}{{ f.pillars[2].branch_hanja or "" }}</div>
+  <div class="who"><b class="customer-name">{{ P.name }} 님</b><br>{{ P.birth_text }} {{ P.time_text }} · {{ P.place }}<br>{{ P.sex_word }} · {{ P.zodiac }}띠</div>
+  <div class="brand">운명서재 · 금월선녀</div>
+</section>
+
+{% for sec in sections %}
+  {% for pg in sec.pages if pg.figure != "cover" %}
+  <section class="page" id="{{ 'sec-' ~ sec.no if loop.first else pg.id }}" data-pid="{{ pg.id }}"><span class="customer">{{ f.person.name }} 님</span>
+    {% if pg.opener %}
+    <div class="sec-head"><span class="sec-no">{{ sec.no if sec.no != "부록" else "附" }}</span>
+      <div><div class="sec-title bookmark">{{ sec.title }}</div>{% if sec.subtitle %}<div class="sec-sub">{{ sec.subtitle }}</div>{% endif %}</div></div>
+    {% endif %}
+    <h2>{{ pg.title }}</h2>
+    {% if pg.static and pg.static in static %}{% for para in static[pg.static] %}<p>{{ para }}</p>{% endfor %}{% endif %}
+    {% if pg.figure and pg.figure not in ("wrap", "opener") %}{{ figure(pg, sec) }}{% endif %}
+    {% if pg.figure == "wrap" %}{{ term_box(sec.terms) }}{% endif %}
+    {% if pg.figure != "months3" %}{{ text(pg) }}{% endif %}
+  </section>
+  {% endfor %}
+{% endfor %}
+</body>
+</html>

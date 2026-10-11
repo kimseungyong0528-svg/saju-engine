@@ -1,0 +1,114 @@
+/* 평생사주 리포트 · 동양풍 도안 (한지 바탕, 먹색 글씨, 붉은 낙관)
+   모든 글자 14pt 이상. */
+@font-face { font-family: "Gowun Batang"; src: url("../fonts/GowunBatang-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Gowun Batang"; src: url("../fonts/GowunBatang-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Song Myung"; src: url("../fonts/SongMyung-Regular.ttf"); }
+
+:root { --paper: #f1e9d6; --paper2: #e9dfc6; --ink: #1f1b16; --ink2: #3d362c; --line: #3a2e22;
+        --soft: #b9a77f; --red: #9e2f22; --navy: #1f2a3d; --gold: #d8bb78; }
+
+@page {
+  size: A4; margin: 24mm 20mm 22mm; background: #f1e9d6;
+  border: 3.5pt double #3a2e22; padding: 6mm 7mm;
+  @top-left { content: "平生四柱"; font-family: "Song Myung"; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
+  @top-right { content: string(customer); font-family: "Gowun Batang"; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
+  @bottom-center { content: counter(page); font-family: "Gowun Batang"; font-size: 14pt; color: #3d362c; vertical-align: top; padding-top: 2mm; }
+}
+@page cover { border: none; padding: 0; margin: 0;
+  @top-left { content: none; } @top-right { content: none; } @bottom-center { content: none; } }
+
+html { font-family: "Gowun Batang", serif; font-size: 14pt; line-height: 1.75; color: #1f1b16; }
+body { margin: 0; }
+.customer { string-set: customer content(); font-size: 0; line-height: 0; height: 0; overflow: hidden; }
+p { margin: 0 0 0.7em; text-align: justify; word-break: keep-all; orphans: 2; widows: 2; }
+b, strong { font-weight: 700; }
+.han { font-family: "Song Myung", serif; }
+
+.page { break-before: page; }
+.page.cont { break-before: auto; }
+
+/* 장 머리 */
+.sec-head { display: flex; align-items: flex-end; gap: 5mm; border-bottom: 2pt solid #3a2e22; padding-bottom: 3mm; margin-bottom: 6mm; }
+.sec-no { font-family: "Song Myung"; font-size: 40pt; line-height: 1; color: #9e2f22; }
+.sec-title { font-family: "Song Myung"; font-size: 24pt; line-height: 1.25; }
+.sec-sub { font-size: 14pt; color: #3d362c; }
+.sec-head .bookmark { bookmark-level: 1; }
+
+h2 { font-family: "Song Myung"; font-weight: 400; font-size: 20pt; line-height: 1.35; margin: 0 0 4mm;
+     padding-left: 4mm; border-left: 5pt solid #9e2f22; bookmark-level: 2; }
+h3 { font-family: "Song Myung"; font-weight: 400; font-size: 17pt; margin: 4mm 0 2mm; color: #9e2f22; }
+
+.lead { font-family: "Song Myung"; font-size: 18pt; line-height: 1.6; color: #1f2a3d; margin: 2mm 0 6mm;
+        padding: 5mm 6mm; background: #e9dfc6; border: 1pt solid #b9a77f; }
+
+.box { background: #e9dfc6; border: 1pt solid #b9a77f; padding: 4mm 5mm; margin: 4mm 0; }
+.box p:last-child { margin-bottom: 0; }
+.note-head { display: flex; align-items: center; gap: 3mm; margin-bottom: 2mm; }
+.seal { display: inline-block; width: 9mm; height: 9mm; line-height: 9mm; text-align: center; background: #9e2f22; color: #f6ecd8;
+        font-family: "Song Myung"; font-size: 14pt; border-radius: 1mm; }
+.note-title { font-family: "Song Myung"; font-size: 17pt; }
+
+table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; }
+th, td { border: 1pt solid #8a7550; padding: 2mm 2.5mm; text-align: center; vertical-align: middle; font-size: 14pt; line-height: 1.45; }
+th { background: #e9dfc6; font-weight: 700; }
+td.left, th.left { text-align: left; }
+.big-han { font-family: "Song Myung"; font-size: 30pt; line-height: 1.1; color: #9e2f22; }
+.mid-han { font-family: "Song Myung"; font-size: 20pt; color: #9e2f22; }
+.sub { color: #3d362c; }
+
+/* 오행 막대 */
+.bars { margin: 3mm 0 5mm; }
+.bar-row { display: flex; align-items: center; gap: 3mm; margin: 2mm 0; }
+.bar-label { width: 26mm; }
+.bar-track { flex: 1; height: 7mm; background: #e9dfc6; border: 1pt solid #b9a77f; }
+.bar-fill { height: 100%; }
+.bar-pct { width: 22mm; text-align: right; }
+.el-목 { background: #4f7a4a; } .el-화 { background: #b2452f; } .el-토 { background: #b58b3c; } .el-금 { background: #8c8a84; } .el-수 { background: #2c3f5c; }
+
+.dots { color: #9e2f22; letter-spacing: 1mm; }
+.tag { display: inline-block; padding: 0 2mm; border: 1pt solid #9e2f22; color: #9e2f22; border-radius: 1mm; margin-right: 1.5mm; }
+.now { background: #1f2a3d; color: #f1e9d6; }
+.now td { color: #f1e9d6; }
+
+/* 운세 카드 */
+.fortune-head { display: flex; align-items: center; gap: 5mm; padding: 4mm 5mm; background: #1f2a3d; color: #f1e9d6; margin-bottom: 4mm; }
+.fortune-head .mid-han { color: #d8bb78; font-size: 28pt; white-space: nowrap; flex-shrink: 0; }
+.fortune-head .score { white-space: nowrap; flex-shrink: 0; }
+.fortune-rel { margin: -2mm 0 4mm; color: #3d362c; }
+.fortune-head .score { margin-left: auto; text-align: right; }
+.fortune-head.past { background: #e9dfc6; color: #1f1b16; }
+.fortune-head.past .mid-han { color: #9e2f22; }
+.item { margin: 0 0 3mm; }
+.item-label { font-weight: 700; color: #9e2f22; }
+
+.month { border-top: 1.5pt solid #3a2e22; padding: 2mm 0 1mm; break-inside: avoid; }
+.month p { margin-bottom: 0.3em; line-height: 1.6; }
+.month-head { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 1mm; }
+
+.toc-sec { display: flex; align-items: baseline; padding: 2.2mm 0; border-bottom: 1pt solid #d3c5a3; }
+.toc-sec .no { width: 14mm; font-family: "Song Myung"; color: #9e2f22; font-size: 17pt; }
+.toc-sec .t { flex: 1; }
+.toc-sec a { color: inherit; text-decoration: none; }
+.toc-sec a::after { content: target-counter(attr(href), page); float: right; }
+.toc-sec .s { color: #3d362c; }
+
+.glossary { columns: 2; column-gap: 7mm; margin: 0; }
+.glossary dt { font-weight: 700; margin-top: 2mm; break-after: avoid; }
+.glossary dd { margin: 0; line-height: 1.55; break-inside: avoid; }
+
+/* 표지 */
+.cover { page: cover; height: 297mm; box-sizing: border-box; padding: 26mm 24mm; background: #f1e9d6;
+         border: 4pt double #3a2e22; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.cover .title { font-family: "Song Myung"; font-size: 64pt; line-height: 1.1; margin-top: 30mm; letter-spacing: 4mm; }
+.cover .subtitle { font-family: "Song Myung"; font-size: 22pt; margin-top: 6mm; color: #3d362c; }
+.cover .stamp { margin-top: 18mm; width: 34mm; height: 34mm; line-height: 34mm; background: #9e2f22; color: #f6ecd8; font-family: "Song Myung";
+                font-size: 26pt; border-radius: 2mm; transform: rotate(-4deg); }
+.cover .who { margin-top: auto; font-size: 17pt; line-height: 1.9; }
+.cover .who b { font-family: "Song Myung"; font-weight: 400; font-size: 24pt; }
+.cover .brand { margin-top: 8mm; font-family: "Song Myung"; font-size: 16pt; color: #3d362c; }
+
+.svg-fig { display: block; margin: 3mm auto 5mm; }
+.center { text-align: center; }
+.two-col { display: flex; gap: 5mm; } .two-col > div { flex: 1; }
+
+table.compact th, table.compact td { padding: 1mm 2.5mm; line-height: 1.35; }

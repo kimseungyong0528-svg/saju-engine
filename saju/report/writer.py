@@ -1,0 +1,213 @@
+"""리포트 본문 글쓰기.
+
+ClaudeWriter: 장마다 Claude API를 한 번씩 불러 그 장의 모든 칸(slot)을 채운다.
+DraftWriter: API 없이 기초 지식으로 초안을 만든다(도안 확인, 테스트, API 장애 시 대비용).
+
+글 형식(slot.format)
+- paragraphs: ["문단", ...]
+- lead:       {"lead": "한 문장 요약", "paragraphs": [...]}
+- summary:    {"bullets": ["", "", ""], "word": "한 문장 조언"}
+- fortune:    {"summary": "", "items": [{"label": "일", "text": ""}, ...], "advice": ""}
+- months:     {"months": [{"summary": "", "good": "", "careful": ""}, x3]}
+- bullets:    ["", ...]
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+from . import knowledge as K
+
+DEFAULT_MODEL = os.environ.get("SAJU_WRITER_MODEL", "claude-opus-5-5")
+
+STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 작가입니다.
+
+[독자]
+- 사주를 처음 보는 일반인이 재미와 취미로 읽습니다.
+
+[문체]
+- 해요체로 씁니다. 고객은 "{name}님"이라고 부릅니다.
+- 비유, 시적인 표현, 멋 부린 카피를 쓰지 않습니다. 핵심을 쉬운 말로 바로 말합니다.
+- 사주 용어(십신, 신강, 격국, 대운 등)가 나오면 처음 나올 때 괄호 안에 쉬운 풀이를 붙입니다. 예: 편관(나를 단련하는 기운)
+- 문장은 짧게 씁니다. 한 문단은 2~4문장입니다.
+- "~할 수 있어요", "~하기 쉬워요"처럼 가능성으로 말하고, 단정하거나 겁주지 않습니다.
+
+[사실]
+- 사주 글자, 개수, 점수, 연도, 나이, 날짜는 아래 '사주 계산 결과'에 있는 값만 씁니다. 새로 계산하거나 지어내지 않습니다.
+- 근거를 말할 때는 어떤 글자나 관계 때문인지 함께 씁니다. 예: "태어난 달에 편관이 있어서"
+- 결혼 여부, 직업, 자녀 유무는 알 수 없으므로 가정하지 않습니다. 필요하면 경우를 나눠 씁니다.
+
+[금지]
+- 병명을 단정하거나 의학적 진단처럼 쓰지 않습니다. 건강은 생활 습관 중심으로 씁니다.
+- 특정 투자 상품, 종목, 금액을 권하지 않습니다.
+- 사망, 이혼, 사고를 예언하지 않습니다.
+- 성별 고정관념으로 쓰지 않습니다.
+- 다른 칸과 같은 문장을 되풀이하지 않습니다.
+
+[분량]
+- 각 칸의 chars(공백 포함 글자 수)에 맞춥니다. ±10% 안이어야 쪽이 넘치지 않습니다.
+"""
+
+FORMAT_SCHEMA = {
+    "paragraphs": {"type": "array", "items": {"type": "string"}},
+    "bullets": {"type": "array", "items": {"type": "string"}},
+    "lead": {"type": "object", "properties": {"lead": {"type": "string"}, "paragraphs": {"type": "array", "items": {"type": "string"}}},
+             "required": ["lead", "paragraphs"]},
+    "summary": {"type": "object", "properties": {"bullets": {"type": "array", "items": {"type": "string"}}, "word": {"type": "string"}},
+                "required": ["bullets", "word"]},
+    "fortune": {"type": "object", "properties": {
+        "summary": {"type": "string"},
+        "items": {"type": "array", "items": {"type": "object", "properties": {"label": {"type": "string"}, "text": {"type": "string"}},
+                                             "required": ["label", "text"]}},
+        "advice": {"type": "string"}}, "required": ["summary", "items", "advice"]},
+    "months": {"type": "object", "properties": {"months": {"type": "array", "items": {"type": "object", "properties": {
+        "summary": {"type": "string"}, "good": {"type": "string"}, "careful": {"type": "string"}},
+        "required": ["summary", "good", "careful"]}}}, "required": ["months"]},
+}
+
+
+def facts_digest(f: dict) -> dict:
+    """AI에게 보낼 사주 계산 결과(필요한 것만)."""
+    return {
+        "고객": f["person"], "주문": f["order"], "불확실한 점": f["uncertainties"],
+        "사주표": [{k: p.get(k) for k in ("label", "ganzhi", "hanja", "stem_element", "branch_element",
+                                         "stem_ten_god", "branch_ten_god", "hidden_text", "twelve_stage", "animal")}
+                   for p in f["pillars"]],
+        "일간": {k: f["day_master"][k] for k in ("stem", "hanja", "element", "image", "yin_yang", "basic", "strengths", "weaknesses")},
+        "오행": [{k: e[k] for k in ("el", "name", "count", "pct", "status")} for e in f["elements"]],
+        "십신 무리": [{k: g[k] for k in ("group", "label", "n")} for g in f["ten_god_groups"]],
+        "신강약": {k: f["strength"].get(k) for k in ("label", "score", "득령", "득지")},
+        "격국": {k: f["gyeokguk"][k] for k in ("name", "ten_god", "text")},
+        "용신": f["yongsin"], "행운": f["lucky"],
+        "원국 합충": [{k: r.get(k) for k in ("type", "between", "chars")} for r in f["relations"]],
+        "신살": [{k: s[k] for k in ("name", "label")} for s in f["shinsal"]],
+        "대운": {"방향": f["daewoon"]["direction"], "대운수": f["daewoon"]["number"],
+                 "목록": [{k: p[k] for k in ("age_text", "years_text", "ganzhi", "hanja", "stem_ten_god", "branch_ten_god",
+                                           "twelve_stage", "relations_text", "score", "state")} for p in f["daewoon"]["periods"]]},
+        "세운": [{k: s[k] for k in ("year", "ganzhi", "hanja", "animal", "stem_ten_god", "branch_ten_god", "relations_text", "score")}
+                 for s in f["sewoon"]],
+        "월운": [{k: m[k] for k in ("start_text", "term", "ganzhi", "stem_ten_god", "branch_ten_god", "relations_text", "score")}
+                 for m in f["months"]],
+        "참고 지식": {
+            "십신 뜻": {k: v["meaning"] for k, v in K.TEN_GOD.items()},
+            "신살 뜻": {n: K.SHINSAL.get(n, "") for n in f["shinsal_names"]},
+            "합충 뜻": K.RELATION,
+        },
+    }
+
+
+class ClaudeWriter:
+    def __init__(self, model: str = DEFAULT_MODEL, api_key: str | None = None, max_workers: int = 6):
+        import anthropic
+        self.client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+        self.model = model
+        self.max_workers = max_workers
+
+    def _section(self, f: dict, section: dict, slots: list[dict]) -> dict:
+        schema = {"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
+                  "required": [s["id"] for s in slots]}
+        tool = {"name": "write_pages", "description": "이 장의 각 칸에 들어갈 글을 제출합니다.", "input_schema": schema}
+        system = [
+            {"type": "text", "text": STYLE_RULES.format(name=f["person"]["name"])},
+            {"type": "text", "text": "사주 계산 결과:\n" + json.dumps(facts_digest(f), ensure_ascii=False),
+             "cache_control": {"type": "ephemeral"}},
+        ]
+        brief = {
+            "장": f"{section['no']}. {section['title']}" + (f" — {section['subtitle']}" if section["subtitle"] else ""),
+            "칸": [{"id": s["id"], "쪽 제목": s["title"], "쓸 내용": s["guide"], "chars": s["chars"], "형식": s["format"]} for s in slots],
+        }
+        msg = self.client.messages.create(
+            model=self.model, max_tokens=16000, system=system, tools=[tool],
+            tool_choice={"type": "tool", "name": "write_pages"},
+            messages=[{"role": "user", "content": "아래 장의 칸을 모두 채워 write_pages로 제출해 주세요.\n"
+                                                   + json.dumps(brief, ensure_ascii=False)}],
+        )
+        for block in msg.content:
+            if block.type == "tool_use":
+                return block.input
+        raise RuntimeError(f"{section['no']}장 글을 받지 못했어요")
+
+    def write(self, f: dict, sections: list[dict]) -> dict:
+        from .outline import slots_by_section
+        by_no = {s["no"]: s for s in sections}
+        jobs = slots_by_section(sections)
+        out: dict = {}
+        with ThreadPoolExecutor(self.max_workers) as ex:
+            futures = {no: ex.submit(self._section, f, by_no[no], sl) for no, sl in jobs.items()}
+            for no, fut in futures.items():
+                out.update(fut.result())
+        return out
+
+
+# ── API 없이 만드는 초안 ──────────────────────────────────────
+
+def _ten_god_word(tg: str) -> str:
+    return f"{tg}({K.TEN_GOD[tg]['simple']})" if tg in K.TEN_GOD else tg
+
+
+class DraftWriter:
+    """기초 지식만으로 쓰는 초안. 문장 수가 적고 반복이 있지만 쪽 구성과 디자인을 확인할 수 있다."""
+
+    def write(self, f: dict, sections: list[dict]) -> dict:
+        from .outline import slots_by_section
+        out = {}
+        for sl in slots_by_section(sections).values():
+            for s in sl:
+                out[s["id"]] = self._one(f, s)
+        return out
+
+    def _one(self, f: dict, s: dict):
+        name = f["person"]["name"]
+        dm = f["day_master"]
+        fmt = s["format"]
+        many = [e for e in f["elements"] if e["status"] == "많음"]
+        few = [e for e in f["elements"] if e["status"] == "부족"]
+        base = [
+            f"{name}님의 일간(나를 나타내는 글자)은 {dm['stem']}({dm['hanja']})이에요. {dm['image']}의 기운으로, {dm['basic']}",
+            f"사주 전체로 보면 {', '.join(e['name'] for e in many) or '특별히 넘치는 기운 없이'} 기운이 강하고 "
+            f"{', '.join(e['name'] for e in few) or '모자란 기운'}이 약해요. {f['strength']['text']}",
+            f"태어난 달을 기준으로 한 사주의 틀(격국)은 {f['gyeokguk']['name']}이에요. {f['gyeokguk']['text']}",
+        ]
+        if fmt == "lead":
+            return {"lead": f"{dm['image']}처럼 {dm['strengths'][0]}과 {dm['strengths'][1]}이 돋보이는 사람이에요.",
+                    "paragraphs": base[:2]}
+        if fmt == "summary":
+            return {"bullets": [f"일간 {dm['stem']}: {dm['strengths'][0]}, {dm['strengths'][1]}",
+                                f"{f['strength']['label']} · {f['gyeokguk']['name']}",
+                                f"도움 되는 기운: {f['lucky']['element_name']}({f['lucky']['element']})"],
+                    "word": f"{dm['weaknesses'][0]}만 조금 덜어 내면 장점이 더 크게 보여요."}
+        if fmt == "fortune":
+            target = self._fortune_target(f, s["id"])
+            tg = [target["stem_ten_god"], target["branch_ten_god"]]
+            rel = ", ".join(target["relations_text"]) or "특별한 합충 없이"
+            items = [{"label": "일", "text": f"{_ten_god_word(tg[0])} 기운이 일에 영향을 줘요. {K.TEN_GOD[tg[0]]['meaning']}"},
+                     {"label": "돈", "text": f"{_ten_god_word(tg[1])} 기운이 생활과 재물에 작용해요. {K.TEN_GOD[tg[1]]['meaning']}"},
+                     {"label": "연애", "text": f"내 사주와 {rel} 관계가 생겨요. 사람 사이의 변화를 살펴보세요."},
+                     {"label": "건강", "text": "무리한 일정은 줄이고 잠을 충분히 자는 것이 좋아요."}]
+            return {"summary": f"{target['ganzhi']}({target['hanja']})의 기운이 들어오는 시기예요. 흐름 점수는 {target['score']}점이에요.",
+                    "items": items, "advice": "좋은 흐름일 때 미뤄 둔 일을 시작하고, 부딪히는 시기에는 속도를 늦추세요."}
+        if fmt == "months":
+            a, b = self._month_range(f, s["id"])
+            return {"months": [{"summary": f"{m['term']}부터 시작하는 {m['ganzhi']}월이에요. {_ten_god_word(m['stem_ten_god'])}의 달이에요.",
+                                "good": K.TEN_GOD[m["stem_ten_god"]]["meaning"],
+                                "careful": "합충 관계가 있어 일정과 말을 한 번 더 확인하세요." if m["relations_text"] else "큰 부딪힘이 없는 달이에요."}
+                               for m in f["months"][a:b]]}
+        if fmt == "bullets":
+            return [f"성격: {dm['basic']}", f"사주의 틀: {f['gyeokguk']['text']}",
+                    f"도움 되는 기운: {f['lucky']['element_name']} · 색 {f['lucky']['color']}"]
+        n = max(1, round(s["chars"] / 200))
+        return (base * 3)[:n]
+
+    @staticmethod
+    def _fortune_target(f: dict, sid: str) -> dict:
+        kind, key = sid.split("_", 1)
+        if kind == "dw":
+            return f["daewoon"]["periods"][int(key)]
+        return next(x for x in f["sewoon"] if str(x["year"]) == key)
+
+    @staticmethod
+    def _month_range(f: dict, sid: str) -> tuple[int, int]:
+        q = int(sid.split("_")[1])
+        return q * 3, q * 3 + 3
