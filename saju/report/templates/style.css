@@ -91,7 +91,7 @@ td.left, th.left { text-align: left; }
 .toc-sec .t { flex: 1; }
 .toc-sec a { color: inherit; text-decoration: none; }
 .toc-sec a::after { content: target-counter(attr(href), page); float: right; }
-.toc-sec .s { color: #3d362c; }
+.toc-sec .s { color: #3d362c; font-size: 14pt; }
 
 .glossary { columns: 2; column-gap: 7mm; margin: 0; }
 .glossary dt { font-weight: 700; margin-top: 2mm; break-after: avoid; }

@@ -34,9 +34,9 @@ def test_facts_sample(facts):
 
 def test_outline_has_15_sections_and_plan_pages(facts):
     secs = build_outline(facts)
-    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["부록", "더보기"]
+    assert [s["no"] for s in secs] == [str(i) for i in range(1, 16)] + ["더보기"]
     planned = sum(p["span"] for p in all_pages(secs))
-    assert 108 <= planned <= 120
+    assert 104 <= planned <= 120
     ids = [p["id"] for p in all_pages(secs)]
     assert len(ids) == len(set(ids))
 

@@ -53,7 +53,7 @@
 {%- if k == "toc" -%}
   {% for s in sections %}
   <div class="toc-sec"><span class="no">{{ secmark.get(s.no, s.no) }}</span>
-    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no not in secmark %} <span class="s">— {{ s.subtitle }}</span>{% endif %}</a></span></div>
+    <span class="t"><a href="#sec-{{ s.no }}">{{ s.title }}{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</a></span></div>
   {% endfor %}
 {%- elif k == "four_pillars_diagram" -%}
   <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
@@ -70,7 +70,7 @@
   <tr><th>띠</th>{% for b in kb.branches[6:] %}<td>{{ b.animal }}</td>{% endfor %}</tr></table>
 {%- elif k == "symbols" -%}
   <table>{% for a, b in static.symbols %}<tr><th style="width: 34%">{{ a }}</th><td class="left">{{ b }}</td></tr>{% endfor %}</table>
-  <div class="box"><p>이 책의 모든 계산은 {{ P.birth_text }} {{ P.time_text }}, {{ P.place }} 출생을 기준으로 했어요. 계산 방법은 맨 뒤 '계산 기준 안내'에 있어요.</p></div>
+  <div class="box"><p>이 책의 모든 계산은 {{ P.birth_text }} {{ P.time_text }}, {{ P.place }} 출생을 기준으로 했어요.</p></div>
 {%- elif k == "pillars" -%}
   <table>
   <tr><th></th>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>

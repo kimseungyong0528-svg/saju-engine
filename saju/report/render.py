@@ -139,7 +139,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     tpl = env.get_template("report.html.j2")
     return tpl.render(
         f=facts, sections=sections, texts=texts, static=STATIC, kb=_kb(),
-        more=cross_sell(facts, site=site_url), secmark={"부록": "附", "더보기": "續"},
+        more=cross_sell(facts, site=site_url), secmark={"더보기": "續"},
         glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts),
         svg={"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
              "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])},
