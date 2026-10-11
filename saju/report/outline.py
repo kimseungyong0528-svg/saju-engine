@@ -2,15 +2,15 @@
 
 목차 원본: /mnt/project-files/plan/lifetime-report-toc.md (2026-10-11 확정)
 각 쪽은 제목, 그림(figure), 고정 글(static), AI가 쓸 글 칸(slot)으로 이뤄진다.
-slot의 chars는 A4·14pt 한 쪽에 들어가는 글자 수를 기준으로 잡았다(글만 있는 쪽 약 650자).
+slot의 chars는 A4·14pt 한 쪽에 들어가는 글자 수를 기준으로 잡았다(글만 있는 쪽 약 760자).
 """
 
 from __future__ import annotations
 
 from . import knowledge as K
 
-FULL = 650      # 글만 있는 한 쪽 (14pt 본문 실측 약 750자에서 여유를 둔 값)
-HALF = 300      # 그림과 함께 쓰는 쪽
+FULL = 760      # 글만 있는 한 쪽 (14pt 실제 문장 기준 한 쪽 약 860자. 8% 넘쳐도 들어가게)
+HALF = 380      # 그림과 함께 쓰는 쪽
 
 SECTIONS = [
     ("1", "내 사주 한눈에 보기", "사주와 오행, 나의 사주표"),
@@ -153,9 +153,9 @@ def build_outline(f: dict) -> list[dict]:
     # 3. 나는 어떤 사람일까? (23~32쪽)
     section("3", [
         page("s3_open", "성격 한 줄 요약", figure="opener", opener=True,
-             slot=_slot("s3_open", "이 사람의 성격을 한 문장으로 요약(lead)하고, 짧게 이유를 설명해 주세요.", 300, "lead")),
-        page("s3_basic", "기본 성격", span=2, slot=_slot("s3_basic", f"일간 {dm['stem']}({dm['image']})을 중심으로 기본 성격, 말투, 첫인상, 일하는 태도를 자세히 써 주세요.", FULL * 2)),
-        page("s3_inout", "겉모습과 속마음", span=2, slot=_slot("s3_inout", "천간(겉)과 지지·지장간(속)의 차이로 남들이 보는 모습과 실제 속마음을 비교해 주세요.", FULL * 2)),
+             slot=_slot("s3_open", "이 사람의 성격을 한 문장으로 요약(lead)하고, 짧게 이유를 설명해 주세요.", 420, "lead")),
+        page("s3_basic", "기본 성격", span=2, slot=_slot("s3_basic", f"일간 {dm['stem']}({dm['image']})을 중심으로 기본 성격, 말투, 첫인상, 일하는 태도를 자세히 써 주세요.", FULL * 2 - 60)),
+        page("s3_inout", "겉모습과 속마음", span=2, slot=_slot("s3_inout", "천간(겉)과 지지·지장간(속)의 차이로 남들이 보는 모습과 실제 속마음을 비교해 주세요.", FULL * 2 - 60)),
         page("s3_good", "장점", slot=_slot("s3_good", "타고난 장점 3가지를 사주 근거와 함께 써 주세요.")),
         page("s3_bad", "단점과 보완법", slot=_slot("s3_bad", "단점 2~3가지와 각각의 구체적인 보완 방법을 써 주세요.")),
         page("s3_stress", "스트레스 받을 때", slot=_slot("s3_stress", "어떤 상황에서 스트레스를 받는지, 그때 어떻게 행동하는지, 회복하는 방법을 써 주세요.")),
@@ -165,7 +165,7 @@ def build_outline(f: dict) -> list[dict]:
     # 4. 나도 모르게 반복하는 행동 (33~38쪽)
     section("4", [
         page("s4_open", "패턴 한 줄 요약", figure="opener", opener=True,
-             slot=_slot("s4_open", "이 사람이 반복하는 행동 패턴을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 300, "lead")),
+             slot=_slot("s4_open", "이 사람이 반복하는 행동 패턴을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 420, "lead")),
         page("s4_decide", "결정할 때의 습관", slot=_slot("s4_decide", "중요한 결정을 할 때 반복되는 습관을 써 주세요.")),
         page("s4_people", "인간관계에서 반복되는 문제", slot=_slot("s4_people", "인간관계에서 자주 반복되는 장면과 문제를 써 주세요.")),
         page("s4_why", "이 패턴이 생기는 이유", slot=_slot("s4_why", "이 패턴이 사주의 어떤 글자·관계에서 오는지 쉽게 설명해 주세요.")),
@@ -176,7 +176,7 @@ def build_outline(f: dict) -> list[dict]:
     # 5. 일과 이직 시기 (39~46쪽)
     section("5", [
         page("s5_open", "직업운 한 줄 요약", figure="opener", opener=True,
-             slot=_slot("s5_open", "직업운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 300, "lead")),
+             slot=_slot("s5_open", "직업운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 420, "lead")),
         page("s5_style", "일하는 스타일", slot=_slot("s5_style", "일하는 방식, 속도, 강점을 써 주세요.")),
         page("s5_jobs", "잘 맞는 직업", slot=_slot("s5_jobs", "잘 맞는 분야와 구체적인 직업 예시 8~10개를 이유와 함께 써 주세요.")),
         page("s5_type", "직장인형? 사업가형?", slot=_slot("s5_type", "직장, 프리랜서, 사업 중 어느 쪽이 맞는지 근거와 함께 써 주세요.")),
@@ -190,7 +190,7 @@ def build_outline(f: dict) -> list[dict]:
     # 6. 돈 (47~54쪽)
     section("6", [
         page("s6_open", "재물운 한 줄 요약", figure="opener", opener=True,
-             slot=_slot("s6_open", "재물운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 300, "lead")),
+             slot=_slot("s6_open", "재물운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 420, "lead")),
         page("s6_size", "타고난 재물운 크기", slot=_slot("s6_size", "신강약과 재성으로 본 타고난 재물운의 크기를 쉽게 설명해 주세요.")),
         page("s6_earn", "잘 맞는 돈 버는 방법", slot=_slot("s6_earn", "월급, 사업, 투자, 부업 중 맞는 방식과 이유를 써 주세요.")),
         page("s6_spend", "소비 습관", slot=_slot("s6_spend", "돈을 쓰는 습관과 돈이 새는 곳을 써 주세요.")),
@@ -204,11 +204,11 @@ def build_outline(f: dict) -> list[dict]:
     # 7. 연애와 결혼 (55~64쪽)
     section("7", [
         page("s7_open", "연애운 한 줄 요약", figure="opener", opener=True,
-             slot=_slot("s7_open", "연애운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 300, "lead")),
+             slot=_slot("s7_open", "연애운을 한 문장으로 요약(lead)하고 짧게 설명해 주세요.", 420, "lead")),
         page("s7_style", "연애 스타일", slot=_slot("s7_style", "연애할 때의 모습과 표현 방식을 써 주세요.")),
         page("s7_attract", "끌리는 사람 vs 잘 맞는 사람", slot=_slot("s7_attract", "끌리는 사람과 실제로 잘 맞는 사람을 비교해 주세요.")),
         page("s7_fight", "연애할 때 싸우는 이유", slot=_slot("s7_fight", "연인과 자주 부딪히는 이유와 푸는 방법을 써 주세요.")),
-        page("s7_spouse", "배우자 모습", span=2, slot=_slot("s7_spouse", "일지(배우자 자리)와 배우자를 뜻하는 십신으로 배우자의 성격, 외모 분위기, 만나는 경로를 자세히 써 주세요.", FULL * 2)),
+        page("s7_spouse", "배우자 모습", span=2, slot=_slot("s7_spouse", "일지(배우자 자리)와 배우자를 뜻하는 십신으로 배우자의 성격, 외모 분위기, 만나는 경로를 자세히 써 주세요.", FULL * 2 - 60)),
         page("s7_timing", "연애·결혼하기 좋은 시기", figure="love_years",
              slot=_slot("s7_timing", "인연이 오는 해와 결혼하기 좋은 해를 근거와 함께 써 주세요.", HALF)),
         page("s7_married", "결혼 생활", slot=_slot("s7_married", "결혼 생활의 모습과 주의할 점을 써 주세요.")),
@@ -227,7 +227,7 @@ def build_outline(f: dict) -> list[dict]:
     # 9. 건강 (69~72쪽)
     section("9", [
         page("s9_weak", "약하기 쉬운 곳", opener=True, figure="health_notice",
-             slot=_slot("s9_weak", "오행 균형으로 볼 때 신경 쓰면 좋은 몸의 부분을 생활 습관 중심으로 써 주세요. 질병을 단정하지 마세요.", FULL - 150)),
+             slot=_slot("s9_weak", "오행 균형으로 볼 때 신경 쓰면 좋은 몸의 부분을 생활 습관 중심으로 써 주세요. 질병을 단정하지 마세요.", FULL - 260)),
         page("s9_season", "계절별 주의할 점", slot=_slot("s9_season", "봄·여름·가을·겨울 계절별 생활 팁을 써 주세요.")),
         page("s9_rest", "나에게 맞는 휴식·운동", slot=_slot("s9_rest", "이 사람에게 맞는 휴식, 잠, 운동 방법을 써 주세요.")),
         _wrap("9", []),
@@ -248,7 +248,7 @@ def build_outline(f: dict) -> list[dict]:
         now = " (지금)" if p["state"] == "지금" else ""
         dpages.append(page(f"dw_{i}", f"{p['age_text']} 대운{now}", figure="daewoon_card", span=p["pages"],
                            slot=_slot(f"dw_{i}", f"{p['age_text']} {p['ganzhi']}({p['hanja']}) 대운을 요약, 일, 돈, 연애, 건강, 조언 순서로 써 주세요.",
-                                      FULL * p["pages"] - 200, "fortune")))
+                                      FULL * p["pages"] - 320, "fortune")))
         dpages[-1]["period_index"] = i
     if tail:
         dpages.append(page("dw_tail", f"{tail[0]['age_from']}세 이후 대운", figure="daewoon_tail",
@@ -260,7 +260,7 @@ def build_outline(f: dict) -> list[dict]:
     for i, s in enumerate(f["sewoon"]):
         spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0),
                            slot=_slot(f"sw_{s['year']}", f"{s['year']}년 {s['ganzhi']}({s['hanja']})년의 운세를 요약, 좋은 점, 주의할 점, 일, 돈, 연애, 좋은 달 순서로 써 주세요.",
-                                      FULL * s["pages"] - 200, "fortune")))
+                                      FULL * s["pages"] - (380 if i == 0 else 320), "fortune")))
         spages[-1]["year"] = s["year"]
     section("11", spages, ["세운"])
 
@@ -272,7 +272,7 @@ def build_outline(f: dict) -> list[dict]:
             break
         label = f"{ms[0]['year']}년 {ms[0]['month']}월 ~ {ms[-1]['year']}년 {ms[-1]['month']}월" if ms[0]["year"] != ms[-1]["year"] else f"{ms[0]['year']}년 {ms[0]['month']}월 ~ {ms[-1]['month']}월"
         mpages.append(page(f"mw_{q}", f"{label} 운세", figure="months3", opener=(q == 0),
-                           slot=_slot(f"mw_{q}", "세 달 각각의 운세를 요약, 좋은 일, 주의할 일 순서로 짧게 써 주세요. 한 달에 각 항목 1~2문장입니다.", 360, "months")))
+                           slot=_slot(f"mw_{q}", "세 달 각각의 운세를 요약, 좋은 일, 주의할 일 순서로 짧게 써 주세요. 한 달에 각 항목 1~2문장입니다.", 300 if q == 0 else 360, "months")))
         mpages[-1]["month_range"] = [q * 3, q * 3 + len(ms)]
     section("12", mpages, ["월운", "절기"])
 
