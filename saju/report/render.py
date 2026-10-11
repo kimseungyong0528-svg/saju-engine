@@ -159,7 +159,7 @@ PRODUCT = {
     "lifetime": {"id": "lifetime", "name": "평생사주", "cover_title": "平<br>生<br>四<br>柱",
                  "more_intro": "평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요.",
                  "cover": COVER["lifetime"]},
-    "romance": {"id": "romance", "name": "연애사주", "cover_title": "戀<br>愛<br>四<br>柱", "header": "戀愛四柱",
+    "romance": {"id": "romance", "name": "연애사주", "cover_title": "戀<br>愛<br>四<br>柱", "header": "戀愛四柱", "toc_compact": True,
                 "more_intro": "연애사주가 나의 인연을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
                 "cover": COVER["romance"]},
 }

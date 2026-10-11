@@ -51,10 +51,12 @@
 {% macro figure(pg, sec) -%}
 {%- set k = pg.figure -%}
 {%- if k == "toc" -%}
+  {% if product.toc_compact %}<div class="toc-compact">{% endif %}
   {% for s in sections %}
   <div class="toc-sec"><span class="no">{{ secmark.get(s.no, s.no) }}</span>
     <span class="t" data-target="#sec-{{ s.no }}"><b class="tt">{{ s.title }}</b>{% if s.subtitle and s.no not in secmark %}<br><span class="s">{{ s.subtitle }}</span>{% endif %}</span></div>
   {% endfor %}
+  {% if product.toc_compact %}</div>{% endif %}
 {%- elif k == "four_pillars_diagram" -%}
   <table><tr><th>시간</th><th>날</th><th>달</th><th>해</th></tr>
   <tr>{% for i in [3,2,1,0] %}<td class="big-han">{{ "時日月年"[3-i] }}</td>{% endfor %}</tr>
