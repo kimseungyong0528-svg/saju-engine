@@ -132,17 +132,35 @@ def _used_glossary(f: dict) -> list[tuple[str, str]]:
     return sorted((n, K.GLOSSARY[n]) for n in names if n in K.GLOSSARY)
 
 
-def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | None = None) -> str:
+# 상품마다 다른 표지 글자와 안내 문구(기본값은 평생사주)
+PRODUCT = {
+    "lifetime": {"id": "lifetime", "name": "평생사주", "cover_title": "平<br>生<br>四<br>柱",
+                 "more_intro": "평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요."},
+    "romance": {"id": "romance", "name": "연애사주", "cover_title": "戀<br>愛<br>四<br>柱", "header": "戀愛四柱",
+                "more_intro": "연애사주가 나의 인연을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요."},
+}
+
+
+def _svg_love_graph(periods: list[dict], current: int) -> str:
+    """대운별 인연 점수 그래프(연애사주)."""
+    return _svg_life_graph([dict(p, score=min(90, p["love_score"])) for p in periods], current)
+
+
+def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | None = None,
+                product: str = "lifetime", static: dict | None = None, first: list[str] | None = None) -> str:
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
     env.filters["para"] = para
     env.filters["bullet"] = bullet
     tpl = env.get_template("report.html.j2")
+    svg = {"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
+           "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])}
+    if facts.get("romance"):
+        svg["love_graph"] = _svg_love_graph(facts["romance"]["periods"], facts["daewoon"]["current_index"])
     return tpl.render(
-        f=facts, sections=sections, texts=texts, static=STATIC, kb=_kb(),
-        more=cross_sell(facts, site=site_url), secmark={"더보기": "續"},
-        glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts),
-        svg={"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
-             "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])},
+        f=facts, sections=sections, texts=texts, static=static or STATIC, kb=_kb(),
+        more=cross_sell(facts, current=product, site=site_url, first=first), secmark={"더보기": "續"},
+        glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts), product=PRODUCT[product],
+        svg=svg,
     )
 
 

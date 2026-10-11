@@ -23,4 +23,25 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
     return {"pages": pages, "texts": texts, "facts": facts}
 
 
-__all__ = ["OrderInfo", "build_facts", "build_outline", "make_lifetime_report", "ClaudeWriter", "DraftWriter"]
+def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
+                        html_out: str | Path | None = None) -> dict:
+    """analyze_person() 결과로 연애사주 PDF(약 50쪽)를 만든다. 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다."""
+    from . import romance as R
+    from .outline import STATIC
+    facts = build_facts(result, order)
+    facts["romance"] = R.build_romance(facts, result, order)
+    sections = R.build_outline(facts)
+    writer = writer or DraftWriter()
+    if isinstance(writer, ClaudeWriter):
+        writer.style, writer.final_section = R.ROMANCE_STYLE, R.FINAL_SECTION
+    texts = writer.write(facts, sections)
+    html = render_html(facts, sections, texts, product="romance", static={**STATIC, **R.STATIC},
+                       first=R.cross_sell_order(facts["romance"]["status"]))
+    if html_out:
+        Path(html_out).write_text(html, encoding="utf-8")
+    pages = render_pdf(html, out_pdf)
+    return {"pages": pages, "texts": texts, "facts": facts}
+
+
+__all__ = ["OrderInfo", "build_facts", "build_outline", "make_lifetime_report", "make_romance_report",
+           "ClaudeWriter", "DraftWriter"]

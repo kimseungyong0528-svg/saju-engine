@@ -23,6 +23,7 @@ class OrderInfo:
     question: str = ""          # 고객이 남긴 질문(없을 수 있음)
     daily: str = ""             # 요즘 일상: 직장/사업/프리랜서/공부/휴식
     relationship: str = ""      # 연애·결혼 상태(사이트에 항목이 생기면 받는다): 솔로/연애 중/결혼/이혼·사별
+    experience: str = ""        # 연애사주: 연애 경험 횟수(사이트 선택지 그대로)
 
 
 def _age_on(birth: date, on: date) -> int:
