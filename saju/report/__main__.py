@@ -40,7 +40,8 @@ def main() -> None:
         "birthPlace": {"status": "known", "regionChoice": a.region} if a.region else {"status": "unknown"},
     }
     result = analyze_person(person, current_year=od.year)
-    writer = DraftWriter() if a.draft or not os.environ.get("ANTHROPIC_API_KEY") else ClaudeWriter()
+    has_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")
+    writer = DraftWriter() if a.draft or not has_key else ClaudeWriter()
     r = make_lifetime_report(result, OrderInfo(od, a.question, a.daily, a.relationship), a.out, writer, a.html)
     if a.texts:
         with open(a.texts, "w", encoding="utf-8") as fp:
