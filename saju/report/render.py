@@ -132,12 +132,36 @@ def _used_glossary(f: dict) -> list[tuple[str, str]]:
     return sorted((n, K.GLOSSARY[n]) for n in names if n in K.GLOSSARY)
 
 
+# 표지(첫 장) 색: 사이트에서 각 사주 주인공(금월선녀)이 입은 옷 색을 따른다 (2026-10-11 Mr KIM 결정)
+# line: 금색 선·글자, glow_in/glow_out: 바탕 그라데이션, dark/darker: 책 실·산·테두리 그림자, table: 여덟 글자 표 바탕
+COVER = {
+    "lifetime": {"outfit": "검정 바탕에 금색 무늬", "glow_in": "#3a3127", "glow_out": "#120f0c", "dark": "#080706", "darker": "#050403",
+                 "line": "#d8bb78", "thread": "#e9dfc6", "table": "#1c1712", "text": "#efe3c8", "name": "#f6ecd8"},
+    "romance": {"outfit": "연분홍", "glow_in": "#fbebe8", "glow_out": "#efc4be", "dark": "#c4847e", "darker": "#a8665f",
+                "line": "#a07a34", "thread": "#7a4a45", "table": "#f3d2cd", "text": "#4a2b28", "name": "#3d2220"},
+    "reunion": {"outfit": "남색", "glow_in": "#2c3b55", "glow_out": "#141c2a", "dark": "#111826", "darker": "#0b0f18",
+                "line": "#d8bb78", "thread": "#e9dfc6", "table": "#172033", "text": "#e9dfc6", "name": "#f6ecd8"},
+    "intimate": {"outfit": "진홍", "glow_in": "#8c2a2c", "glow_out": "#4a1012", "dark": "#2c0708", "darker": "#1d0405",
+                 "line": "#d8bb78", "thread": "#f0dcc4", "table": "#3a0d0f", "text": "#f3e3cf", "name": "#f8ecd8"},
+    "wealth": {"outfit": "초록", "glow_in": "#2f6a4a", "glow_out": "#123322", "dark": "#0a2014", "darker": "#06150d",
+               "line": "#d8bb78", "thread": "#e9dfc6", "table": "#10291b", "text": "#ecdfc4", "name": "#f6ecd8"},
+    "career": {"outfit": "청록", "glow_in": "#2d6258", "glow_out": "#10302a", "dark": "#0a201c", "darker": "#061512",
+               "line": "#d8bb78", "thread": "#e9dfc6", "table": "#0f2723", "text": "#ecdfc4", "name": "#f6ecd8"},
+    # 사이트에 주인공 그림이 아직 없는 상품: 사이트 상품 색(business #d8bb78, health #9dc4b1)으로 임시 지정
+    "business": {"outfit": "황금(임시)", "glow_in": "#6e5526", "glow_out": "#33260f", "dark": "#1f1708", "darker": "#140f05",
+                 "line": "#e6cd8f", "thread": "#f0e2c0", "table": "#2a200c", "text": "#f3e6c8", "name": "#f8eed8"},
+    "health": {"outfit": "옥색(임시)", "glow_in": "#d9ece3", "glow_out": "#a9cdbd", "dark": "#6f9e8a", "darker": "#557f6d",
+               "line": "#8a7340", "thread": "#3f5f52", "table": "#c4e0d3", "text": "#26392f", "name": "#1e2f27"},
+}
+
 # 상품마다 다른 표지 글자와 안내 문구(기본값은 평생사주)
 PRODUCT = {
     "lifetime": {"id": "lifetime", "name": "평생사주", "cover_title": "平<br>生<br>四<br>柱",
-                 "more_intro": "평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요."},
+                 "more_intro": "평생사주가 인생 전체의 지도였다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요.",
+                 "cover": COVER["lifetime"]},
     "romance": {"id": "romance", "name": "연애사주", "cover_title": "戀<br>愛<br>四<br>柱", "header": "戀愛四柱",
-                "more_intro": "연애사주가 나의 인연을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요."},
+                "more_intro": "연애사주가 나의 인연을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
+                "cover": COVER["romance"]},
 }
 
 
