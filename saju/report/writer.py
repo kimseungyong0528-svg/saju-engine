@@ -33,6 +33,7 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 [문체]
 - 해요체로 씁니다. 고객은 "{name}님"이라고 부릅니다.
 - 비유, 시적인 표현, 멋 부린 카피를 쓰지 않습니다. 핵심을 쉬운 말로 바로 말합니다.
+  (예외: '고전 판단'의 물상 그림은 적힌 그대로 쓰고, 바로 뒤에 생활에서 무슨 뜻인지 풀어 씁니다.)
 - 사주 용어(십신, 신강, 격국, 대운 등)가 나오면 처음 나올 때 괄호 안에 쉬운 풀이를 붙입니다. 예: 편관(나를 단련하는 기운)
 - 문장은 짧게 씁니다. 한 문단은 2~4문장입니다.
 - "~할 수 있어요", "~하기 쉬워요"처럼 가능성으로 말하고, 단정하거나 겁주지 않습니다.
@@ -40,7 +41,8 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 [사실]
 - 사주 글자, 개수, 점수, 연도, 나이, 날짜는 아래 '사주 계산 결과'에 있는 값만 씁니다. 새로 계산하거나 지어내지 않습니다.
 - 근거를 말할 때는 어떤 글자나 관계 때문인지 함께 씁니다. 예: "태어난 달에 편관이 있어서"
-- 결혼 여부, 직업, 자녀 유무는 알 수 없으므로 가정하지 않습니다. 필요하면 경우를 나눠 씁니다.
+- 주문 정보의 '요즘 일상'(daily)과 '연애·결혼 상태'(relationship)가 있으면 그 상황에 맞춰 씁니다.
+  비어 있는 정보와 자녀 유무는 가정하지 않고, 필요하면 경우를 나눠 씁니다.
 
 [금지]
 - 병명을 단정하거나 의학적 진단처럼 쓰지 않습니다. 건강은 생활 습관 중심으로 씁니다.
@@ -56,6 +58,14 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 - 방법은 오늘부터 할 수 있는 행동으로 씁니다. 예: "중요한 결정은 하루 뒤에 다시 보기", "한 달 예산을 세 칸으로 나누기".
 - 좋은 점과 조심할 점을 함께 씁니다. 조심할 점에는 반드시 대처 방법을 붙입니다.
 - 대처 방법은 문장 끝 다음에 "보완법:", "방법:"처럼 이름표를 붙여 씁니다. 이름표가 붙은 부분은 PDF에서 새 줄로 나옵니다.
+
+[고전 판단 쓰는 법: 자평진전으로 뼈대, 적천수로 흐름]
+- 일·돈·지위·성취는 '고전 판단'의 격국 성패(성격·파격), 좋은 점, 흠, 상신(격을 살리는 글자)을 근거로 씁니다.
+- 성격의 결, 감정, 건강, 생활 리듬은 조후(계절의 온도), 통관, 물상을 근거로 씁니다.
+- 특별한 격(종격·화기격)이 있으면 그 사주는 '버티기보다 그 기운을 따라갈 때' 잘 풀린다는 점을 중심에 둡니다.
+- 운(대운·세운·월운)을 풀 때는 점수와 함께 '격국 효과'를 근거로 댑니다. 도움이면 격을 살리는 글자가 들어오는 때, 방해면 격을 해치는 글자가 들어오는 때입니다.
+- 파격이나 흠은 겁주지 말고, 상신이 들어오는 시기와 그때까지의 보완법을 함께 씁니다.
+- 물상 그림은 한 장에 한두 번만 씁니다. 고전 이름(자평진전, 적천수)은 2장의 '사주의 뼈대와 흐름' 쪽에서만 소개합니다.
 
 [분량]
 - 각 칸의 chars(공백 포함 글자 수)를 채웁니다. chars의 95~108% 사이로 써야 쪽이 비거나 넘치지 않습니다.
@@ -110,15 +120,16 @@ def facts_digest(f: dict) -> dict:
         "십신 무리": [{k: g[k] for k in ("group", "label", "n")} for g in f["ten_god_groups"]],
         "신강약": {k: f["strength"].get(k) for k in ("label", "score", "득령", "득지")},
         "격국": {k: f["gyeokguk"][k] for k in ("name", "ten_god", "text")},
-        "용신": f["yongsin"], "행운": f["lucky"],
+        "용신": {k: f["yongsin"].get(k) for k in ("조후", "억부", "억부_근거", "chosen")}, "행운": f["lucky"],
+        "고전 판단": f.get("classics"),
         "원국 합충": [{k: r.get(k) for k in ("type", "between", "chars")} for r in f["relations"]],
         "신살": [{k: s[k] for k in ("name", "label")} for s in f["shinsal"]],
         "대운": {"방향": f["daewoon"]["direction"], "대운수": f["daewoon"]["number"],
                  "목록": [{k: p[k] for k in ("age_text", "years_text", "ganzhi", "hanja", "stem_ten_god", "branch_ten_god",
-                                           "twelve_stage", "relations_text", "score", "state")} for p in f["daewoon"]["periods"]]},
-        "세운": [{k: s[k] for k in ("year", "ganzhi", "hanja", "animal", "stem_ten_god", "branch_ten_god", "relations_text", "score")}
+                                           "twelve_stage", "relations_text", "gyeok_effect", "score", "state")} for p in f["daewoon"]["periods"]]},
+        "세운": [{k: s[k] for k in ("year", "ganzhi", "hanja", "animal", "stem_ten_god", "branch_ten_god", "relations_text", "gyeok_effect", "score")}
                  for s in f["sewoon"]],
-        "월운": [{k: m[k] for k in ("start_text", "term", "ganzhi", "stem_ten_god", "branch_ten_god", "relations_text", "score")}
+        "월운": [{k: m[k] for k in ("start_text", "term", "ganzhi", "stem_ten_god", "branch_ten_god", "relations_text", "gyeok_effect", "score")}
                  for m in f["months"]],
         "참고 지식": {
             "십신 뜻": {k: v["meaning"] for k, v in K.TEN_GOD.items()},
@@ -223,6 +234,11 @@ class DraftWriter:
             f"{', '.join(e['name'] for e in few) or '모자란 기운'}이 약해요. {f['strength']['text']}",
             f"태어난 달을 기준으로 한 사주의 틀(격국)은 {f['gyeokguk']['name']}이에요. {f['gyeokguk']['text']}",
         ]
+        if f.get("classics"):
+            c = f["classics"]
+            base.append(f"자평진전으로 보면 {c['gyeok']}은 {c['verdict']}이에요. {c['verdict_text']}")
+            if c["image"]:
+                base.append(f"물상으로 보면 '{c['image']['title']}'의 모습이에요. {c['image']['text']}")
         if fmt == "lead":
             return {"lead": f"{dm['image']}처럼 {dm['strengths'][0]}과 {dm['strengths'][1]}이 돋보이는 사람이에요.",
                     "paragraphs": base[:2]}

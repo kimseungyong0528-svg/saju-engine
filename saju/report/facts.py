@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from . import knowledge as K
+from . import mulsang as M
+from ..classics import luck_effect
 
 PILLAR_LABEL = {"년주": "태어난 해", "월주": "태어난 달", "일주": "태어난 날", "시주": "태어난 시간"}
 
@@ -20,6 +22,7 @@ class OrderInfo:
     order_date: date = field(default_factory=date.today)
     question: str = ""          # 고객이 남긴 질문(없을 수 있음)
     daily: str = ""             # 요즘 일상: 직장/사업/프리랜서/공부/휴식
+    relationship: str = ""      # 연애·결혼 상태(사이트에 항목이 생기면 받는다): 솔로/연애 중/결혼/이혼·사별
 
 
 def _age_on(birth: date, on: date) -> int:
@@ -27,7 +30,9 @@ def _age_on(birth: date, on: date) -> int:
 
 
 def pick_yongsin(an: dict) -> str:
-    """행운 아이템 기준으로 쓸 오행 하나. 조후와 억부가 겹치면 그것, 아니면 억부 첫째, 아니면 가장 약한 오행."""
+    """행운 아이템 기준으로 쓸 오행 하나. 고전 판단(classics)의 최종 용신을 쓰고, 없으면 조후·억부로 고른다."""
+    if an.get("classics"):
+        return an["classics"]["yongsin"]["element"]
     ys = an["yongsin"]
     for el in ys["조후"]:
         if el in ys["억부"]:
@@ -45,15 +50,16 @@ def _ganzhi_elements(ganzhi: str) -> list[str]:
     return [ELEMENTS[STEM_ELEMENT[STEMS.index(ganzhi[0])]], ELEMENTS[BRANCH_ELEMENT[BRANCHES.index(ganzhi[1])]]]
 
 
-def luck_score(ganzhi: str, relations: list[dict], good: list[str], bad: list[str]) -> int:
-    """운의 흐름 점수(참고용, 20~90). 필요한 기운이 오면 오르고, 넘치는 기운이 더해지거나 부딪히면 내려간다."""
-    score = 55
+def luck_score(ganzhi: str, relations: list[dict], good: list[str], bad: list[str], gyeok: str = "보통",
+               weights: dict[str, float] | None = None) -> int:
+    """운의 흐름 점수(참고용, 20~90). 필요한 기운이 오면 오르고, 넘치는 기운이 더해지거나 부딪히면 내려간다.
+    격을 돕는 십신이 오면 조금 더 오르고, 격을 해치는 십신이 오면 조금 더 내려간다(자평진전의 행운 판단)."""
+    score = 55 + {"도움": 4, "방해": -4}.get(gyeok, 0)
+    if weights is None:
+        weights = {**{e: -1.0 for e in bad}, **{e: 1.0 for e in good}}
     for i, el in enumerate(_ganzhi_elements(ganzhi)):
         weight = 10 if i == 0 else 14   # 지지가 실제 생활에 더 크게 작용한다고 본다
-        if el in good:
-            score += weight
-        if el in bad:
-            score -= weight
+        score += weight * weights.get(el, 0)
     for r in relations:
         kind = K.relation_kind(r["type"])
         if kind in ("천간합", "육합", "반합", "삼합"):
@@ -62,7 +68,7 @@ def luck_score(ganzhi: str, relations: list[dict], good: list[str], bad: list[st
             score -= 5
         elif kind in ("형", "자형", "파", "해", "원진"):
             score -= 3
-    return max(20, min(90, score))
+    return max(20, min(90, round(score)))
 
 
 def _wa(word: str) -> str:
@@ -80,6 +86,24 @@ def _relations_text(relations: list[dict]) -> list[str]:
         target = PILLAR_LABEL.get(r.get("with", ""), r.get("with", ""))
         out.append(f"{target}{_wa(target)} {kind}")
     return sorted(set(out))
+
+
+def _classics_text(cl: dict, day_stem: str) -> dict:
+    """고전 판단을 리포트에서 쓸 쉬운 말로 정리."""
+    zp, ms = cl["ziping"], cl["mulsang"]
+    img = M.SEASON.get((day_stem, ms["season"]))
+    special = cl["hwagi"] or cl["jong"]
+    return {
+        "gyeok": zp["gyeok"], "verdict": zp["verdict"], "verdict_text": K.VERDICT[zp["verdict"]],
+        "good": zp["good"], "bad": zp["bad"],
+        "sangsin": zp["sangsin"], "sangsin_element": zp["sangsin_element"], "sangsin_present": zp["sangsin_present"],
+        "helps": zp["helps"], "hurts": zp["hurts"],
+        "special": {"name": special["name"], "why": special["why"]} if special else None,
+        "johu": cl["johu"], "tonggwan": cl["tonggwan"],
+        "yongsin": cl["yongsin"],
+        "image": {"title": img[0], "text": img[1]} if img else None,
+        "pairs": [{"key": k, "title": M.PAIR[k][0], "text": M.PAIR[k][1]} for k in ms["pairs"]],
+    }
 
 
 def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
@@ -132,8 +156,17 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
 
     # 용신·행운
     yong = pick_yongsin(an)
-    excess = an["elements"]["judgement"]["과다"]
-    good = [yong] + [e for e in an["yongsin"]["억부"] if e != yong]
+    cl = an.get("classics")
+    if cl:
+        # 용신은 온전히, 희신은 절반 남짓 더하고, 넘치는 오행은 온전히, 그 밖의 기신은 절반 남짓 뺀다
+        good = [yong] + [e for e in cl["yongsin"]["heesin"] if e != yong]
+        over = [e for e in an["elements"]["judgement"]["과다"] if e not in good]
+        excess = list(dict.fromkeys(over + [e for e in cl["yongsin"]["gisin"] if e not in good]))
+        weights = {**{e: -0.6 for e in excess}, **{e: -1.0 for e in over}, **{e: 0.6 for e in good}, yong: 1.0}
+    else:
+        weights = None
+        excess = an["elements"]["judgement"]["과다"]
+        good = [yong] + [e for e in an["yongsin"]["억부"] if e != yong]
     year_branch = an["pillars"][0]["branch"]
     samhap = next(t for t in K.SAMHAP if year_branch in t)
     good_animals = [K.BRANCH_ANIMAL[b] for b in samhap if b != year_branch] + [K.BRANCH_ANIMAL[K.YUKHAP[year_branch]]]
@@ -143,8 +176,11 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "color": yinfo["color"], "numbers": yinfo["numbers"], "direction": yinfo["direction"],
         "foods": yinfo["foods"], "items": yinfo["items"], "season": yinfo["season"],
         "animals": good_animals, "careful_animal": K.BRANCH_ANIMAL[K.CLASH_BRANCH[year_branch]],
-        "basis": an["yongsin"]["억부_근거"],
+        "basis": cl["yongsin"]["basis"] if cl else an["yongsin"]["억부_근거"],
     }
+
+    def effect(stem_god: str, branch_god: str) -> str:
+        return luck_effect(cl, stem_god, branch_god)["effect"] if cl else "보통"
 
     # 대운
     dw = an["daewoon"]
@@ -162,14 +198,16 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
             "state": state,
             "years_text": f"{p['start_year']}~{p['start_year'] + 9}",
             "age_text": f"{p['age_from']}~{p['age_to']}세",
-            "score": luck_score(p["ganzhi"], p["relations"], good, excess),
+            "gyeok_effect": effect(p["stem_ten_god"], p["branch_ten_god"]),
+            "score": luck_score(p["ganzhi"], p["relations"], good, excess, effect(p["stem_ten_god"], p["branch_ten_god"]), weights),
             "relations_text": _relations_text(p["relations"]),
             # 지금 대운과 다음 두 대운은 2쪽, 나머지는 1쪽
             "pages": 2 if 0 <= i - max(current_idx, 0) <= 2 else 1,
         })
 
     # 세운: 주문한 해부터 6년
-    sewoon = [dict(s, score=luck_score(s["ganzhi"], s["relations"], good, excess),
+    sewoon = [dict(s, gyeok_effect=effect(s["stem_ten_god"], s["branch_ten_god"]),
+                   score=luck_score(s["ganzhi"], s["relations"], good, excess, effect(s["stem_ten_god"], s["branch_ten_god"]), weights),
                    relations_text=_relations_text(s["relations"]),
                    animal=K.BRANCH_ANIMAL[s["ganzhi"][1]],
                    pages=2 if i == 0 else 1)
@@ -187,7 +225,8 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         d = datetime.fromisoformat(m["starts"])
         months.append({**m, "start_text": f"{d.year}년 {d.month}월 {d.day}일",
                        "short": f"{d.month}/{d.day}", "month": d.month, "year": d.year,
-                       "score": luck_score(m["ganzhi"], m["relations"], good, excess),
+                       "gyeok_effect": effect(m["stem_ten_god"], m["branch_ten_god"]),
+                       "score": luck_score(m["ganzhi"], m["relations"], good, excess, effect(m["stem_ten_god"], m["branch_ten_god"]), weights),
                        "relations_text": _relations_text(m["relations"])})
 
     shinsal = [{**s, "label": PILLAR_LABEL[s["pillar"]], "text": K.SHINSAL.get(s["name"], "")} for s in an["shinsal"]]
@@ -212,7 +251,8 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
             "age": age, "zodiac": an["zodiac"],
         },
         "order": {"date": order.order_date.isoformat(), "year": order.order_date.year,
-                  "question": order.question.strip(), "daily": order.daily},
+                  "question": order.question.strip(), "daily": order.daily,
+                  "relationship": order.relationship},
         "uncertainties": [u["message"] for u in result["uncertainties"]] + result["warnings"],
         "variant_count": result["variant_count"],
         "variants": [v["key"] for v in result["variants"]],
@@ -230,6 +270,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "gyeokguk": {**an["gyeokguk"], "text": K.GYEOKGUK.get(an["gyeokguk"]["name"], "")},
         "yongsin": {**an["yongsin"], "chosen": yong},
         "lucky": lucky,
+        "classics": _classics_text(cl, dm["stem"]) if cl else None,
         "relations": relations,
         "shinsal": shinsal,
         "shinsal_names": seen_names,

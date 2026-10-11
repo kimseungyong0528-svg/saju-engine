@@ -103,3 +103,12 @@ def test_cross_sell_follows_site_order(facts):
     assert all(p["hook"] for p in items)
     assert items[0]["original_text"] == "55,000원" and items[0]["discount"] == 46 and items[0]["price_text"] == "29,800원"
     assert "재성이 없어서" in next(p for p in items if p["id"] == "wealth")["hook"]
+
+
+def test_classics_page_and_luck_effect(facts):
+    c = facts["classics"]
+    assert c["verdict"] in ("성격", "성중유패", "파격", "상신 대기")
+    assert facts["lucky"]["element"] == c["yongsin"]["element"]
+    assert all(s["gyeok_effect"] in ("도움", "방해", "보통") for s in facts["sewoon"])
+    ids = [p["id"] for p in all_pages(build_outline(facts))]
+    assert "classics" in ids

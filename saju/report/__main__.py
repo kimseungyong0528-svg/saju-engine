@@ -24,6 +24,7 @@ def main() -> None:
     ap.add_argument("--region")
     ap.add_argument("--question", default="")
     ap.add_argument("--daily", default="")
+    ap.add_argument("--relationship", default="", help="연애·결혼 상태(솔로/연애 중/결혼/이혼·사별)")
     ap.add_argument("--order-date", default=date.today().isoformat())
     ap.add_argument("--out", required=True)
     ap.add_argument("--html", help="중간 HTML도 저장")
@@ -40,7 +41,7 @@ def main() -> None:
     }
     result = analyze_person(person, current_year=od.year)
     writer = DraftWriter() if a.draft or not os.environ.get("ANTHROPIC_API_KEY") else ClaudeWriter()
-    r = make_lifetime_report(result, OrderInfo(od, a.question, a.daily), a.out, writer, a.html)
+    r = make_lifetime_report(result, OrderInfo(od, a.question, a.daily, a.relationship), a.out, writer, a.html)
     if a.texts:
         with open(a.texts, "w", encoding="utf-8") as fp:
             json.dump(r["texts"], fp, ensure_ascii=False, indent=2)

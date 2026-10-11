@@ -125,6 +125,18 @@
   <table><tr><th style="width: 24%">신강·신약</th><td class="left"><b>{{ f.strength.label }}</b> ({{ f.strength.score }}점) · {{ f.strength.text }}</td></tr>
   <tr><th>격국</th><td class="left"><b>{{ f.gyeokguk.name }}</b> · {{ f.gyeokguk.text }}</td></tr>
   <tr><th>용신</th><td class="left"><b>{{ f.lucky.element_name }}({{ f.lucky.element }})</b> · {{ f.lucky.basis }}</td></tr></table>
+{%- elif k == "classics" and f.classics -%}
+  {%- set c = f.classics -%}
+  <table class="compact"><tr><th style="width: 27%">뼈대<br>(자평진전)</th><td class="left"><b>{{ c.gyeok }} · {{ c.verdict }}</b><br>{{ c.verdict_text }}</td></tr>
+  <tr><th>격을 살리는<br>글자(상신)</th><td class="left"><b>{{ c.sangsin }}({{ c.sangsin_element }})</b> · {{ "사주 안에 있어요" if c.sangsin_present else "운에서 들어올 때 크게 풀려요" }}</td></tr>
+  {% for g in c.good %}<tr><th>좋은 점</th><td class="left">{{ g }}</td></tr>{% endfor %}
+  {% for g in c.bad %}<tr><th>흠</th><td class="left">{{ g }}</td></tr>{% endfor %}
+  {% if c.special %}<tr><th>특별한 격<br>(적천수)</th><td class="left"><b>{{ c.special.name }}</b> · {{ c.special.why }}</td></tr>{% endif %}
+  <tr><th>계절의 온도<br>(적천수 조후)</th><td class="left">{{ c.johu.text }}</td></tr>
+  {% if c.tonggwan %}<tr><th>이어 주는 기운<br>(통관)</th><td class="left">{{ c.tonggwan.text }}</td></tr>{% endif %}
+  {% if c.image %}<tr><th>나의 모습<br>(물상)</th><td class="left"><b>{{ c.image.title }}</b> · {{ c.image.text }}</td></tr>{% endif %}
+  {% for pr in c.pairs %}<tr><th>글자의 만남<br>(물상)</th><td class="left"><b>{{ pr.title }}</b> · {{ pr.text }}</td></tr>{% endfor %}
+  </table>
 {%- elif k in ("career_years", "money_years", "love_years") -%}
   {%- set hl = {"career_years": ["편관","정관","식신","상관"], "money_years": ["편재","정재","식신"],
                 "love_years": (["편재","정재"] if P.sex == "male" else ["편관","정관"])}[k] -%}

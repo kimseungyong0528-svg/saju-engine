@@ -12,7 +12,7 @@ from datetime import date, datetime, time, timedelta
 
 from korean_lunar_calendar import KoreanLunarCalendar
 
-from . import analysis, luck
+from . import analysis, classics, luck
 from .constants import PILLAR_NAMES, STEMS, ELEMENTS, STEM_ELEMENT, ZODIAC_ANIMALS
 from .pillars import FourPillars, PillarOptions, compute_pillars, day_pillar_for_date
 from .regions import KOREA, Region, region_by_code
@@ -183,6 +183,7 @@ def analyze_pillars(fp: FourPillars, utc: datetime, sex: str, current_year: int)
         "strength": st,
         "gyeokguk": analysis.gyeokguk(fp),
         "yongsin": analysis.yongsin_candidates(fp, st),
+        "classics": classics.judge(fp),
         "relations": analysis.natal_relations(fp),
         "shinsal": analysis.shinsal(fp),
         "daewoon": luck.daewoon(fp, utc, sex),
