@@ -98,15 +98,26 @@ td.left, th.left { text-align: left; }
 .glossary dd { margin: 0; line-height: 1.55; break-inside: avoid; }
 
 /* 표지 */
-.cover { page: cover; height: 297mm; box-sizing: border-box; padding: 26mm 24mm; background: #f1e9d6;
-         border: 4pt double #3a2e22; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.cover .title { font-family: "Song Myung"; font-size: 64pt; line-height: 1.1; margin-top: 30mm; letter-spacing: 4mm; }
-.cover .subtitle { font-family: "Song Myung"; font-size: 22pt; margin-top: 6mm; color: #3d362c; }
-.cover .stamp { margin-top: 18mm; width: 34mm; height: 34mm; line-height: 34mm; background: #9e2f22; color: #f6ecd8; font-family: "Song Myung";
-                font-size: 26pt; border-radius: 2mm; transform: rotate(-4deg); }
-.cover .who { margin-top: auto; font-size: 17pt; line-height: 1.9; }
-.cover .who b { font-family: "Song Myung"; font-weight: 400; font-size: 24pt; }
-.cover .brand { margin-top: 8mm; font-family: "Song Myung"; font-size: 16pt; color: #3d362c; }
+.cover { page: cover; position: relative; width: 210mm; height: 297mm; overflow: hidden; background: #1f2a3d; color: #e9dfc6; text-align: center; }
+.cover .cover-art { position: absolute; left: 0; top: 0; }
+.cover .label { position: absolute; left: 87mm; top: 30mm; width: 48mm; padding: 2mm; background: #f1e9d6;
+                border: 1.2pt solid #d8bb78; box-shadow: 0 0 0 1.5mm #111826; }
+.cover .label-in { border: 3pt double #3a2e22; padding: 6mm 0 5mm; color: #1f1b16; }
+.cover .title { font-family: "Song Myung"; font-size: 54pt; line-height: 1.12; }
+.cover .subtitle { font-family: "Song Myung"; font-size: 18pt; margin-top: 4mm; color: #3d362c; letter-spacing: 1mm; }
+.cover .stamp { position: absolute; left: 124mm; top: 140mm; width: 27mm; height: 27mm; background: #9e2f22; color: #f6ecd8;
+                font-family: "Song Myung"; font-size: 22pt; line-height: 1.05; padding-top: 3.5mm; box-sizing: border-box;
+                border: 1.2pt solid #f6ecd8; outline: 1pt solid #9e2f22; transform: rotate(-6deg); }
+.cover .stamp small { display: block; font-family: "Gowun Batang"; font-size: 14pt; margin-top: .5mm; }
+.cover .eight { position: absolute; left: 50mm; top: 180mm; width: 126mm; }
+.cover .eight-head { font-family: "Song Myung"; font-size: 15pt; color: #d8bb78; letter-spacing: .6mm; margin-bottom: 2mm; }
+.cover .eight table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; background: #172033; }
+.cover .eight th, .cover .eight td { border: .6pt solid #d8bb78; color: #e9dfc6; background: none; padding: .5mm 0; }
+.cover .eight th { font-size: 14pt; font-weight: 400; color: #d8bb78; }
+.cover .eight .gz td { font-family: "Song Myung"; font-size: 30pt; line-height: 1.25; }
+.cover .who { position: absolute; left: 25mm; width: 176mm; top: 248mm; font-size: 14pt; line-height: 1.6; }
+.cover .who b { display: block; font-family: "Song Myung"; font-weight: 400; font-size: 26pt; color: #f6ecd8; margin-bottom: 1mm; }
+.cover .brand { position: absolute; left: 25mm; width: 176mm; top: 288.5mm; font-family: "Song Myung"; font-size: 14pt; color: #d8bb78; letter-spacing: .5mm; }
 
 .svg-fig { display: block; margin: 3mm auto 5mm; }
 .center { text-align: center; }
