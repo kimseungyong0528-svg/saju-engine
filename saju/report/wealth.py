@@ -75,15 +75,17 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
 
     years, months, periods = T.marked(f, mark)
     mtype, mtext = _money_type(f)
-    big = [p for p in periods if p["state"] != "지난" and T.has(p, "재성")]
+    # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
+    ahead = [p for p in periods if p["state"] != "지난" and int(p["age_text"].split("~")[0]) <= 80]
+    big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
     data = {
         "occupation": answers.get("occupation", ""),
         "type": mtype, "type_text": mtext, "risk": _risk(f),
         "counts": {g: T.count(f, g) for g in T.GODS},
         "편재": T.god_count(f, "편재"), "정재": T.god_count(f, "정재"),
         "seats": T.seats(f, "재성"),
-        "best_years": T.best(years, 2, lambda y: y["year"]),
-        "leak_years": [y["year"] for y in years if "나가는 돈 주의" in y["t_signs"]][:2],
+        "best_years": (best := T.best(years, 2, lambda y: y["year"])),
+        "leak_years": [y["year"] for y in years if "나가는 돈 주의" in y["t_signs"] and y["year"] not in best][:2],
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "big_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]} for p in big[:3]],
     }
@@ -139,7 +141,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("3", [
         P("w3_open", "타고난 재물 그릇", figure="opener", opener=True,
-          slot=S("w3_open", f"{name}님의 재물 그릇을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 640, "lead")),
+          slot=S("w3_open", f"{name}님의 재물 그릇을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 540, "lead")),
         P("w3_size", "돈복의 크기를 정하는 것",
           slot=S("w3_size", "재성 개수, 신강·신약, 격국 성패를 근거로 이 사람이 다룰 수 있는 돈의 크기와 그 그릇을 키우는 방법을 써 주세요.")),
         P("w3_shape", "돈복의 모양",
@@ -158,7 +160,7 @@ def build_outline(f: dict) -> list[dict]:
         P("w4_now", "지금 상황에서 수입을 늘리는 법",
           slot=S("w4_now", f"현재 상황 '{occ}'에 맞춰 수입을 늘리는 현실적인 방법 3~4가지를 사주 근거와 순서대로 써 주세요.")),
         P("w4_people", "돈을 가져다주는 사람",
-          slot=S("w4_people", "귀인 신살, 인성·관성 구성을 근거로 돈과 기회를 연결해 주기 쉬운 사람의 유형과 그런 사람을 만나는 곳을 써 주세요.")),
+          slot=S("w4_people", "인성·관성 구성(귀인 신살이 있으면 그것도)을 근거로 돈과 기회를 연결해 주기 쉬운 사람의 유형과 그런 사람을 만나는 곳을 써 주세요.")),
     ])
     section("5", [
         P("w5_open", "돈이 새는 구조", figure="opener", opener=True,

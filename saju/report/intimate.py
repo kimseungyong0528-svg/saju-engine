@@ -192,7 +192,7 @@ def build_outline(f: dict) -> list[dict]:
             ["띠끼리", f"{cmp['zodiac']['me']}·{cmp['zodiac']['other']} · {', '.join(cmp['zodiac']['relations']) or '특별한 합충 없음'}"],
             ["태어난 달끼리", ", ".join(cmp["month_branch"]["relations"]) or "특별한 합충 없음"],
             ["부딪히는 관계", f"{cmp['cross_relations']['tension']}개"],
-        ], slot=S("im6_open", "표를 근거로 두 사람이 어디서 부딪히기 쉬운지 핵심을 한 문장(lead)으로 말하고 설명해 주세요.", 520, "lead")),
+        ], slot=S("im6_open", "표를 근거로 두 사람이 어디서 부딪히기 쉬운지 핵심을 한 문장(lead)으로 말하고 설명해 주세요.", 470, "lead")),
         P("im6_fight", "다툼이 반복되는 장면",
           slot=S("im6_fight", "충·형 관계와 두 사람의 넘치는 기운을 근거로 다툼이 반복되기 쉬운 장면 3가지를 쓰고, 각각 그 순간의 두 사람 반응을 써 주세요.")),
         P("im6_talk", "연락과 표현 방식의 차이",
