@@ -87,7 +87,9 @@ def test_claude_writer_request_shape(facts, monkeypatch):
         SimpleNamespace(messages=FakeMessages()), "cheap-model", "best-model", "medium", 2, [])
     secs = build_outline(facts)
     texts = w.write(facts, secs)
-    assert len(calls) == len(slots_by_section(secs))
+    # 초안 글은 검사에 걸릴 수 있어(긴 문장 등) 다시 쓰기 요청이 섞인다. 처음 쓰기는 장마다 한 번
+    fixes = [c for c in calls if "[고쳐 쓰기]" in c["messages"][0]["content"]]
+    assert len(calls) - len(fixes) == len(slots_by_section(secs))
     assert all("tool_choice" not in c and c["output_config"]["format"]["type"] == "json_schema" for c in calls)
     assert all(c["output_config"]["format"]["schema"]["additionalProperties"] is False for c in calls)
     assert all(c["system"][1].get("cache_control") for c in calls)

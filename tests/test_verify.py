@@ -101,3 +101,12 @@ def test_writer_rewrites_flagged_slot_once():
     assert any(c[0].startswith("4.") for c in fixes)
     assert w.client.calls[-1][2] == "o"   # 마지막 장은 고친 뒤에, 좋은 모델로
     assert not [i for i in w.issues if i["kind"] != "반복"]
+
+
+def test_unclear_sentences():
+    _, f, _ = _career()
+    texts = {"a": ["손실이 나면 되찾으려고 더 넣기 쉬워요."],
+             "b": ["손실이 나면 잃은 돈을 되찾으려고 돈을 더 넣기 쉬워요."],
+             "c": ["가" * 95 + "요."],
+             "d": ["보완법: 겁재(나와 비슷한 사람과 경쟁하는 기운이에요. 친구나 동료 때문에 돈이 나가기 쉬운 것을 뜻해요)가 있어요."]}
+    assert sorted(i["slot"] for i in V.check(f, texts) if i["kind"] == "문장") == ["a", "c"]
