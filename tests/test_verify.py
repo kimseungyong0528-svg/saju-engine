@@ -99,8 +99,10 @@ def test_writer_rewrites_flagged_slot_once():
     assert out["c4_field"] == good["c4_field"]
     fixes = [c for c in w.client.calls if c[1]]
     assert any(c[0].startswith("4.") for c in fixes)
-    assert w.client.calls[-1][2] == "o"   # 마지막 장은 고친 뒤에, 좋은 모델로
-    assert not [i for i in w.issues if i["kind"] != "반복"]
+    first_writes = [c for c in w.client.calls if not c[1]]
+    assert first_writes[-1][2] == "o"   # 마지막 장은 앞 장을 고친 뒤에, 좋은 모델로
+    assert all(c[2] == "h" for c in w.client.calls if c[1])   # 다시 쓰기는 값싼 모델로
+    assert not [i for i in w.issues if i["kind"] not in ("반복", "문장", "분량")]
 
 
 def test_unclear_sentences():
@@ -110,3 +112,9 @@ def test_unclear_sentences():
              "c": ["가" * 95 + "요."],
              "d": ["보완법: 겁재(나와 비슷한 사람과 경쟁하는 기운이에요. 친구나 동료 때문에 돈이 나가기 쉬운 것을 뜻해요)가 있어요."]}
     assert sorted(i["slot"] for i in V.check(f, texts) if i["kind"] == "문장") == ["a", "c"]
+
+
+def test_length_check():
+    slots = [{"id": "a", "chars": 100}, {"id": "b", "chars": 100}, {"id": "c", "chars": 100}]
+    texts = {"a": ["가" * 60], "b": ["가" * 100], "c": ["가" * 130]}
+    assert [i["slot"] for i in V.lengths(texts, slots)] == ["a", "c"]

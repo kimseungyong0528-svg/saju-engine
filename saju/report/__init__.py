@@ -13,11 +13,12 @@ from .writer import FINAL_SECTION, ClaudeWriter, DraftWriter
 
 def check_texts(facts: dict, sections: list[dict], texts: dict, final_section: str) -> list[dict]:
     """PDF를 만들기 전에 늘 글을 검사한다(없는 신살, 틀린 개수, 계산에 없는 점수·연도, 지나친 반복).
-    ClaudeWriter는 쓰는 중에 걸린 칸을 이미 고쳤고, 여기서는 남은 문제를 돌려준다."""
+    글 분량도 본다. ClaudeWriter는 쓰는 중에 걸린 칸을 이미 고쳤고, 여기서는 남은 문제를 돌려준다."""
     from . import verify as V
     from .outline import slots_by_section
-    final_ids = {s["id"] for s in slots_by_section(sections).get(final_section, [])}
-    return V.check(facts, texts, final_ids)
+    jobs = slots_by_section(sections)
+    final_ids = {s["id"] for s in jobs.get(final_section, [])}
+    return V.check(facts, texts, final_ids) + V.lengths(texts, [s for sl in jobs.values() for s in sl])
 
 
 def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
