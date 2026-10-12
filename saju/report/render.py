@@ -47,12 +47,12 @@ def _svg_element_cycle() -> str:
     for el, (x, y) in pts.items():
         info = K.ELEMENT[el]
         parts.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="34" fill="{EL_COLOR[el]}"/>')
-        parts.append(f'<text x="{x:.0f}" y="{y + 2:.0f}" text-anchor="middle" font-family="Song Myung" font-size="26" fill="#f6ecd8">{info["hanja"]}</text>')
-        parts.append(f'<text x="{x:.0f}" y="{y + 25:.0f}" text-anchor="middle" font-family="Gowun Batang" font-size="16" fill="#f6ecd8">{info["name"]}</text>')
+        parts.append(f'<text x="{x:.0f}" y="{y + 2:.0f}" text-anchor="middle" font-family="Song Myung, Noto Serif CJK KR" font-size="26" fill="#f6ecd8">{info["hanja"]}</text>')
+        parts.append(f'<text x="{x:.0f}" y="{y + 25:.0f}" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="16" fill="#f6ecd8">{info["name"]}</text>')
     parts.append('<line x1="40" y1="362" x2="80" y2="362" stroke="#3a2e22" stroke-width="2.5"/>'
-                 '<text x="88" y="368" font-family="Gowun Batang" font-size="18.7" fill="#1f1b16">돕는 관계(상생)</text>'
+                 '<text x="88" y="368" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#1f1b16">돕는 관계(상생)</text>'
                  '<line x1="270" y1="362" x2="310" y2="362" stroke="#9e2f22" stroke-width="2" stroke-dasharray="6 5"/>'
-                 '<text x="318" y="368" font-family="Gowun Batang" font-size="18.7" fill="#1f1b16">누르는 관계(상극)</text>')
+                 '<text x="318" y="368" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#1f1b16">누르는 관계(상극)</text>')
     parts.append("</svg>")
     return "".join(parts)
 
@@ -63,10 +63,10 @@ def _svg_strength(score: float) -> str:
             '<rect x="30" y="34" width="440" height="18" fill="#e9dfc6" stroke="#b9a77f"/>'
             '<rect x="228" y="34" width="44" height="18" fill="#d3c5a3"/>'
             f'<polygon points="{x - 9:.0f},22 {x + 9:.0f},22 {x:.0f},36" fill="#9e2f22"/>'
-            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang" font-size="18.7" fill="#9e2f22">{score:.0f}점</text>'
-            '<text x="30" y="80" font-family="Gowun Batang" font-size="18.7" fill="#3d362c">신약</text>'
-            '<text x="250" y="80" text-anchor="middle" font-family="Gowun Batang" font-size="18.7" fill="#3d362c">중화</text>'
-            '<text x="470" y="80" text-anchor="end" font-family="Gowun Batang" font-size="18.7" fill="#3d362c">신강</text></svg>')
+            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#9e2f22">{score:.0f}점</text>'
+            '<text x="30" y="80" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신약</text>'
+            '<text x="250" y="80" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">중화</text>'
+            '<text x="470" y="80" text-anchor="end" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신강</text></svg>')
 
 
 def _svg_life_graph(periods: list[dict], current: int) -> str:
@@ -78,15 +78,15 @@ def _svg_life_graph(periods: list[dict], current: int) -> str:
     parts = [f'<svg class="svg-fig" width="{w}" height="{h}" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg">']
     for s in (30, 50, 70, 90):
         parts.append(f'<line x1="{left}" y1="{py(s):.0f}" x2="{w - right}" y2="{py(s):.0f}" stroke="#d3c5a3"/>'
-                     f'<text x="{left - 8}" y="{py(s) + 6:.0f}" text-anchor="end" font-family="Gowun Batang" font-size="16" fill="#3d362c">{s}</text>')
+                     f'<text x="{left - 8}" y="{py(s) + 6:.0f}" text-anchor="end" font-family="Gowun Batang, Noto Serif CJK KR" font-size="16" fill="#3d362c">{s}</text>')
     if 0 <= current < n:
         parts.append(f'<rect x="{px(current) - step / 2:.0f}" y="{top - 10}" width="{step:.0f}" height="{h - top - bottom + 10}" fill="#1f2a3d" opacity="0.12"/>')
     line = " ".join(f"{px(i):.0f},{py(p['score']):.0f}" for i, p in enumerate(periods))
     parts.append(f'<polyline points="{line}" fill="none" stroke="#9e2f22" stroke-width="3"/>')
     for i, p in enumerate(periods):
         parts.append(f'<circle cx="{px(i):.0f}" cy="{py(p["score"]):.0f}" r="6" fill="{"#1f2a3d" if i == current else "#9e2f22"}"/>')
-        parts.append(f'<text x="{px(i):.0f}" y="{h - bottom + 26}" text-anchor="middle" font-family="Gowun Batang" font-size="16.5" fill="#1f1b16">{p["age_from"]}세</text>')
-        parts.append(f'<text x="{px(i):.0f}" y="{h - bottom + 50}" text-anchor="middle" font-family="Song Myung" font-size="18" fill="#9e2f22">{p["hanja"]}</text>')
+        parts.append(f'<text x="{px(i):.0f}" y="{h - bottom + 26}" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="16.5" fill="#1f1b16">{p["age_from"]}세</text>')
+        parts.append(f'<text x="{px(i):.0f}" y="{h - bottom + 50}" text-anchor="middle" font-family="Song Myung, Noto Serif CJK KR" font-size="18" fill="#9e2f22">{p["hanja"]}</text>')
     parts.append("</svg>")
     return "".join(parts)
 

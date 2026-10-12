@@ -10,50 +10,50 @@
 @page {
   size: A4; margin: 24mm 20mm 22mm; background: #f1e9d6;
   border: 3.5pt double #3a2e22; padding: 6mm 7mm;
-  @top-left { content: "平生四柱"; font-family: "Song Myung"; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
-  @top-right { content: string(customer); font-family: "Gowun Batang"; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
-  @bottom-center { content: counter(page); font-family: "Gowun Batang"; font-size: 14pt; color: #3d362c; vertical-align: top; padding-top: 2mm; }
+  @top-left { content: "平生四柱"; font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
+  @top-right { content: string(customer); font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 14pt; color: #3d362c; vertical-align: bottom; padding-bottom: 2mm; }
+  @bottom-center { content: counter(page); font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 14pt; color: #3d362c; vertical-align: top; padding-top: 2mm; }
 }
 @page cover { border: none; padding: 0; margin: 0;
   @top-left { content: none; } @top-right { content: none; } @bottom-center { content: none; } }
 
-html { font-family: "Gowun Batang", serif; font-size: 14pt; line-height: 1.75; color: #1f1b16; }
+html { font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 14pt; line-height: 1.75; color: #1f1b16; }
 body { margin: 0; }
 .customer { string-set: customer content(); font-size: 0; line-height: 0; height: 0; overflow: hidden; }
 p { margin: 0 0 0.7em; text-align: justify; word-break: keep-all; orphans: 2; widows: 2; }
 b, strong { font-weight: 700; }
-.han { font-family: "Song Myung", serif; }
+.han { font-family: "Song Myung", "Noto Serif CJK KR", serif; }
 
 .page { break-before: page; }
 .page.cont { break-before: auto; }
 
 /* 장 머리 */
 .sec-head { display: flex; align-items: flex-end; gap: 5mm; border-bottom: 2pt solid #3a2e22; padding-bottom: 3mm; margin-bottom: 6mm; }
-.sec-no { font-family: "Song Myung"; font-size: 40pt; line-height: 1; color: #9e2f22; }
-.sec-title { font-family: "Song Myung"; font-size: 24pt; line-height: 1.25; }
+.sec-no { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 40pt; line-height: 1; color: #9e2f22; }
+.sec-title { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 24pt; line-height: 1.25; }
 .sec-sub { font-size: 14pt; color: #3d362c; }
 .sec-head .bookmark { bookmark-level: 1; }
 
-h2 { font-family: "Song Myung"; font-weight: 400; font-size: 20pt; line-height: 1.35; margin: 0 0 4mm;
+h2 { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-weight: 400; font-size: 20pt; line-height: 1.35; margin: 0 0 4mm;
      padding-left: 4mm; border-left: 5pt solid #9e2f22; bookmark-level: 2; }
-h3 { font-family: "Song Myung"; font-weight: 400; font-size: 17pt; margin: 4mm 0 2mm; color: #9e2f22; }
+h3 { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-weight: 400; font-size: 17pt; margin: 4mm 0 2mm; color: #9e2f22; }
 
-.lead { font-family: "Song Myung"; font-size: 18pt; line-height: 1.6; color: #1f2a3d; margin: 2mm 0 6mm;
+.lead { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 18pt; line-height: 1.6; color: #1f2a3d; margin: 2mm 0 6mm;
         padding: 5mm 6mm; background: #e9dfc6; border: 1pt solid #b9a77f; }
 
 .box { background: #e9dfc6; border: 1pt solid #b9a77f; padding: 4mm 5mm; margin: 4mm 0; }
 .box p:last-child { margin-bottom: 0; }
 .note-head { display: flex; align-items: center; gap: 3mm; margin-bottom: 2mm; }
 .seal { display: inline-block; width: 9mm; height: 9mm; line-height: 9mm; text-align: center; background: #9e2f22; color: #f6ecd8;
-        font-family: "Song Myung"; font-size: 14pt; border-radius: 1mm; }
-.note-title { font-family: "Song Myung"; font-size: 17pt; }
+        font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 14pt; border-radius: 1mm; }
+.note-title { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 17pt; }
 
 table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; }
 th, td { border: 1pt solid #8a7550; padding: 2mm 2.5mm; text-align: center; vertical-align: middle; font-size: 14pt; line-height: 1.45; }
 th { background: #e9dfc6; font-weight: 700; }
 td.left, th.left { text-align: left; }
-.big-han { font-family: "Song Myung"; font-size: 30pt; line-height: 1.1; color: #9e2f22; }
-.mid-han { font-family: "Song Myung"; font-size: 20pt; color: #9e2f22; }
+.big-han { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 30pt; line-height: 1.1; color: #9e2f22; }
+.mid-han { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 20pt; color: #9e2f22; }
 .sub { color: #3d362c; }
 
 /* 오행 막대 */
@@ -87,7 +87,7 @@ td.left, th.left { text-align: left; }
 .month-head { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 1mm; }
 
 .toc-sec { display: flex; align-items: baseline; padding: 2.2mm 0; border-bottom: 1pt solid #d3c5a3; }
-.toc-sec .no { width: 14mm; font-family: "Song Myung"; color: #9e2f22; font-size: 17pt; }
+.toc-sec .no { width: 14mm; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; font-size: 17pt; }
 .toc-sec .t { flex: 1; }
 .toc-sec .t::after { content: target-counter(attr(data-target), page); float: right; }
 .toc-sec .tt { font-weight: 700; font-size: 15pt; color: #1f1b16; }
@@ -104,21 +104,21 @@ td.left, th.left { text-align: left; }
 .cover .label { position: absolute; left: 87mm; top: 30mm; width: 48mm; padding: 2mm; background: #f1e9d6;
                 border: 1.2pt solid #d8bb78; box-shadow: 0 0 0 1.5mm #111826; }
 .cover .label-in { border: 3pt double #3a2e22; padding: 6mm 0 5mm; color: #1f1b16; }
-.cover .title { font-family: "Song Myung"; font-size: 54pt; line-height: 1.12; }
-.cover .subtitle { font-family: "Song Myung"; font-size: 18pt; margin-top: 4mm; color: #3d362c; letter-spacing: 1mm; }
+.cover .title { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 54pt; line-height: 1.12; }
+.cover .subtitle { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 18pt; margin-top: 4mm; color: #3d362c; letter-spacing: 1mm; }
 .cover .stamp { position: absolute; left: 124mm; top: 140mm; width: 27mm; height: 27mm; background: #9e2f22; color: #f6ecd8;
-                font-family: "Song Myung"; font-size: 22pt; line-height: 1.05; padding-top: 3.5mm; box-sizing: border-box;
+                font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 22pt; line-height: 1.05; padding-top: 3.5mm; box-sizing: border-box;
                 border: 1.2pt solid #f6ecd8; outline: 1pt solid #9e2f22; transform: rotate(-6deg); }
-.cover .stamp small { display: block; font-family: "Gowun Batang"; font-size: 14pt; margin-top: .5mm; }
+.cover .stamp small { display: block; font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 14pt; margin-top: .5mm; }
 .cover .eight { position: absolute; left: 50mm; top: 180mm; width: 126mm; }
-.cover .eight-head { font-family: "Song Myung"; font-size: 15pt; color: #d8bb78; letter-spacing: .6mm; margin-bottom: 2mm; }
+.cover .eight-head { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 15pt; color: #d8bb78; letter-spacing: .6mm; margin-bottom: 2mm; }
 .cover .eight table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; background: #172033; }
 .cover .eight th, .cover .eight td { border: .6pt solid #d8bb78; color: #e9dfc6; background: none; padding: .5mm 0; }
 .cover .eight th { font-size: 14pt; font-weight: 400; color: #d8bb78; }
-.cover .eight .gz td { font-family: "Song Myung"; font-size: 30pt; line-height: 1.25; }
+.cover .eight .gz td { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 30pt; line-height: 1.25; }
 .cover .who { position: absolute; left: 25mm; width: 176mm; top: 243mm; font-size: 14pt; line-height: 1.45; }
-.cover .who b { display: block; font-family: "Song Myung"; font-weight: 400; font-size: 26pt; color: #f6ecd8; margin-bottom: .5mm; }
-.cover .brand { position: absolute; left: 25mm; width: 176mm; top: 288.5mm; font-family: "Song Myung"; font-size: 14pt; color: #d8bb78; letter-spacing: .5mm; }
+.cover .who b { display: block; font-family: "Song Myung", "Noto Serif CJK KR", serif; font-weight: 400; font-size: 26pt; color: #f6ecd8; margin-bottom: .5mm; }
+.cover .brand { position: absolute; left: 25mm; width: 176mm; top: 288.5mm; font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 14pt; color: #d8bb78; letter-spacing: .5mm; }
 
 .svg-fig { display: block; margin: 3mm auto 5mm; }
 .center { text-align: center; }
@@ -138,7 +138,7 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product { border: 1pt solid #3a2e22; padding: 2mm 4mm; margin: 0 0 2.5mm; break-inside: avoid; background: #f6f0e2; }
 .product-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
 .product-head b { font-weight: 400; font-size: 17pt; color: #9e2f22; }
-.product-line { font-family: "Song Myung"; color: #1f2a3d; margin-bottom: 0.4em; }
+.product-line { font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #1f2a3d; margin-bottom: 0.4em; }
 .product p { margin-bottom: 0.2em; line-height: 1.5; }
 .product-link a { color: #1f2a3d; text-decoration: underline; word-break: break-all; }
 .product-head a { text-decoration: none; }
@@ -148,4 +148,4 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product .price em { font-style: normal; font-weight: 700; color: #b2452f; margin: 0 1mm; }
 .product .price strong { color: #1f1b16; }
 a.go { color: #1f2a3d; text-decoration: underline; white-space: nowrap; }
-.end-mark { text-align: center; font-family: "Song Myung"; color: #9e2f22; margin-top: 4mm; }
+.end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 4mm; }
