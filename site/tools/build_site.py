@@ -89,6 +89,18 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "['결과를 계속 보관할 수 있나요?','미리보기 주문은 현재 브라우저의 세션에만 저장됩니다. 정식 서비스에서는 온라인 열람과 PDF 다운로드를 별도로 제공할 예정이에요.']",
               "['결과를 계속 보관할 수 있나요?','이메일로 받은 PDF를 내려받아 보관해주세요. 개인정보 보호를 위해 서버에 있는 출생 정보와 결과는 발송 30일 뒤 지워요.']")
 
+    # 예시 후기 숨기기(사장님 결정 2026-10-12: 실제 후기가 모일 때까지 보이지 않게)
+    s = _swap(s, "<section class=\"section\"><div class=\"section-head\"><h2>우리의 이야기를 읽은 뒤</h2><p>궁합·재회 후기 영역 · 예시 콘텐츠</p></div>${reviewRail(DEMO_REVIEWS.filter(r=>['intimate','reunion'].includes(r.product)))}</section>", "")
+    s = _swap(s, "<section class=\"section\"><div class=\"section-head\"><h2>나를 발견하는 순간들</h2><p>리포트 후기 영역 · 예시 콘텐츠</p></div>${reviewRail(DEMO_REVIEWS.filter(r=>['lifetime','romance'].includes(r.product)))}</section>", "")
+    s = _swap(s, "<section class=\"sales-reviews\"><h2>리포트를 읽는 시간</h2>${reviewRail(DEMO_REVIEWS.filter(r=>r.product===p.id).concat(DEMO_REVIEWS.slice(0,1)))}</section>", "")
+    s = _swap(s, '<p class="fine-print">표시 금액은 미리보기 기준입니다. 실제 결제는 발생하지 않습니다.</p>',
+              '<p class="fine-print">결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p>')
+
+    s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
+              '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 무료 콘텐츠의 결과 화면은 예시이며, 유료 리포트는 결제 후 개인별로 작성해 이메일로 보내드려요.</div>')
+    s = _swap(s, '<span class="pill">미리보기 운영 안내</span>', '<span class="pill">운명서재 이용 안내</span>')
+    s = _swap(s, "최종 수정: ${new Date().toLocaleDateString('ko-KR')}", "시행일: 2026년 10월 12일")
+
     # 아래쪽 안내
     s = _swap(s, "<p>운명서재는 현재 미리보기로 운영됩니다.<br>실제 결제와 개인별 분석 결과는 제공되지 않습니다.</p>",
               f"<p>{biz}</p>")
