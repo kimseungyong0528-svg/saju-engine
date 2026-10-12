@@ -1,4 +1,4 @@
-"""주제 사주 6종(재회·깊은 궁합·재물·직업·사업·건강): 목차, 쪽수, 두 사람 상품, 다른 상품 안내."""
+"""주제 사주 6종(사업운은 13장)(재회·깊은 궁합·재물·직업·사업·건강): 목차, 쪽수, 두 사람 상품, 다른 상품 안내."""
 
 from datetime import date
 import importlib
@@ -26,8 +26,9 @@ def _prep(pid):
 @pytest.mark.parametrize("pid", THEME_PRODUCTS)
 def test_outline_12_chapters_and_50_pages(pid):
     _, _, (M, facts, secs) = _prep(pid)
-    assert [s["no"] for s in secs] == [str(i) for i in range(1, 13)] + ["더보기"]
-    assert M.FINAL_SECTION == "12"
+    n = len(M.SECTIONS) - 1
+    assert [s["no"] for s in secs] == [str(i) for i in range(1, n + 1)] + ["더보기"]
+    assert M.FINAL_SECTION == str(n) and n >= 12
     assert sum(p["span"] for p in all_pages(secs)) >= 50
     ids = [p["id"] for p in all_pages(secs)]
     assert len(ids) == len(set(ids))
