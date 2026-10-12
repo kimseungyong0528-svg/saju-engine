@@ -15,7 +15,7 @@ function setup(overrides = {}) {
   const services = {
     tossConfirm: async a => { calls.confirm.push(a); return overrides.tossFail ? { ok: false, code: 'REJECT_CARD_COMPANY' } : { ok: true }; },
     startWorker: async id => { calls.dispatch.push(id); },
-    sendEmail: async (o, pdf) => { calls.email.push({ to: o.email, bytes: pdf.byteLength }); },
+    sendEmail: async (o, pdf) => { calls.email.push({ to: o.email, bytes: pdf.byteLength, n: o.resends || 0, name: o.payload?.self?.name || o.mailName }); },
     notifyOwner: async (o, note) => { calls.owner.push(note); },
   };
   const api = makeApi({ store, services, env: overrides.env || ENV });
@@ -125,6 +125,9 @@ test('결제 승인 성공 흐름', async () => {
   for (const k of ['r2', 'r3']) await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { ...auth, 'Idempotency-Key': k } });
   const over = await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { ...auth, 'Idempotency-Key': 'r4' } });
   assert.equal((await over.json()).code, 'RESEND_LIMIT'); assert.equal(t.calls.email.length, 4);
+  // 메일 서비스가 중복으로 보고 버리지 않게 보낼 때마다 번호가 다르고, 이름도 그대로 나간다
+  assert.deepEqual(t.calls.email.map(e => e.n), [0, 1, 2, 3]);
+  assert.ok(t.calls.email.every(e => e.name === '김테스트'));
 });
 
 test('카드 거절이면 결제 실패, 작업 시작 안 함', async () => {

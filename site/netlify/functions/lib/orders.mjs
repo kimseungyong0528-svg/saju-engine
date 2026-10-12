@@ -161,7 +161,8 @@ export async function deliverPdf(store, services, order, pdf, now = new Date()) 
   await services.sendEmail(order, pdf);
   order.emailedAt = now.toISOString();
   setStatus(order, 'email_accepted', now);
-  // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF는 다시 보내기를 위해 7일만 둔다.
+  // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF와 받는 분 이름은 다시 보내기를 위해 7일만 둔다.
+  order.mailName = order.payload?.self?.name || null;
   delete order.payload; delete order.disclosures;
   await store.set(`orders/${order.id}`, order);
   return order;
@@ -173,7 +174,8 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   if (order.resends >= MAX_RESENDS) throw new ApiError(429, 'RESEND_LIMIT');
   const pdf = await store.getBytes(`pdf/${order.id}`);
   if (!pdf) throw new ApiError(410, 'PDF_NOT_AVAILABLE');
-  await services.sendEmail(order, pdf);
+  // 메일 서비스는 같은 요청 키를 24시간 동안 중복으로 보고 다시 보내지 않으므로 다시 보내기마다 새 번호를 쓴다.
+  await services.sendEmail({ ...order, resends: order.resends + 1 }, pdf);
   order.resends += 1;
   order.lastResendKey = idempotencyKey || null;
   order.updatedAt = now.toISOString();
@@ -195,7 +197,7 @@ export async function eraseOld(store, now = new Date()) {
       setStatus(order, 'payment_expired', now);
     } else if (DONE.has(order.status) && age > RETENTION_DAYS) {
       setStatus(order, 'erased', now);
-      delete order.payload; delete order.disclosures;
+      delete order.payload; delete order.disclosures; delete order.mailName;
       await store.delete(`pdf/${order.id}`);
       erased += 1;
     } else continue;
