@@ -95,10 +95,11 @@ def test_claude_writer_request_shape(facts, monkeypatch):
     assert all(c["system"][1].get("cache_control") for c in calls)
     assert set(texts) == {s["id"] for sl in slots_by_section(secs).values() for s in sl}
     # 마지막 장은 앞 장의 글을 받아 맨 나중에, 좋은 모델로 쓴다
-    last = calls[-1]
+    firsts = [c for c in calls if "[고쳐 쓰기]" not in c["messages"][0]["content"]]
+    last = firsts[-1]
     assert "s15_qa" in last["output_config"]["format"]["schema"]["properties"]
     assert "앞 장에서 쓴 글" in last["messages"][0]["content"]
-    assert last["model"] == "best-model" and all(c["model"] == "cheap-model" for c in calls[:-1])
+    assert last["model"] == "best-model" and all(c["model"] == "cheap-model" for c in calls if c is not last)
     assert len(w.usage) == len(calls)
 
 

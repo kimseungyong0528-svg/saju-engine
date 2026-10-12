@@ -155,6 +155,25 @@ def repeats(texts: dict, skip: set | frozenset = frozenset()) -> list[dict]:
     return out
 
 
+# 칸의 글자 수가 목표(chars)의 이 범위를 벗어나면 다시 쓴다(짧으면 쪽 아래가 비고, 길면 다음 쪽으로 밀린다)
+LENGTH_RANGE = (0.85, 1.10)
+
+
+def lengths(texts: dict, slots: list[dict]) -> list[dict]:
+    """칸마다 글자 수를 목표와 비교한다. slots: [{id, chars}, ...]"""
+    lo, hi = LENGTH_RANGE
+    out = []
+    for s in slots:
+        if s["id"] not in texts:
+            continue
+        n = sum(len(x) for x in flat(texts[s["id"]]))
+        if n < s["chars"] * lo:
+            out.append({"slot": s["id"], "kind": "분량", "detail": f"글이 {n}자로 목표 {s['chars']}자보다 짧아요. 이 사람 사주에 맞는 장면과 구체적인 방법을 더해 {s['chars']}자 안팎으로 채워 주세요."})
+        elif n > s["chars"] * hi:
+            out.append({"slot": s["id"], "kind": "분량", "detail": f"글이 {n}자로 목표 {s['chars']}자보다 길어 다음 쪽으로 밀려요. 중요한 내용은 남기고 {s['chars']}자 안팎으로 줄여 주세요."})
+    return out
+
+
 def by_slot(issues: list[dict]) -> dict[str, list[str]]:
     out: dict[str, list[str]] = {}
     for i in issues:

@@ -241,6 +241,7 @@ FIX_RULES = """[고쳐 쓰기]
 - 사주에 없는 것, 계산 결과에 없는 숫자·연도는 지우고 계산 결과에 있는 근거로 바꿉니다.
 - 반복이라고 한 방법은 이 칸의 주제와 이 사람 사주에 맞는 다른 구체적인 방법으로 바꿉니다.
 - 문장 문제는 주어와 목적어(무엇을)를 채우고, 긴 문장은 두 문장으로 나눕니다.
+- 분량 문제는 chars에 맞춥니다. 모자라면 같은 말을 늘이지 말고 장면과 방법을 더하고, 넘치면 덜 중요한 문장을 뺍니다.
 """
 
 
@@ -311,20 +312,26 @@ class ClaudeWriter:
                 out.update(fut.result())
         # 마지막 장을 쓰기 전에 앞 장을 검사하고, 걸린 칸만 한 번 다시 쓴다(마지막 장이 고친 글을 이어받게)
         final_ids = {s["id"] for s in jobs.get(self.final_section, [])}
-        self._fix(f, by_no, first, out, V.check(f, out, final_ids))
+        first_slots = [s for sl in first.values() for s in sl]
+        self._fix(f, by_no, first, out, V.check(f, out, final_ids) + V.lengths(out, first_slots))
         if self.final_section in jobs:
-            out.update(self._section(f, by_no[self.final_section], jobs[self.final_section], previous_text(out)))
-            final_issues = [i for i in V.check(f, out, final_ids) if i["slot"] in final_ids and i["kind"] not in ("반복", "문장")]
-            if final_issues:
-                self._fix(f, by_no, {self.final_section: jobs[self.final_section]}, out, final_issues, previous_text(out))
-        self.issues = V.check(f, out, final_ids)
+            final_slots = jobs[self.final_section]
+            out.update(self._section(f, by_no[self.final_section], final_slots, previous_text(out)))
+            after = [i for i in V.check(f, out, final_ids) if i["slot"] in final_ids and i["kind"] not in ("반복", "문장")]
+            if after:
+                self._fix(f, by_no, {self.final_section: final_slots}, out, after, previous_text(out))
+            # 마지막 장의 분량만 맞추는 다시 쓰기는 먼저 쓴 글을 고치는 일이라 값싼 모델로 한다
+            short = V.lengths(out, final_slots)
+            if short:
+                self._fix(f, by_no, {self.final_section: final_slots}, out, short)
+        self.issues = V.check(f, out, final_ids) + V.lengths(out, [s for sl in jobs.values() for s in sl])
         return out
 
     def _fix(self, f: dict, by_no: dict, jobs: dict, out: dict, issues: list[dict], previous: str = "") -> None:
         """검사에 걸린 칸을 장별로 묶어 한 번씩 다시 쓴다. 반복은 MAX_REPEAT_FIX칸까지만 고친다(비용을 묶어 둔다)."""
         from . import verify as V
         soft = ("반복", "문장")   # 사실 오류가 아닌 것: 한 권에 MAX_REPEAT_FIX칸까지만 따로 다시 쓴다
-        facts_issues = [i for i in issues if i["kind"] not in soft]
+        facts_issues = [i for i in issues if i["kind"] not in soft]   # 사실 오류와 분량은 걸린 칸을 모두 고친다
         fact_slots = {i["slot"] for i in facts_issues}
         soft_slots = [x for x in dict.fromkeys(i["slot"] for i in issues if i["kind"] in soft) if x not in fact_slots][:MAX_REPEAT_FIX]
         # 사실 오류로 어차피 다시 쓰는 칸은 문장·반복 문제도 함께 고친다(비용 그대로)
