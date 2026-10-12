@@ -8,7 +8,16 @@ from pathlib import Path
 from .facts import OrderInfo, build_facts
 from .outline import build_outline
 from .render import render_html, render_pdf
-from .writer import ClaudeWriter, DraftWriter
+from .writer import FINAL_SECTION, ClaudeWriter, DraftWriter
+
+
+def check_texts(facts: dict, sections: list[dict], texts: dict, final_section: str) -> list[dict]:
+    """PDF를 만들기 전에 늘 글을 검사한다(없는 신살, 틀린 개수, 계산에 없는 점수·연도, 지나친 반복).
+    ClaudeWriter는 쓰는 중에 걸린 칸을 이미 고쳤고, 여기서는 남은 문제를 돌려준다."""
+    from . import verify as V
+    from .outline import slots_by_section
+    final_ids = {s["id"] for s in slots_by_section(sections).get(final_section, [])}
+    return V.check(facts, texts, final_ids)
 
 
 def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
@@ -17,11 +26,12 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
     facts = build_facts(result, order)
     sections = build_outline(facts)
     texts = (writer or DraftWriter()).write(facts, sections)
+    issues = check_texts(facts, sections, texts, FINAL_SECTION)
     html = render_html(facts, sections, texts)
     if html_out:
         Path(html_out).write_text(html, encoding="utf-8")
     pages = render_pdf(html, out_pdf)
-    return {"pages": pages, "texts": texts, "facts": facts}
+    return {"pages": pages, "texts": texts, "facts": facts, "issues": issues}
 
 
 def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
@@ -36,12 +46,13 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
     if isinstance(writer, ClaudeWriter):
         writer.style, writer.final_section = R.ROMANCE_STYLE, R.FINAL_SECTION
     texts = writer.write(facts, sections)
+    issues = check_texts(facts, sections, texts, R.FINAL_SECTION)
     html = render_html(facts, sections, texts, product="romance", static={**STATIC, **R.STATIC},
                        first=R.cross_sell_order(facts["romance"]["status"]))
     if html_out:
         Path(html_out).write_text(html, encoding="utf-8")
     pages = render_pdf(html, out_pdf)
-    return {"pages": pages, "texts": texts, "facts": facts}
+    return {"pages": pages, "texts": texts, "facts": facts, "issues": issues}
 
 
 THEME_PRODUCTS = ("reunion", "intimate", "wealth", "career", "business", "health")
@@ -96,13 +107,14 @@ def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: s
         if isinstance(writer, ClaudeWriter):
             writer.style, writer.final_section = M.STYLE, M.FINAL_SECTION
         texts = writer.write(facts, sections)
+    issues = check_texts(facts, sections, texts, M.FINAL_SECTION)
     html = render_html(facts, sections, texts, product=product, static={**STATIC, **M.STATIC},
                        first=M.cross_sell_order(facts))
     if html_out:
         Path(html_out).write_text(html, encoding="utf-8")
     pages = render_pdf(html, out_pdf)
-    return {"pages": pages, "texts": texts, "facts": facts, "sections": sections}
+    return {"pages": pages, "texts": texts, "facts": facts, "sections": sections, "issues": issues}
 
 
 __all__ = ["OrderInfo", "build_facts", "build_outline", "make_lifetime_report", "make_romance_report",
-           "make_product_report", "prepare_product", "THEME_PRODUCTS", "ClaudeWriter", "DraftWriter"]
+           "make_product_report", "prepare_product", "check_texts", "THEME_PRODUCTS", "ClaudeWriter", "DraftWriter"]

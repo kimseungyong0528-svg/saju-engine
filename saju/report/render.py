@@ -200,7 +200,8 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     if facts.get("romance"):
         svg["love_graph"] = _svg_love_graph(facts["romance"]["periods"], facts["daewoon"]["current_index"])
     if facts.get("theme", {}).get("periods"):
-        svg["theme_graph"] = _svg_life_graph([dict(p, score=min(90, p["t_score"])) for p in facts["theme"]["periods"]],
+        from .theme import near
+        svg["theme_graph"] = _svg_life_graph([dict(p, score=min(90, p["t_score"])) for p in near(facts, facts["theme"]["periods"], 100)],
                                              facts["daewoon"]["current_index"])
     return tpl.render(
         f=facts, sections=sections, texts=texts, static=static or STATIC, kb=_kb(),

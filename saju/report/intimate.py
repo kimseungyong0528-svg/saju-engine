@@ -103,7 +103,7 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     }
     return {
         "label": "궁합 재료", "data": data,
-        "digest": {**data, "그 사람 사주": T.chart_brief(o), **T.digest_rows(years, months, periods),
+        "digest": {**data, "그 사람 사주": T.chart_brief(o), **T.digest_rows(years, months, T.near(f, periods, 30)),
                    "점수 설명": "score는 궁합 점수(참고용). t_score는 그해·그달 두 사람 관계의 흐름 점수(두 사람 운의 흐름 평균에 배우자 별·배우자 자리 합을 더하고 충을 뺀 값)"},
         "years": years, "months": months, "periods": periods,
     }

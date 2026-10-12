@@ -85,7 +85,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "body_map": BODY,
     }
     return {"label": "건강 재료", "data": data,
-            "digest": {**data, **T.digest_rows(years, months, periods),
+            "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
                        "점수 설명": "t_score는 생활 리듬 점수(참고용): 높을수록 몸과 마음이 편안하기 쉬운 때. 부족한 기운이 들어오면 더하고, 넘치는 기운이 더해지거나 일지(몸의 자리)·월지(생활 자리)와 충하면 빼 계산"},
             "years": years, "months": months, "periods": periods}
 

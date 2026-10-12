@@ -72,6 +72,10 @@ def main() -> None:
     if a.texts:
         with open(a.texts, "w", encoding="utf-8") as fp:
             json.dump(r["texts"], fp, ensure_ascii=False, indent=2)
+    from .verify import summary
+    print(summary(r["issues"]))
+    for i in r["issues"][:20]:
+        print(f"  [{i['slot']}] {i['detail']}")
     print(f"{a.out}: {r['pages']}쪽 ({writer if isinstance(writer, str) else type(writer).__name__})")
 
 

@@ -104,7 +104,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
     }
     return {"label": "직업 재료", "data": data,
-            "digest": {**data, **T.digest_rows(years, months, periods),
+            "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
                        "점수 설명": "t_score는 일의 흐름 점수(참고용): 운의 흐름 점수에 관성·식상·인성이 들어오면 더하고 일 자리(월지) 충은 조금 빼 계산. t_signs의 '일 자리 변동', '이동 기운'은 이직 신호"},
             "years": years, "months": months, "periods": periods}
 
