@@ -59,7 +59,11 @@ def patch_texts(s: str, b: dict) -> str:
     contact = b.get("email") or "고객센터"
     s = _swap(s, '"mode":"preview"', '"mode":"live"')
     s = _swap(s, '"business":{"company":"","owner":"","registration":"","commerce":"","address":"","email":"","phone":""}',
-              '"business":' + json.dumps(b, ensure_ascii=False, separators=(",", ":")))
+              '"business":' + json.dumps({k: v for k, v in b.items() if k != "kakao"}, ensure_ascii=False, separators=(",", ":")))
+    # 카카오톡으로 문의하기 버튼은 운명서재 카카오톡 채널로 연결한다.
+    if b.get("kakao"):
+        s = _swap(s, '"supportUrl":""', '"supportUrl":' + json.dumps(b["kakao"]))
+        s = _swap(s, '<p class="local-note">상담 채널 연결 전입니다.</p>', '')
 
     # '재미로' 같은 말은 풀이의 믿음을 떨어뜨려 뺀다(2026-10-12 사장님 요청)
     s = _swap(s, "사주를 통해 성향을 재미로 읽고, 직접 들려준 생활 습관을 돌아봐요.", "사주로 타고난 성향을 읽고, 직접 들려준 생활 습관을 돌아봐요.")
