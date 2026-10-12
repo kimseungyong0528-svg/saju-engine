@@ -142,18 +142,28 @@ test('보류되면 사장님께 알림', async () => {
   assert.equal(v.status, 'held'); assert.deepEqual(t.calls.owner, ['PDF 작성 실패']);
 });
 
-test('개인정보 지우기: 발송 30일 뒤 출생 정보와 PDF 삭제, 미결제 주문은 하루 뒤 만료', async () => {
+test('개인정보 지우기: 발송 즉시 출생 정보 삭제, PDF는 7일 뒤 삭제, 미결제 주문은 하루 뒤 만료', async () => {
   const t = setup();
   const { body: a } = await order(t);
   const { body: b } = await order(t);
   await t.call('POST', `/api/orders/${a.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + a.accessToken } });
   await t.call('POST', `/api/internal/orders/${a.orderId}/result`, { raw: new Uint8Array([1, 2]), headers: { 'X-Worker-Secret': 'worker-secret' } });
-  const later = new Date(Date.now() + 31 * 86_400_000);
-  await eraseOld(t.store, later); // b: 만료, a: 지움
-  await eraseOld(t.store, new Date(later.getTime() + 31 * 86_400_000)); // b도 지움
-  const A = await t.store.get(`orders/${a.orderId}`), B = await t.store.get(`orders/${b.orderId}`);
-  assert.equal(A.status, 'erased'); assert.equal(A.payload, undefined); assert.equal(await t.store.getBytes(`pdf/${a.orderId}`), null);
-  assert.equal(B.status, 'erased'); assert.equal(A.email, 'buyer@example.com'); // 거래 기록은 남김
+  // 메일이 나가면 출생 정보·질문은 바로 사라지고, PDF와 다시 보내기는 남는다
+  let A = await t.store.get(`orders/${a.orderId}`);
+  assert.equal(A.status, 'email_accepted'); assert.equal(A.payload, undefined); assert.equal(A.disclosures, undefined);
+  assert.ok(await t.store.getBytes(`pdf/${a.orderId}`));
+  assert.equal((await t.call('GET', `/api/internal/orders/${a.orderId}`, { headers: { 'X-Worker-Secret': 'worker-secret' } })).status, 410);
+  const resent = await t.call('POST', `/api/orders/${a.orderId}/resend`, { body: {}, headers: { Authorization: 'Bearer ' + a.accessToken, 'Idempotency-Key': 'x1' } });
+  assert.equal(resent.status, 200); assert.equal(t.calls.email.length, 2);
+  // 6일째: PDF 그대로
+  await eraseOld(t.store, new Date(Date.now() + 6 * 86_400_000));
+  assert.ok(await t.store.getBytes(`pdf/${a.orderId}`));
+  const later = new Date(Date.now() + 8 * 86_400_000);
+  await eraseOld(t.store, later); // b: 만료, a: PDF 지움
+  await eraseOld(t.store, new Date(later.getTime() + 8 * 86_400_000)); // b도 지움
+  A = await t.store.get(`orders/${a.orderId}`); const B = await t.store.get(`orders/${b.orderId}`);
+  assert.equal(A.status, 'erased'); assert.equal(await t.store.getBytes(`pdf/${a.orderId}`), null);
+  assert.equal(B.status, 'erased'); assert.equal(B.payload, undefined); assert.equal(A.email, 'buyer@example.com'); // 거래 기록은 남김
 });
 
 test('결제 승인은 접근 열쇠 없이도 된다(브라우저 저장값이 사라진 경우)', async () => {

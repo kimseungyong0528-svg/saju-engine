@@ -10,7 +10,7 @@
 - 사이트: `site/public` (33번 파일을 `site/tools/build_site.py` 로 변환. 사진은 `public/assets` 로 분리)
 - 주문 서버: `site/netlify/functions` (입력 검사는 사이트 코드를 그대로 복사한 `lib/intake.mjs`)
 - PDF 작업: `saju/order`, `.github/workflows/order.yml`
-- 개인정보: 발송 30일 뒤 출생 정보·질문·PDF 삭제(매일 `cleanup` 함수), 거래 기록은 남김.
+- 개인정보: 메일 발송 즉시 출생 정보·질문 삭제, PDF는 발송 7일 뒤 삭제(매일 `cleanup` 함수). 보류된 주문은 다시 만들 수 있게 7일 동안 남김. 거래 기록은 남김.
 - 사주 계산과 다른 내용(없는 신살·개수·점수·연도)이 글 검사에 남으면 보내지 않고 `held`(사장님께 메일).
 
 ## 넣어야 하는 값
