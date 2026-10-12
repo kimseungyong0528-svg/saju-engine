@@ -1,0 +1,45 @@
+# 결제가 확인된 주문 하나를 받아 사주 PDF를 만들고 주문 서버로 보낸다(이메일은 주문 서버가 보냄).
+# 넷리파이 주문 서버가 결제 승인 직후 이 작업을 시작시킨다. 손으로 다시 돌릴 때는
+# Actions → 주문 처리 → Run workflow 에 주문번호를 넣는다.
+name: 주문 처리
+
+on:
+  repository_dispatch:
+    types: [order]
+  workflow_dispatch:
+    inputs:
+      order_id:
+        description: 주문번호
+        required: true
+
+concurrency:
+  group: order-${{ github.event.client_payload.orderId || inputs.order_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: PDF 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b > /dev/null
+          pip install -q -e ".[report]"
+      - name: 주문 처리
+        env:
+          ORDER_ID: ${{ github.event.client_payload.orderId || inputs.order_id }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
+          WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if ! [[ "$ORDER_ID" =~ ^[a-f0-9-]{36}$ ]]; then echo "주문번호 형식이 아님"; exit 1; fi
+          python -m saju.order "$ORDER_ID"

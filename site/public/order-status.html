@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<title>운명서재 · 주문 상태</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0a09;--card:#16130f;--line:rgba(216,187,120,.22);--ink:#f4efe4;--muted:#b9b0a0;--gold:#d8bb78;--bad:#e08e80}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;overflow-x:clip}
+main{max-width:520px;margin:0 auto;padding:40px 20px 60px}
+.brand{font-family:"Noto Serif KR",serif;color:var(--gold);font-size:22px;text-decoration:none;letter-spacing:.04em}
+h1{font-size:24px;line-height:1.4;margin:28px 0 8px;text-wrap:balance}
+p{line-height:1.7;color:var(--muted);margin:0 0 12px;text-wrap:pretty}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin:22px 0}
+.row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:15px}
+.row span{color:var(--muted)} .row strong{font-variant-numeric:tabular-nums;text-align:right}
+.steps{list-style:none;padding:0;margin:18px 0 0}
+.steps li{padding:8px 0 8px 26px;position:relative;color:var(--muted);font-size:15px}
+.steps li:before{content:"";position:absolute;left:4px;top:15px;width:9px;height:9px;border-radius:50%;border:1px solid var(--muted)}
+.steps li.done{color:var(--ink)} .steps li.done:before{background:var(--gold);border-color:var(--gold)}
+.steps li.now{color:var(--gold)} .steps li.now:before{border-color:var(--gold);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.steps li.now:before{animation:none}}
+.error{color:var(--bad)}
+button,a.button{display:block;width:100%;min-height:52px;margin:10px 0 0;border-radius:8px;font:inherit;font-weight:650;font-size:16px;cursor:pointer;text-align:center;text-decoration:none;line-height:52px;transition:transform .16s cubic-bezier(.23,1,.32,1),opacity .16s}
+button{border:0;background:var(--gold);color:#1a150e}
+button.secondary,a.button{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:active,a.button:active{transform:scale(.97)} button:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.fine{font-size:13px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/">운명서재</a>
+  <h1 id="title">주문을 확인하고 있어요</h1>
+  <p id="message" role="status" aria-live="polite">잠시만 기다려주세요.</p>
+  <section class="card" id="detail" hidden>
+    <div class="row"><span>상품</span><strong id="product"></strong></div>
+    <div class="row"><span>결제 금액</span><strong id="amount"></strong></div>
+    <div class="row"><span>받을 이메일</span><strong id="email"></strong></div>
+    <ol class="steps" id="steps">
+      <li data-step="paid">결제 확인</li>
+      <li data-step="writing">사주 결과 작성과 검사</li>
+      <li data-step="sent">이메일 발송</li>
+    </ol>
+  </section>
+  <button id="pdf" hidden>PDF 내려받기</button>
+  <button id="resend" class="secondary" hidden>이메일 다시 보내기</button>
+  <a class="button" href="/">처음 화면으로</a>
+  <p class="fine" id="help">결과는 보통 결제 후 10분 안에 이메일로 도착해요. 30분이 지나도 오지 않으면 스팸함을 확인한 뒤 고객센터로 알려주세요. 이 화면을 닫아도 결과는 이메일로 보내드려요.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const orderId=params.get('orderId')||'';
+const FINAL=new Set(['email_accepted','held','refunded','payment_failed','payment_expired','payment_adjusted','erased']);
+const TITLES={awaiting_payment:'결제를 확인하고 있어요',queued:'결제가 완료되었어요',processing:'사주 결과를 작성하고 있어요',retry:'사주 결과를 작성하고 있어요',held:'발송을 잠시 보류했어요',email_accepted:'결과를 이메일로 보냈어요',refund_pending:'결제를 취소하고 있어요',refunded:'결제가 취소되었어요',payment_adjusted:'결제가 중단되었어요',payment_failed:'결제가 완료되지 않았어요',payment_expired:'결제 시간이 지났어요',erased:'보관 기간이 끝난 주문이에요'};
+let saved=null;try{saved=JSON.parse(sessionStorage.getItem('unmyeong.order.'+orderId));}catch{}
+
+function show(view){
+  $('title').textContent=TITLES[view.status]||'주문 상태';
+  $('message').textContent=view.message||'';
+  $('message').classList.toggle('error',['held','payment_failed','payment_adjusted','payment_expired'].includes(view.status));
+  $('detail').hidden=false;
+  $('product').textContent=view.productName||'';
+  $('amount').textContent=Number(view.amount||0).toLocaleString('ko-KR')+'원';
+  $('email').textContent=view.emailHint||'';
+  const paid=!['awaiting_payment','payment_failed','payment_expired','payment_adjusted'].includes(view.status);
+  const sent=view.status==='email_accepted';
+  const step=(name,done,now)=>{const li=document.querySelector(`[data-step="${name}"]`);li.className=done?'done':now?'now':'';};
+  step('paid',paid,!paid&&view.status==='awaiting_payment');
+  step('writing',sent,paid&&!sent&&!FINAL.has(view.status));
+  step('sent',sent,false);
+  $('pdf').hidden=!view.pdfAvailable;
+  $('resend').hidden=!view.canResend;
+}
+function fail(text){$('title').textContent='주문을 불러오지 못했어요';$('message').textContent=text;$('message').classList.add('error');}
+
+async function api(action='',body,extra={}){
+  const r=await fetch('/api/orders/'+orderId+(action?'/'+action:''),{method:body?'POST':'GET',headers:{Authorization:'Bearer '+saved.accessToken,...(body?{'Content-Type':'application/json'}:{}),...extra},...(body?{body:JSON.stringify(body)}:{})});
+  if(action==='pdf'){if(!r.ok)throw Error('PDF_NOT_AVAILABLE');return r.blob();}
+  const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.code||'ORDER_UNAVAILABLE');return v;
+}
+
+async function poll(){
+  for(let i=0;i<180;i++){
+    let v;try{v=await api();}catch(e){await new Promise(r=>setTimeout(r,5000));continue;}
+    show(v);if(FINAL.has(v.status))return;
+    await new Promise(r=>setTimeout(r,i<24?5000:15000));
+  }
+}
+
+async function start(){
+  if(!/^[a-f0-9-]{36}$/.test(orderId))return fail('주문 번호를 찾을 수 없어요. 결제를 했다면 이메일로 결과를 보내드려요.');
+  const paymentKey=params.get('paymentKey'),amount=params.get('amount'),code=params.get('code');
+  if(!saved?.accessToken){
+    if(!paymentKey)return fail('이 브라우저에서는 주문 정보를 볼 수 없어요. 결제를 마쳤다면 결과는 이메일로 보내드려요.');
+    history.replaceState(null,'',location.pathname+'?orderId='+encodeURIComponent(orderId));
+    try{const r=await fetch('/api/orders/'+orderId+'/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentKey,amount:Number(amount)})});const v=await r.json();if(!r.ok)throw Error(v.code);
+      $('title').textContent=TITLES[v.status]||'주문 상태';$('message').textContent=v.message+' 결과는 이메일로 보내드려요.';}
+    catch{fail('결제가 승인되지 않았어요. 카드 정보를 확인한 뒤 다시 주문해주세요.');}
+    return;
+  }
+  history.replaceState(null,'',location.pathname+'?orderId='+encodeURIComponent(orderId));
+  try{
+    if(paymentKey){$('message').textContent='결제를 승인하고 있어요. 이 화면을 닫지 말아주세요.';show(await api('confirm',{paymentKey,amount:Number(amount)}));}
+    else if(code){show(await api('fail',{code}));if(code==='PAY_PROCESS_CANCELED')$('message').textContent='결제를 취소했어요. 다시 주문하려면 처음 화면에서 상품을 선택해주세요.';return;}
+  }catch(e){
+    if(e.message==='AMOUNT_MISMATCH')return fail('결제 금액이 주문 금액과 달라 결제를 승인하지 않았어요.');
+    if(e.message!=='ORDER_UNAVAILABLE'){try{show(await api());}catch{}$('message').textContent='결제가 승인되지 않았어요. 카드 정보를 확인한 뒤 다시 주문해주세요.';$('message').classList.add('error');return;}
+  }
+  poll();
+}
+
+$('pdf').onclick=async()=>{const b=$('pdf');b.disabled=true;try{const blob=await api('pdf');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='운명서재-사주결과.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}catch{alert('PDF를 내려받지 못했어요. 이메일로 받은 파일을 확인해주세요.');}b.disabled=false;};
+$('resend').onclick=async()=>{const b=$('resend');b.disabled=true;const slot='unmyeong.resend.'+orderId;const key=sessionStorage.getItem(slot)||crypto.randomUUID();sessionStorage.setItem(slot,key);try{show(await api('resend',{}, {'Idempotency-Key':key}));sessionStorage.removeItem(slot);$('message').textContent='이메일을 다시 보냈어요. 스팸함도 확인해주세요.';}catch(e){$('message').textContent=e.message==='RESEND_LIMIT'?'다시 보내기는 3번까지 할 수 있어요. 고객센터로 알려주세요.':'다시 보내지 못했어요. 잠시 뒤 다시 시도해주세요.';}b.disabled=false;};
+start();
+</script>
+</body>
+</html>
