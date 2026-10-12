@@ -116,6 +116,8 @@ test('결제 승인 성공 흐름', async () => {
   v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70, 1, 2, 3]), headers: { ...w, 'Content-Type': 'application/pdf' } })).json();
   assert.equal(v.status, 'email_accepted'); assert.equal(v.pdfAvailable, true); assert.equal(t.calls.email.length, 1);
   const pdf = await t.call('GET', `/api/orders/${o.orderId}/pdf`, { headers: auth });
+  assert.ok(pdf.headers.get('content-disposition').includes(encodeURIComponent('김테스트님의 평생사주 - 금월선녀의 운명서재.pdf')));
+  assert.equal((await (await t.call('GET', `/api/orders/${o.orderId}`, { headers: auth })).json()).fileName, '김테스트님의 평생사주 - 금월선녀의 운명서재.pdf');
   assert.equal(pdf.headers.get('content-type'), 'application/pdf'); assert.equal((await pdf.arrayBuffer()).byteLength, 7);
   // 다시 보내기: 같은 키는 한 번, 최대 3번
   const rk = { ...auth, 'Idempotency-Key': 'r1' };
@@ -143,6 +145,14 @@ test('보류되면 사장님께 알림', async () => {
   await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
   const v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'held', note: 'PDF 작성 실패' }, headers: { 'X-Worker-Secret': 'worker-secret' } })).json();
   assert.equal(v.status, 'held'); assert.deepEqual(t.calls.owner, ['PDF 작성 실패']);
+});
+
+test('메일 첨부 PDF 이름은 "이름님의 상품 - 금월선녀의 운명서재.pdf"', async () => {
+  const { realServices } = await import('../netlify/functions/lib/services.mjs');
+  let sent;
+  const svc = realServices({ RESEND_API_KEY: 're' }, async (url, init) => { sent = JSON.parse(init.body); return new Response('{}', { status: 200 }); });
+  await svc.sendEmail({ id: 'x', email: 'a@b.c', productId: 'romance', payload: { self: { name: '김민지' } } }, new Uint8Array([1]));
+  assert.equal(sent.attachments[0].filename, '김민지님의 연애사주 - 금월선녀의 운명서재.pdf');
 });
 
 test('8개 상품 모두 서버 접수 확인이 된다', async () => {

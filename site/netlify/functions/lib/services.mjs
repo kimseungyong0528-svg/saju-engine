@@ -1,5 +1,5 @@
 // 바깥 서비스: 토스페이먼츠(결제 승인), 깃허브(결과 작성 작업 시작), Resend(이메일).
-import { productName } from './orders.mjs';
+import { productName, reportFileName } from './orders.mjs';
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -55,7 +55,7 @@ export function realServices(env, fetcher = fetch) {
     await resendEmail({
       to: [order.email], subject: `[운명서재] ${name}님의 ${product} 결과가 도착했어요`, text, html,
       ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}),
-      attachments: [{ filename: `운명서재-${product.replace(/\s+/g, '')}.pdf`, content: Buffer.from(pdf).toString('base64') }],
+      attachments: [{ filename: reportFileName(order), content: Buffer.from(pdf).toString('base64') }],
     }, `pdf-${order.id}-${order.resends || 0}`);
   }
 
