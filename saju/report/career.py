@@ -105,7 +105,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     }
     return {"label": "직업 재료", "data": data,
             "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
-                       "점수 설명": "t_score는 일의 흐름 점수(참고용): 운의 흐름 점수에 관성·식상·인성이 들어오면 더하고 일 자리(월지) 충은 조금 빼 계산. t_signs의 '일 자리 변동', '이동 기운'은 이직 신호"},
+                       "점수 설명": "t_score는 일의 흐름 점수: 운의 흐름 점수에 관성·식상·인성이 들어오면 더하고 일 자리(월지) 충은 조금 빼 계산. t_signs의 '일 자리 변동', '이동 기운'은 이직 신호"},
             "years": years, "months": months, "periods": periods}
 
 
@@ -202,7 +202,7 @@ def build_outline(f: dict) -> list[dict]:
         P("c7_years", "앞으로 5년 직업운", figure="grid", span=2, grid=T.year_grid(th["years"], t["move_years"], "일의 흐름"),
           slot=S("c7_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 일의 흐름, 이직·승진·공부 가운데 할 일).", FULL * 2 - 460)),
         P("c7_months", "앞으로 12개월 월별 직업운", figure="grid", span=2, grid=T.month_grid(th["months"], "일의 흐름"),
-          note="표시: 그 달에 들어오는 직장·기술·문서·이동의 기운이에요. 점수는 참고용이에요.",
+          note="표시: 그 달에 들어오는 직장·기술·문서·이동의 기운이에요.",
           slot=S("c7_months", "표의 12개월 가운데 지원·면접·이직 제안에 좋은 달과 조심할 달을 골라 달마다 할 일을 써 주세요.", FULL * 2 - 820)),
         P("c7_stay", "남을까 떠날까, 판단 기준",
           slot=S("c7_stay", "이 사주에 맞는 '지금 회사에 남을 때'와 '떠날 때'의 기준을 각각 5가지로 써 주세요. 사주 근거를 함께 씁니다.", FULL, "qa")),
@@ -226,7 +226,7 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("c9_how", "이 사주에 맞는 공부 방식(혼자/함께, 짧게/길게, 시간대, 기록법)을 장면과 함께 써 주세요.")),
     ])
     section("10", [
-        P("c10_graph", "나이별 직업운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 관성·식상·인성이 들어오면 점수가 올라가요. 참고용 점수예요.",
+        P("c10_graph", "나이별 직업운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 관성·식상·인성이 들어오면 점수가 올라가요.",
           slot=S("c10_graph", "그래프에서 커리어가 크게 움직이는 시기와 쌓아 가는 시기를 나이로 짚어 주세요.", HALF - 80)),
         P("c10_now", "지금 지나는 10년의 직업운",
           slot=S("c10_now", "지금 대운의 글자를 근거로 이 10년 동안의 커리어 흐름과 할 일을 써 주세요.")),

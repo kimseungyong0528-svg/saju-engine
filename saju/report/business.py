@@ -104,7 +104,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     }
     return {"label": "사업 재료", "data": data,
             "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
-                       "점수 설명": "t_score는 사업 점수(참고용): 운의 흐름 점수에 재성·식상·관성이 들어오면 더하고, 재성이 있는 사주에 비겁이 들어오면(경쟁·지출) 빼고, 월지 충은 조금 빼 계산"},
+                       "점수 설명": "t_score는 사업 점수: 운의 흐름 점수에 재성·식상·관성이 들어오면 더하고, 재성이 있는 사주에 비겁이 들어오면(경쟁·지출) 빼고, 월지 충은 조금 빼 계산"},
             "years": years, "months": months, "periods": periods}
 
 
@@ -172,7 +172,7 @@ def build_outline(f: dict) -> list[dict]:
         P("b4_way", "운영 방식: 온라인, 매장, 혼자, 팀",
           slot=S("b4_way", "온라인·오프라인, 혼자·팀, 직접 운영·위탁 가운데 이 사주에 맞는 운영 방식과 이유를 써 주세요.")),
         P("b4_place", "사업장 위치와 공간",
-          slot=S("b4_place", "용신의 방향과 기운을 근거로 사업장 방향, 공간 분위기, 간판·인테리어 색을 써 주세요. 재미로 참고하는 정보라고 밝힙니다.")),
+          slot=S("b4_place", "용신의 방향과 기운을 근거로 사업장 방향, 공간 분위기, 간판·인테리어 색을 써 주세요.")),
     ])
     section("5", [
         P("b5_open", "함께 일하는 원칙", figure="kv", opener=True, rows=[
@@ -231,7 +231,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("10", [
         P("b9_months", "앞으로 12개월 월별 사업운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "사업 점수"),
-          note="표시: 그 달에 들어오는 돈·상품·계약·경쟁의 기운이에요. 점수는 참고용이에요.",
+          note="표시: 그 달에 들어오는 돈·상품·계약·경쟁의 기운이에요.",
           slot=S("b9_months", "표의 12개월 가운데 오픈·계약·홍보에 좋은 달과 조심할 달을 골라 달마다 할 일을 써 주세요.", FULL * 2 - 820)),
         P("b9_open", "오픈, 계약, 홍보에 좋은 달",
           slot=S("b9_open", "좋은 달과 조심할 달에 할 일과 피할 일을 시기별로 정리해 주세요.", FULL, "plan")),
@@ -239,7 +239,7 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("b9_season", "용신의 계절과 조후를 근거로 계절마다 운영의 힘을 줄 곳과 쉬어 갈 곳을 써 주세요.")),
     ])
     section("11", [
-        P("b10_graph", "나이별 사업운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 재성과 식상이 들어오면 점수가 올라가고, 경쟁·지출 기운이 들어오면 내려가요. 참고용 점수예요.",
+        P("b10_graph", "나이별 사업운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 재성과 식상이 들어오면 점수가 올라가고, 경쟁·지출 기운이 들어오면 내려가요.",
           slot=S("b10_graph", "그래프에서 사업이 커지기 쉬운 시기와 다지는 시기를 나이로 짚어 주세요.", HALF - 80)),
         P("b10_now", "지금 지나는 10년의 사업운",
           slot=S("b10_now", "지금 대운의 글자를 근거로 이 10년 동안의 사업 흐름과 할 일을 써 주세요.")),

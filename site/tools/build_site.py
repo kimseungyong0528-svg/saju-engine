@@ -61,6 +61,9 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '"business":{"company":"","owner":"","registration":"","commerce":"","address":"","email":"","phone":""}',
               '"business":' + json.dumps(b, ensure_ascii=False, separators=(",", ":")))
 
+    # '재미로' 같은 말은 풀이의 믿음을 떨어뜨려 뺀다(2026-10-12 사장님 요청)
+    s = _swap(s, "사주를 통해 성향을 재미로 읽고, 직접 들려준 생활 습관을 돌아봐요.", "사주로 타고난 성향을 읽고, 직접 들려준 생활 습관을 돌아봐요.")
+
     # 결제 화면
     s = _swap(s, '<div class="checkout-preview">미리보기 · 실제 결제가 발생하지 않아요</div>', '')
     s = _swap(s, '<p class="field-help">정식 서비스에서는 결과 링크와 보관함 조회에 이용돼요.</p>',

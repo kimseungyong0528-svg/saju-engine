@@ -32,6 +32,8 @@ STOCK = {
 
 # 목적어(무엇을)가 꼭 있어야 하는 말: "더 넣기 쉬워요"처럼 무엇을 넣는지 빠지면 읽는 사람이 헷갈린다
 NEEDS_OBJECT = re.compile(r"(?:^|\s)(?:더|크게|새로|다시)\s*(?:넣|빼|빌려주|맡기)")
+# 풀이의 믿음을 떨어뜨리는 말(2026-10-12 사장님 요청으로 금지)
+HEDGE = re.compile(r"참고용|참고로만|참고만\s*하|재미로\s*(?:보|읽|참고)|재미\s*삼아")
 LONG_SENTENCE = 90   # 이보다 긴 문장은 두 문장으로 나누게 한다(라벨 제외)
 
 GROUPS = ("비겁", "식상", "재성", "관성", "인성")
@@ -128,6 +130,8 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                     issues.append({"slot": sid, "kind": "문장", "detail": f"무엇을 하는지(목적어)가 빠졌어요. '돈을 더 넣기'처럼 무엇을 쓰세요: {sent[:80]}"})
                 elif len(re.sub(r"\([^)]*\)", "", body)) > LONG_SENTENCE:   # 괄호 속 용어 풀이는 빼고 센다
                     issues.append({"slot": sid, "kind": "문장", "detail": f"한 문장이 너무 길어요. 한 문장에 한 가지 내용만 쓰세요: {sent[:80]}"})
+                if HEDGE.search(sent):
+                    issues.append({"slot": sid, "kind": "문장", "detail": f"'참고용', '재미로' 같은 말은 빼고 사주 근거로 그대로 말하세요: {sent[:80]}"})
                 # 4) 범위를 벗어난 연도
                 for m in re.finditer(r"((?:19|20|21)\d\d)\s*년", sent):
                     if int(m[1]) not in year_range:

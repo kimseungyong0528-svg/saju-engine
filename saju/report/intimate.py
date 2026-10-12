@@ -41,7 +41,7 @@ STATIC = {
         "궁합에서는 두 사람의 일간(나를 나타내는 글자)끼리, 일지(배우자 자리)끼리의 관계와, 서로 모자란 기운을 채워 주는지를 가장 먼저 봐요.",
     ],
     "im_pair": [
-        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산한 참고용 점수예요. 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
+        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산한 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
     ],
 }
 
@@ -104,7 +104,7 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     return {
         "label": "궁합 재료", "data": data,
         "digest": {**data, "그 사람 사주": T.chart_brief(o), **T.digest_rows(years, months, T.near(f, periods, 30)),
-                   "점수 설명": "score는 궁합 점수(참고용). t_score는 그해·그달 두 사람 관계의 흐름 점수(두 사람 운의 흐름 평균에 배우자 별·배우자 자리 합을 더하고 충을 뺀 값)"},
+                   "점수 설명": "score는 궁합 점수. t_score는 그해·그달 두 사람 관계의 흐름 점수(두 사람 운의 흐름 평균에 배우자 별·배우자 자리 합을 더하고 충을 뺀 값)"},
         "years": years, "months": months, "periods": periods,
     }
 
@@ -143,7 +143,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("im_glance", "한눈에 보는 우리 궁합", static="im_pair", figure="kv", opener=True, rows=[
-            ["궁합 점수", f"{t['score']}점 (참고용)"],
+            ["궁합 점수", f"{t['score']}점 "],
             ["일간끼리", f"{cmp['day_master']['me']}·{cmp['day_master']['other']} · {cmp['day_master']['element_relation']}"],
             ["배우자 자리끼리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} · {cmp['spouse_palace']['tone']}"],
             ["합 · 충", f"손잡는 관계 {cmp['cross_relations']['harmony']}개 · 부딪히는 관계 {cmp['cross_relations']['tension']}개"],
@@ -225,13 +225,13 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("9", [
         P("im9_months", "앞으로 12개월 월별 궁합운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "관계 점수"),
-          note="표시: 그 달의 글자가 두 사람의 배우자 별·배우자 자리와 맺는 관계예요. 점수는 참고용이에요.",
+          note="표시: 그 달의 글자가 두 사람의 배우자 별·배우자 자리와 맺는 관계예요.",
           slot=S("im9_months", "표의 12개월 가운데 관계가 깊어지는 달과 조심할 달을 골라 달마다 함께 하면 좋은 일을 써 주세요.", FULL * 2 - 820)),
         P("im9_careful", "다투기 쉬운 달 미리 대비하기",
           slot=S("im9_careful", "조심할 달마다 왜 부딪히기 쉬운지 근거를 쓰고, 그달에 미리 할 일(약속, 일정, 말투)을 써 주세요.")),
         P("im9_years", "앞으로 5년 궁합운", figure="grid", span=2, grid=T.year_grid(th["years"], t["best_years"], "관계 점수"),
           slot=S("im9_years", "표의 5년을 한 해씩 문단으로 써 주세요(두 사람 각각의 표시 근거, 관계의 흐름, 함께 할 일).", FULL * 2 - 460)),
-        P("im9_graph", "나이별 인연의 흐름", figure="theme_graph", note="대운(10년)마다 배우자 별과 그 사람과의 합이 들어오면 점수가 올라가요. 참고용 점수예요.",
+        P("im9_graph", "나이별 인연의 흐름", figure="theme_graph", note="대운(10년)마다 배우자 별과 그 사람과의 합이 들어오면 점수가 올라가요.",
           slot=S("im9_graph", f"{name}님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
     ])
     mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "뚜렷한 시기 없음"
