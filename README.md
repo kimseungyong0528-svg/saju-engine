@@ -121,7 +121,7 @@ python -m saju.report --product reunion --name 박지은 --sex female --birth 19
     --answer "breakup=3~6개월 정도예요" --out reunion.pdf
 ```
 
-- 상품마다 목차 12장(사업운은 "돈이 잘 풀리는 시기"를 더해 13장) + 마지막 조언 뒤 "다른 사주도 궁금하다면", 50쪽 이상. 목차 원본과 가상 인터뷰·궁금한 주제 20가지는 프로젝트 `plan/<상품>-interview-topics.md`.
+- 상품마다 목차 12장(사업운은 "돈이 크게 들어오는 시기"를 더해 13장) + 마지막 조언 뒤 "다른 사주도 궁금하다면", 50쪽 이상. 목차 원본과 가상 인터뷰·궁금한 주제 20가지는 프로젝트 `plan/<상품>-interview-topics.md`.
 - `report/theme.py`: 공통 도구(연도·달·대운 표시와 점수, 표 쪽, 그래프). `report/<상품>.py`: 그 상품의 재료, 목차, 글 규칙, 다른 상품 순서.
 - 마지막 조언 장만 Opus, 나머지는 Haiku. `--use-texts 파일.json`으로 미리 쓴 글을 넣어 API 없이 PDF를 만들 수 있음.
 - 표지 색: 재회·궁합·재물·직업은 사이트 캐릭터 옷 색, 사업·건강은 임시 색.
