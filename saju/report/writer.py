@@ -260,6 +260,7 @@ class ClaudeWriter:
         self.max_workers = max_workers
         self.usage: list[dict] = []   # 장마다 쓴 토큰(비용 확인용)
         self.issues: list[dict] = []  # 마지막 검사에서 남은 문제
+        self.fixed: dict[str, list[str]] = {}  # 검사에 걸려 다시 쓴 칸과 그 까닭
 
     def _section(self, f: dict, section: dict, slots: list[dict], previous: str = "", fix: dict | None = None) -> dict:
         schema = strict_schema({"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
@@ -330,6 +331,7 @@ class ClaudeWriter:
         picked = V.by_slot(facts_issues + [i for i in issues if i["kind"] in soft and (i["slot"] in fact_slots or i["slot"] in soft_slots)])
         if not picked:
             return
+        self.fixed = {**getattr(self, "fixed", {}), **picked}
         todo = {}
         for no, sl in jobs.items():
             redo = [s for s in sl if s["id"] in picked]
