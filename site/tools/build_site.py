@@ -60,6 +60,21 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '"mode":"preview"', '"mode":"live"')
     s = _swap(s, '"business":{"company":"","owner":"","registration":"","commerce":"","address":"","email":"","phone":""}',
               '"business":' + json.dumps({k: v for k, v in b.items() if k != "kakao"}, ensure_ascii=False, separators=(",", ":")))
+    # 주문 화면에 남은 미리보기 문구를 실제 서비스 문구로 바꾼다(2026-10-12 전체 검수).
+    s = _swap(s, "<div class=\"pillars\">${['생시','생일','생월','생년'].map(t=>`<div><small>${t}</small><b>${t==='생시'&&uncertain?'?':'—'}</b><b>${t==='생시'&&uncertain?'?':'—'}</b></div>`).join('')}</div>", "")
+    s = _swap(s, "<p>사주 원국은 분석 서비스 연결 후 표시됩니다.</p>", "")
+    s = _swap(s, "<p>개별 분석 결과는 정식 서비스 연결 후 제공됩니다.</p>", "<p>결제하면 이 이야기를 한 권의 PDF로 써서 이메일로 보내드려요.</p>")
+    s = _swap(s, "'정식 리포트에는 분석의 근거와 해석을 함께 담도록 연결할 예정이에요.'", "'리포트에는 풀이마다 사주 근거와 해석을 함께 담아요.'")
+    # 보관함: 실제 주문은 이메일로 받으므로, 체험 주문 찾기 대신 받는 방법과 문의 방법을 안내한다.
+    lib_start = s.index("function libraryPage(){")
+    lib_end = s.index("function orderPage(", lib_start)
+    s = s[:lib_start] + (
+        "function libraryPage(){layout('나의 보관함',`<div class=\"page-pad library\"><div class=\"empty-icon\">${icon('book')}</div>"
+        "<h1>나의 리포트는<br>이메일로 보내드려요</h1><p class=\"muted\">결제 후 보통 10분 안에, 주문할 때 입력한 이메일로 PDF 파일을 보내드려요. "
+        "PDF는 메일을 보낸 뒤 7일이 지나면 서버에서 지우니, 꼭 내려받아 보관해주세요.</p>"
+        "<p class=\"local-note\">메일이 오지 않으면 스팸함을 먼저 확인해주세요. 그래도 없으면 주문한 이메일을 카카오톡으로 알려주세요. 확인한 뒤 다시 보내드려요.</p>"
+        "<button class=\"kakao\" data-action=\"support\">카카오톡으로 문의하기</button></div>`,'보관함')} "
+    ) + s[lib_end:]
     # 카카오톡으로 문의하기 버튼은 운명서재 카카오톡 채널로 연결한다.
     if b.get("kakao"):
         s = _swap(s, '"supportUrl":""', '"supportUrl":' + json.dumps(b["kakao"]))

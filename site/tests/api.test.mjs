@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeApi, memoryStore } from '../netlify/functions/lib/api.mjs';
-import { eraseOld } from '../netlify/functions/lib/orders.mjs';
+import { eraseOld, flagStuck } from '../netlify/functions/lib/orders.mjs';
 
 const ENV = { TOSS_CLIENT_KEY: 'test_ck', TOSS_SECRET_KEY: 'test_sk', GH_DISPATCH_TOKEN: 'gh', WORKER_SECRET: 'worker-secret', RESEND_API_KEY: 're', OWNER_EMAIL: 'Buyer@example.com' };
 const place = { status: 'known', countryCode: 'KR', countryName: '대한민국', regionChoice: '1100000000', regionCode: '1100000000', districtCode: '1111000000', city: '종로구', inputMode: 'list', referenceEra: 'unknown' };
@@ -143,6 +143,19 @@ test('보류되면 사장님께 알림', async () => {
   await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
   const v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'held', note: 'PDF 작성 실패' }, headers: { 'X-Worker-Secret': 'worker-secret' } })).json();
   assert.equal(v.status, 'held'); assert.deepEqual(t.calls.owner, ['PDF 작성 실패']);
+});
+
+test('결제 뒤 1시간 넘게 멈춘 주문은 사장님께 한 번만 알림', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  const { body: unpaid } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  t.calls.owner.length = 0;
+  const services = { notifyOwner: async (ord, note) => { t.calls.owner.push(ord.id); } };
+  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 30 * 60_000)), 0);
+  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 2 * 3_600_000)), 1);
+  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 3 * 3_600_000)), 0);
+  assert.deepEqual(t.calls.owner, [o.orderId]); assert.ok(unpaid.orderId);
 });
 
 test('개인정보 지우기: 발송 즉시 출생 정보 삭제, PDF는 7일 뒤 삭제, 미결제 주문은 하루 뒤 만료', async () => {

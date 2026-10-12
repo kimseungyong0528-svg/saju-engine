@@ -59,11 +59,12 @@ export function realServices(env, fetcher = fetch) {
     }, `pdf-${order.id}-${order.resends || 0}`);
   }
 
-  async function notifyOwner(order, note) {
+  async function notifyOwner(order, note, kind = 'held') {
     if (!env.OWNER_EMAIL) return;
+    const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : '발송 보류된 주문이 있어요';
     await resendEmail({
-      to: [env.OWNER_EMAIL], subject: `[운명서재] 발송 보류된 주문이 있어요 (${productName(order.productId)})`,
-      text: `주문번호 ${order.id}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n깃허브 Actions 기록을 확인하고, 다시 만들거나 토스 관리자 화면에서 환불해주세요.`,
+      to: [env.OWNER_EMAIL], subject: `[운명서재] ${what} (${productName(order.productId)})`,
+      text: `주문번호 ${order.id}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,
     });
   }
 
