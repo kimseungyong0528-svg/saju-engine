@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { makeApi, memoryStore } from '../netlify/functions/lib/api.mjs';
 import { eraseOld } from '../netlify/functions/lib/orders.mjs';
 
-const ENV = { TOSS_CLIENT_KEY: 'test_ck', TOSS_SECRET_KEY: 'test_sk', GH_DISPATCH_TOKEN: 'gh', WORKER_SECRET: 'worker-secret', RESEND_API_KEY: 're' };
+const ENV = { TOSS_CLIENT_KEY: 'test_ck', TOSS_SECRET_KEY: 'test_sk', GH_DISPATCH_TOKEN: 'gh', WORKER_SECRET: 'worker-secret', RESEND_API_KEY: 're', OWNER_EMAIL: 'Buyer@example.com' };
 const place = { status: 'known', countryCode: 'KR', countryName: '대한민국', regionChoice: '1100000000', regionCode: '1100000000', districtCode: '1111000000', city: '종로구', inputMode: 'list', referenceEra: 'unknown' };
 const self = { name: '김테스트', sex: 'female', birth: '1995-03-12', calendar: 'solar', timeAccuracy: 'exact', time: '06:30', birthPlace: place };
 const draft = { self, answers: { occupation: '직장에 다니고 있어요' }, question: '앞으로 일은?', email: 'buyer@example.com' };
@@ -30,6 +30,15 @@ async function order(t, extra = {}) {
   const r = await t.call('POST', '/api/orders', { body: { ...draft, productId: 'lifetime', ...extra }, headers: { 'Idempotency-Key': 'key-' + Math.random().toString(36).slice(2) } });
   return { r, body: await r.json() };
 }
+
+test('시험 키일 때는 사장님 이메일 주문만 받는다', async () => {
+  let t = setup();
+  let { r, body } = await order(t, { email: 'someone@example.com' });
+  assert.equal(r.status, 403); assert.equal(body.code, 'TEST_MODE_OWNER_ONLY');
+  ({ r } = await order(t, { email: ' buyer@EXAMPLE.com ' })); assert.equal(r.status, 201);
+  t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck', TOSS_SECRET_KEY: 'live_sk' } });
+  ({ r } = await order(t, { email: 'someone@example.com' })); assert.equal(r.status, 201);
+});
 
 test('payment-config: 키가 다 있어야 결제가 열린다', async () => {
   let t = setup();
@@ -60,7 +69,7 @@ test('접수 확인: 두 사람 상품은 상대방 생일이 없으면 막는�
 });
 
 test('주문: 금액은 서버 가격, 쿠폰·이메일 오류는 거절, 같은 키는 같은 주문', async () => {
-  const t = setup();
+  const t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck' } });
   const { r, body } = await order(t);
   assert.equal(r.status, 201); assert.equal(body.amount, 49800); assert.match(body.orderId, /^[a-f0-9-]{36}$/);
   assert.equal((await order(t, { discount: 5000 })).body.code, 'COUPON_NOT_AVAILABLE');

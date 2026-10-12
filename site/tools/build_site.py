@@ -65,6 +65,8 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '<div class="checkout-preview">미리보기 · 실제 결제가 발생하지 않아요</div>', '')
     s = _swap(s, '<p class="field-help">정식 서비스에서는 결과 링크와 보관함 조회에 이용돼요.</p>',
               '<p class="field-help">사주 결과 PDF를 이 이메일로 보내드려요. 정확히 입력해주세요.</p>')
+    s = _swap(s, "note.textContent=e.message==='COUPON_NOT_AVAILABLE'?",
+              "note.textContent=e.message==='TEST_MODE_OWNER_ONLY'?'지금은 시험 운영 중이라 결제할 수 없어요. 곧 정식으로 문을 열어요.':e.message==='COUPON_NOT_AVAILABLE'?")
     s = _swap(s, '<div class="field"><label for="coupon">할인 쿠폰</label>', '<div class="field" hidden><label for="coupon">할인 쿠폰</label>')
     s = _swap(s, '<input type="checkbox" name="payment" required>입력 확인 진행 동의</label>',
               '<input type="checkbox" name="payment" required>구매 조건 확인 동의</label>')
