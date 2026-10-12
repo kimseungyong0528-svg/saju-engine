@@ -373,8 +373,7 @@
   <div class="who">
     <b class="customer-name">{{ P.name }} 님</b>
     <div>{{ P.birth_text }} {{ P.time_text }} · {{ P.place }}</div>
-    <div>{{ P.sex_word }} · {{ P.zodiac }}띠</div>
-    {% if f.partner %}<div>함께 보는 사람 · {{ f.partner.person.name }} 님</div>{% endif %}
+    <div>{{ P.sex_word }} · {{ P.zodiac }}띠{% if f.partner %} · 함께 보는 사람 {{ f.partner.person.name }} 님{% endif %}</div>
   </div>
   <div class="brand">運命書齋 · 운명서재 · 금월선녀</div>
 </section>
