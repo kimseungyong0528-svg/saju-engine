@@ -46,11 +46,10 @@ def test_romance_pdf_and_writer_settings(tmp_path):
     assert "'연애사주'" in R.ROMANCE_STYLE and "{name}" in R.ROMANCE_STYLE
 
 
-def test_cross_sell_puts_intimate_first_for_crush():
+def test_cross_sell_follows_site_category_order_lifetime_last():
     f = _facts()
-    items = cross_sell(f, current="romance", first=R.cross_sell_order("짝사랑"))
-    assert items[0]["id"] == "intimate" and len(items) == 7
-    assert [p["id"] for p in cross_sell(f, current="romance")][0] == "lifetime"
+    ids = [p["id"] for p in cross_sell(f, current="romance", first=R.cross_sell_order("짝사랑"))]
+    assert ids == ["intimate", "reunion", "wealth", "career", "business", "health", "lifetime"]
 
 
 def test_cover_color_and_toc_without_links():

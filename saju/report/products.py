@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 
-SITE_URL = os.environ.get("SAJU_SITE_URL", "https://example.com").rstrip("/")
+SITE_URL = os.environ.get("SAJU_SITE_URL", "https://unmyeong-saju.com").rstrip("/")
 
 PRODUCTS = [
     {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "인생총운", "price": 49800, "original": 110000,
@@ -90,12 +90,16 @@ def hooks(f: dict) -> dict[str, str]:
     }
 
 
+# 사이트 카테고리 탭 순서: 연애(연애사주, 깊은 궁합) → 재회 → 금전(재물·직업·사업) → 건강 → 인생총운(평생사주)
+SITE_ORDER = ("romance", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime")
+
+
 def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None) -> list[dict]:
-    """다른 상품 안내. 사이트 순서대로 두되, first에 든 상품은 맨 위로 올린다."""
+    """다른 상품 안내. 사이트 카테고리 순서(연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
+    first는 예전 호출과 맞추려고 받기만 한다(2026-10-12 사장님 요청으로 순서를 바꾸지 않음)."""
     h = hooks(f)
     items = [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
               "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
-    if first:
-        items.sort(key=lambda p: 0 if p["id"] in first else 1)
+    items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
