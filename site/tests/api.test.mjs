@@ -145,6 +145,14 @@ test('보류되면 사장님께 알림', async () => {
   assert.equal(v.status, 'held'); assert.deepEqual(t.calls.owner, ['PDF 작성 실패']);
 });
 
+test('8개 상품 모두 서버 접수 확인이 된다', async () => {
+  const t = setup();
+  for (const productId of ['lifetime', 'romance', 'reunion', 'intimate', 'wealth', 'career', 'business', 'health']) {
+    const r = await t.call('POST', '/api/intake/assess', { body: { productId, self, partner: self, answers: {} } });
+    assert.equal(r.status, 200, productId);
+  }
+});
+
 test('결제 뒤 1시간 넘게 멈춘 주문은 사장님께 한 번만 알림', async () => {
   const t = setup();
   const { body: o } = await order(t);
