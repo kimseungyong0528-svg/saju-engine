@@ -143,15 +143,15 @@ COVER = {
                 "line": "#d8bb78", "thread": "#e9dfc6", "table": "#172033", "text": "#e9dfc6", "name": "#f6ecd8"},
     "intimate": {"outfit": "진홍", "glow_in": "#8c2a2c", "glow_out": "#4a1012", "dark": "#2c0708", "darker": "#1d0405",
                  "line": "#d8bb78", "thread": "#f0dcc4", "table": "#3a0d0f", "text": "#f3e3cf", "name": "#f8ecd8"},
-    "wealth": {"outfit": "초록", "glow_in": "#2f6a4a", "glow_out": "#123322", "dark": "#0a2014", "darker": "#06150d",
+    # 2026-10-12 사이트 표지 그림과 맞춤: 재물·직업·사업은 master.jpg(금색 옷), 건강은 career-cover.jpg(초록 옷)
+    "wealth": {"outfit": "금색", "glow_in": "#e9c56c", "glow_out": "#c4923a", "dark": "#8c6220", "darker": "#6e4c17",
+               "line": "#6b4a16", "thread": "#5a3f14", "table": "#e3bd62", "text": "#2e210b", "name": "#2e210b"},
+    "career": {"outfit": "금색", "glow_in": "#e9c56c", "glow_out": "#c4923a", "dark": "#8c6220", "darker": "#6e4c17",
+               "line": "#6b4a16", "thread": "#5a3f14", "table": "#e3bd62", "text": "#2e210b", "name": "#2e210b"},
+    "business": {"outfit": "금색", "glow_in": "#e9c56c", "glow_out": "#c4923a", "dark": "#8c6220", "darker": "#6e4c17",
+               "line": "#6b4a16", "thread": "#5a3f14", "table": "#e3bd62", "text": "#2e210b", "name": "#2e210b"},
+    "health": {"outfit": "초록", "glow_in": "#2f6a4a", "glow_out": "#123322", "dark": "#0a2014", "darker": "#06150d",
                "line": "#d8bb78", "thread": "#e9dfc6", "table": "#10291b", "text": "#ecdfc4", "name": "#f6ecd8"},
-    "career": {"outfit": "청록", "glow_in": "#2d6258", "glow_out": "#10302a", "dark": "#0a201c", "darker": "#061512",
-               "line": "#d8bb78", "thread": "#e9dfc6", "table": "#0f2723", "text": "#ecdfc4", "name": "#f6ecd8"},
-    # 사이트에 주인공 그림이 아직 없는 상품: 사이트 상품 색(business #d8bb78, health #9dc4b1)으로 임시 지정
-    "business": {"outfit": "황금(임시)", "glow_in": "#6e5526", "glow_out": "#33260f", "dark": "#1f1708", "darker": "#140f05",
-                 "line": "#e6cd8f", "thread": "#f0e2c0", "table": "#2a200c", "text": "#f3e6c8", "name": "#f8eed8"},
-    "health": {"outfit": "옥색(임시)", "glow_in": "#d9ece3", "glow_out": "#a9cdbd", "dark": "#6f9e8a", "darker": "#557f6d",
-               "line": "#8a7340", "thread": "#3f5f52", "table": "#c4e0d3", "text": "#26392f", "name": "#1e2f27"},
 }
 
 # 상품마다 다른 표지 글자와 안내 문구(기본값은 평생사주)
