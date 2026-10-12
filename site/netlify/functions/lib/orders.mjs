@@ -183,6 +183,23 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   return order;
 }
 
+// 멈춘 주문 알림: 결제는 됐는데 1시간이 넘도록 결과 작업이 끝나지 않은 주문(작업 서버가 꺼졌을 때 등)을 사장님 메일로 한 번 알린다.
+const RUNNING = new Set(['queued', 'processing', 'retry']);
+
+export async function flagStuck(store, services, now = new Date()) {
+  let flagged = 0;
+  for (const key of await store.list('orders/')) {
+    const order = await store.get(key);
+    if (!order || !RUNNING.has(order.status) || order.stuckNotifiedAt) continue;
+    if ((now - new Date(order.updatedAt)) / 3_600_000 < 1) continue;
+    await services.notifyOwner?.(order, `결과 작업이 1시간 넘게 끝나지 않았어요 (상태 ${order.status})`, 'stuck').catch(() => {});
+    order.stuckNotifiedAt = now.toISOString();
+    await store.set(key, order);
+    flagged += 1;
+  }
+  return flagged;
+}
+
 // 개인정보 지우기: 끝난 주문은 7일 뒤 남은 출생 정보·질문·PDF를 지운다(발송된 주문은 출생 정보를 발송 때 이미 지움). 결제 안 된 주문은 1일 뒤 만료.
 const DONE = new Set(['email_accepted', 'held', 'refunded', 'payment_failed', 'payment_expired', 'payment_adjusted']);
 
