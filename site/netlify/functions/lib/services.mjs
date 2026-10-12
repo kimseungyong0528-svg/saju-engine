@@ -41,7 +41,7 @@ export function realServices(env, fetcher = fetch) {
   }
 
   async function sendEmail(order, pdf) {
-    const name = order.payload?.self?.name || '고객';
+    const name = order.payload?.self?.name || order.mailName || '고객';
     const product = productName(order.productId) || '사주 결과';
     const site = env.SITE_URL || 'https://unmyeong-saju.com';
     const text = [
