@@ -31,6 +31,13 @@ export class ApiError extends Error {
 export const sha256 = text => createHash('sha256').update(text).digest('hex');
 export const productName = id => PRODUCTS.find(p => p.id === id)?.name;
 
+// 결과 PDF 파일 이름: "홍길동님의 연애사주 - 금월선녀의 운명서재.pdf" (2026-10-12 사장님 요청)
+export function reportFileName(order) {
+  const product = String(productName(order.productId) || '사주 결과').replace(/^금월선녀의\s*/, '');
+  const name = String(order.payload?.self?.name || order.mailName || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').trim();
+  return `${name ? name + '님의 ' : ''}${product} - 금월선녀의 운명서재.pdf`;
+}
+
 export function sameSecret(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || !a || !b) return false;
   const x = Buffer.from(a), y = Buffer.from(b);
@@ -103,6 +110,7 @@ export function publicView(order, hasPdf = false) {
     emailHint: order.email ? order.email.replace(/^(.).*(@.*)$/, '$1***$2') : '',
     createdAt: order.createdAt, updatedAt: order.updatedAt, pdfAvailable: hasPdf,
     canResend: order.status === 'email_accepted' && hasPdf && order.resends < MAX_RESENDS,
+    fileName: reportFileName(order),
   };
 }
 

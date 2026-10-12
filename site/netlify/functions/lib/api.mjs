@@ -2,7 +2,7 @@
 import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
-  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES,
+  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName,
 } from './orders.mjs';
 import { ready } from './services.mjs';
 
@@ -54,7 +54,7 @@ export function makeApi({ store, services, env }) {
         if (m === 'GET' && action === 'pdf') {
           const pdf = await store.getBytes(`pdf/${order.id}`);
           if (!pdf) throw new ApiError(404, 'PDF_NOT_AVAILABLE');
-          return new Response(pdf, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="unmyeong-report.pdf"', 'Cache-Control': 'no-store' } });
+          return new Response(pdf, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="unmyeong-report.pdf"; filename*=UTF-8''${encodeURIComponent(reportFileName(order))}`, 'Cache-Control': 'no-store' } });
         }
         if (m === 'POST' && action === 'confirm') {
           const updated = await confirmPayment(store, services, order, await readJson(req));
