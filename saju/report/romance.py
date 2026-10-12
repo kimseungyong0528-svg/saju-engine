@@ -50,7 +50,7 @@ STATIC = {
 _PEACH = {"인": "묘", "오": "묘", "술": "묘", "신": "유", "자": "유", "진": "유",
           "사": "오", "유": "오", "축": "오", "해": "자", "묘": "자", "미": "자"}
 
-# 배우자 별이 놓인 자리로 보는 만남의 경로와 나이 차이 경향(고전의 궁위론, 참고용)
+# 배우자 별이 놓인 자리로 보는 만남의 경로와 나이 차이 경향(고전의 궁위론)
 _SEAT_HINT = {
     "년주": ("집안·고향·어릴 적 인연이나 먼 곳에서 온 사람", "나보다 나이가 많은 사람과 인연이 닿기 쉬운 경향"),
     "월주": ("직장·학교·모임처럼 매일 오가는 사회생활 속 사람", "나이가 비슷하거나 조금 많은 사람과 인연이 닿기 쉬운 경향"),
@@ -80,7 +80,7 @@ def _love_mark(x: dict, gods: set[str], peach: set[str], raw: list[dict]) -> dic
     star = x["stem_ten_god"] in gods or x["branch_ten_god"] in gods
     hap, clash = _day_rel(raw)
     peach_in = x["ganzhi"][1] in peach
-    # 인연 점수(참고용): 운의 흐름 점수에 배우자 별, 배우자 자리와의 합, 도화를 더하고 배우자 자리와의 충을 뺀다
+    # 인연 점수: 운의 흐름 점수에 배우자 별, 배우자 자리와의 합, 도화를 더하고 배우자 자리와의 충을 뺀다
     score = x["score"] + 10 * star + 8 * hap + 6 * peach_in - 8 * clash
     signs = [s for s, on in (("배우자 별", star), ("배우자 자리와 합", hap), ("도화", peach_in), ("배우자 자리와 충", clash)) if on]
     return {"love_star": star, "love_hap": hap, "love_peach": peach_in, "love_clash": clash,

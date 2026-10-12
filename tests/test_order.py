@@ -46,3 +46,10 @@ def test_make_pdf_from_site_payload(tmp_path, product, answers, partner):
     out = tmp_path / "r.pdf"
     r = make_pdf(job, out)
     assert out.read_bytes()[:4] == b"%PDF" and r["pages"] >= 30
+
+
+def test_hedge_words_flagged():
+    from saju.report import verify
+    assert verify.HEDGE.search("이 점수는 참고용이에요.")
+    assert verify.HEDGE.search("띠는 재미로 보세요.")
+    assert not verify.HEDGE.search("이 표를 참고해 계획을 세워 보세요.")

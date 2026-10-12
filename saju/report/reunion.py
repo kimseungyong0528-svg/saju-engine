@@ -93,7 +93,7 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
         "label": "재회 재료",
         "data": data,
         "digest": {**{k: v for k, v in data.items()}, "그 사람 사주": T.chart_brief(o), **T.digest_rows(years, months, T.near(f, periods, 30)),
-                   "점수 설명": "t_score는 재회 점수(참고용): 운의 흐름 점수에 배우자 별, 두 사람 배우자 자리·일간과의 합을 더하고 충을 뺀 값"},
+                   "점수 설명": "t_score는 재회 점수: 운의 흐름 점수에 배우자 별, 두 사람 배우자 자리·일간과의 합을 더하고 충을 뺀 값"},
         "years": years, "months": months, "periods": periods,
     }
 
@@ -209,7 +209,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("8", [
         P("rn8_months", "앞으로 12개월 월별 재회운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "재회 점수"),
-          note="표시: 운의 글자가 두 사람의 배우자 자리·일간과 맺는 관계예요. 점수는 참고용이에요.",
+          note="표시: 운의 글자가 두 사람의 배우자 자리·일간과 맺는 관계예요.",
           slot=S("rn8_months", "표의 12개월 가운데 점수가 높은 달과 낮은 달을 골라 달마다 무엇을 하면 좋은지 써 주세요.", FULL * 2 - 820)),
         P("rn8_when", "연락하기 좋은 시기, 피할 때",
           slot=S("rn8_when", "좋은 달과 피할 달을 근거와 함께 다시 정리하고, 하루 중 연락하기 좋은 상황(바쁜 때를 피하는 법 등)도 써 주세요.")),
@@ -237,7 +237,7 @@ def build_outline(f: dict) -> list[dict]:
     section("10", [
         P("rn10_years", "앞으로 5년 재회운", figure="grid", opener=True, span=2, grid=T.year_grid(th["years"], t["best_years"], "재회 점수"),
           slot=S("rn10_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 두 사람 관계의 흐름, 할 일).", FULL * 2 - 460)),
-        P("rn10_graph", "나이별 인연 흐름", figure="theme_graph", note="대운(10년)마다 두 사람의 인연 글자가 들어오면 점수가 올라가요. 참고용 점수예요.",
+        P("rn10_graph", "나이별 인연 흐름", figure="theme_graph", note="대운(10년)마다 두 사람의 인연 글자가 들어오면 점수가 올라가요.",
           slot=S("rn10_graph", "그래프에서 인연이 강하게 들어오는 대운과 조용한 대운을 나이로 짚어 주세요.", HALF - 40)),
         P("rn10_after", "다시 만나면 오래 갈까",
           slot=S("rn10_after", "두 사람 배우자 자리 관계와 궁합을 근거로 다시 만났을 때 관계가 오래 가는 조건과 결혼까지 이어질 때 확인할 점을 써 주세요.")),

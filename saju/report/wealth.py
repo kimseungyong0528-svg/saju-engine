@@ -91,7 +91,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     }
     return {"label": "재물 재료", "data": data,
             "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
-                       "점수 설명": "t_score는 재물 점수(참고용): 운의 흐름 점수에 재성·식상이 들어오면 더하고, 비겁(나눠 가져가는 기운)과 월지 충을 빼 계산"},
+                       "점수 설명": "t_score는 재물 점수: 운의 흐름 점수에 재성·식상이 들어오면 더하고, 비겁(나눠 가져가는 기운)과 월지 충을 빼 계산"},
             "years": years, "months": months, "periods": periods}
 
 
@@ -185,7 +185,7 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("w6_debt", "이 사주에 맞는 빚·대출 원칙과 조심할 시기, 갚는 순서를 써 주세요.")),
     ])
     section("7", [
-        P("w7_graph", "나이별 재물운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 재성과 식상이 들어오면 점수가 올라가고, 비겁이 들어오면 내려가요. 참고용 점수예요.",
+        P("w7_graph", "나이별 재물운 그래프", figure="theme_graph", opener=True, note="대운(10년)마다 재성과 식상이 들어오면 점수가 올라가고, 비겁이 들어오면 내려가요.",
           slot=S("w7_graph", "그래프에서 재물운이 강한 시기와 약한 시기를 나이로 짚어 주세요.", HALF - 80)),
         P("w7_past", "지난 10년 돌아보기",
           slot=S("w7_past", "바로 앞 대운(지난 10년)의 글자와 재물 점수를 근거로 그때 돈이 어떻게 움직였기 쉬운지 돌아보고, 그 경험에서 지금 가져갈 교훈을 써 주세요.")),
@@ -206,7 +206,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("9", [
         P("w9_months", "앞으로 12개월 월별 재물운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "재물 점수"),
-          note="표시: 그 달에 들어오는 재물 별, 재능, 나가는 돈 기운이에요. 점수는 참고용이에요.",
+          note="표시: 그 달에 들어오는 재물 별, 재능, 나가는 돈 기운이에요.",
           slot=S("w9_months", "표의 12개월 가운데 돈이 들어오기 좋은 달과 아낄 달을 골라 달마다 할 일을 써 주세요.", FULL * 2 - 820)),
         P("w9_use", "쓸 달과 아낄 달",
           slot=S("w9_use", "큰 지출, 계약, 쇼핑, 투자 결정을 하기 좋은 달과 미룰 달을 근거와 함께 표처럼 정리해 주세요.", FULL, "plan")),

@@ -292,7 +292,7 @@ def gyeokguk(fp: FourPillars) -> dict:
 
 
 def yongsin_candidates(fp: FourPillars, st: dict) -> dict:
-    """억부와 조후로 본 용신 후보(해석 참고용, 확정이 아님)."""
+    """억부와 조후로 본 용신 후보(해석에 쓰는 후보)."""
     me = STEM_ELEMENT[fp.day.stem]
     names = lambda els: [ELEMENTS[e] for e in els]
     if st["score"] >= 55:

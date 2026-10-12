@@ -53,7 +53,7 @@ def _ganzhi_elements(ganzhi: str) -> list[str]:
 
 def luck_score(ganzhi: str, relations: list[dict], good: list[str], bad: list[str], gyeok: str = "보통",
                weights: dict[str, float] | None = None) -> int:
-    """운의 흐름 점수(참고용, 20~90). 필요한 기운이 오면 오르고, 넘치는 기운이 더해지거나 부딪히면 내려간다.
+    """운의 흐름 점수(20~90). 필요한 기운이 오면 오르고, 넘치는 기운이 더해지거나 부딪히면 내려간다.
     격을 돕는 십신이 오면 조금 더 오르고, 격을 해치는 십신이 오면 조금 더 내려간다(자평진전의 행운 판단)."""
     score = 55 + {"도움": 4, "방해": -4}.get(gyeok, 0)
     if weights is None:
