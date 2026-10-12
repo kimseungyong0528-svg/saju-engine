@@ -1,0 +1,17 @@
+# 넷리파이 설정: site 폴더의 public 을 사이트로, netlify/functions 를 주문 서버로 올린다.
+[build]
+  base = "site"
+  publish = "public"
+  functions = "netlify/functions"
+  command = "echo 사이트는 미리 만들어 둠"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

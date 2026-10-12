@@ -1,0 +1,165 @@
+// 주문 서버 시험: 실제 결제·이메일·깃허브 없이 가짜 서비스로 처음부터 끝까지 돌려 본다.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { makeApi, memoryStore } from '../netlify/functions/lib/api.mjs';
+import { eraseOld } from '../netlify/functions/lib/orders.mjs';
+
+const ENV = { TOSS_CLIENT_KEY: 'test_ck', TOSS_SECRET_KEY: 'test_sk', GH_DISPATCH_TOKEN: 'gh', WORKER_SECRET: 'worker-secret', RESEND_API_KEY: 're', OWNER_EMAIL: 'Buyer@example.com' };
+const place = { status: 'known', countryCode: 'KR', countryName: '대한민국', regionChoice: '1100000000', regionCode: '1100000000', districtCode: '1111000000', city: '종로구', inputMode: 'list', referenceEra: 'unknown' };
+const self = { name: '김테스트', sex: 'female', birth: '1995-03-12', calendar: 'solar', timeAccuracy: 'exact', time: '06:30', birthPlace: place };
+const draft = { self, answers: { occupation: '직장에 다니고 있어요' }, question: '앞으로 일은?', email: 'buyer@example.com' };
+
+function setup(overrides = {}) {
+  const store = memoryStore();
+  const calls = { confirm: [], dispatch: [], email: [], owner: [] };
+  const services = {
+    tossConfirm: async a => { calls.confirm.push(a); return overrides.tossFail ? { ok: false, code: 'REJECT_CARD_COMPANY' } : { ok: true }; },
+    startWorker: async id => { calls.dispatch.push(id); },
+    sendEmail: async (o, pdf) => { calls.email.push({ to: o.email, bytes: pdf.byteLength }); },
+    notifyOwner: async (o, note) => { calls.owner.push(note); },
+  };
+  const api = makeApi({ store, services, env: overrides.env || ENV });
+  const call = (method, path, { body, headers = {}, raw } = {}) => api(new Request('https://x.test' + path, {
+    method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
+    body: raw ?? (body ? JSON.stringify(body) : undefined),
+  }));
+  return { store, calls, call };
+}
+
+async function order(t, extra = {}) {
+  const r = await t.call('POST', '/api/orders', { body: { ...draft, productId: 'lifetime', ...extra }, headers: { 'Idempotency-Key': 'key-' + Math.random().toString(36).slice(2) } });
+  return { r, body: await r.json() };
+}
+
+test('시험 키일 때는 사장님 이메일 주문만 받는다', async () => {
+  let t = setup();
+  let { r, body } = await order(t, { email: 'someone@example.com' });
+  assert.equal(r.status, 403); assert.equal(body.code, 'TEST_MODE_OWNER_ONLY');
+  ({ r } = await order(t, { email: ' buyer@EXAMPLE.com ' })); assert.equal(r.status, 201);
+  t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck', TOSS_SECRET_KEY: 'live_sk' } });
+  ({ r } = await order(t, { email: 'someone@example.com' })); assert.equal(r.status, 201);
+});
+
+test('payment-config: 키가 다 있어야 결제가 열린다', async () => {
+  let t = setup();
+  let c = await (await t.call('GET', '/api/payment-config')).json();
+  assert.equal(c.customerAnalysisReady, true); assert.equal(c.clientKey, 'test_ck'); assert.equal(c.productNames.lifetime, '금월선녀의 평생사주');
+  t = setup({ env: { ...ENV, RESEND_API_KEY: '' } });
+  c = await (await t.call('GET', '/api/payment-config')).json();
+  assert.equal(c.customerAnalysisReady, false); assert.equal(c.clientKey, '');
+});
+
+test('접수 확인: 바른 입력은 결제 허용, 사이트와 같은 기준 버전', async () => {
+  const t = setup();
+  const d = await (await t.call('POST', '/api/intake/assess', { body: { ...draft, productId: 'lifetime' } })).json();
+  assert.equal(d.policyVersion, 'kr-c-2026-10-10.2'); assert.equal(d.paymentAllowed, true); assert.equal(d.status, 'eligible');
+  assert.match(d.inputFingerprint, /^[a-f0-9]{64}$/); assert.equal(d.payload, undefined);
+});
+
+test('접수 확인: 시간 모름이면 안내 문구를 붙여 허용', async () => {
+  const t = setup();
+  const d = await (await t.call('POST', '/api/intake/assess', { body: { ...draft, self: { ...self, timeAccuracy: 'unknown', time: undefined }, productId: 'lifetime' } })).json();
+  assert.equal(d.paymentAllowed, true); assert.ok(d.disclosures.some(x => x.includes('태어난 시간')));
+});
+
+test('접수 확인: 두 사람 상품은 상대방 생일이 없으면 막는다', async () => {
+  const t = setup();
+  const d = await (await t.call('POST', '/api/intake/assess', { body: { ...draft, productId: 'reunion', answers: {} } })).json();
+  assert.equal(d.paymentAllowed, false); assert.equal(d.code, 'PARTNER_BIRTH_REQUIRED');
+});
+
+test('주문: 금액은 서버 가격, 쿠폰·이메일 오류는 거절, 같은 키는 같은 주문', async () => {
+  const t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck' } });
+  const { r, body } = await order(t);
+  assert.equal(r.status, 201); assert.equal(body.amount, 49800); assert.match(body.orderId, /^[a-f0-9-]{36}$/);
+  assert.equal((await order(t, { discount: 5000 })).body.code, 'COUPON_NOT_AVAILABLE');
+  assert.equal((await order(t, { email: 'nope' })).body.code, 'EMAIL_REQUIRED');
+  const h = { 'Idempotency-Key': 'same-key-123' };
+  const a = await (await t.call('POST', '/api/orders', { body: { ...draft, productId: 'lifetime' }, headers: h })).json();
+  const b = await (await t.call('POST', '/api/orders', { body: { ...draft, productId: 'lifetime' }, headers: h })).json();
+  assert.equal(a.orderId, b.orderId);
+});
+
+test('주문 상태: 접근 열쇠가 틀리면 못 본다', async () => {
+  const t = setup();
+  const { body } = await order(t);
+  assert.equal((await t.call('GET', `/api/orders/${body.orderId}`, { headers: { Authorization: 'Bearer wrong' } })).status, 403);
+  const v = await (await t.call('GET', `/api/orders/${body.orderId}`, { headers: { Authorization: 'Bearer ' + body.accessToken } })).json();
+  assert.equal(v.status, 'awaiting_payment'); assert.equal(v.emailHint, 'b***@example.com'); assert.equal(v.payload, undefined);
+});
+
+test('금액이 다르면 결제를 승인하지 않는다', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  const auth = { Authorization: 'Bearer ' + o.accessToken };
+  // 금액이 다르면 승인하지 않는다
+  const bad = await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 100 }, headers: auth });
+  assert.equal((await bad.json()).code, 'AMOUNT_MISMATCH'); assert.equal(t.calls.confirm.length, 0);
+});
+
+test('결제 승인 성공 흐름', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  const auth = { Authorization: 'Bearer ' + o.accessToken };
+  let v = await (await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_1', amount: 49800 }, headers: auth })).json();
+  assert.equal(v.status, 'queued'); assert.deepEqual(t.calls.dispatch, [o.orderId]);
+  // 같은 승인 요청이 두 번 와도 한 번만 처리
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_1', amount: 49800 }, headers: auth });
+  assert.equal(t.calls.confirm.length, 1);
+  // 작업 쪽: 비밀값 없으면 거절
+  assert.equal((await t.call('GET', `/api/internal/orders/${o.orderId}`)).status, 403);
+  const w = { 'X-Worker-Secret': 'worker-secret' };
+  const job = await (await t.call('GET', `/api/internal/orders/${o.orderId}`, { headers: w })).json();
+  assert.equal(job.payload.self.name, '김테스트'); assert.equal(job.productId, 'lifetime');
+  v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'processing' }, headers: w })).json();
+  assert.equal(v.status, 'processing');
+  v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70, 1, 2, 3]), headers: { ...w, 'Content-Type': 'application/pdf' } })).json();
+  assert.equal(v.status, 'email_accepted'); assert.equal(v.pdfAvailable, true); assert.equal(t.calls.email.length, 1);
+  const pdf = await t.call('GET', `/api/orders/${o.orderId}/pdf`, { headers: auth });
+  assert.equal(pdf.headers.get('content-type'), 'application/pdf'); assert.equal((await pdf.arrayBuffer()).byteLength, 7);
+  // 다시 보내기: 같은 키는 한 번, 최대 3번
+  const rk = { ...auth, 'Idempotency-Key': 'r1' };
+  await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: rk });
+  await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: rk });
+  assert.equal(t.calls.email.length, 2);
+  for (const k of ['r2', 'r3']) await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { ...auth, 'Idempotency-Key': k } });
+  const over = await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { ...auth, 'Idempotency-Key': 'r4' } });
+  assert.equal((await over.json()).code, 'RESEND_LIMIT'); assert.equal(t.calls.email.length, 4);
+});
+
+test('카드 거절이면 결제 실패, 작업 시작 안 함', async () => {
+  const t = setup({ tossFail: true });
+  const { body: o } = await order(t);
+  const r = await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  assert.equal(r.status, 402); assert.equal(t.calls.dispatch.length, 0);
+});
+
+test('보류되면 사장님께 알림', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'held', note: 'PDF 작성 실패' }, headers: { 'X-Worker-Secret': 'worker-secret' } })).json();
+  assert.equal(v.status, 'held'); assert.deepEqual(t.calls.owner, ['PDF 작성 실패']);
+});
+
+test('개인정보 지우기: 발송 30일 뒤 출생 정보와 PDF 삭제, 미결제 주문은 하루 뒤 만료', async () => {
+  const t = setup();
+  const { body: a } = await order(t);
+  const { body: b } = await order(t);
+  await t.call('POST', `/api/orders/${a.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + a.accessToken } });
+  await t.call('POST', `/api/internal/orders/${a.orderId}/result`, { raw: new Uint8Array([1, 2]), headers: { 'X-Worker-Secret': 'worker-secret' } });
+  const later = new Date(Date.now() + 31 * 86_400_000);
+  await eraseOld(t.store, later); // b: 만료, a: 지움
+  await eraseOld(t.store, new Date(later.getTime() + 31 * 86_400_000)); // b도 지움
+  const A = await t.store.get(`orders/${a.orderId}`), B = await t.store.get(`orders/${b.orderId}`);
+  assert.equal(A.status, 'erased'); assert.equal(A.payload, undefined); assert.equal(await t.store.getBytes(`pdf/${a.orderId}`), null);
+  assert.equal(B.status, 'erased'); assert.equal(A.email, 'buyer@example.com'); // 거래 기록은 남김
+});
+
+test('결제 승인은 접근 열쇠 없이도 된다(브라우저 저장값이 사라진 경우)', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  const v = await (await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 } })).json();
+  assert.equal(v.status, 'queued'); assert.equal(v.amount, undefined); assert.equal(t.calls.dispatch.length, 1);
+  assert.equal((await t.call('GET', `/api/orders/${o.orderId}`)).status, 403);
+});
