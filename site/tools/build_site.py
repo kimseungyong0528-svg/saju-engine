@@ -75,6 +75,25 @@ def patch_texts(s: str, b: dict) -> str:
         "<p class=\"local-note\">메일이 오지 않으면 스팸함을 먼저 확인해주세요. 그래도 없으면 주문한 이메일을 카카오톡으로 알려주세요. 확인한 뒤 다시 보내드려요.</p>"
         "<button class=\"kakao\" data-action=\"support\">카카오톡으로 문의하기</button></div>`,'보관함')} "
     ) + s[lib_end:]
+    # 무료 콘텐츠 4개(무료 사주·인연 우주·태어난 시간 찾기·월간 운세)는 예시 화면뿐이라 숨긴다(2026-10-12 사장님 결정).
+    # 코드는 남겨 두고 첫 화면·메뉴에서 빼며, 주소로 들어와도 첫 화면으로 보낸다. 없는 프리미엄 상담 안내와
+    # 실제로 없는 5,000원 할인 팝업도 뺀다.
+    s = _swap(s, '<section class="section"><div class="section-head"><h2>오늘은 가볍게, 무료 사주</h2><p>혼자 발견하고, 함께 나누는 나의 이야기</p></div><div class="rail free-rail"><a href="#/free" class="banner"><span class="eyebrow">FREE READING</span><h3>내 안의<br>또 다른 나</h3><p>사주팔자 · 운명지도 · 전생</p><span class="pill">무료로 시작하기</span></a><a href="#/friends" class="banner friend-banner"><span class="eyebrow">OUR UNIVERSE</span><h3>친구와 나의<br>인연 우주</h3><p>우리 사이, 새로운 발견</p><span class="pill">함께 알아보기</span></a></div></section>', '')
+    s = _swap(s, '<section class="section"><div class="section-head"><h2>태어난 시간을 모르겠다면</h2><p>나의 성향에서 찾는 시간의 실마리</p></div><a class="banner time-banner" href="#/birth"><span class="eyebrow">FIND MY TIME</span><h3>내가 태어난<br>시간을 찾아서</h3><p>몇 가지 질문으로 시작하는 시간 여행</p></a></section>', '')
+    s = _swap(s, '<section class="section"><div class="section-head"><h2>이번 계절의 이야기</h2><p>지금 나에게 필요한 운세와 소식</p></div><div class="rail free-rail"><a class="banner monthly-banner" href="#/monthly"><span class="eyebrow">MONTHLY LETTER</span><h3>${new Date().getMonth()+1}월,<br>나의 운세 편지</h3><p>일간별로 펼쳐보는 이번 달</p></a><a class="banner" href="#/support"><span class="eyebrow">WITH YOU</span><h3>궁금한 이야기를<br>직접 물어보세요</h3><p>상담과 서비스 문의</p></a></div></section>',
+              '<section class="section"><div class="section-head"><h2>궁금한 점이 있다면</h2><p>주문과 결과 받기에 관한 문의</p></div><a class="banner" href="#/support"><span class="eyebrow">WITH YOU</span><h3>궁금한 이야기를<br>직접 물어보세요</h3><p>카카오톡으로 문의하기</p></a></section>')
+    s = _swap(s, '<section class="section"><div class="section-head"><h2>조금 더 깊은 이야기</h2><p>프리미엄 1대1 상담</p></div><a class="banner premium-banner" href="#/support?type=premium"><span class="eyebrow">PRIVATE CONSULTATION</span><h3>오직 당신의<br>이야기에 집중하는 시간</h3><p>상담 일정과 이용 방법 알아보기</p></a></section>', '')
+    s = _swap(s, '<div class="drawer-bottom"><a href="#/free">무료 사주</a><a href="#/support">고객센터</a></div>', '<div class="drawer-bottom"><a href="#/support">고객센터</a></div>')
+    s = _swap(s, '서비스 이용과 리포트, 프리미엄 상담에 관한 안내를 확인하세요.', '주문과 결과 받기에 관한 안내를 확인하세요.')
+    s = _swap(s, "else if(route==='/game'){go('/');return}else if(['free','friends','birth','monthly'].includes(parts[0]))renderAux(",
+              "else if(['game','free','friends','birth','monthly','order','report'].includes(parts[0])){go('/');return}else if(false)renderAux(")
+    s = _swap(s, "else if(parts[0]==='order')orderPage(parts[1]);else if(parts[0]==='report')reportPage(parts[1]);", "")
+    s = _swap(s, "if(cat==='전체'&&!sessionStorage.getItem('unmyeong.popups')&&!localStorage.getItem('unmyeong.hideOffer')){sessionStorage.setItem('unmyeong.popups','1');offer()}", "")
+    # 상품 소개 화면의 그림 설명에 남은 '예시', '연결 후' 문구
+    s = _swap(s, "<span>인생 흐름 · 화면 예시</span><svg viewBox=\"0 0 300 145\" role=\"img\" aria-label=\"인생 흐름 그래프 예시\">", "<span>인생 흐름</span><svg viewBox=\"0 0 300 145\" role=\"img\" aria-label=\"인생 흐름 그래프\">")
+    s = _swap(s, "<p>개인별 수치는 분석 연결 후 표시됩니다.</p>", "<p>리포트에서는 내 사주로 계산한 시기별 흐름을 보여드려요.</p>")
+    s = _swap(s, "<p>관계를 돌아보는 질문과 생각해 볼 행동을 담는 영역입니다.</p>", "<p>관계를 돌아보는 질문과 실천할 행동을 리포트에 담았어요.</p>")
+    s = _swap(s, "<p>실제 계산 결과가 들어갈 자리예요.<br>고정된 점수를 개인 결과로 표시하지 않아요.</p>", "<p>두 사람의 사주로 계산한 점수는<br>리포트에서 확인할 수 있어요.</p>")
     # 카카오톡으로 문의하기 버튼은 운명서재 카카오톡 채널로 연결한다.
     if b.get("kakao"):
         s = _swap(s, '"supportUrl":""', '"supportUrl":' + json.dumps(b["kakao"]))
@@ -121,7 +140,7 @@ def patch_texts(s: str, b: dict) -> str:
               '<p class="fine-print">결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
-              '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 무료 콘텐츠의 결과 화면은 예시이며, 유료 리포트는 결제 후 개인별로 작성해 이메일로 보내드려요.</div>')
+              '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
     s = _swap(s, '<span class="pill">미리보기 운영 안내</span>', '<span class="pill">운명서재 이용 안내</span>')
     s = _swap(s, "최종 수정: ${new Date().toLocaleDateString('ko-KR')}", "시행일: 2026년 10월 12일")
 
@@ -148,6 +167,8 @@ INTAKE_PARTS = [
     ("const KoreanLunarCalendar = (()=>{", "function personBirthSummary"),
     ("const PRODUCTS=[", "// Kept only so previously saved demo orders still open."),
     ("const scene=(id,title,text,cta=", "const SALES={"),
+    # 사업운·건강운 질문 흐름은 뒤쪽에 따로 붙어 있다. 빠지면 서버 접수 확인이 두 상품에서 멈춘다.
+    ("// New catalog entries use the existing story", "SALES.business={"),
     ("// SCOPE-01 / INPUT-01/02 / INTAKE-C01..06 / ISSUE-01.", "// Status and cancellation"),
 ]
 
