@@ -148,5 +148,5 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product .price em { font-style: normal; font-weight: 700; color: #b2452f; margin: 0 1mm; }
 .product .price strong { color: #1f1b16; }
 a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space: nowrap; }
-.go-row { text-align: right; margin: 1mm 0 0; }
+.hook a.go { float: right; margin-left: 3mm; }
 .end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 4mm; }

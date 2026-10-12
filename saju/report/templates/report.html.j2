@@ -202,8 +202,7 @@
   <div class="product">
     <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="price"><s>{{ p.original_text }}</s> <em>{{ p.discount }}%</em> <strong>{{ p.price_text }}</strong></span></div>
     <p class="product-line">{{ p.line }}</p>
-    <p>{{ p.hook }}</p>
-    <p class="go-row"><a class="go" href="{{ p.url }}">바로 보기 →</a></p>
+    <p class="hook">{{ p.hook }}<a class="go" href="{{ p.url }}">바로 보기 →</a></p>
   </div>{% endfor %}
   <p class="end-mark">運命書齋 · 금월선녀</p>
 {%- elif k == "love_letters" -%}
