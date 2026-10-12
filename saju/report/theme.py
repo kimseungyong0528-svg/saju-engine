@@ -48,11 +48,30 @@ def clamp(v: float) -> int:
 
 
 def marked(f: dict, fn) -> tuple[list[dict], list[dict], list[dict]]:
-    """세운 5년, 월운 12달, 대운 전체에 상품별 표시(fn)를 붙인다. fn(x) → {t_score, t_signs, ...}"""
+    """세운 5년, 월운 12달, 대운 전체에 상품별 표시(fn)를 붙인다. fn(x) → {t_score, t_signs, ...}
+
+    주문한 해는 이미 지난 달이 있으므로, 해 점수와 남은 달 점수의 평균을 반씩 섞는다
+    (해는 '좋은 해'인데 남은 달이 모두 낮게 나오는 어긋남을 막는다)."""
     years = [dict(s, **fn(s)) for s in f["sewoon"][:5]]
     months = [dict(m, **fn(m)) for m in f["months"]]
     periods = [dict(p, **fn(p)) for p in f["daewoon"]["periods"]]
+    blend_current_year(years, months)
     return years, months, periods
+
+
+def blend_current_year(years: list[dict], months: list[dict], key: str = "t_score") -> None:
+    if not years:
+        return
+    rest = [m[key] for m in months if m["year"] == years[0]["year"]]
+    if rest:
+        years[0][key] = clamp((years[0][key] + sum(rest) / len(rest)) / 2)
+        years[0]["rest_months"] = len(rest)
+
+
+def near(f: dict, periods: list[dict], span: int = 40, cap: int = 80) -> list[dict]:
+    """의미 있는 대운만: 지난 대운은 두고, 앞으로의 대운은 '지금 나이 + span'과 cap 가운데 이른 나이 안에서 시작하는 것만."""
+    limit = min(cap, f["person"]["age"] + span)
+    return [p for p in periods if p["state"] == "지난" or p["age_from"] <= max(limit, f["person"]["age"])]
 
 
 def best(rows: list[dict], n: int, label) -> list[str]:
@@ -77,6 +96,8 @@ def digest_rows(years: list[dict], months: list[dict], periods: list[dict]) -> d
         "달별": [{"start_text": m["start_text"], "ganzhi": m["ganzhi"], **{k: m[k] for k in keep}} for m in months],
         "대운별": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"], "state": p["state"],
                    **{k: p[k] for k in keep}} for p in periods],
+        "점수 읽는 법": f"연도별 첫 해({years[0]['year']}년)의 t_score는 이미 지난 달을 빼고, 해 점수와 남은 달 점수를 반씩 섞은 값이에요. "
+                     "올해 이야기는 남은 달의 점수와 함께 씁니다. 대운별은 의미 있는 나이까지만 실었어요." if years else "",
     }
 
 

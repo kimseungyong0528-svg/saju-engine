@@ -103,7 +103,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "leak_months": [T.ym(m) for m in sorted(months, key=lambda m: (not _bi(m), m["t_score"]))[:3]],
     }
     return {"label": "사업 재료", "data": data,
-            "digest": {**data, **T.digest_rows(years, months, periods),
+            "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
                        "점수 설명": "t_score는 사업 점수(참고용): 운의 흐름 점수에 재성·식상·관성이 들어오면 더하고, 재성이 있는 사주에 비겁이 들어오면(경쟁·지출) 빼고, 월지 충은 조금 빼 계산"},
             "years": years, "months": months, "periods": periods}
 
@@ -183,7 +183,7 @@ def build_outline(f: dict) -> list[dict]:
         P("b5_staff", "직원과 함께 일하는 법",
           slot=S("b5_staff", "식상(아랫사람)·관성 구성(없으면 없는 대로)을 근거로 직원을 뽑을 때 볼 점, 일을 맡기는 법, 부딪히기 쉬운 장면과 방법을 써 주세요.")),
         P("b5_client", "거래처와 파트너",
-          slot=S("b5_client", "귀인 신살과 합충을 근거로 도움이 되는 거래처·파트너의 유형과 조심할 유형, 계약할 때 확인할 점을 써 주세요.")),
+          slot=S("b5_client", "합충과 사주에 실제로 있는 귀인 신살(없으면 인성·관성 구성)을 근거로 도움이 되는 거래처·파트너의 유형과 조심할 유형, 계약할 때 확인할 점을 써 주세요.")),
     ])
     section("6", [
         P("b6_open", "손님이 찾아오는 이유", figure="opener", opener=True,

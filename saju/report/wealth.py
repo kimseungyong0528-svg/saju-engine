@@ -76,7 +76,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     years, months, periods = T.marked(f, mark)
     mtype, mtext = _money_type(f)
     # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
-    ahead = [p for p in periods if p["state"] != "지난" and int(p["age_text"].split("~")[0]) <= 80]
+    ahead = [p for p in T.near(f, periods) if p["state"] != "지난"]
     big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
     data = {
         "occupation": answers.get("occupation", ""),
@@ -90,7 +90,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "big_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]} for p in big[:3]],
     }
     return {"label": "재물 재료", "data": data,
-            "digest": {**data, **T.digest_rows(years, months, periods),
+            "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
                        "점수 설명": "t_score는 재물 점수(참고용): 운의 흐름 점수에 재성·식상이 들어오면 더하고, 비겁(나눠 가져가는 기운)과 월지 충을 빼 계산"},
             "years": years, "months": months, "periods": periods}
 
@@ -193,7 +193,7 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("w7_now", "지금 대운의 글자(십신, 재물 표시, 점수)를 근거로 이 10년 동안의 돈의 흐름과 할 일을 써 주세요.")),
         P("w7_next", "다음 10년의 재물운",
           slot=S("w7_next", "다음 대운의 글자를 근거로 그 10년의 돈의 흐름을 미리 쓰고, 지금부터 준비할 것을 써 주세요.")),
-        P("w7_table", "큰돈이 드는 시기", figure="grid", grid=T.period_grid(th["periods"], "재물 점수"),
+        P("w7_table", "큰돈이 드는 시기", figure="grid", grid=T.period_grid(T.near(f, th["periods"]), "재물 점수"),
           slot=S("w7_table", "표에서 재물 점수가 높은 대운을 골라 그때 무엇을 하면 좋은지 써 주세요.", HALF - 160)),
     ])
     section("8", [

@@ -95,7 +95,7 @@
     <div class="bar-row"><span class="bar-label"><span class="han">{{ e.hanja }}</span> {{ e.name }}</span>
     <span class="bar-track"><span class="bar-fill el-{{ e.el }}" style="display:block; width: {{ [e.pct, 1]|max }}%"></span></span>
     <span class="bar-pct">{{ e.pct }}% {% if e.status != "보통" %}<b>{{ e.status }}</b>{% endif %}</span></div>{% endfor %}</div>
-  <p class="sub">글자 수: {% for e in f.elements %}{{ e.name }} {{ e.count }}개{% if not loop.last %} · {% endif %}{% endfor %} (계절과 자리의 힘을 반영해 비율을 계산했어요)</p>
+  <p class="sub">글자 수: {% for e in f.elements %}{{ e.name }} {{ e.count }}개{% if not loop.last %} · {% endif %}{% endfor %} (계절과 자리의 힘을 반영해 비율을 계산했어요{% if f.elements|selectattr("count", "equalto", 0)|selectattr("pct", "gt", 0)|list %}. 0개인데 비율이 있는 기운은 겉으로는 없고 지지 속 숨은 글자에만 있어요{% endif %})</p>
 {%- elif k == "tengod_table" -%}
   <table><tr><th>무리</th><th>십신</th><th class="left">뜻</th></tr>
   {% for g in f.ten_god_groups %}<tr><th>{{ g.group }}<br><span class="sub">{{ g.label }}</span></th><td>{{ g.members }}</td><td class="left">{{ g.meaning }}</td></tr>{% endfor %}</table>

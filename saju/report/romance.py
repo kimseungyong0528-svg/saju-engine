@@ -110,7 +110,9 @@ def build_romance(f: dict, result: dict, order) -> dict:
     years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in f["sewoon"][:5]]
     months = [dict(m, **_love_mark(m, gods, peach, m["relations"])) for m in f["months"]]
     periods = [dict(p, **_love_mark(p, gods, peach, p["relations"])) for p in f["daewoon"]["periods"]]
-    marriage = [p for p in periods if p["state"] != "지난" and (p["love_star"] or p["love_hap"])]
+    from .theme import blend_current_year, near
+    blend_current_year(years, months, "love_score")   # 올해 점수에서 이미 지난 달의 몫을 덜어 낸다
+    marriage = [p for p in near(f, periods) if p["state"] != "지난" and (p["love_star"] or p["love_hap"])]
 
     natal_day = [r for r in f["relations"] if "일주" in r.get("between", [])]
     status = STATUS_TEXT.get(order.relationship, order.relationship)
@@ -281,7 +283,7 @@ def build_outline(f: dict) -> list[dict]:
         page("r10_key", "내 연애 사주 핵심 정리", opener=True,
              slot=_slot("r10_key", "이 책에서 가장 중요한 세 가지(연애할 때 나의 힘, 인연이 오는 때, 꼭 바꿀 습관)를 한 문장 요약(lead)과 함께 정리해 주세요.", 640, "lead")),
         page("r10_lucky", "인연을 부르는 색·장소·행동", figure="lucky",
-             slot=_slot("r10_lucky", "용신 기운과 도화를 근거로 인연을 부르는 색, 장소, 옷차림, 행동을 생활에서 바로 쓸 수 있게 써 주세요.", HALF)),
+             slot=_slot("r10_lucky", "용신 기운과 도화(사주에 있으면, 없으면 도화의 글자가 들어오는 해·달)를 근거로 인연을 부르는 색, 장소, 옷차림, 행동을 생활에서 바로 쓸 수 있게 써 주세요.", HALF)),
         page("r10_good", "좋은 시기에 인연 늘리는 법",
              slot=_slot("r10_good", "인연 점수가 높은 해와 달에 무엇을 하면 인연을 최대로 늘릴 수 있는지, 앞 장의 방법을 모아 언제 무엇을 할지까지 써 주세요.")),
         page("r10_care", "조심할 시기에 상처 줄이는 법",

@@ -55,13 +55,26 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 - 성별 고정관념으로 쓰지 않습니다.
 - 다른 칸과 같은 문장을 되풀이하지 않습니다.
 
-[내용의 깊이: 구매자가 "내 얘기다"라고 느끼게]
+[내용의 깊이: 30만원짜리 대면 상담을 받은 느낌으로]
 - 문단은 '사주 근거 → 생활 속 구체적인 장면 → 바로 해 볼 수 있는 방법' 순서로 씁니다.
-- 누구에게나 맞는 말 대신, 이 사람 사주에만 있는 글자·개수·관계를 근거로 댑니다.
-- 장면은 구체적으로 씁니다. 예: 회의에서 의견이 갈릴 때, 첫 데이트에서, 월급날, 이직 제안을 받았을 때.
-- 방법은 오늘부터 할 수 있는 행동으로 씁니다. 예: "중요한 결정은 하루 뒤에 다시 보기", "한 달 예산을 세 칸으로 나누기".
+- 근거는 한 글자로 끝내지 않고 이어서 씁니다: 어떤 글자가 어디에 있고(예: 태어난 달 지지의 편관) → 다른 글자와 어떤 관계이며(합·충, 많고 적음) → 그래서 어느 해·어느 달에 어떻게 드러나는지.
+- 누구에게나 맞는 말 대신, 이 사람 사주에만 있는 글자·개수·관계를 근거로 댑니다. "다른 사람이라면 ~하겠지만 {name}님은 ~해서"처럼 이 사람만의 차이를 보여 줍니다.
+- 때를 말할 때는 '사주 계산 결과'에 있는 연도·달·나이를 그대로 짚습니다. "언젠가", "때가 되면" 대신 "OOOO년 O월(OO 절기부터)"처럼 계산 결과에 있는 해와 달을 그대로 넣어 씁니다.
+- 장면은 이 사람의 나이, 성별, '요즘 일상', 질문에 맞춰 구체적으로 씁니다. 예: 회의에서 의견이 갈릴 때, 첫 데이트에서, 월급날, 이직 제안을 받았을 때.
+- 방법은 오늘부터 할 수 있는 행동으로, 언제·무엇을·얼마나를 넣어 씁니다. 예: "한 달 예산을 세 칸으로 나누기", "용신 색 소품을 책상 오른쪽에 두기", "계약서는 서명 전에 믿을 만한 사람에게 한 번 보여 주기".
+- 방법은 그 칸의 주제와 이 사람의 사주에 맞게 새로 생각해 씁니다. 위 예시를 그대로 옮겨 쓰지 않습니다.
+- 흔한 방법(하루 뒤에 다시 보기, 메모하기, 심호흡, 산책, 일찍 자기, 물 마시기)은 이 장에서 많아야 한 번만 씁니다. 같은 방법이 책 전체에서 세 번을 넘지 않게, 다른 장과 겹치지 않을 방법을 고릅니다.
 - 좋은 점과 조심할 점을 함께 씁니다. 조심할 점에는 반드시 대처 방법을 붙입니다.
 - 대처 방법은 문장 끝 다음에 "보완법:", "방법:"처럼 이름표를 붙여 씁니다. 이름표가 붙은 부분은 PDF에서 새 줄로 나옵니다.
+
+[사주에 없는 것]
+- '쓸 내용'에 나온 신살·십신·관계가 이 사주에 없거나 0개이면, 없다는 것을 한 문장으로 짧게 말하고 사주에 실제로 있는 다른 근거로 씁니다. 없는 것을 있다고 쓰지 않습니다.
+- 신살은 '신살' 목록에 있는 것만 이 사람의 신살로 씁니다. 운(해·달)에 그 글자가 들어오는 것은 '그 해에 도화의 글자가 들어와요'처럼 운의 일로 씁니다.
+- 십신·오행 개수를 말할 때는 '십신 무리', '오행'의 값을 그대로 씁니다. 오행 비율(pct)은 숨은 글자까지 합친 힘이라서, 개수가 0개여도 비율이 조금 있을 수 있습니다. 이때는 "겉으로는 없지만 속에 조금 있어요"라고 씁니다.
+- 관성(직장·명예) 운은 사주에 상관이 강하면(상관격이거나 상관이 2개 이상) 승진·인정만 쓰지 않고, 윗사람·규칙과 부딪히기 쉬운 면도 함께 씁니다.
+
+[올해 이야기]
+- 세운의 첫 해(주문한 해)는 이미 지난 달이 있습니다. 올해 남은 기간을 말할 때는 그 해 점수보다 남은 달의 월운 점수를 근거로 씁니다.
 
 [고전 판단 쓰는 법: 자평진전으로 뼈대, 적천수로 흐름]
 - 일·돈·지위·성취는 '고전 판단'의 격국 성패(성격·파격), 좋은 점, 흠, 상신(격을 살리는 글자)을 근거로 씁니다.
@@ -168,6 +181,10 @@ def _digest(f: dict) -> dict:
                  for s in f["sewoon"]],
         "월운": [{k: m[k] for k in ("start_text", "term", "ganzhi", "stem_ten_god", "branch_ten_god", "relations_text", "gyeok_effect", "score")}
                  for m in f["months"]],
+        "읽는 법": {
+            "오행": "count는 겉으로 보이는 글자 수, pct는 숨은 글자까지 합친 힘의 비율이에요. count가 0이어도 pct가 조금 있으면 '겉으로는 없지만 속에 조금 있다'는 뜻이에요.",
+            "올해": f"세운의 첫 해({f['sewoon'][0]['year']}년)는 이미 지난 달이 있어요. 올해 남은 기간은 월운 점수를 함께 보고 씁니다." if f.get("sewoon") else "",
+        },
         "참고 지식": {
             "십신 뜻": {k: v["meaning"] for k, v in K.TEN_GOD.items()},
             "신살 뜻": {n: K.SHINSAL.get(n, "") for n in f["shinsal_names"]},
@@ -204,6 +221,16 @@ def previous_text(texts: dict, limit: int = 20000) -> str:
     return "\n".join(lines)[:limit]
 
 
+# 반복 때문에 다시 쓰는 칸은 한 권에 이만큼까지(사실 오류는 개수와 상관없이 모두 고친다)
+MAX_REPEAT_FIX = int(os.environ.get("SAJU_MAX_REPEAT_FIX", "6"))
+
+FIX_RULES = """[고쳐 쓰기]
+- 각 칸의 '먼저 쓴 글'에서 '고칠 점'만 고쳐 다시 씁니다. 나머지 내용, 형식, 분량(chars)은 그대로 지킵니다.
+- 사주에 없는 것, 계산 결과에 없는 숫자·연도는 지우고 계산 결과에 있는 근거로 바꿉니다.
+- 반복이라고 한 방법은 이 칸의 주제와 이 사람 사주에 맞는 다른 구체적인 방법으로 바꿉니다.
+"""
+
+
 class ClaudeWriter:
     # 상품마다 바꿔 쓰는 글쓰기 규칙(기본값은 평생사주)
     style = STYLE_RULES
@@ -219,8 +246,9 @@ class ClaudeWriter:
         self.effort = effort
         self.max_workers = max_workers
         self.usage: list[dict] = []   # 장마다 쓴 토큰(비용 확인용)
+        self.issues: list[dict] = []  # 마지막 검사에서 남은 문제
 
-    def _section(self, f: dict, section: dict, slots: list[dict], previous: str = "") -> dict:
+    def _section(self, f: dict, section: dict, slots: list[dict], previous: str = "", fix: dict | None = None) -> dict:
         schema = strict_schema({"type": "object", "properties": {s["id"]: FORMAT_SCHEMA[s["format"]] for s in slots},
                                 "required": [s["id"] for s in slots]})
         system = [
@@ -230,9 +258,12 @@ class ClaudeWriter:
         ]
         brief = {
             "장": f"{section['no']}. {section['title']}" + (f" — {section['subtitle']}" if section["subtitle"] else ""),
-            "칸": [{"id": s["id"], "쪽 제목": s["title"], "쓸 내용": s["guide"], "chars": s["chars"], "형식": s["format"]} for s in slots],
+            "칸": [{"id": s["id"], "쪽 제목": s["title"], "쓸 내용": s["guide"], "chars": s["chars"], "형식": s["format"],
+                   **({"고칠 점": fix[s["id"]]["issues"], "먼저 쓴 글": fix[s["id"]]["text"]} if fix else {})} for s in slots],
         }
         ask = "아래 장의 칸을 모두 채워 JSON으로 답해 주세요. 칸 id가 키입니다.\n" + json.dumps(brief, ensure_ascii=False)
+        if fix:
+            ask = FIX_RULES + "\n" + ask
         if previous:
             ask = self.final_rules + "\n앞 장에서 쓴 글:\n" + previous + "\n\n" + ask
         model = self.final_model if previous else self.model
@@ -246,7 +277,7 @@ class ClaudeWriter:
         u = msg.usage
         self.usage.append({"section": section["no"], "model": model, "input": u.input_tokens, "output": u.output_tokens,
                            "cache_read": getattr(u, "cache_read_input_tokens", 0) or 0,
-                           "cache_write": getattr(u, "cache_creation_input_tokens", 0) or 0})
+                           "cache_write": getattr(u, "cache_creation_input_tokens", 0) or 0, "fix": bool(fix)})
         if msg.stop_reason != "end_turn":
             raise RuntimeError(f"{section['no']}장 글이 끝까지 오지 않았어요(stop_reason={msg.stop_reason})")
         text = next(b.text for b in msg.content if b.type == "text")
@@ -254,18 +285,47 @@ class ClaudeWriter:
 
     def write(self, f: dict, sections: list[dict]) -> dict:
         from .outline import slots_by_section
+        from . import verify as V
         by_no = {s["no"]: s for s in sections}
         jobs = slots_by_section(sections)
         out: dict = {}
-        # 마지막 장(15)은 앞 장의 보완법·조언을 모아야 하므로 나머지를 다 쓴 뒤에 쓴다
+        # 마지막 장은 앞 장의 보완법·조언을 모아야 하므로 나머지를 다 쓴 뒤에 쓴다
         first = {no: sl for no, sl in jobs.items() if no != self.final_section}
         with ThreadPoolExecutor(self.max_workers) as ex:
             futures = {no: ex.submit(self._section, f, by_no[no], sl) for no, sl in first.items()}
             for no, fut in futures.items():
                 out.update(fut.result())
+        # 마지막 장을 쓰기 전에 앞 장을 검사하고, 걸린 칸만 한 번 다시 쓴다(마지막 장이 고친 글을 이어받게)
+        final_ids = {s["id"] for s in jobs.get(self.final_section, [])}
+        self._fix(f, by_no, first, out, V.check(f, out, final_ids))
         if self.final_section in jobs:
             out.update(self._section(f, by_no[self.final_section], jobs[self.final_section], previous_text(out)))
+            final_issues = [i for i in V.check(f, out, final_ids) if i["slot"] in final_ids and i["kind"] != "반복"]
+            if final_issues:
+                self._fix(f, by_no, {self.final_section: jobs[self.final_section]}, out, final_issues, previous_text(out))
+        self.issues = V.check(f, out, final_ids)
         return out
+
+    def _fix(self, f: dict, by_no: dict, jobs: dict, out: dict, issues: list[dict], previous: str = "") -> None:
+        """검사에 걸린 칸을 장별로 묶어 한 번씩 다시 쓴다. 반복은 MAX_REPEAT_FIX칸까지만 고친다(비용을 묶어 둔다)."""
+        from . import verify as V
+        facts_issues = [i for i in issues if i["kind"] != "반복"]
+        repeat_slots = list(dict.fromkeys(i["slot"] for i in issues if i["kind"] == "반복"))[:MAX_REPEAT_FIX]
+        picked = V.by_slot(facts_issues + [i for i in issues if i["kind"] == "반복" and i["slot"] in repeat_slots])
+        if not picked:
+            return
+        todo = {}
+        for no, sl in jobs.items():
+            redo = [s for s in sl if s["id"] in picked]
+            if redo:
+                todo[no] = {"slots": redo, "fix": {s["id"]: {"issues": picked[s["id"]], "text": out[s["id"]]} for s in redo}}
+        with ThreadPoolExecutor(self.max_workers) as ex:
+            futures = [ex.submit(self._section, f, by_no[no], t["slots"], previous, t["fix"]) for no, t in todo.items()]
+            for fut in futures:
+                try:
+                    out.update(fut.result())
+                except Exception:   # 다시 쓰기가 실패하면 먼저 쓴 글을 그대로 둔다
+                    pass
 
 
 # ── API 없이 만드는 초안 ──────────────────────────────────────
