@@ -30,6 +30,10 @@ STOCK = {
     "물 마시기": r"물을?\s*(한\s*잔|충분히|자주)\s*마",
 }
 
+# 목적어(무엇을)가 꼭 있어야 하는 말: "더 넣기 쉬워요"처럼 무엇을 넣는지 빠지면 읽는 사람이 헷갈린다
+NEEDS_OBJECT = re.compile(r"(?:^|\s)(?:더|크게|새로|다시)\s*(?:넣|빼|빌려주|맡기)")
+LONG_SENTENCE = 90   # 이보다 긴 문장은 두 문장으로 나누게 한다(라벨 제외)
+
 GROUPS = ("비겁", "식상", "재성", "관성", "인성")
 NEG = re.compile(r"없|않|아니|0개")
 
@@ -118,6 +122,12 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                 for m in re.finditer(r"(\d+)\s*점(?!\s*(이상|이하|넘|미만|만점|대|[을이]\s*넘))", sent):
                     if m[1] not in nums and m[1] != "100":
                         issues.append({"slot": sid, "kind": "점수", "detail": f"계산 결과에 없는 {m[1]}점을 썼어요: {sent[:80]}"})
+                # 5) 알아듣기 어려운 문장(목적어 빠짐, 너무 긴 문장)
+                body = re.sub(r"^[가-힣 ]{1,8}:\s*", "", sent)
+                if NEEDS_OBJECT.search(body) and not re.search(r"[을를](\s|$)", body):
+                    issues.append({"slot": sid, "kind": "문장", "detail": f"무엇을 하는지(목적어)가 빠졌어요. '돈을 더 넣기'처럼 무엇을 쓰세요: {sent[:80]}"})
+                elif len(re.sub(r"\([^)]*\)", "", body)) > LONG_SENTENCE:   # 괄호 속 용어 풀이는 빼고 센다
+                    issues.append({"slot": sid, "kind": "문장", "detail": f"한 문장이 너무 길어요. 한 문장에 한 가지 내용만 쓰세요: {sent[:80]}"})
                 # 4) 범위를 벗어난 연도
                 for m in re.finditer(r"((?:19|20|21)\d\d)\s*년", sent):
                     if int(m[1]) not in year_range:

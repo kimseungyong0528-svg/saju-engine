@@ -42,6 +42,15 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 - 문장은 짧게 씁니다. 한 문단은 2~4문장입니다.
 - "~할 수 있어요", "~하기 쉬워요"처럼 가능성으로 말하고, 단정하거나 겁주지 않습니다.
 
+[문장: 처음 읽는 사람도 한 번에 알아듣게]
+- 모든 문장에 누가(주어), 무엇을(목적어), 어떻게 하는지가 분명히 드러나게 씁니다. 앞 문장에서 알 수 있어도 빼지 않습니다.
+  나쁜 예: "손실이 나면 되찾으려고 더 넣기 쉬워요." 좋은 예: "{name}님은 투자에서 돈을 잃으면, 잃은 돈을 되찾으려고 돈을 더 넣기 쉬워요."
+- 한 문장에는 한 가지 내용만 씁니다. 한 문장은 60자 안팎으로, 길어지면 두 문장으로 나눕니다.
+- 사주 용어 풀이는 지어낸 표현이나 비유로 쓰지 않습니다. 그 기운이 생활에서 무엇인지 쉬운 말로 씁니다.
+  나쁜 예: 겁재(내 몫을 다투는 기운). 좋은 예: 겁재(나와 비슷한 사람과 경쟁하는 기운이에요. 친구나 동료 때문에 돈이 나가기 쉬운 것을 뜻해요).
+- "이것", "그것", "이 기운"처럼 가리키는 말이 무엇인지 헷갈리면 그 이름을 다시 씁니다.
+- 소리 내어 읽었을 때 어색한 말, 번역한 것 같은 말, 명사를 줄줄이 붙인 말을 쓰지 않습니다.
+
 [사실]
 - 사주 글자, 개수, 점수, 연도, 나이, 날짜는 아래 '사주 계산 결과'에 있는 값만 씁니다. 새로 계산하거나 지어내지 않습니다.
 - 근거를 말할 때는 어떤 글자나 관계 때문인지 함께 씁니다. 예: "태어난 달에 편관이 있어서"
@@ -83,6 +92,9 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 - 운(대운·세운·월운)을 풀 때는 점수와 함께 '격국 효과'를 근거로 댑니다. 도움이면 격을 살리는 글자가 들어오는 때, 방해면 격을 해치는 글자가 들어오는 때입니다.
 - 파격이나 흠은 겁주지 말고, 상신이 들어오는 시기와 그때까지의 보완법을 함께 씁니다.
 - 물상 그림은 한 장에 한두 번만 씁니다. 고전 이름(자평진전, 적천수)은 2장의 '사주의 뼈대와 흐름' 쪽에서만 소개합니다.
+
+[다 쓴 뒤 스스로 확인]
+- 답하기 전에 모든 문장을 처음 읽는 사람의 눈으로 다시 읽습니다. 누가, 무엇을 하는지 빠진 문장, 뜻이 흐린 용어 풀이, 어색한 말을 고친 뒤 답합니다.
 
 [분량]
 - 각 칸의 chars(공백 포함 글자 수)를 채웁니다. chars의 95~108% 사이로 써야 쪽이 비거나 넘치지 않습니다.
@@ -221,13 +233,14 @@ def previous_text(texts: dict, limit: int = 20000) -> str:
     return "\n".join(lines)[:limit]
 
 
-# 반복 때문에 다시 쓰는 칸은 한 권에 이만큼까지(사실 오류는 개수와 상관없이 모두 고친다)
+# 반복·문장 문제로 다시 쓰는 칸은 한 권에 이만큼까지(사실 오류는 개수와 상관없이 모두 고친다)
 MAX_REPEAT_FIX = int(os.environ.get("SAJU_MAX_REPEAT_FIX", "6"))
 
 FIX_RULES = """[고쳐 쓰기]
 - 각 칸의 '먼저 쓴 글'에서 '고칠 점'만 고쳐 다시 씁니다. 나머지 내용, 형식, 분량(chars)은 그대로 지킵니다.
 - 사주에 없는 것, 계산 결과에 없는 숫자·연도는 지우고 계산 결과에 있는 근거로 바꿉니다.
 - 반복이라고 한 방법은 이 칸의 주제와 이 사람 사주에 맞는 다른 구체적인 방법으로 바꿉니다.
+- 문장 문제는 주어와 목적어(무엇을)를 채우고, 긴 문장은 두 문장으로 나눕니다.
 """
 
 
@@ -300,7 +313,7 @@ class ClaudeWriter:
         self._fix(f, by_no, first, out, V.check(f, out, final_ids))
         if self.final_section in jobs:
             out.update(self._section(f, by_no[self.final_section], jobs[self.final_section], previous_text(out)))
-            final_issues = [i for i in V.check(f, out, final_ids) if i["slot"] in final_ids and i["kind"] != "반복"]
+            final_issues = [i for i in V.check(f, out, final_ids) if i["slot"] in final_ids and i["kind"] not in ("반복", "문장")]
             if final_issues:
                 self._fix(f, by_no, {self.final_section: jobs[self.final_section]}, out, final_issues, previous_text(out))
         self.issues = V.check(f, out, final_ids)
@@ -309,9 +322,12 @@ class ClaudeWriter:
     def _fix(self, f: dict, by_no: dict, jobs: dict, out: dict, issues: list[dict], previous: str = "") -> None:
         """검사에 걸린 칸을 장별로 묶어 한 번씩 다시 쓴다. 반복은 MAX_REPEAT_FIX칸까지만 고친다(비용을 묶어 둔다)."""
         from . import verify as V
-        facts_issues = [i for i in issues if i["kind"] != "반복"]
-        repeat_slots = list(dict.fromkeys(i["slot"] for i in issues if i["kind"] == "반복"))[:MAX_REPEAT_FIX]
-        picked = V.by_slot(facts_issues + [i for i in issues if i["kind"] == "반복" and i["slot"] in repeat_slots])
+        soft = ("반복", "문장")   # 사실 오류가 아닌 것: 한 권에 MAX_REPEAT_FIX칸까지만 따로 다시 쓴다
+        facts_issues = [i for i in issues if i["kind"] not in soft]
+        fact_slots = {i["slot"] for i in facts_issues}
+        soft_slots = [x for x in dict.fromkeys(i["slot"] for i in issues if i["kind"] in soft) if x not in fact_slots][:MAX_REPEAT_FIX]
+        # 사실 오류로 어차피 다시 쓰는 칸은 문장·반복 문제도 함께 고친다(비용 그대로)
+        picked = V.by_slot(facts_issues + [i for i in issues if i["kind"] in soft and (i["slot"] in fact_slots or i["slot"] in soft_slots)])
         if not picked:
             return
         todo = {}
