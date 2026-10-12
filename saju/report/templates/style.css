@@ -147,5 +147,6 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product .price s { color: #6b6152; }
 .product .price em { font-style: normal; font-weight: 700; color: #b2452f; margin: 0 1mm; }
 .product .price strong { color: #1f1b16; }
-a.go { color: #1f2a3d; text-decoration: underline; white-space: nowrap; }
+a.go { display: inline-block; background: #9e2f22; color: #f6ecd8; font-weight: 700; font-size: 15pt; padding: 1.8mm 7mm; border-radius: 1.5mm; text-decoration: none; white-space: nowrap; }
+.go-row { text-align: right; margin: 1mm 0 0; }
 .end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 4mm; }
