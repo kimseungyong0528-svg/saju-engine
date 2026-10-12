@@ -4,7 +4,7 @@ import { INTAKE_POLICY_VERSION, PRODUCTS, intakePayload, evaluateIntake } from '
 
 export const CALCULATION_VERSION = 'saju-engine-0.2';
 export const COVERAGE_VERSION = '2026-10-12';
-export const RETENTION_DAYS = 30;
+export const RETENTION_DAYS = 7;
 export const MAX_RESENDS = 3;
 
 export const STATUS_MESSAGES = {
@@ -161,6 +161,8 @@ export async function deliverPdf(store, services, order, pdf, now = new Date()) 
   await services.sendEmail(order, pdf);
   order.emailedAt = now.toISOString();
   setStatus(order, 'email_accepted', now);
+  // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF는 다시 보내기를 위해 7일만 둔다.
+  delete order.payload; delete order.disclosures;
   await store.set(`orders/${order.id}`, order);
   return order;
 }
@@ -179,15 +181,16 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   return order;
 }
 
-// 개인정보 지우기: 끝난 주문은 30일 뒤 출생 정보·질문·PDF를 지운다. 결제 안 된 주문은 1일 뒤 만료.
-const DONE = new Set(['email_accepted', 'refunded', 'payment_failed', 'payment_expired', 'payment_adjusted']);
+// 개인정보 지우기: 끝난 주문은 7일 뒤 남은 출생 정보·질문·PDF를 지운다(발송된 주문은 출생 정보를 발송 때 이미 지움). 결제 안 된 주문은 1일 뒤 만료.
+const DONE = new Set(['email_accepted', 'held', 'refunded', 'payment_failed', 'payment_expired', 'payment_adjusted']);
 
 export async function eraseOld(store, now = new Date()) {
   let erased = 0;
   for (const key of await store.list('orders/')) {
     const order = await store.get(key);
     if (!order || order.status === 'erased') continue;
-    const age = (now - new Date(order.updatedAt)) / 86_400_000;
+    // 다시 보내기로 updatedAt이 바뀌어도 PDF 보관 기간이 늘지 않게 발송 시각을 기준으로 한다.
+    const age = (now - new Date(order.emailedAt || order.updatedAt)) / 86_400_000;
     if (order.status === 'awaiting_payment' && age > 1) {
       setStatus(order, 'payment_expired', now);
     } else if (DONE.has(order.status) && age > RETENTION_DAYS) {
