@@ -1,4 +1,4 @@
-"""주제 사주 6종(사업운은 13장)(재회·깊은 궁합·재물·직업·사업·건강): 목차, 쪽수, 두 사람 상품, 다른 상품 안내."""
+"""주제 사주 7종(사업운은 13장)(재회·깊은 궁합·재물·직업·사업·건강·2027 신년운세): 목차, 쪽수, 두 사람 상품, 다른 상품 안내."""
 
 from datetime import date
 import importlib
@@ -33,7 +33,9 @@ def test_outline_12_chapters_and_50_pages(pid):
     ids = [p["id"] for p in all_pages(secs)]
     assert len(ids) == len(set(ids))
     t = facts["theme"]
-    assert len(t["years"]) == 5 and len(t["months"]) == 12
+    assert len(t["months"]) == 12
+    if pid != "newyear":   # 신년운세는 2027년 한 해만 본다(tests/test_newyear.py)
+        assert len(t["years"]) == 5
     assert all(20 <= m["score"] <= 95 for m in t["months"])
     assert PRODUCT[pid]["cover"] is COVER[pid]
 

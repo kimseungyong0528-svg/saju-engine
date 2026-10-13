@@ -39,6 +39,7 @@ def test_blocking_only_fact_errors():
 @pytest.mark.parametrize("product,answers,partner", [
     ("lifetime", {"occupation": "직장에 다니고 있어요"}, None),
     ("reunion", {"breakup": "3개월 이내예요"}, PARTNER),
+    ("newyear", {"focus": "연애와 결혼", "question": "내년에 결혼할 수 있을까요?"}, None),
 ])
 def test_make_pdf_from_site_payload(tmp_path, product, answers, partner):
     job = {"orderId": "x", "productId": product, "paidAt": "2026-10-12T11:00:00.000Z",

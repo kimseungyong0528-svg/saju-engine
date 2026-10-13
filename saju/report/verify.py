@@ -136,8 +136,39 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                 for m in re.finditer(r"((?:19|20|21)\d\d)\s*년", sent):
                     if int(m[1]) not in year_range:
                         issues.append({"slot": sid, "kind": "연도", "detail": f"계산 범위 밖의 {m[1]}년을 썼어요: {sent[:80]}"})
+    issues += newyear_checks(f, texts)
     issues += repeats(texts, skip_repeat)
     return issues
+
+
+# 신년운세: 삼재·대운 사실과 사장님 표현 규칙('좋은 때' → '좋은 시기')
+SAMJAE_SAID = re.compile(r"(들|눌|날)?삼재(예요|이에요|인\s*해|가\s*(들|시작|겹)|에\s*(들어|해당))")
+DAEWOON_CHANGE = re.compile(r"2027년\S*\s*(새\s*)?대운이\s*(바뀌|시작|들어오)")
+GOOD_TTAE = re.compile(r"좋은\s*때")
+
+
+def newyear_checks(f: dict, texts: dict) -> list[dict]:
+    th = f.get("theme") or {}
+    if th.get("product") != "newyear":
+        return []
+    sj, dw = th["data"]["samjae"], th["data"]["daewoon"]
+    out = []
+    for sid, v in texts.items():
+        for para in flat(v):
+            for sent in sentences(para):
+                negated = bool(NEG.search(sent))
+                for m in SAMJAE_SAID.finditer(sent):
+                    if negated:
+                        continue
+                    if not sj["is_samjae"] and "2027" in sent:
+                        out.append({"slot": sid, "kind": "삼재", "detail": f"2027년은 이 띠에게 삼재가 아닌데 삼재라고 썼어요: {sent[:80]}"})
+                    elif sj["is_samjae"] and m[1] and m[1] + "삼재" != sj["kind"] and "2027" in sent:
+                        out.append({"slot": sid, "kind": "삼재", "detail": f"2027년은 {sj['kind']}인데 {m[1]}삼재라고 썼어요: {sent[:80]}"})
+                if DAEWOON_CHANGE.search(sent) and not negated and not dw["changes_in_2027"]:
+                    out.append({"slot": sid, "kind": "대운", "detail": f"2027년에는 대운이 바뀌지 않는데 바뀐다고 썼어요: {sent[:80]}"})
+                if GOOD_TTAE.search(sent):
+                    out.append({"slot": sid, "kind": "문장", "detail": f"'좋은 때' 대신 '좋은 시기'라고 써 주세요: {sent[:80]}"})
+    return out
 
 
 def repeats(texts: dict, skip: set | frozenset = frozenset()) -> list[dict]:

@@ -135,11 +135,11 @@ b.label { color: #9e2f22; }
 ul.checklist { list-style: none; padding: 0; margin: 2mm 0; }
 ul.checklist li { padding: 1.6mm 0 1.6mm 10mm; border-bottom: 1pt solid #d3c5a3; position: relative; line-height: 1.55; }
 ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm; width: 4.5mm; height: 4.5mm; border: 1.2pt solid #9e2f22; }
-.product { border: 1pt solid #3a2e22; padding: 2mm 4mm; margin: 0 0 2.5mm; break-inside: avoid; background: #f6f0e2; }
+.product { border: 1pt solid #3a2e22; padding: 1.5mm 4mm; margin: 0 0 2mm; break-inside: avoid; background: #f6f0e2; }
 .product-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
 .product-head b { font-weight: 400; font-size: 17pt; color: #9e2f22; }
 .product-line { font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #1f2a3d; margin-bottom: 0.4em; }
-.product p { margin-bottom: 0.2em; line-height: 1.5; }
+.product p { margin-bottom: 0.15em; line-height: 1.42; }
 .product-link a { color: #1f2a3d; text-decoration: underline; word-break: break-all; }
 .product-head a { text-decoration: none; }
 .product-head a.go { color: #1f2a3d; text-decoration: underline; }
@@ -149,4 +149,4 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product .price strong { color: #1f1b16; }
 a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space: nowrap; }
 .hook a.go { float: right; margin-left: 3mm; }
-.end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 4mm; }
+.end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 2mm; }

@@ -107,6 +107,46 @@ def _classics_text(cl: dict, day_stem: str) -> dict:
     }
 
 
+def _luck_weights(an: dict) -> tuple[list[str], list[str], dict | None]:
+    """운 점수에 쓰는 좋은 기운(good), 넘치는 기운(excess), 가중치(weights)."""
+    yong = pick_yongsin(an)
+    cl = an.get("classics")
+    if cl:
+        # 용신은 온전히, 희신은 절반 남짓 더하고, 넘치는 오행은 온전히, 그 밖의 기신은 절반 남짓 뺀다
+        good = [yong] + [e for e in cl["yongsin"]["heesin"] if e != yong]
+        over = [e for e in an["elements"]["judgement"]["과다"] if e not in good]
+        excess = list(dict.fromkeys(over + [e for e in cl["yongsin"]["gisin"] if e not in good]))
+        weights = {**{e: -0.6 for e in excess}, **{e: -1.0 for e in over}, **{e: 0.6 for e in good}, yong: 1.0}
+    else:
+        weights = None
+        excess = an["elements"]["judgement"]["과다"]
+        good = [yong] + [e for e in an["yongsin"]["억부"] if e != yong]
+    return good, excess, weights
+
+
+def _effect(cl: dict | None, stem_god: str, branch_god: str) -> str:
+    return luck_effect(cl, stem_god, branch_god)["effect"] if cl else "보통"
+
+
+def luck_rater(an: dict):
+    """운(세운·월운 한 줄) → 격국 효과, 흐름 점수, 관계 글. build_facts와 같은 계산(신년운세처럼 다른 해를 볼 때 쓴다)."""
+    good, excess, weights = _luck_weights(an)
+    cl = an.get("classics")
+
+    def rate(x: dict) -> dict:
+        eff = _effect(cl, x["stem_ten_god"], x["branch_ten_god"])
+        return {"gyeok_effect": eff, "score": luck_score(x["ganzhi"], x["relations"], good, excess, eff, weights),
+                "relations_text": _relations_text(x["relations"])}
+    return rate
+
+
+def month_row(m: dict, rate) -> dict:
+    """월운 한 줄을 리포트 재료로."""
+    d = datetime.fromisoformat(m["starts"])
+    return {**m, "start_text": f"{d.year}년 {d.month}월 {d.day}일",
+            "short": f"{d.month}/{d.day}", "month": d.month, "year": d.year, **rate(m)}
+
+
 def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     """analyze_person() 결과 → 리포트 재료."""
     order = order or OrderInfo()
@@ -158,16 +198,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     # 용신·행운
     yong = pick_yongsin(an)
     cl = an.get("classics")
-    if cl:
-        # 용신은 온전히, 희신은 절반 남짓 더하고, 넘치는 오행은 온전히, 그 밖의 기신은 절반 남짓 뺀다
-        good = [yong] + [e for e in cl["yongsin"]["heesin"] if e != yong]
-        over = [e for e in an["elements"]["judgement"]["과다"] if e not in good]
-        excess = list(dict.fromkeys(over + [e for e in cl["yongsin"]["gisin"] if e not in good]))
-        weights = {**{e: -0.6 for e in excess}, **{e: -1.0 for e in over}, **{e: 0.6 for e in good}, yong: 1.0}
-    else:
-        weights = None
-        excess = an["elements"]["judgement"]["과다"]
-        good = [yong] + [e for e in an["yongsin"]["억부"] if e != yong]
+    good, excess, weights = _luck_weights(an)
     year_branch = an["pillars"][0]["branch"]
     samhap = next(t for t in K.SAMHAP if year_branch in t)
     good_animals = [K.BRANCH_ANIMAL[b] for b in samhap if b != year_branch] + [K.BRANCH_ANIMAL[K.YUKHAP[year_branch]]]
@@ -181,7 +212,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     }
 
     def effect(stem_god: str, branch_god: str) -> str:
-        return luck_effect(cl, stem_god, branch_god)["effect"] if cl else "보통"
+        return _effect(cl, stem_god, branch_god)
 
     # 대운
     dw = an["daewoon"]
@@ -221,14 +252,8 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     for i, m in enumerate(span):
         if m["starts"][:16] <= order_dt[:16]:
             start = i
-    months = []
-    for m in span[start:start + 12]:
-        d = datetime.fromisoformat(m["starts"])
-        months.append({**m, "start_text": f"{d.year}년 {d.month}월 {d.day}일",
-                       "short": f"{d.month}/{d.day}", "month": d.month, "year": d.year,
-                       "gyeok_effect": effect(m["stem_ten_god"], m["branch_ten_god"]),
-                       "score": luck_score(m["ganzhi"], m["relations"], good, excess, effect(m["stem_ten_god"], m["branch_ten_god"]), weights),
-                       "relations_text": _relations_text(m["relations"])})
+    rate = luck_rater(an)
+    months = [month_row(m, rate) for m in span[start:start + 12]]
 
     shinsal = [{**s, "label": PILLAR_LABEL[s["pillar"]], "text": K.SHINSAL.get(s["name"], "")} for s in an["shinsal"]]
     seen_names = []
