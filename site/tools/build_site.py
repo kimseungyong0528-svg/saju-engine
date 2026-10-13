@@ -75,6 +75,8 @@ def patch_texts(s: str, b: dict) -> str:
         "<p class=\"local-note\">메일이 오지 않으면 스팸함을 먼저 확인해주세요. 그래도 없으면 주문한 이메일을 카카오톡으로 알려주세요. 확인한 뒤 다시 보내드려요.</p>"
         "<button class=\"kakao\" data-action=\"support\">카카오톡으로 문의하기</button></div>`,'보관함')} "
     ) + s[lib_end:]
+    # 질문 화면의 마지막 선택지가 아래 고정 버튼(다음으로)에 가려지지 않도록 아래 여백을 버튼 높이만큼 준다(2026-10-13).
+    s = _swap(s, ".flow-content { padding: 32px 24px 25px; }", ".flow-content { padding: 32px 24px calc(125px + env(safe-area-inset-bottom)); }")
     # 첫 화면 섹션 제목·설명 (사장님 문구, 2026-10-13). 평생사주는 건강운과 같은 '인생 총운' 줄로 옮김.
     s = _swap(s, "<h2>오리지널 사주</h2><p>연애, 궁합, 재회부터 나의 평생운까지</p></div>${cards(['romance','intimate','reunion','lifetime'])}",
               "<h2>오리지널 연애 사주</h2><p>나의 연애, 궁합, 재회까지 운명적인 사랑 이야기</p></div>${cards(['romance','intimate','reunion'])}")
