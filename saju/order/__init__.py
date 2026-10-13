@@ -17,7 +17,7 @@ KST = timezone(timedelta(hours=9))
 PRODUCTS = ("lifetime", "romance", *THEME_PRODUCTS)
 
 # 이 문제가 남으면 사람이 보기 전에는 보내지 않는다(사주 계산과 다른 내용).
-BLOCKING_KINDS = {"없는 신살", "개수", "점수", "연도"}
+BLOCKING_KINDS = {"없는 신살", "개수", "점수", "연도", "삼재", "대운"}
 
 
 def order_date(paid_at: str | None) -> datetime:
@@ -35,6 +35,8 @@ def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, 
         return OrderInfo(d, question, daily=answers.get("occupation", ""), relationship=answers.get("relationship", "")), {}
     if product == "romance":
         return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", "")), {}
+    if product == "newyear" and not question:   # 신년운세는 질문을 answers.question으로 받는다(선택)
+        question = str(answers.get("question") or "")[:1000]
     return OrderInfo(d, question), answers
 
 

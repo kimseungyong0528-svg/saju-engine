@@ -182,6 +182,54 @@ INTAKE_PARTS = [
 ]
 
 
+def add_newyear(s: str) -> str:
+    """2027 신년운세 상품을 붙인다(2026-10-13 사장님 결정: 29,800원, 첫 화면 큰 배너는 신년운세 한 장 + EVENT).
+    접수 규칙(intake.mjs)에도 들어가야 하므로 write_intake_module 보다 먼저 부른다."""
+    s = _swap(s, "  }\n];\n// Kept only so previously saved demo orders still open.",
+              '  },\n  {\n    "id": "newyear",\n    "name": "금월선녀의 2027 신년운세",\n    "short": "2027 신년운세",\n'
+              '    "guide": "금월선녀",\n    "category": "신년운세",\n    "color": "#d8bb78",\n    "tone": "forest",\n'
+              '    "symbol": "丁未",\n    "line": "2027년, 나에게\\n어떤 해가 될까요",\n    "price": 29800,\n    "original": 55000,\n'
+              '    "steps": 8\n  }\n];\n// Kept only so previously saved demo orders still open.')
+    s = _swap(s, "SALES.business={", (
+        "FLOWS.newyear=[\n"
+        " intro('2027년, 나에게\\n어떤 해가 될까요','새해 계획을 세우기 전에 내 사주로 2027년을 먼저 확인해요.'),\n"
+        " scene('year','2027년은\\n정미년이에요','정미년은 불(정화)과 흙(미토)의 기운이 강한 해예요. 이 기운이 내 사주와 맞는지, 삼재와 대운은 어떤지 함께 봐요.'),\n"
+        " info,\n"
+        " choice('focus','2027년에 가장 궁금한 것은 무엇인가요?',['일과 직장','돈과 재물','연애와 결혼','건강','한 해 전체'],true),\n"
+        " {...question,title:'2027년에 대해 묻고 싶은 것이 있나요?',text:'새해 계획이나 고민을 편하게 적어주세요. 비워두셔도 괜찮아요.'},\n"
+        " scene('ready','나의 2027년을\\n한 권에 담았어요','월별 운세부터 삼재, 대운, 행운의 색까지 차례로 확인해보세요.','신년운세 리포트 살펴보기'),\n"
+        " sales,checkout\n];\n"
+        "SALES.business={"))
+    s = _swap(s, "DEMO_REVIEWS.push({product:'business'", (
+        "SALES.newyear={opening:'2027년을 미리 알고\\n새해를 시작하세요',empathy:'새해 계획을 세우기 전에\\n이것부터 궁금하지 않나요',"
+        "empathyBody:'내년에 돈이 들어올지, 이직해도 될지, 좋은 사람을 만날지. 내 사주와 2027년 정미년의 기운을 비교해 달마다 정리해 드려요.',"
+        "reveal:'내 사주로 계산한\\n2027년 한 해의 흐름',locks:['2027년이 나에게 좋은 해인지 한마디 요약','삼재와 대운이 바뀌는지 확인','1월부터 12월까지 달마다 할 일'],"
+        "chapters:['한눈에 보는 나의 2027년','일·돈·연애·건강운','사람운과 조심할 일','1월~12월 월별 운세','2027년 실천 계획'],"
+        "ending:'2027년을 미리 확인하고\\n새해를 준비하세요'};\n"
+        "DETAIL_BLOCKS.newyear=[['summary','2027년이 나에게\\n어떤 해인지 한마디로','전체 점수와 좋은 운, 나쁜 운을 첫 장에 정리해요.',''],"
+        "['samjae','삼재와 대운을\\n먼저 확인해요','2027년이 삼재인지, 10년마다 바뀌는 대운이 바뀌는 해인지 알려드려요.',''],"
+        "['months','1월부터 12월까지\\n달마다 할 일','가장 좋은 달과 조심할 달, 달마다 할 일을 정리해요.','timeline']];\n"
+        "DEMO_REVIEWS.push({product:'business'"))
+    # 사진은 평생사주의 금월선녀를 같이 쓴다(신년운세 전용 사진이 생기면 바꾼다).
+    s = _swap(s, "function home(){", (
+        "for(const [a,b] of [['cover','cover'],['intro','intro'],['year','welcome'],['ready','ready'],['sales.1','sales.1'],['sales.2','sales.2'],"
+        "['sales.3','sales.3'],['sales.4','sales.4'],['sales.5','sales.5'],['detail.summary','detail.timing'],['detail.samjae','detail.caution'],"
+        "['detail.months','detail.lifegraph']])if(MEDIA['lifetime.'+b])MEDIA['newyear.'+a]=MEDIA['lifetime.'+b];\n"
+        "for(const [a,b] of [['intro','intro'],['year','welcome'],['ready','ready']])if(STORY_MEDIA['lifetime.'+b])STORY_MEDIA['newyear.'+a]=STORY_MEDIA['lifetime.'+b];\n"
+        "STORY_FACES.newyear=STORY_FACES.lifetime;\n"
+        "function home(){"))
+    # 첫 화면 큰 배너: 신년운세 한 장, 위에 EVENT 딱지. 넘기는 점은 뺀다.
+    s = _swap(s, "['lifetime','wealth','reunion','intimate'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"eyebrow\">${p.guide} · ORIGINAL SAJU</span>",
+              "['newyear'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>")
+    s = _swap(s, "<div class=\"dots\">${[0,1,2,3].map(i=>`<button aria-label=\"슬라이드 ${i+1}\" class=\"dot ${!i?'active':''}\" data-slide=\"${i}\"></button>`).join('')}</div>", "")
+    s = _swap(s, "advance((i+1)%4)", "advance((i+1)%track.children.length)")
+    s = _swap(s, ".hero-copy{position:absolute;inset:auto 26px 32px}",
+              ".hero-copy{position:absolute;inset:auto 26px 32px}"
+              ".event-tag{display:inline-block;margin-bottom:12px;padding:5px 12px;border-radius:999px;background:#c8102e;color:#fff;"
+              "font-size:14px;font-weight:800;letter-spacing:2px}.event-tag+.eyebrow{display:block}")
+    return s
+
+
 def write_intake_module(s: str) -> None:
     parts = []
     for a, b in INTAKE_PARTS:
@@ -199,6 +247,7 @@ def main() -> None:
     b = json.loads((SITE / "business.json").read_text(encoding="utf-8"))
     s = src.read_text(encoding="utf-8")
     s = extract_assets(s)
+    s = add_newyear(s)
     write_intake_module(s)
     s = patch_texts(s, b)
     PUBLIC.mkdir(parents=True, exist_ok=True)

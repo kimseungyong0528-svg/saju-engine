@@ -253,7 +253,7 @@
   {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
 {%- elif k == "grid" -%}
   {%- set g = pg.grid -%}
-  <table class="compact"><tr>{% for h in g.head %}<th{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}>{{ h }}</th>{% endfor %}</tr>
+  <table class="compact"><tr>{% for h in g.head %}<th{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}{% if g.get("widths") %} style="width: {{ g.widths[loop.index0] }}"{% endif %}>{{ h }}</th>{% endfor %}</tr>
   {% for row in g.rows %}<tr{% if loop.index0 in g.get("hl", []) %} style="background: #e9dfc6"{% endif %}>{% for c in row %}{% if loop.first %}<th>{{ c }}</th>{% else %}<td{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}>{{ c }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</table>
   {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
 {%- elif k == "theme_graph" -%}
@@ -357,7 +357,7 @@
 
   <div class="label"><div class="label-in">
     <div class="title">{{ product.cover_title|safe }}</div>
-    <div class="subtitle">{{ product.name }}</div>
+    <div class="subtitle">{{ product.cover_sub or product.name }}</div>
   </div></div>
   <div class="stamp">{{ f.day_master.hanja }}{{ f.pillars[2].branch_hanja or "" }}<small>{{ P.name }}</small></div>
 

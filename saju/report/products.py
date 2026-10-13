@@ -11,6 +11,8 @@ import os
 SITE_URL = os.environ.get("SAJU_SITE_URL", "https://unmyeong-saju.com").rstrip("/")
 
 PRODUCTS = [
+    {"id": "newyear", "name": "금월선녀의 2027 신년운세", "category": "신년운세", "price": 29800, "original": 55000,
+     "line": "2027년, 나에게 어떤 해가 될까요"},
     {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "인생총운", "price": 49800, "original": 110000,
      "line": "지나온 나를 이해하고 앞으로의 길을 만나다"},
     {"id": "romance", "name": "금월선녀의 연애사주", "category": "연애", "price": 29800, "original": 55000,
@@ -87,15 +89,21 @@ def hooks(f: dict) -> dict[str, str]:
         "health": ((f"{name}님은 {', '.join(many)} 기운이 강하고 " if many else f"{name}님은 ")
                    + (f"{', '.join(lacking)} 기운이 약해요. " if lacking else "오행이 비교적 고른 편이에요. ")
                    + "이 균형에 맞는 생활 리듬, 잠과 휴식, 계절별 돌봄 습관을 한 주 실천표로 드려요."),
+        "newyear": _newyear_hook(f),
     }
 
 
-# 사이트 카테고리 탭 순서: 연애(연애사주, 깊은 궁합) → 재회 → 금전(재물·직업·사업) → 건강 → 인생총운(평생사주)
-SITE_ORDER = ("romance", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime")
+def _newyear_hook(f: dict) -> str:
+    from .newyear import hook
+    return hook(f)
+
+
+# 사이트 카테고리 탭 순서: 신년운세(2026-10-13 맨 위 배너) → 연애(연애사주, 깊은 궁합) → 재회 → 금전(재물·직업·사업) → 건강 → 인생총운(평생사주)
+SITE_ORDER = ("newyear", "romance", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime")
 
 
 def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None) -> list[dict]:
-    """다른 상품 안내. 사이트 카테고리 순서(연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
+    """다른 상품 안내. 사이트 카테고리 순서(신년운세→연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
     first는 예전 호출과 맞추려고 받기만 한다(2026-10-12 사장님 요청으로 순서를 바꾸지 않음)."""
     h = hooks(f)
     items = [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),

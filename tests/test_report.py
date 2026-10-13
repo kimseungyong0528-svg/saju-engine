@@ -121,10 +121,10 @@ def test_html_has_no_python_leaks(facts):
 def test_cross_sell_follows_site_order(facts):
     from saju.report.products import cross_sell
     items = cross_sell(facts, site="https://unmyeong.test")
-    assert [p["id"] for p in items] == ["romance", "intimate", "reunion", "wealth", "career", "business", "health"]
-    assert items[0]["url"] == "https://unmyeong.test/#/f/romance/intro"
+    assert [p["id"] for p in items] == ["newyear", "romance", "intimate", "reunion", "wealth", "career", "business", "health"]
+    assert items[1]["url"] == "https://unmyeong.test/#/f/romance/intro"
     assert all(p["hook"] for p in items)
-    assert items[0]["original_text"] == "55,000원" and items[0]["discount"] == 46 and items[0]["price_text"] == "29,800원"
+    assert items[1]["original_text"] == "55,000원" and items[1]["discount"] == 46 and items[1]["price_text"] == "29,800원"
     assert "재성이 없어서" in next(p for p in items if p["id"] == "wealth")["hook"]
 
 

@@ -49,7 +49,7 @@ def test_romance_pdf_and_writer_settings(tmp_path):
 def test_cross_sell_follows_site_category_order_lifetime_last():
     f = _facts()
     ids = [p["id"] for p in cross_sell(f, current="romance", first=R.cross_sell_order("짝사랑"))]
-    assert ids == ["intimate", "reunion", "wealth", "career", "business", "health", "lifetime"]
+    assert ids == ["newyear", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime"]
 
 
 def test_cover_color_and_toc_without_links():

@@ -56,7 +56,7 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
     return {"pages": pages, "texts": texts, "facts": facts, "issues": issues}
 
 
-THEME_PRODUCTS = ("reunion", "intimate", "wealth", "career", "business", "health")
+THEME_PRODUCTS = ("reunion", "intimate", "wealth", "career", "business", "health", "newyear")
 PAIR_PRODUCTS = ("reunion", "intimate")
 
 
@@ -99,7 +99,7 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
 def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                         html_out: str | Path | None = None, answers: dict | None = None, partner: dict | None = None,
                         texts: dict | None = None) -> dict:
-    """재회·깊은 궁합·재물·직업·사업·건강 PDF(50쪽 이상). 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다.
+    """재회·깊은 궁합·재물·직업·사업·건강·2027 신년운세 PDF(50쪽 이상). 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다.
     texts를 주면 글을 새로 쓰지 않고 그 글로 만든다(미리 써 둔 글 확인용)."""
     from .outline import STATIC
     M, facts, sections = prepare_product(product, result, order, answers, partner)

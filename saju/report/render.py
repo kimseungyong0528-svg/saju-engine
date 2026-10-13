@@ -152,6 +152,9 @@ COVER = {
                "line": "#6b4a16", "thread": "#5a3f14", "table": "#e3bd62", "text": "#2e210b", "name": "#2e210b"},
     "health": {"outfit": "초록", "glow_in": "#2f6a4a", "glow_out": "#123322", "dark": "#0a2014", "darker": "#06150d",
                "line": "#d8bb78", "thread": "#e9dfc6", "table": "#10291b", "text": "#ecdfc4", "name": "#f6ecd8"},
+    # 2026-10-13 임시 색: 신년운세는 사이트 그림이 아직 없어 설빔 느낌의 짙은 다홍 바탕에 금색 선(그림이 정해지면 맞춘다)
+    "newyear": {"outfit": "다홍(임시)", "glow_in": "#a8262b", "glow_out": "#5e0d12", "dark": "#3d070b", "darker": "#280407",
+                "line": "#e2c173", "thread": "#f3dcae", "table": "#4c0a0f", "text": "#f6e6c6", "name": "#fbf0d9"},
 }
 
 # 상품마다 다른 표지 글자와 안내 문구(기본값은 평생사주)
@@ -181,6 +184,10 @@ PRODUCT = {
     "health": {"id": "health", "name": "건강운", "cover_title": "健<br>康<br>運", "header": "健康運", "toc_compact": True,
                "more_intro": "건강운이 나의 생활 리듬을 살펴본 책이었다면, 아래 리포트는 다른 주제를 깊게 들여다보는 책이에요.",
                "cover": COVER["health"]},
+    # 표지 이름표 아래 글자는 한 줄(4자 안팎)이어야 도장과 겹치지 않는다: 해(2027·丁未年)는 머리글과 본문에 둔다
+    "newyear": {"id": "newyear", "name": "2027 신년운세", "cover_sub": "신년운세", "cover_title": "新<br>年<br>運<br>勢", "header": "丁未年 新年運勢", "toc_compact": True,
+                "more_intro": "신년운세가 2027년 한 해를 살펴본 책이었다면, 아래 리포트는 한 가지 주제를 훨씬 깊게 들여다보는 책이에요.",
+                "cover": COVER["newyear"]},
 }
 
 
