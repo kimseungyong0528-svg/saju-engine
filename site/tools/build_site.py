@@ -78,7 +78,7 @@ def patch_texts(s: str, b: dict) -> str:
     # 질문 화면의 마지막 선택지가 아래 고정 버튼(다음으로)에 가려지지 않도록 아래 여백을 버튼 높이만큼 준다(2026-10-13).
     s = _swap(s, ".flow-content { padding: 32px 24px 25px; }", ".flow-content { padding: 32px 24px calc(125px + env(safe-area-inset-bottom)); }"
               # 판매 페이지·접수 화면: 맨 아래 글(자주 묻는 질문, 서비스 문의)이 아래 고정 버튼에 가리지 않게 여백을 둔다.
-              ".shell.sales { padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }"
+              ".shell.sales { padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important; }"
               # 리포트 안내(판매) 페이지 칸 사이 빈 공간 줄이기 (모든 상품 공통).
               ".shell.sales .sales-panel { min-height: 560px; padding-top: 300px; padding-bottom: 32px; }"
               ".shell.sales .detail-scene { min-height: 0; padding-top: 300px; padding-bottom: 32px; }"
@@ -86,7 +86,7 @@ def patch_texts(s: str, b: dict) -> str:
               ".shell.sales .sales-persons { padding-top: 40px; padding-bottom: 40px; }"
               ".shell.sales .chapters { padding-top: 40px; padding-bottom: 40px; } .shell.sales .chapters>h2 { margin: 12px 0 24px; }"
               ".shell.sales .chapter { margin: 12px 0; padding: 24px 22px; }"
-              ".shell.sales .faq { padding: 20px 24px 4px; } .shell.sales .faq h2 { margin-bottom: 12px; } .shell.sales .faq details { padding: 15px 0; }"
+              ".shell.sales .faq { padding: 20px 24px 0; } .shell.sales .faq h2 { margin-bottom: 12px; } .shell.sales .faq details { padding: 15px 0; }"
               ".shell.checkout .checkout-content { padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important; }")
     # 첫 화면 섹션 제목·설명 (사장님 문구, 2026-10-13). 평생사주는 건강운과 같은 '인생 총운' 줄로 옮김.
     s = _swap(s, "<h2>오리지널 사주</h2><p>연애, 궁합, 재회부터 나의 평생운까지</p></div>${cards(['romance','intimate','reunion','lifetime'])}",
@@ -160,6 +160,8 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<section class=\"sales-reviews\"><h2>리포트를 읽는 시간</h2>${reviewRail(DEMO_REVIEWS.filter(r=>r.product===p.id).concat(DEMO_REVIEWS.slice(0,1)))}</section>", "")
     s = _swap(s, '<p class="fine-print">표시 금액은 미리보기 기준입니다. 실제 결제는 발생하지 않습니다.</p>',
               '<p class="fine-print">결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p>')
+    # 리포트 안내(판매) 페이지에서 가격 칸을 뺀다. 가격은 마지막 접수 화면에서만 보인다.
+    s = _swap(s, '<section class="sales-interlude"><span class="eyebrow">ONE STORY, MANY CHAPTERS</span><h2 class="serif">한 권으로 만나는<br>${p.short}</h2>${priceBox(p)}<p class="fine-print">결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p></section>', '')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
