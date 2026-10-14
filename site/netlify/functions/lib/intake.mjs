@@ -2834,7 +2834,7 @@ const PRODUCTS=[
     "short": "2027 신년운세",
     "guide": "금월선녀",
     "category": "신년운세",
-    "color": "#d8bb78",
+    "color": "#f09c9c",
     "tone": "forest",
     "symbol": "丁未",
     "line": "2027년, 나에게\n어떤 해가 될까요",
