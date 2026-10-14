@@ -210,13 +210,15 @@ def add_newyear(s: str) -> str:
         "['samjae','삼재와 대운을\\n먼저 확인해요','2027년이 삼재인지, 10년마다 바뀌는 대운이 바뀌는 해인지 알려드려요.',''],"
         "['months','1월부터 12월까지\\n달마다 할 일','가장 좋은 달과 조심할 달, 달마다 할 일을 정리해요.','timeline']];\n"
         "DEMO_REVIEWS.push({product:'business'"))
-    # 사진은 평생사주의 금월선녀를 같이 쓴다(신년운세 전용 사진이 생기면 바꾼다).
+    # 사진: 신년운세 전용 금월선녀 한 장(newyear-cover.jpg). 이야기 화면은 이 사진을 배경으로 쓰고,
+    # 눈 깜빡임용 인물 겹침은 쓰지 않는다(투명 그림 + 없는 표정 파일 → 눈·입 창이 숨겨진 채로 둠).
     s = _swap(s, "function home(){", (
-        "for(const [a,b] of [['cover','cover'],['intro','intro'],['year','welcome'],['ready','ready'],['sales.1','sales.1'],['sales.2','sales.2'],"
-        "['sales.3','sales.3'],['sales.4','sales.4'],['sales.5','sales.5'],['detail.summary','detail.timing'],['detail.samjae','detail.caution'],"
-        "['detail.months','detail.lifegraph']])if(MEDIA['lifetime.'+b])MEDIA['newyear.'+a]=MEDIA['lifetime.'+b];\n"
-        "for(const [a,b] of [['intro','intro'],['year','welcome'],['ready','ready']])if(STORY_MEDIA['lifetime.'+b])STORY_MEDIA['newyear.'+a]=STORY_MEDIA['lifetime.'+b];\n"
-        "STORY_FACES.newyear=STORY_FACES.lifetime;\n"
+        "{const NY={image:'assets/geumwol/newyear-cover.jpg',alt:'붉은 금빛 한복을 입은 금월선녀 · 2027 신년운세',position:'50% 22%',identityReference:'master.jpg'};"
+        "for(const k of ['cover','intro','year','ready','sales.1','sales.2','sales.3','sales.4','sales.5','detail.summary','detail.samjae','detail.months'])MEDIA['newyear.'+k]=NY;"
+        "for(const k of ['intro','year','ready'])STORY_MEDIA['newyear.'+k]={background:NY.image,backgroundAlt:NY.alt,character:'assets/geumwol/blank.png',width:112,top:68,"
+        "originalImage:NY.image,interlude:false,identityReference:'assets/geumwol/master.jpg'};"
+        "STORY_FACES.newyear={...STORY_FACES.lifetime,neural:{...STORY_FACES.lifetime.neural,atlas:'assets/geumwol/none.png'},"
+        "smile:{...STORY_FACES.lifetime.smile,atlas:'assets/geumwol/none.png'}};}\n"
         "function home(){"))
     # 첫 화면 큰 배너: 신년운세 한 장, 위에 EVENT 딱지. 넘기는 점은 뺀다.
     s = _swap(s, "['lifetime','wealth','reunion','intimate'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"eyebrow\">${p.guide} · ORIGINAL SAJU</span>",
