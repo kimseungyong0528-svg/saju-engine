@@ -6,6 +6,7 @@ AI가 쓴 글이 사주 계산 결과와 어긋나는 곳을 찾는다.
 - 계산 결과에 없는 점수(NN점)
 - 계산 결과의 범위를 벗어난 연도
 - 같은 흔한 방법(하루 뒤에 다시 보기, 메모하기 등)이 책 전체에서 너무 자주 나온 곳
+- 한 문단에 사주 용어를 너무 많이 늘어놓은 곳(용어마다 풀이가 얇아져 읽고 나서 기억에 남지 않는다)
 
 check()는 문제마다 {"slot", "kind", "detail"}을 돌려준다. ClaudeWriter는 걸린 칸만 한 번 다시 쓴다.
 """
@@ -138,6 +139,7 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                         issues.append({"slot": sid, "kind": "연도", "detail": f"계산 범위 밖의 {m[1]}년을 썼어요: {sent[:80]}"})
     issues += newyear_checks(f, texts)
     issues += repeats(texts, skip_repeat)
+    issues += crowded_terms(texts, skip_repeat)
     return issues
 
 
@@ -223,3 +225,33 @@ def summary(issues: list[dict]) -> str:
     for i in issues:
         kinds[i["kind"]] = kinds.get(i["kind"], 0) + 1
     return "글 검사: " + ", ".join(f"{k} {n}곳" for k, n in kinds.items())
+
+
+# 한 문단에 이만큼 넘는 서로 다른 사주 용어가 나오면 다시 쓰게 한다(2026-10-14 사장님 요청: 용어는 적게, 풀이는 촘촘하게)
+TERM_LIMIT = 2
+
+
+def _term_re() -> re.Pattern:
+    names = set(K.TEN_GOD) | set(GROUPS) | set(K.GYEOKGUK) | set(K.STRENGTH) | set(K.SHINSAL)
+    names |= {n[:-1] for n in K.SHINSAL if n.endswith("살") and len(n) > 2}
+    names |= {n for n in K.TWELVE_STAGE if len(n) > 1}
+    names |= {st + el for st, el in zip("갑을병정무기경신임계", "목목화화토토금금수수")}
+    names |= {"일간", "일지", "용신", "희신", "기신", "격국", "대운", "세운", "월운", "조후", "통관", "상신", "천간", "지지", "원진"}
+    names -= {"중화"}   # 일반 낱말로도 쓰인다
+    return re.compile("|".join(sorted(names, key=len, reverse=True)))
+
+
+def crowded_terms(texts: dict, skip: set | frozenset = frozenset()) -> list[dict]:
+    """문단 하나에 서로 다른 사주 용어가 TERM_LIMIT개를 넘는 칸. 마지막 장(앞 장을 모으는 칸)은 세지 않는다."""
+    pat = _term_re()
+    out = []
+    for sid, v in texts.items():
+        if sid in skip:
+            continue
+        for para in flat(v):
+            found = list(dict.fromkeys(pat.findall(para)))
+            if len(found) > TERM_LIMIT:
+                out.append({"slot": sid, "kind": "용어", "detail": f"한 문단에 사주 용어가 {len(found)}개({', '.join(found)}) 나와요. "
+                            f"중심 용어 하나만 3~4문장으로 자세히 풀고, 나머지는 쉬운 말로 바꾸거나 문단을 나누세요: {para[:60]}"})
+                break
+    return out
