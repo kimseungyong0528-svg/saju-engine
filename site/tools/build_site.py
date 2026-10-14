@@ -187,7 +187,7 @@ def add_newyear(s: str) -> str:
     접수 규칙(intake.mjs)에도 들어가야 하므로 write_intake_module 보다 먼저 부른다."""
     s = _swap(s, "  }\n];\n// Kept only so previously saved demo orders still open.",
               '  },\n  {\n    "id": "newyear",\n    "name": "금월선녀의 2027 신년운세",\n    "short": "2027 신년운세",\n'
-              '    "guide": "금월선녀",\n    "category": "신년운세",\n    "color": "#d8bb78",\n    "tone": "forest",\n'
+              '    "guide": "금월선녀",\n    "category": "신년운세",\n    "color": "#f09c9c",\n    "tone": "forest",\n'
               '    "symbol": "丁未",\n    "line": "2027년, 나에게\\n어떤 해가 될까요",\n    "price": 29800,\n    "original": 55000,\n'
               '    "steps": 8\n  }\n];\n// Kept only so previously saved demo orders still open.')
     s = _swap(s, "SALES.business={", (
@@ -228,7 +228,24 @@ def add_newyear(s: str) -> str:
     s = _swap(s, ".hero-copy{position:absolute;inset:auto 26px 32px}",
               ".hero-copy{position:absolute;inset:auto 26px 32px}"
               ".event-tag{display:inline-block;margin-bottom:12px;padding:5px 12px;border-radius:999px;background:#c8102e;color:#fff;"
-              "font-size:14px;font-weight:800;letter-spacing:2px}.event-tag+.eyebrow{display:block}")
+              "font-size:14px;font-weight:800;letter-spacing:2px}.event-tag+.eyebrow{display:block}"
+              ".hero-copy .ny-name{font-size:30px;font-weight:800;line-height:1.35;color:#f09c9c;text-shadow:0 2px 14px #000a;margin:6px 0 12px}")
+    s = _swap(s, "</h1><p>${p.name}</p><span class=\"hero-link\">", "</h1><p class=\"ny-name\">${p.name}</p><span class=\"hero-link\">")
+    # 신년운세 화면 색: 금색 대신 연한 빨강(금월선녀 한복 색에 맞춤).
+    s = _swap(s, '<div class="shell light checkout">', '<div class="shell light checkout" data-product="${p.id}">')
+    s = _swap(s, '.birth-info-page[data-birth-tone="romance"] {', (
+        '.birth-info-page[data-birth-tone="newyear"] {\n --birth-accent:#f09c9c;\n --birth-ink:#2b1515;\n --birth-surface-start:#241718;\n'
+        ' --birth-surface-end:#151112;\n --birth-card-border:#4a2e30;\n --birth-complete-border:#8f5558;\n --birth-badge-border:#9a5a5e;\n'
+        ' --birth-badge-bg:#3b2224;\n --birth-input-border:#6a4a4c;\n --birth-filled-border:#c27f83;\n --birth-focus:#ffe5e5;\n --birth-hint:#f6c4c4;\n'
+        ' --birth-track:#45302f;\n --birth-avatar-border:#85494d;\n --birth-focus-glow:#f09c9c16;\n --birth-hint-bg:#f09c9c0b;\n --birth-hint-border:#f09c9c25;\n'
+        ' --birth-arrow:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'m4 6 4 4 4-4\' '
+        'fill=\'none\' stroke=\'%23f09c9c\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E");\n}\n'
+        '[data-product="newyear"] .dark-primary,.shell[style*="--accent:#f09c9c"] .dark-primary{background:#f09c9c;color:#2b1515}\n'
+        '.shell[style*="--accent:#f09c9c"] .guide-strip strong{color:#f09c9c}.shell[style*="--accent:#f09c9c"] .guide-strip img{border-color:#f09c9c55}\n'
+        '[data-product="newyear"] .coupon-input button{background:#f09c9c;color:#2b1515}\n'
+        '.layered-story[data-product="newyear"] .scene-name{color:#f09c9c}.layered-story[data-product="newyear"] .scene-eyebrow span{color:#f8d6d6;border-color:#f8d6d6}'
+        '.layered-story[data-product="newyear"] .story-speech{border-color:#f09c9c38}\n'
+        '.birth-info-page[data-birth-tone="romance"] {'))
     return s
 
 
