@@ -234,7 +234,8 @@ def add_newyear(s: str) -> str:
               ".hero-copy{position:absolute;inset:auto 26px 32px}"
               ".event-tag{display:inline-block;margin-bottom:12px;padding:5px 12px;border-radius:999px;background:#c8102e;color:#fff;"
               "font-size:14px;font-weight:800;letter-spacing:2px}.event-tag+.eyebrow{display:block}"
-              ".hero-copy .ny-name{font-size:30px;font-weight:800;line-height:1.35;color:#f09c9c;text-shadow:0 2px 14px #000a;margin:6px 0 12px}")
+              ".hero-copy .ny-name{font-size:30px;font-weight:800;line-height:1.35;color:#f09c9c;text-shadow:0 2px 14px #000a;margin:2px 0 6px}"
+              ".hero-copy .event-tag{margin-bottom:8px}.hero-copy .event-tag~h1{margin:6px 0 4px}")
     s = _swap(s, "</h1><p>${p.name}</p><span class=\"hero-link\">", "</h1><p class=\"ny-name\">${p.name}</p><span class=\"hero-link\">")
     # 신년운세 화면 색: 금색 대신 연한 빨강(금월선녀 한복 색에 맞춤).
     s = _swap(s, '<div class="shell light checkout">', '<div class="shell light checkout" data-product="${p.id}">')
