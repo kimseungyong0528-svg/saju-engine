@@ -144,3 +144,18 @@ python -m saju.report --product reunion --name 박지은 --sex female --birth 19
 2. 화면 연동 서버(`/api/intake/assess`, `/api/orders`, 토스페이먼츠, 메일 발송)
 3. 주제 사주 6종 실제 글 품질 확인(샘플은 API 없이 작성)
 4. 시·군·구 단위 좌표표 보강
+
+## SNS 게시물 자동 생성 (saju.marketing)
+
+띠별 2027 운세와 사주 상식 글을 하루 2개(오전·저녁)씩, 6개 채널용으로 만든다. API는 쓰지 않는다.
+사주 근거(띠와 그해의 합·충·형·파·해·원진, 삼재)는 엔진이 계산하고, 글은 `saju/marketing/data/*.json`에 미리 써 둔 것을 쓴다.
+
+```bash
+python -m saju.marketing --start 2026-10-19 --days 7 --offset 0 --out 게시물   # 1주차
+python -m saju.marketing --start 2026-10-26 --days 7 --offset 7 --out 게시물   # 2주차
+```
+
+게시물마다 카드뉴스(1080×1350) 6장, 쇼츠 영상(1080×1920, 무음), 인스타·페북·스레드·X·쇼츠 글이 생기고,
+주마다 `일정표.csv`, `당근_비즈프로필_소식.txt`, `검사결과.txt`가 생긴다.
+검사: 금지어(참고용·재미로), 과장 약속(돈벼락·수백억 등), X 글자 수, 사이트 주소, 글의 사주 근거가 엔진 계산과 같은지.
+GitHub Actions의 "SNS 게시물 만들기"로도 돌릴 수 있다(결과는 Artifacts zip).
