@@ -79,6 +79,13 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, ".flow-content { padding: 32px 24px 25px; }", ".flow-content { padding: 32px 24px calc(125px + env(safe-area-inset-bottom)); }"
               # 판매 페이지·접수 화면: 맨 아래 글(자주 묻는 질문, 서비스 문의)이 아래 고정 버튼에 가리지 않게 여백을 둔다.
               ".shell.sales { padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }"
+              # 리포트 안내(판매) 페이지 칸 사이 빈 공간 줄이기 (모든 상품 공통).
+              ".shell.sales .sales-panel { min-height: 560px; padding-top: 300px; padding-bottom: 32px; }"
+              ".shell.sales .detail-scene { min-height: 0; padding-top: 300px; padding-bottom: 32px; }"
+              ".shell.sales .sales-interlude { padding-top: 44px; padding-bottom: 44px; }"
+              ".shell.sales .sales-persons { padding-top: 40px; padding-bottom: 40px; }"
+              ".shell.sales .chapters { padding-top: 40px; padding-bottom: 40px; } .shell.sales .chapters>h2 { margin: 12px 0 24px; }"
+              ".shell.sales .chapter { margin: 12px 0; padding: 24px 22px; }"
               ".shell.sales .faq { padding: 20px 24px 4px; } .shell.sales .faq h2 { margin-bottom: 12px; } .shell.sales .faq details { padding: 15px 0; }"
               ".shell.checkout .checkout-content { padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important; }")
     # 첫 화면 섹션 제목·설명 (사장님 문구, 2026-10-13). 평생사주는 건강운과 같은 '인생 총운' 줄로 옮김.
