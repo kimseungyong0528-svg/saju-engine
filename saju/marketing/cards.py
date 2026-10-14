@@ -39,6 +39,7 @@ body { margin: 0; }
 .label { font-size: 36px; color: #e8cf8f; letter-spacing: 2px; margin-bottom: 18px; }
 .hook { font-family: "Song Myung", serif; font-size: 104px; line-height: 1.15; margin: 0 0 26px; }
 .hook.long { font-size: 80px; }
+.hook.reel { font-size: 84px; line-height: 1.25; }
 .sub { font-size: 44px; line-height: 1.55; font-weight: 700; word-break: keep-all; }
 .years { font-size: 36px; color: #e8cf8f; margin-top: 22px; }
 .top { position: absolute; left: 84px; right: 84px; top: 78px; font-size: 32px; color: #6b5a44;
@@ -103,17 +104,21 @@ def _seal() -> str:
     return f'<div class="seal">{BRAND[:2]}<br>{BRAND[2:]}</div>'
 
 
-def slides_html(p: Post, fmt: str) -> str:
+def slides_html(p: Post, fmt: str, cover: str = "basic") -> str:
+    """cover="reel"이면 인스타 릴스용 첫 화면(큰 한 줄)으로 바꾼다. 나머지 장은 같다."""
     total = len(p.slides) + 2
     cover_img = (ART / COVER_IMG[p.kind]).as_uri()
-    hook_cls = "hook long" if len(p.hook) > 11 else "hook"
+    hook, sub = p.hook, p.sub
+    hook_cls = "hook long" if len(hook) > 11 else "hook"
+    if cover == "reel":
+        hook, sub, hook_cls = p.reel_hook, "", "hook reel"
     years = ""
     if p.kind == "ddi":
         years = f'<div class="years">{"·".join(f"{y % 100:02d}" for y in p.facts["years"])}년생</div>'
     pages = [f'''<div class="pg cover" style="background-image:url('{cover_img}')">
   <div class="shade"></div>{_seal()}
-  <div class="cv"><div class="label">2027 정미년 · 丁未年</div><div class="{hook_cls}">{_t(p.hook)}</div>
-  <div class="sub">{_t(p.sub)}</div>{years}</div></div>''']
+  <div class="cv"><div class="label">2027 정미년 · 丁未年</div><div class="{hook_cls}">{_t(hook)}</div>
+  <div class="sub">{_t(sub)}</div>{years}</div></div>''']
     for n, s in enumerate(p.slides, 2):
         pages.append(f'''<div class="pg"><div class="frame"></div>
   <div class="top">{escape(p.hook)}<span class="no">{n} / {total}</span></div>
@@ -127,13 +132,13 @@ def slides_html(p: Post, fmt: str) -> str:
     return f"<!doctype html><html lang='ko'><head><meta charset='utf-8'><style>{_css(fmt)}</style></head><body>{''.join(pages)}</body></html>"
 
 
-def render_pngs(p: Post, fmt: str, out_dir: Path, prefix: str) -> list[Path]:
+def render_pngs(p: Post, fmt: str, out_dir: Path, prefix: str, cover: str = "basic") -> list[Path]:
     from weasyprint import HTML
 
     out_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         pdf = Path(tmp) / "c.pdf"
-        HTML(string=slides_html(p, fmt)).write_pdf(str(pdf))
+        HTML(string=slides_html(p, fmt, cover)).write_pdf(str(pdf))
         subprocess.run(["pdftoppm", "-r", "96", "-png", str(pdf), str(Path(tmp) / "s")], check=True)
         files = sorted(Path(tmp).glob("s-*.png"))
         outs = []

@@ -145,17 +145,20 @@ python -m saju.report --product reunion --name 박지은 --sex female --birth 19
 3. 주제 사주 6종 실제 글 품질 확인(샘플은 API 없이 작성)
 4. 시·군·구 단위 좌표표 보강
 
-## SNS 게시물 자동 생성 (saju.marketing)
+## SNS 게시물 자동 생성 + 관리 사이트 (saju.marketing, /studio)
 
-띠별 2027 운세와 사주 상식 글을 하루 2개(오전·저녁)씩, 6개 채널용으로 만든다. API는 쓰지 않는다.
-사주 근거(띠와 그해의 합·충·형·파·해·원진, 삼재)는 엔진이 계산하고, 글은 `saju/marketing/data/*.json`에 미리 써 둔 것을 쓴다.
+재료 하나를 채널마다 따로 포장한다. 하루 재료 2개(오전 띠별 2027 운세, 저녁 사주 상식)로
+유튜브 쇼츠 2, 인스타 릴스 1, 인스타 카드뉴스 1, 스레드 2를 만들고(페이스북은 인스타에서 같이 공유), 당근 소식은 주 1회.
+사주 근거(띠와 그해의 합·충·형·파·해·원진, 삼재)는 엔진이 계산하고, 글은 `saju/marketing/data/*.json`에 미리 써 둔 것을 쓴다. API 비용 없음.
 
 ```bash
-python -m saju.marketing --start 2026-10-19 --days 7 --offset 0 --out 게시물   # 1주차
-python -m saju.marketing --start 2026-10-26 --days 7 --offset 7 --out 게시물   # 2주차
+python -m saju.marketing --start 2026-10-19 --out 게시물              # 일주일치, 내 컴퓨터에만
+python -m saju.marketing --start 2026-10-19 --trends --publish        # 뜬 주제 모으고 관리 사이트에 올리기
 ```
 
-게시물마다 카드뉴스(1080×1350) 6장, 쇼츠 영상(1080×1920, 무음), 인스타·페북·스레드·X·쇼츠 글이 생기고,
-주마다 `일정표.csv`, `당근_비즈프로필_소식.txt`, `검사결과.txt`가 생긴다.
-검사: 금지어(참고용·재미로), 과장 약속(돈벼락·수백억 등), X 글자 수, 사이트 주소, 글의 사주 근거가 엔진 계산과 같은지.
-GitHub Actions의 "SNS 게시물 만들기"로도 돌릴 수 있다(결과는 Artifacts zip).
+- `--trends`: 레퍼런스 계정(`data/references.json`)에서 그 주 평소보다 많이 뜬 게시물을 모아, 겹치는 재료부터 쓴다.
+  키(YOUTUBE_API_KEY, IG_USER_ID+META_TOKEN, NAVER_CLIENT_ID+NAVER_CLIENT_SECRET)가 없는 곳은 건너뛴다.
+- `--publish`: SITE_URL, WORKER_SECRET 으로 사이트 저장소(Netlify Blobs `unmyeong-studio`)에 올린다. 사이트 배포는 일어나지 않는다.
+- 관리 사이트 `https://unmyeong-saju.com/studio/` : 넷리파이 환경 변수 STUDIO_PASSWORD 로 로그인. '만들기' 버튼이
+  GitHub Actions "SNS 게시물 만들기"(repository_dispatch `studio`)를 시작시킨다. 35일 지난 주는 자동으로 지운다.
+- 검사: 금지어·과장, 카드 글 길이, 채널별 글자 수(스레드 500자, 유튜브 제목 100자, 인스타 2200자·태그 30개), 사이트 주소, 사주 근거가 엔진과 같은지.

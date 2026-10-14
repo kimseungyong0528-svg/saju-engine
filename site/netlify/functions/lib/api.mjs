@@ -5,6 +5,7 @@ import {
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName,
 } from './orders.mjs';
 import { ready } from './services.mjs';
+import { makeStudio } from './studio.mjs';
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -18,12 +19,14 @@ async function readJson(req, limit = 65_536) {
 
 const bearer = req => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || '';
 
-export function makeApi({ store, services, env }) {
+export function makeApi({ store, services, env, studioStore = store }) {
+  const studio = makeStudio({ store: studioStore, services, env });
   return async function handle(req) {
     const url = new URL(req.url);
     const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
     const m = req.method;
     try {
+      if (parts[0] === 'studio' || (parts[0] === 'internal' && parts[1] === 'studio')) return await studio(req, parts);
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
           customerAnalysisReady: ready(env), clientKey: ready(env) ? env.TOSS_CLIENT_KEY : '',

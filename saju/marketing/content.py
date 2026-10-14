@@ -35,9 +35,11 @@ class Post:
     sub: str                  # 표지 작은 글씨
     slides: list[dict]        # [{"head", "body"}] 표지와 마지막 장 사이의 본문 장
     remember: str
-    x_line: str
     tags: list[str]
     facts: dict = field(default_factory=dict)
+    ask: str = ""             # 스레드 끝 질문 (댓글 받기)
+    keywords: list[str] = field(default_factory=list)   # 뜬 주제와 맞춰 볼 낱말
+    reel_hook: str = ""       # 인스타 릴스 첫 화면 한 줄
 
 
 def _load(name: str) -> dict:
@@ -93,8 +95,10 @@ def ddi_posts(year: int = YEAR) -> list[Post]:
                 {"head": "조심할 것", "body": d["caution"]},
             ],
             remember=d["remember"],
-            x_line=f"{EMOJI[animal]} {year} {animal}띠({_years_text(f['years'][-4:])}) {d['summary'].split('에게 ', 1)[-1]}",
             tags=tags, facts=f | {"ganzhi": gz},
+            ask=f"주변에 {animal}띠가 있나요? 이 글을 보여 주세요.",
+            keywords=[f"{animal}띠"] + [f"{y % 100:02d}년생" for y in f["years"]],
+            reel_hook=f"{animal}띠, {d['summary'].split('에게 ', 1)[-1]}",
         ))
     return out
 
@@ -112,8 +116,10 @@ def summary_post(year: int = YEAR) -> Post:
                 {"head": "토끼띠 ~ 말띠", "body": "\n".join(lines[3:7])},
                 {"head": "양띠 ~ 돼지띠", "body": "\n".join(lines[7:12])}],
         remember="띠는 태어난 해 하나만 본 것이에요. 생년월일 전체를 보면 내 2027년이 정확히 보여요.",
-        x_line=f"☀️ {year} 정미년 12띠 운세 한눈에 보기. 내 띠는 어떤 해일까요?",
         tags=["#12띠운세"] + BASE_TAGS,
+        ask="여러분 띠는 어떤 해인가요? 댓글로 띠를 알려 주세요.",
+        keywords=["12띠", "띠별운세", "대박띠"],
+        reel_hook="2027년, 12띠를 한 줄씩 정리했어요",
     )
 
 
@@ -122,53 +128,81 @@ def topic_posts() -> list[Post]:
     for t in _load("topics.json")["items"]:
         out.append(Post(
             kind="topic", key=t["id"], title=t["title"], hook=t["hook"], sub=t["title"],
-            slides=t["slides"], remember=t["remember"], x_line=t["x"],
+            slides=t["slides"], remember=t["remember"],
             tags=["#사주공부", "#사주풀이", "#명리학"] + BASE_TAGS,
+            ask=t["ask"], keywords=t["keywords"], reel_hook=t["hook"],
         ))
     return out
 
 
-# ── 채널별 글 ───────────────────────────────────────────────
+# ── 채널별 포장 ─────────────────────────────────────────────
+# 재료(Post)는 하나, 포장은 채널마다 그 채널 1위 계정 방식으로 다르게 한다.
+#   유튜브 쇼츠: 도화도르 — 제목에 "보는 법·시기", 출생연도 나열, 설명란 링크
+#   인스타 릴스·카드: 도화도르·포스텔러 — 첫 화면 큰 한 줄, 짧은 캡션, 저장 유도, 프로필 링크
+#   스레드: 사주장인 — 긴 설명을 이어 쓰기(한 칸 500자), 질문으로 시작하고 질문으로 끝내 댓글 받기
+#   당근: 사주대가 — 주 1회 소식, 상품·가격 안내
 
-CTA = "띠는 태어난 해 하나만 본 거예요. 내 생년월일로 2027년 12달 흐름을 보려면 프로필 링크를 눌러 주세요."
+THREADS_LIMIT = 500
 
 
-def caption_instagram(p: Post) -> str:
-    body = [p.hook, "", p.sub, ""]
+def youtube(p: Post) -> dict:
+    if p.kind == "ddi":
+        rest = p.sub.split("에게 ", 1)[-1].rstrip(".")
+        title = f"{p.title}, {rest.removesuffix('예요')}"
+    else:
+        title = f"{p.title}ㅣ2027 정미년 사주 쉽게 보기"
+    desc = [p.sub, ""]
     for s in p.slides:
-        body += [f"▪ {s['head']}", s["body"], ""]
-    body += [f"기억할 한 줄: {p.remember}", "", CTA, "", " ".join(p.tags)]
-    return "\n".join(body)
+        desc.append(f"▪ {s['head']}")
+    desc += ["", f"기억할 한 줄: {p.remember}", "", f"내 생년월일로 보는 2027 신년운세 👉 {SITE_URL}", "",
+             " ".join(p.tags[:6]) + " #shorts"]
+    return {"제목": title[:100], "설명": "\n".join(desc)}
 
 
-def caption_facebook(p: Post) -> str:
-    # 페이스북은 글 안 링크가 눌리므로 주소를 바로 넣는다
-    return caption_instagram(p).replace("프로필 링크를 눌러 주세요.", f"아래 주소로 들어오세요.\n{SITE_URL}")
+def _ig_tags(p: Post) -> str:
+    return " ".join(p.tags[:9])
 
 
-def text_threads(p: Post) -> str:
-    parts = [p.hook, "", p.sub, ""]
-    for s in p.slides:
-        parts += [s["head"], s["body"], ""]
-    parts += [p.remember, "", f"내 생년월일로 보는 2027 신년운세: {SITE_URL}"]
-    return "\n".join(parts)
+def instagram_reel(p: Post) -> dict:
+    cap = [p.reel_hook, "", p.sub, "", f"기억할 한 줄: {p.remember}", "",
+           "저장해 두고 2027년에 다시 꺼내 보세요.", "내 생년월일로 보는 2027 신년운세는 프로필 링크에 있어요.", "",
+           _ig_tags(p)]
+    return {"캡션": "\n".join(cap)}
 
 
-def text_x(p: Post) -> str:
-    return f"{p.x_line}\n👉 {SITE_URL}"
+def instagram_cards(p: Post) -> dict:
+    cap = [p.hook, "", p.sub, "", "👉 옆으로 넘겨서 보세요.", "", f"기억할 한 줄: {p.remember}", "",
+           "저장해 두면 필요할 때 바로 꺼내 볼 수 있어요.", "내 생년월일로 보는 2027 신년운세는 프로필 링크에 있어요.", "",
+           _ig_tags(p)]
+    return {"캡션": "\n".join(cap)}
 
 
-def text_shorts(p: Post) -> str:
-    desc = [p.sub, "", f"기억할 한 줄: {p.remember}", "", f"내 생년월일로 보는 2027 신년운세: {SITE_URL}",
-            "", " ".join(p.tags[:8]) + " #shorts"]
-    script = [f"[장면 1] {p.hook}. {p.sub}"]
-    for n, s in enumerate(p.slides, 2):
-        script.append(f"[장면 {n}] {s['head']}. {s['body']}")
-    script.append(f"[마지막] {p.remember} 내 생년월일로 2027년을 보려면 설명란 링크를 눌러 주세요.")
-    return "\n".join(["[제목]", p.title[:100], "", "[설명]", *desc, "", "[읽을 대본 (목소리를 넣고 싶을 때)]", *script])
+def _split(blocks: list[str], limit: int = THREADS_LIMIT) -> list[str]:
+    """스레드 한 칸은 500자까지라서, 문단을 깨지 않고 여러 칸으로 나눈다."""
+    parts, cur = [], ""
+    for b in blocks:
+        nxt = f"{cur}\n\n{b}" if cur else b
+        if len(nxt) <= limit:
+            cur = nxt
+        else:
+            if cur:
+                parts.append(cur)
+            cur = b
+    if cur:
+        parts.append(cur)
+    return parts
 
 
-def text_daangn(week_posts: list[Post]) -> str:
+def threads(p: Post) -> dict:
+    first = f"{p.hook}\n\n{p.sub}"
+    blocks = [first] + [f"{s['head']}\n{s['body']}" for s in p.slides]
+    blocks += [f"기억할 한 줄: {p.remember}", f"{p.ask}\n\n내 생년월일로 보는 2027 신년운세: {SITE_URL}"]
+    parts = _split(blocks)
+    n = len(parts)
+    return {f"{i}/{n}": t for i, t in enumerate(parts, 1)}
+
+
+def daangn(week_posts: list[Post]) -> dict:
     """당근 비즈프로필 소식: 한 주에 한 번, 그 주의 띠를 묶어서 올린다."""
     ddis = [p for p in week_posts if p.kind == "ddi"]
     lines = ["2027년 정미년 띠별 운세 (이번 주)", ""]
@@ -176,5 +210,5 @@ def text_daangn(week_posts: list[Post]) -> str:
         lines.append(f"{EMOJI[p.key]} {p.key}띠: {p.sub}")
     lines += ["", "띠는 태어난 해 하나만 본 것이에요.",
               "생년월일과 태어난 시간으로 2027년 12달 흐름, 돈·일·연애·건강을 한 권(PDF 약 60쪽)으로 정리해 드려요.",
-              "2027 신년운세 29,800원", "", "채팅으로 문의 주시면 바로 안내드릴게요."]
-    return "\n".join(lines)
+              "2027 신년운세 29,800원", "", f"신청: {SITE_URL}"]
+    return {"소식": "\n".join(lines)}

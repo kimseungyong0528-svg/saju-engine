@@ -1,9 +1,12 @@
-"""일주일치 SNS 게시물 묶음 만들기.
+"""일주일치 SNS 게시물 묶음 만들기 (재료 하나, 포장은 채널별).
 
-    python -m saju.marketing --start 2026-10-19 --days 7 --out 게시물
+    python -m saju.marketing --start 2026-10-19 --out 게시물 [--trends] [--publish]
 
-하루 2번(오전 띠별 운세, 저녁 방법·시기 글) 순서대로 채운다.
-게시물마다 인스타·페북·스레드·X·유튜브 쇼츠용 파일을 만들고, 일정표와 검사 결과를 남긴다.
+하루 재료 2개: 오전 = 띠별 2027 운세, 저녁 = 사주 상식(보는 법·시기).
+  유튜브 쇼츠 2 (오전·저녁 재료), 인스타 릴스 1 (오전 재료), 인스타 카드뉴스 1 (저녁 재료),
+  스레드 2 (오전·저녁 재료), 페이스북은 인스타에서 같이 공유, 당근은 주 1회 소식.
+재료 순서는 그 주 레퍼런스 계정에서 뜬 주제(trends)와 겹치는 것부터, 이미 쓴 재료는 뒤로.
+결과: <out>/<첫날>/ 아래 채널별 폴더, manifest.json(관리 사이트가 읽음), 일정표.csv, 검사결과.txt
 """
 
 from __future__ import annotations
@@ -11,80 +14,138 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import json
+import shutil
 from pathlib import Path
 
-from . import cards
+from . import cards, trends as tr
 from .checks import check_post
-from .content import (caption_facebook, caption_instagram, ddi_posts, summary_post, text_daangn,
-                      text_shorts, text_threads, text_x, topic_posts)
+from .content import (daangn, ddi_posts, instagram_cards, instagram_reel, summary_post, threads, topic_posts,
+                      youtube)
 
-SLOTS = (("오전", "08:00"), ("저녁", "20:00"))
 WEEKDAYS = "월화수목금토일"
+AM, PM = "08:00", "20:00"
+CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "instagram-cards": "인스타 카드뉴스",
+                 "threads": "스레드", "daangn": "당근 소식"}
 
 
-def schedule() -> list[tuple]:
-    """(오전 글, 저녁 글) 하루치 짝의 전체 목록. 오전은 띠별 12개 + 12띠 한눈에, 저녁은 방법·시기 글."""
-    am = ddi_posts() + [summary_post()]
-    pm = topic_posts()
-    n = max(len(am), len(pm))
-    return [(am[i] if i < len(am) else None, pm[i] if i < len(pm) else None) for i in range(n)]
+def pick(days: int, trends: dict | None, used: set[str]) -> list[tuple]:
+    """하루치 (오전 재료, 저녁 재료) 짝을 days개 고른다. 재료가 모자라면 오래전에 쓴 것부터 다시 쓴다."""
+    am = tr.order(ddi_posts() + [summary_post()], trends, used)
+    pm = tr.order(topic_posts(), trends, used)
+    return [(am[i % len(am)], pm[i % len(pm)]) for i in range(days)]
 
 
-def build(start: dt.date, days: int, offset: int, out: Path, video: bool = True) -> dict:
-    plan = schedule()[offset:offset + days]
-    week = out / f"{start.isoformat()}_시작"
+def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used: set[str] | None = None,
+          video: bool = True) -> dict:
+    used = used or set()
+    week = out / start.isoformat()
     week.mkdir(parents=True, exist_ok=True)
-    rows, problems, posts = [], [], []
-    for d, pair in enumerate(plan):
+    manifest = {"week": start.isoformat(), "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
+                "days": [], "problems": [], "trends": trends or {"items": [], "notes": ["뜬 주제 모으기를 하지 않음"]},
+                "used": []}
+    rows, posts = [], []
+
+    def save(rel: str, text: str) -> str:
+        (week / rel).parent.mkdir(parents=True, exist_ok=True)
+        (week / rel).write_text(text, encoding="utf-8")
+        return rel
+
+    for d, ((am, am_score), (pm, pm_score)) in enumerate(pick(days, trends, used)):
         day = start + dt.timedelta(days=d)
-        for (slot, time), p in zip(SLOTS, pair):
-            if p is None:
-                continue
+        tag = f"{day:%m-%d}"
+        entry = {"date": day.isoformat(), "weekday": WEEKDAYS[day.weekday()], "items": []}
+        for p, score, slot, time in ((am, am_score, "오전", AM), (pm, pm_score, "저녁", PM)):
             posts.append(p)
-            label = f"{p.key}띠" if p.kind == "ddi" else p.key if p.kind == "summary" else p.title.replace(" ", "")
-            name = f"{day:%m-%d}({WEEKDAYS[day.weekday()]})_{slot}_{label}"
-            folder = week / name
-            folder.mkdir(exist_ok=True)
-            texts = {"인스타": caption_instagram(p), "페북": caption_facebook(p), "스레드": text_threads(p),
-                     "X": text_x(p), "쇼츠": text_shorts(p)}
-            files = {"인스타": "인스타_캡션.txt", "페북": "페북_캡션.txt", "스레드": "스레드_글.txt",
-                     "X": "X_글.txt", "쇼츠": "쇼츠_제목_설명.txt"}
-            for k, fn in files.items():
-                (folder / fn).write_text(texts[k], encoding="utf-8")
-            cards.render_pngs(p, "feed", folder, "카드")
+            manifest["used"].append(p.key)
+            base = f"{tag}_{slot}"
+            packs = {"youtube": youtube(p), "threads": threads(p)}
+            # 유튜브 쇼츠: 세로 카드 → 영상
+            tall = cards.render_pngs(p, "shorts", week / "_작업" / base / "yt", "s")
+            vid = f"유튜브/{base}_{p.key}.mp4"
+            (week / "유튜브").mkdir(exist_ok=True)
             if video:
-                tall = cards.render_pngs(p, "shorts", folder / "_세로", "세로")
-                cards.render_video(tall, folder / "쇼츠_영상.mp4")
-            issues = check_post(p, texts)
-            problems += [f"{name}: {i}" for i in issues]
-            when = f"{day.isoformat()} {time}"
-            for ch, what in (("인스타그램", "카드_01~ 이미지 + 인스타_캡션"), ("페이스북", "카드 이미지 + 페북_캡션"),
-                             ("스레드", "스레드_글 (+카드_01 이미지)"), ("X", "X_글 (+카드_01 이미지)"),
-                             ("유튜브 쇼츠", "쇼츠_영상.mp4 + 쇼츠_제목_설명")):
-                rows.append([when, ch, p.title, name, what])
-    (week / "당근_비즈프로필_소식.txt").write_text(text_daangn(posts), encoding="utf-8")
+                cards.render_video(tall, week / vid)
+            thumb = f"유튜브/{base}_{p.key}_표지.png"
+            tall[0].replace(week / thumb)
+            entry["items"].append({"id": f"{base}-youtube", "channel": "youtube", "time": time, "slot": slot,
+                                   "material": p.key, "title": packs["youtube"]["제목"], "score": score,
+                                   "video": vid if video else "", "thumb": thumb, "texts": packs["youtube"]})
+            if slot == "오전":
+                # 인스타 릴스: 첫 화면만 릴스용 한 줄로 바꾼 영상
+                packs["instagram-reel"] = instagram_reel(p)
+                reel_pngs = cards.render_pngs(p, "shorts", week / "_작업" / base / "reel", "r", cover="reel")
+                reel = f"인스타/{base}_릴스_{p.key}.mp4"
+                (week / "인스타").mkdir(exist_ok=True)
+                if video:
+                    cards.render_video(reel_pngs, week / reel)
+                rthumb = f"인스타/{base}_릴스_{p.key}_표지.png"
+                reel_pngs[0].replace(week / rthumb)
+                entry["items"].append({"id": f"{base}-reel", "channel": "instagram-reel", "time": time, "slot": slot,
+                                       "material": p.key, "title": p.reel_hook, "score": score,
+                                       "video": reel if video else "", "thumb": rthumb,
+                                       "texts": packs["instagram-reel"]})
+            else:
+                # 인스타 카드뉴스 (페북은 인스타에서 같이 공유)
+                packs["instagram-cards"] = instagram_cards(p)
+                imgs = cards.render_pngs(p, "feed", week / "인스타" / f"{base}_카드_{p.key}", "카드")
+                entry["items"].append({"id": f"{base}-cards", "channel": "instagram-cards", "time": time, "slot": slot,
+                                       "material": p.key, "title": p.hook, "score": score,
+                                       "images": [str(i.relative_to(week)) for i in imgs],
+                                       "texts": packs["instagram-cards"]})
+            entry["items"].append({"id": f"{base}-threads", "channel": "threads", "time": time, "slot": slot,
+                                   "material": p.key, "title": p.reel_hook, "score": score, "texts": packs["threads"]})
+            for k, v in packs.items():
+                save(f"{CHANNEL_NAMES[k].split()[0]}/{base}_{k}_{p.key}.txt",
+                     "\n\n".join(f"[{kk}]\n{vv}" for kk, vv in v.items()))
+            manifest["problems"] += [f"{tag} {slot} {p.key}: {i}" for i in check_post(p, packs)]
+            for it in entry["items"]:
+                if it["slot"] == slot and it["material"] == p.key:
+                    rows.append([f"{day.isoformat()} {time}", CHANNEL_NAMES[it["channel"]], it["title"], it["id"]])
+        manifest["days"].append(entry)
+    manifest["daangn"] = daangn(posts)
+    save("당근/이번주_소식.txt", manifest["daangn"]["소식"])
+    rows.append([f"{start.isoformat()} 아무 때", "당근 소식", "이번 주 띠별 운세", "daangn"])
+    shutil.rmtree(week / "_작업", ignore_errors=True)
     with open(week / "일정표.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(["올릴 시각", "채널", "제목", "폴더", "올릴 파일"])
+        w.writerow(["올릴 시각", "채널", "제목", "번호"])
         w.writerows(rows)
-        w.writerow([f"{start.isoformat()} 아무 때", "당근", "이번 주 띠별 운세", "", "당근_비즈프로필_소식.txt"])
-    (week / "검사결과.txt").write_text("\n".join(problems) if problems else "문제 없음", encoding="utf-8")
-    return {"folder": week, "posts": len(posts), "problems": problems}
+    (week / "검사결과.txt").write_text("\n".join(manifest["problems"]) or "문제 없음", encoding="utf-8")
+    (week / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"folder": week, "manifest": manifest}
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="SNS 게시물 묶음 만들기")
     ap.add_argument("--start", required=True, help="첫날 (YYYY-MM-DD)")
     ap.add_argument("--days", type=int, default=7)
-    ap.add_argument("--offset", type=int, default=0, help="전체 순서에서 몇 번째 날부터 (2주차는 7)")
     ap.add_argument("--out", default="게시물")
+    ap.add_argument("--trends", action="store_true", help="레퍼런스 계정에서 뜬 주제를 먼저 모은다 (키 필요)")
+    ap.add_argument("--used", default="", help="이미 쓴 재료 이름들 (쉼표로)")
+    ap.add_argument("--publish", action="store_true", help="다 만든 뒤 관리 사이트에 올린다 (SITE_URL, WORKER_SECRET)")
     ap.add_argument("--no-video", action="store_true")
     a = ap.parse_args(argv)
-    r = build(dt.date.fromisoformat(a.start), a.days, a.offset, Path(a.out), video=not a.no_video)
-    print(f"{r['posts']}개 게시물 → {r['folder']}")
-    for p in r["problems"]:
+    start = dt.date.fromisoformat(a.start)
+    used = set(filter(None, a.used.split(",")))
+    from . import publish
+    if a.publish:
+        publish.status(start.isoformat(), "running", "만드는 중")
+        used |= publish.used_keys()
+    t = tr.collect() if a.trends else None
+    try:
+        r = build(start, a.days, Path(a.out), t, used, video=not a.no_video)
+    except Exception as e:
+        if a.publish:
+            publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")
+        raise
+    m = r["manifest"]
+    print(f"{sum(len(d['items']) for d in m['days'])}개 게시물 → {r['folder']}")
+    for p in m["problems"]:
         print("  검사:", p)
-    return 1 if r["problems"] else 0
+    if a.publish:
+        publish.upload_week(r["folder"])
+    return 0
 
 
 if __name__ == "__main__":

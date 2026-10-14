@@ -1,4 +1,4 @@
-// 바깥 서비스: 토스페이먼츠(결제 승인), 깃허브(결과 작성 작업 시작), Resend(이메일).
+// 바깥 서비스: 토스페이먼츠(결제 승인), 깃허브(결과 작성·SNS 게시물 작업 시작), Resend(이메일).
 import { productName, reportFileName } from './orders.mjs';
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -27,6 +27,16 @@ export function realServices(env, fetcher = fetch) {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'unmyeong-orders', 'Content-Type': 'application/json' },
       body: JSON.stringify({ event_type: 'order', client_payload: { orderId } }),
+    });
+    if (r.status !== 204) throw Error(`dispatch ${r.status}`);
+  }
+
+  // 관리 사이트의 "만들기" 버튼: 깃허브에서 SNS 게시물 만들기 작업을 시작한다.
+  async function startStudio(start) {
+    const r = await fetcher(`https://api.github.com/repos/${env.GITHUB_REPO || 'kimseungyong0528-svg/saju-engine'}/dispatches`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'unmyeong-studio', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: 'studio', client_payload: { start } }),
     });
     if (r.status !== 204) throw Error(`dispatch ${r.status}`);
   }
@@ -68,7 +78,7 @@ export function realServices(env, fetcher = fetch) {
     });
   }
 
-  return { tossConfirm, startWorker, sendEmail, notifyOwner };
+  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
 }
 
 export function ready(env) {
