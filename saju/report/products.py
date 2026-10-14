@@ -11,9 +11,9 @@ import os
 SITE_URL = os.environ.get("SAJU_SITE_URL", "https://unmyeong-saju.com").rstrip("/")
 
 PRODUCTS = [
-    {"id": "newyear", "name": "금월선녀의 2027 신년운세", "category": "신년운세", "price": 29800, "original": 55000,
+    {"id": "newyear", "name": "금월선녀의 2027 신년운세", "category": "운세/평생운", "price": 29800, "original": 55000,
      "line": "2027년, 나에게 어떤 해가 될까요"},
-    {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "인생총운", "price": 49800, "original": 110000,
+    {"id": "lifetime", "name": "금월선녀의 평생사주", "category": "운세/평생운", "price": 49800, "original": 110000,
      "line": "지나온 나를 이해하고 앞으로의 길을 만나다"},
     {"id": "romance", "name": "금월선녀의 연애사주", "category": "연애", "price": 29800, "original": 55000,
      "line": "다음 사랑은 어떤 모습으로 올까요"},

@@ -187,7 +187,7 @@ def add_newyear(s: str) -> str:
     접수 규칙(intake.mjs)에도 들어가야 하므로 write_intake_module 보다 먼저 부른다."""
     s = _swap(s, "  }\n];\n// Kept only so previously saved demo orders still open.",
               '  },\n  {\n    "id": "newyear",\n    "name": "금월선녀의 2027 신년운세",\n    "short": "2027 신년운세",\n'
-              '    "guide": "금월선녀",\n    "category": "신년운세",\n    "color": "#f09c9c",\n    "tone": "forest",\n'
+              '    "guide": "금월선녀",\n    "category": "운세/평생운",\n    "color": "#f09c9c",\n    "tone": "forest",\n'
               '    "symbol": "丁未",\n    "line": "2027년, 나에게\\n어떤 해가 될까요",\n    "price": 29800,\n    "original": 55000,\n'
               '    "steps": 8\n  }\n];\n// Kept only so previously saved demo orders still open.')
     s = _swap(s, "SALES.business={", (
@@ -220,6 +220,11 @@ def add_newyear(s: str) -> str:
         "STORY_FACES.newyear={...STORY_FACES.lifetime,neural:{...STORY_FACES.lifetime.neural,atlas:'assets/geumwol/none.png'},"
         "smile:{...STORY_FACES.lifetime.smile,atlas:'assets/geumwol/none.png'}};}\n"
         "function home(){"))
+    # 상단 카테고리: 인생총운 → 운세/평생운. 신년운세와 평생사주가 이 탭에 들어가고 신년운세가 첫 번째.
+    s = _swap(s, 'const CATEGORIES=["전체","연애","재회","금전","건강","인생총운"];', 'const CATEGORIES=["전체","연애","재회","금전","건강","운세/평생운"];')
+    s = _swap(s, '"guide": "금월선녀",\n    "category": "인생총운",', '"guide": "금월선녀",\n    "category": "운세/평생운",')
+    s = _swap(s, "'인생 총운':'인생총운',", "'인생 총운':'운세/평생운','인생총운':'운세/평생운',")
+    s = _swap(s, "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id)", "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id).sort((a,b)=>(b==='newyear')-(a==='newyear'))")
     # 첫 화면 큰 배너: 신년운세 한 장, 위에 EVENT 딱지. 넘기는 점은 뺀다.
     s = _swap(s, "['lifetime','wealth','reunion','intimate'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"eyebrow\">${p.guide} · ORIGINAL SAJU</span>",
               "['newyear'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>")
