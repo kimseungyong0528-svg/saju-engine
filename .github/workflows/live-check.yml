@@ -11,7 +11,7 @@ jobs:
             echo "== $u"
             curl -sSIL "$u" | grep -iE "^(HTTP|age|cache-control|x-nf-request-id|etag|last-modified|server)" || true
             curl -sSL "$u" -o page.html; wc -c page.html
-            for t in "분석 범위 확인 필요" "if(decision.inputAccepted)return ''" "ONE STORY, MANY CHAPTERS" "calc(96px" "운세/평생운" "newyear-cover.jpg"; do
+            for t in "분석 범위 확인 필요" "if(decision.inputAccepted)return ''" "ONE STORY, MANY CHAPTERS" "calc(96px" "운세/평생운" "newyear-cover.jpg" ".hero-copy .event-tag~h1" "calc(150px" "calc(100px" "padding-top: 300px" "f09c9c"; do
               printf '%s : ' "$t"; grep -c -F "$t" page.html || true
             done
           done
