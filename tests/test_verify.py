@@ -118,3 +118,12 @@ def test_length_check():
     slots = [{"id": "a", "chars": 100}, {"id": "b", "chars": 100}, {"id": "c", "chars": 100}]
     texts = {"a": ["가" * 60], "b": ["가" * 100], "c": ["가" * 130]}
     assert [i["slot"] for i in V.lengths(texts, slots)] == ["a", "c"]
+
+
+def test_crowded_terms():
+    crowded = {"a": ["박지은님은 일간이 정화이고, 그 사람은 신금이에요. 식상이 3개 있고, 그 사람은 인성이 3개예요."]}
+    calm = {"b": ["박지은님 사주에는 식상이 3개 있어요. 식상은 내 생각과 마음을 밖으로 꺼내는 기운이에요.",
+                  "기억할 한 줄: 박지은님은 말해야 풀리고(식상 3개), 그 사람은 생각해야 풀려요(인성 3개)."]}
+    assert [i["kind"] for i in V.crowded_terms(crowded)] == ["용어"]
+    assert V.crowded_terms(calm) == []
+    assert V.crowded_terms(crowded, skip={"a"}) == []
