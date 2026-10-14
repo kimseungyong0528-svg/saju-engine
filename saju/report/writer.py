@@ -253,6 +253,8 @@ def previous_text(texts: dict, limit: int = 20000) -> str:
 
 # 반복·문장 문제로 다시 쓰는 칸은 한 권에 이만큼까지(사실 오류는 개수와 상관없이 모두 고친다)
 MAX_REPEAT_FIX = int(os.environ.get("SAJU_MAX_REPEAT_FIX", "6"))
+# 용어를 늘어놓은 칸은 따로 이만큼까지 다시 쓴다(2026-10-14: 해설을 촘촘하게. 한 칸 약 2~3원)
+MAX_TERM_FIX = int(os.environ.get("SAJU_MAX_TERM_FIX", "12"))
 
 FIX_RULES = """[고쳐 쓰기]
 - 각 칸의 '먼저 쓴 글'에서 '고칠 점'만 고쳐 다시 씁니다. 나머지 내용, 형식, 분량(chars)은 그대로 지킵니다.
@@ -352,7 +354,9 @@ class ClaudeWriter:
         soft = ("반복", "문장", "용어")   # 사실 오류가 아닌 것: 한 권에 MAX_REPEAT_FIX칸까지만 따로 다시 쓴다
         facts_issues = [i for i in issues if i["kind"] not in soft]   # 사실 오류와 분량은 걸린 칸을 모두 고친다
         fact_slots = {i["slot"] for i in facts_issues}
-        soft_slots = [x for x in dict.fromkeys(i["slot"] for i in issues if i["kind"] in soft) if x not in fact_slots][:MAX_REPEAT_FIX]
+        soft_slots = [x for x in dict.fromkeys(i["slot"] for i in issues if i["kind"] in soft and i["kind"] != "용어") if x not in fact_slots][:MAX_REPEAT_FIX]
+        soft_slots += [x for x in dict.fromkeys(i["slot"] for i in issues if i["kind"] == "용어")
+                       if x not in fact_slots and x not in soft_slots][:MAX_TERM_FIX]
         # 사실 오류로 어차피 다시 쓰는 칸은 문장·반복 문제도 함께 고친다(비용 그대로)
         picked = V.by_slot(facts_issues + [i for i in issues if i["kind"] in soft and (i["slot"] in fact_slots or i["slot"] in soft_slots)])
         if not picked:
