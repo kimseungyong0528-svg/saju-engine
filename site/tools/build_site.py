@@ -95,6 +95,8 @@ def patch_texts(s: str, b: dict) -> str:
               "<h2>나의 금전운</h2><p>재물, 직업·이직, 사업가의 이야기를 차례로</p>")
     s = _swap(s, "<h2>몸과 마음을 돌보는 시간</h2><p>나의 생활 리듬을 돌아보는 건강운</p></div>${cards(['health'])}",
               "<h2>소중한 건강과, 인생 전체를 되돌아본다</h2><p>건강운과 인생 총운</p></div>${cards(['health','lifetime'])}")
+    # 접수 화면: 입력이 맞으면 "입력 확인 완료 · 분석 범위 확인 필요" 안내 묶음을 보여주지 않는다(입력이 틀렸을 때만 보임).
+    s = _swap(s, "function intakeNotice(decision,productId){", "function intakeNotice(decision,productId){if(decision.inputAccepted)return '';")
     # 무료 콘텐츠 4개(무료 사주·인연 우주·태어난 시간 찾기·월간 운세)는 예시 화면뿐이라 숨긴다(2026-10-12 사장님 결정).
     # 코드는 남겨 두고 첫 화면·메뉴에서 빼며, 주소로 들어와도 첫 화면으로 보낸다. 없는 프리미엄 상담 안내와
     # 실제로 없는 5,000원 할인 팝업도 뺀다.
