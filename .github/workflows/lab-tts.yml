@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        engine: [supertonic, qwen, melo, edge]
+        engine: [supertonic, qwen, melo]
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
@@ -24,9 +24,8 @@ jobs:
         run: |
           case ${{ matrix.engine }} in
             supertonic) pip install -q supertonic ;;
-            qwen) pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q qwen-tts ;;
-            melo) pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q git+https://github.com/myshell-ai/MeloTTS.git && python -m unidic download ;;
-            edge) pip install -q edge-tts ;;
+            qwen) pip install -q qwen-tts soundfile && pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu --force-reinstall --no-deps ;;
+            melo) pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu && pip install -q git+https://github.com/myshell-ai/MeloTTS.git && pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu --force-reinstall --no-deps && python -m unidic download ;;
           esac
       - name: 읽히기
         run: python lab/tts/bench.py ${{ matrix.engine }}
@@ -45,6 +44,7 @@ jobs:
           path: got
           merge-multiple: true
       - run: |
-          mkdir -p lab/tts/out && cp -r got/* lab/tts/out/ || true
           git config user.name "lab-bot" && git config user.email "lab-bot@users.noreply.github.com"
-          git add lab/tts/out && git commit -m "시험 결과: 목소리 비교 [skip ci]" && git push || echo "nothing"
+          rm -rf lab/tts/out && mkdir -p lab/tts/out && cp -r got/* lab/tts/out/ || true
+          git add -A lab/tts/out && git commit -m "시험 결과: 목소리 비교 [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase -q origin ${{ github.ref_name }} && git push && break; sleep 5; done
