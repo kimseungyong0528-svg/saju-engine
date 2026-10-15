@@ -17,7 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg sox > /dev/null
       - name: 설치
         run: |
@@ -30,7 +31,9 @@ jobs:
       - name: 읽히기
         run: python lab/tts/bench.py ${{ matrix.engine }}
       - uses: actions/upload-artifact@v4
-        with: { name: tts-${{ matrix.engine }}, path: lab/tts/out }
+        with:
+          name: tts-${{ matrix.engine }}
+          path: lab/tts/out
   collect:
     needs: tts
     if: always()
@@ -38,7 +41,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
-        with: { path: got, merge-multiple: true }
+        with:
+          path: got
+          merge-multiple: true
       - run: |
           mkdir -p lab/tts/out && cp -r got/* lab/tts/out/ || true
           git config user.name "lab-bot" && git config user.email "lab-bot@users.noreply.github.com"
