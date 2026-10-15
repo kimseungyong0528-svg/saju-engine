@@ -18,7 +18,11 @@ if dst.exists():
 base = {"quiet": True, "no_warnings": True, "sleep_interval_requests": 0.5, "retries": 3, "extractor_retries": 3}
 with yt_dlp.YoutubeDL({**base, "extract_flat": True}) as y:
     lst = y.extract_info(ch["url"], download=False)
-ids = [e["id"] for e in lst.get("entries", []) if e.get("id")]
+ents = [e for e in lst.get("entries", []) if e.get("id")]
+ids = [e["id"] for e in ents]
+with (OUT / f"{key}_list.jsonl").open("w", encoding="utf-8") as f:
+    for e in ents:
+        f.write(json.dumps({"id": e["id"], "title": e.get("title"), "views": e.get("view_count"), "dur": e.get("duration")}, ensure_ascii=False) + "\n")
 log(ch["name"], "쇼츠", len(ids), "개, 이미", len(done))
 
 def clean_json3(raw):
@@ -42,7 +46,30 @@ def transcribe(vid):
     pathlib.Path(f).unlink(missing_ok=True)
     return txt
 
-y = yt_dlp.YoutubeDL({**base, "skip_download": True})
+CLIENTS = ["default", "tv", "web_safari", "mweb", "android_vr", "ios"]
+def ydl_for(c):
+    o = {**base, "skip_download": True}
+    if c != "default": o["extractor_args"] = {"youtube": {"player_client": [c]}}
+    return yt_dlp.YoutubeDL(o)
+ydls = {c: ydl_for(c) for c in CLIENTS}
+good = None
+def info_any(url):
+    global good
+    order = [good] + [c for c in CLIENTS if c != good] if good else CLIENTS
+    last = None
+    for c in order:
+        try:
+            i = ydls[c].extract_info(url, download=False); good = c; return i, ydls[c]
+        except Exception as e:
+            last = e
+    raise last
+def tapi(vid):
+    try:
+        from youtube_transcript_api import YouTubeTranscriptApi
+        t = YouTubeTranscriptApi().fetch(vid, languages=["ko"])
+        return " ".join(s.text for s in t)
+    except Exception as e:
+        log("자막API 실패", vid, str(e)[:120]); return ""
 fails = 0
 for n, vid in enumerate(ids, 1):
     if vid in done: continue
@@ -50,14 +77,19 @@ for n, vid in enumerate(ids, 1):
         log("시간 예산 끝, 남은 영상은 다음 실행에서"); break
     rec = {"id": vid, "url": f"https://www.youtube.com/shorts/{vid}", "channel": ch["name"]}
     try:
-        info = y.extract_info(rec["url"], download=False)
+        text, src = tapi(vid), "자막API"
+        if text: src = "자막API"
+        try:
+            info, y = info_any(rec["url"]); log("client", good)
+        except Exception:
+            if not text: raise
+            info = {}
         rec.update(title=info.get("title"), views=info.get("view_count"), likes=info.get("like_count"),
                    date=info.get("upload_date"), dur=info.get("duration"), desc=(info.get("description") or "")[:500])
-        text, src = "", ""
         for kind in ("subtitles", "automatic_captions"):
             tracks = (info.get(kind) or {})
             lang = next((l for l in tracks if l == "ko" or l.startswith("ko")), None)
-            if not lang: continue
+            if text or not lang: continue
             fmt = next((t for t in tracks[lang] if t.get("ext") == "json3"), None)
             if not fmt: continue
             text = clean_json3(y.urlopen(fmt["url"]).read().decode("utf-8")); src = "자막" if kind == "subtitles" else "자동자막"
@@ -68,8 +100,8 @@ for n, vid in enumerate(ids, 1):
     except Exception as e:
         rec["error"] = str(e)[-300:]; fails += 1
         log("실패", vid, rec["error"][:200])
-        if fails >= 15:
-            log("연속 실패 15번, 멈춤"); 
+        if fails >= 4:
+            log("연속 실패, 멈춤"); 
             with dst.open("a", encoding="utf-8") as f: f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             break
     with dst.open("a", encoding="utf-8") as f: f.write(json.dumps(rec, ensure_ascii=False) + "\n")
