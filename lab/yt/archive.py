@@ -15,7 +15,8 @@ def log(*a):
 done = set()
 if dst.exists():
     done = {json.loads(l)["id"] for l in dst.open(encoding="utf-8") if l.strip()}
-base = {"quiet": True, "no_warnings": True, "sleep_interval_requests": 0.5, "retries": 3, "extractor_retries": 3}
+base = {"quiet": True, "no_warnings": True, "sleep_interval_requests": 0.5, "retries": 3, "extractor_retries": 3,
+        "http_headers": {"Accept-Language": "ko-KR,ko;q=0.9"}, "extractor_args": {"youtube": {"lang": ["ko"]}}}
 with yt_dlp.YoutubeDL({**base, "extract_flat": True}) as y:
     lst = y.extract_info(ch["url"], download=False)
 ents = [e for e in lst.get("entries", []) if e.get("id")]
@@ -49,7 +50,7 @@ def transcribe(vid):
 CLIENTS = ["default", "tv", "web_safari", "mweb", "android_vr", "ios"]
 def ydl_for(c):
     o = {**base, "skip_download": True}
-    if c != "default": o["extractor_args"] = {"youtube": {"player_client": [c]}}
+    if c != "default": o["extractor_args"] = {"youtube": {"player_client": [c], "lang": ["ko"]}}
     return yt_dlp.YoutubeDL(o)
 ydls = {c: ydl_for(c) for c in CLIENTS}
 good = None

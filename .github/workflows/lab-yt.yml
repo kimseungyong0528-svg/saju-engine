@@ -23,7 +23,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
       - run: pip install -q -U yt-dlp faster-whisper youtube-transcript-api
       - name: 모으기
-        run: python lab/yt/archive.py ${{ matrix.key }} 600
+        run: python lab/yt/archive.py ${{ matrix.key }} 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
