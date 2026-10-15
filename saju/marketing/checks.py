@@ -53,3 +53,20 @@ def check_post(p: Post, packs: dict[str, dict[str, str]]) -> list[str]:
         if not f["samjae"] and "삼재" in basis:
             issues.append("삼재가 아닌데 글에 삼재가 나옵니다")
     return issues
+
+
+def check_rank(p, pack: dict[str, str]) -> list[str]:
+    """띠 순위 쇼츠: 금지어·과장, 제목 길이, 사이트 주소, 12띠가 모두 한 번씩 들어갔는지."""
+    issues = []
+    every = "\n".join([*p.lines, *pack.values()])
+    if m := HEDGE.search(every):
+        issues.append(f"금지어(참고용·재미로 등): {m.group(0)}")
+    if m := HYPE.search(every):
+        issues.append(f"과장 약속: {m.group(0)}")
+    if len(pack["제목"]) > LIMITS["youtube.제목"]:
+        issues.append(f"유튜브 제목 글자 수 초과: {len(pack['제목'])}")
+    if SITE_URL not in pack["설명"]:
+        issues.append("유튜브 설명에 사이트 주소가 없습니다")
+    if sorted(r.ddi for r in p.rows) != sorted(set(r.ddi for r in p.rows)) or len(p.rows) != 12:
+        issues.append("순위에 12띠가 한 번씩 들어가지 않았습니다")
+    return issues
