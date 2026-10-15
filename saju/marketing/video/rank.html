@@ -26,6 +26,10 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#090604;font-fam
 #crown .c2{font-family:Han;font-weight:400;font-size:170px;font-weight:700;color:#fff;-webkit-text-stroke:4px #6a4208;text-shadow:0 0 50px rgba(255,200,90,.8)}
 #crown .c3{font-size:52px;color:#fff;margin-top:20px;line-height:1.5}
 #cap{position:absolute;left:60px;right:60px;bottom:230px;text-align:center;font-size:50px;font-weight:700;line-height:1.35;text-shadow:0 4px 16px #000;word-break:keep-all}
+#hook{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(7,4,3,.82)}
+#hookt{font-family:Han;font-size:190px;line-height:1.15;color:#fff;-webkit-text-stroke:5px #5a0d0d;text-shadow:0 0 50px rgba(255,170,80,.7)}
+#hookt em{font-style:normal;color:#ffd76a}
+#flash{position:absolute;inset:0;background:#fff1c8;opacity:0;z-index:35;pointer-events:none}
 </style></head><body>
 <div id="bg"></div><div id="fx"></div><div id="coins"></div>
 <div id="title"><div class="t1"></div><div class="t2"></div><div class="t3"></div></div>
@@ -33,6 +37,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#090604;font-fam
 <div id="crown"><div class="c1"></div><div class="c2"></div><div class="c3"></div></div>
 <div id="cap"></div>
 <div id="foot"></div>
+<div id="flash"></div><div id="hook"><div id="hookt"></div></div>
 <script>
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), ease=x=>1-Math.pow(1-clamp(x),3), $=s=>document.querySelector(s);
 const fx=$('#fx'), R=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
@@ -44,18 +49,22 @@ let P;
 window.setPlan=p=>{P=p;$('#list').innerHTML=p.rows.map(r=>`<div class="row${r.rank<=3?' top':''}"><span class="rk">${r.rank}위 ${r.ddi}띠:</span><span class="yr">${r.years}년생</span></div>`).join('');
   $('#crown .c2').textContent=p.rows[0].ddi+'띠'; $('#crown .c3').innerHTML=p.crown;
   for(const k of ['t1','t2','t3']){const e=$('.'+k);e.textContent=p[k];const base={t1:104,t2:118,t3:112}[k];e.style.fontSize=Math.min(base,Math.floor(980/Math.max(1,p[k].length)))+'px'}
+  $('#hookt').innerHTML=String(p.hook||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').split('\n').map((x,j,a)=>j===a.length-1?'<em>'+x+'</em>':x).join('<br>');$('#hook').style.display=p.hook?'flex':'none';
   $('#crown .c1').textContent=p.c1; $('#foot').innerHTML=p.foot+'<small>운명서재 · unmyeong-saju.com</small>';};
 window.render=t=>{
   for(const b of bks){b.d.style.transform=`translate(${b.x+Math.sin(t*.3+b.ph)*40}px,${b.y-t*b.s}px)`;b.d.style.opacity=.25+.35*Math.sin(t*.8+b.ph)**2}
   for(const s of sps){const a=Math.max(0,Math.sin(t*s.sp+s.ph));s.d.style.transform=`translate(${s.x}px,${s.y}px) scale(${.4+a*1.4})`;s.d.style.opacity=a}
   coins.forEach((c,i)=>c.d.style.transform=`translate(${c.x}px,${c.y+Math.sin(t*2+i)*3}px)`);
   for(const f of fall){const y=((t*f.s+f.ph*200)%2300)-200;f.d.style.transform=`translate(${f.x+Math.sin(t+f.ph)*30}px,${y}px) rotate(${t*90*f.rot}deg) scaleX(${0.55+0.45*Math.abs(Math.cos(t*2+f.ph))})`;f.d.style.opacity=t<P.reveal[0]?1:.35}
-  const ti=$('#title'); ti.style.transform=`scale(${1.25-.25*ease(t/0.8)})`; ti.style.opacity=ease(t/0.4);
+  const HK=P.hook?1.7:0;
+  if(P.hook){const hin=ease(t/0.3),hout=clamp((t-HK+0.3)/0.3);$('#hook').style.opacity=hin*(1-hout);$('#hookt').style.transform=`scale(${(0.5+0.5*hin)*(1+0.05*Math.sin(t*10)*(1-hout))+0.2*hout})`}
+  let fl=0;P.reveal.slice(0,3).forEach(at=>{const d=t-at;if(d>=0&&d<0.3)fl=Math.max(fl,0.45*(1-d/0.3))});{const d=t-P.crownAt;if(d>=0&&d<0.4)fl=Math.max(fl,0.6*(1-d/0.4))}$('#flash').style.opacity=fl;
+  const tt=t-HK+0.2, ti=$('#title'); ti.style.transform=`scale(${1.25-.25*ease(tt/0.8)})`;
   const rows=[...document.querySelectorAll('.row')];
   rows.forEach((r,i)=>{const at=P.reveal[i]; const a=ease((t-at)/0.35); r.style.opacity=a; r.style.transform=`translateX(${(1-a)*-160}px) scale(${1+(1-a)*.15})`;
     if(i<3){const g=Math.max(0,Math.sin((t-at)*3));r.style.filter=t>at?`drop-shadow(0 0 ${8+g*14}px rgba(255,210,100,.8))`:'none'}});
   const cs=P.crownAt, c=ease((t-cs)/0.5); $('#crown').style.opacity=t<cs?0:c; $('#crown').style.transform=`scale(${.6+.4*c})`;
-  $('#list').style.opacity=t<cs?1:1-c; $('#title').style.opacity=t<cs?ease(t/0.4):1-c*.6;
+  $('#list').style.opacity=t<cs?1:1-c; $('#title').style.opacity=t<cs?ease(tt/0.4):1-c*.6;
   const L=P.caps.find(x=>t>=x.s&&t<x.e); $('#cap').textContent=L?L.text:''; $('#cap').style.opacity=L?ease((t-L.s)/0.2):0;
 };
 </script></body></html>

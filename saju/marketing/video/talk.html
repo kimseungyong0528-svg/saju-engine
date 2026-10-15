@@ -37,12 +37,18 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#120d09;font-fam
 #cap .w{color:rgba(255,255,255,.42)}
 #cap .w.on{color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.85)}
 #cap .w.key.on{color:#f7c873}
+.hook{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.hook .hb{font-size:150px;font-weight:700;line-height:1.18;color:#fff;text-shadow:0 10px 40px rgba(0,0,0,.9);word-break:keep-all;padding:60px 70px;border-top:8px solid #c9a14a;border-bottom:8px solid #c9a14a;background:rgba(14,9,5,.62)}
+.hook .hb em{font-style:normal;color:#f7c873}
+#flash{position:absolute;inset:0;background:#fff3d6;opacity:0;z-index:35;pointer-events:none}
 .dot{position:absolute;border-radius:50%;background:rgba(255,236,200,.85);filter:blur(1px);z-index:15}
 </style></head><body>
 <div id="bar"></div>
 <div id="top"><div class="seal">운명<br>서재</div><div class="chip" id="chip"></div></div>
 <div id="scenes"></div>
 <div id="cap"></div>
+<div id="flash"></div>
+<div class="hook" id="hook"><div class="hb" id="hookt"></div></div>
 <script>
 const P={lines:[],scenes:[],keys:[],total:1};
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), ease=x=>1-Math.pow(1-clamp(x),3), $=s=>document.querySelector(s);
@@ -72,18 +78,25 @@ function setCap(i,p){
   for(const w of ws){w.classList.toggle('on',acc/total<=p+0.02);acc+=w.textContent.length}
 }
 window.setPlan=function(plan){Object.assign(P,plan);built=-1;$('#chip').textContent=P.chip||'';
+  $('#hookt').innerHTML=esc(P.hook||'').split('\n').map((x,j,a)=>j===a.length-1?'<em>'+x+'</em>':x).join('<br>');$('#hook').style.display=P.hook?'flex':'none';
   $('#scenes').innerHTML=P.scenes.map((sc,i)=>`<div class="layer" id="sc${i}">${sceneHtml(sc,i)}</div>`).join('');
   P.span=P.scenes.map((_,i)=>{const ls=P.lines.filter(l=>l.scene===i);return ls.length?{s:ls[0].s,e:ls[ls.length-1].e}:{s:0,e:0}});};
 window.render=function(t){
   $('#bar').style.width=(t/P.total*100)+'%';
   const Ls=P.lines;let li=Ls.findIndex(l=>t>=l.s&&t<l.e);if(li<0)li=t<Ls[0].s?0:Ls.length-1;
   const L=Ls[li];setCap(li,clamp((t-L.s)/Math.max(.1,L.e-L.s-.25)));
-  const cur=L.scene;
+  const cur=L.scene; const HK=P.hook?1.7:0;
+  if(P.hook){const hin=ease(t/0.35),hout=clamp((t-HK+0.3)/0.3);const h=$('#hook');h.style.opacity=hin*(1-hout);
+    $('#hookt').style.transform=`scale(${(0.6+0.4*hin)*(1+0.04*Math.sin(t*9)*(1-hout))+0.15*hout})`;}
+  let fl=0;for(let i=1;i<P.span.length;i++){const d=t-P.span[i].s;if(d>=0&&d<0.35)fl=Math.max(fl,0.28*(1-d/0.35))}$('#flash').style.opacity=fl;
   P.scenes.forEach((sc,i)=>{const el=$('#sc'+i),sp=P.span[i];let op=0;
     if(i===cur)op=i===0?1:clamp((t-sp.s)/0.4); else if(i===cur-1)op=1-clamp((t-P.span[cur].s)/0.4);
     el.style.opacity=op; if(!op)return;
+    if(i===cur&&i>0){const m=1-ease((t-sp.s)/0.5);el.style.transform=`translateX(${m*160}px) scale(${1+0.12*m})`}
+    else if(i===cur-1){const m=ease((t-P.span[cur].s)/0.5);el.style.transform=`translateX(${-m*160}px) scale(${1-0.06*m})`}
+    else el.style.transform='';
     const q=clamp((t-sp.s)/(sp.e-sp.s+0.8)); const bg=el.querySelector('.bg'); if(bg) bg.style.transform=`scale(${1.04+0.1*q}) translate(${(i%2?-1:1)*q*24}px,${-q*30}px)`;
-    const a=ease((t-sp.s)/0.7);
+    const a=ease((t-Math.max(sp.s,i===0?HK-0.2:0))/0.7);
     const cv=el.querySelector('.cover'); if(cv){cv.style.transform=`translateY(${(1-a)*80}px)`;cv.style.opacity=a}
     const hw=el.querySelector('.headwrap'); if(hw){const no=hw.querySelector('.no');no.style.transform=`scale(${0.4+0.6*ease((t-sp.s)/0.45)}) rotate(${(1-ease((t-sp.s)/0.45))*-90}deg)`;
       const hd=hw.querySelector('.head');hd.style.opacity=ease((t-sp.s-0.15)/0.5);hd.style.transform=`translateY(${(1-ease((t-sp.s-0.15)/0.5))*50}px)`;

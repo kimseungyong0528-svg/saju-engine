@@ -46,3 +46,47 @@ def ambient(sec: float, out: Path, seed: int = 7) -> Path:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((mix * 32767).astype(np.int16).tobytes())
     return out
+
+
+def _ding(f: float, dur: float, bright: float = 1.0) -> np.ndarray:
+    tt = np.arange(int(SR * dur)) / SR
+    tone = sum(np.sin(2 * np.pi * f * k * tt) * (bright / k ** 1.3) for k in (1, 2, 3, 4.2))   # 종소리 비슷한 배음
+    return tone * np.exp(-tt * 5) * (1 - np.exp(-tt * 800))
+
+
+def _whoosh(dur: float = 0.5, seed: int = 3) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    n = int(SR * dur)
+    noise = rng.standard_normal(n)
+    sm = np.convolve(noise, np.ones(40) / 40, mode="same")        # 거친 소리를 부드럽게
+    tt = np.arange(n) / SR
+    env = np.sin(np.pi * tt / dur) ** 2
+    return sm * env * 0.6
+
+
+def sfx(total: float, events: list[tuple[float, str]], out: Path) -> Path:
+    """효과음 트랙: ding(순위 공개), big(상위 3위), crown(1위), whoosh(장면 바뀜)."""
+    n = int(SR * (total + 1))
+    mix = np.zeros(n)
+    for t, kind in events:
+        if kind == "ding":
+            s = _ding(880, 0.6) * 0.35
+        elif kind == "big":
+            a = _ding(660, 1.0) * 0.45
+            b = np.pad(_ding(990, 0.92) * 0.3, (int(SR * .08), 0), mode="constant")[: len(a)]
+            s = a + np.pad(b, (0, len(a) - len(b)))
+        elif kind == "crown":
+            parts = [np.pad(_ding(f, 1.6) * 0.4, (int(SR * d), 0)) for f, d in ((523.25, 0), (659.25, .12), (783.99, .24), (1046.5, .36))]
+            m = max(len(p) for p in parts)
+            s = sum(np.pad(p, (0, m - len(p))) for p in parts)
+        else:
+            s = _whoosh()
+        i = int(t * SR)
+        if i < n:
+            mix[i:i + len(s)] += s[: n - i]
+    peak = np.max(np.abs(mix)) or 1
+    mix = mix / peak * 0.8
+    with wave.open(str(out), "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
+        w.writeframes((mix * 32767).astype(np.int16).tobytes())
+    return out

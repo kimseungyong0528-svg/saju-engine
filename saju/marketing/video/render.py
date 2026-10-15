@@ -46,20 +46,23 @@ def _voice_lines(texts: list[str], work: Path) -> tuple[list[Path], list[float],
     return files, starts, ends, round(t + TAIL, 2)
 
 
-def _mix(files: list[Path], starts: list[float], total: float, seed: int, out: Path) -> Path:
+def _mix(files: list[Path], starts: list[float], total: float, seed: int, out: Path,
+         events: list[tuple[float, str]] | None = None) -> Path:
     bgm = music.ambient(total + 1, out.with_name("bgm.wav"), seed)
+    fx = music.sfx(total, events or [], out.with_name("sfx.wav"))
     ins, flt = [], []
     for i, (f, s) in enumerate(zip(files, starts)):
         ins += ["-i", str(f)]
         ms = int(s * 1000)
         flt.append(f"[{i}]aresample=44100,aformat=channel_layouts=mono,adelay={ms}|{ms}[v{i}]")
     n = len(files)
-    ins += ["-i", str(bgm)]
+    ins += ["-i", str(bgm), "-i", str(fx)]
     flt.append("".join(f"[v{i}]" for i in range(n)) + f"amix=inputs={n}:normalize=0,loudnorm=I=-15:TP=-1.5,"
                "aresample=44100,apad,asplit=2[voice][voice2]")
     flt.append(f"[{n}]atrim=0:{total},volume=0.14,aformat=channel_layouts=mono,aresample=44100[bg]")
+    flt.append(f"[{n + 1}]atrim=0:{total},volume=0.22,aformat=channel_layouts=mono,aresample=44100[fx]")
     flt.append("[bg][voice]sidechaincompress=threshold=0.05:ratio=4:attack=20:release=400[duck]")
-    flt.append("[duck][voice2]amix=inputs=2:normalize=0[a]")
+    flt.append("[duck][voice2][fx]amix=inputs=3:normalize=0[a]")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *ins, "-filter_complex", ";".join(flt), "-map", "[a]",
                     "-t", str(total), "-ar", "44100", "-b:a", "160k", str(out)], check=True)
     return out
@@ -159,7 +162,8 @@ def talk_plan(p: Post) -> tuple[list[str], dict]:
     scenes.append({"type": "end", "bg": (ART / "palace-gate.jpg").as_uri(), "sub": "내 생년월일로 보는 운세 한 권"})
     texts.append(OUTRO); caps.append(("더 궁금한 사주는 프로필 링크에서", len(scenes) - 1))
     chip = "2027 정미년 띠별 운세" if p.kind in ("ddi", "summary") else "운명서재 사주 상식"
-    return texts, {"scenes": scenes, "caps": caps, "keys": keys, "chip": chip}
+    hook = f"{p.key}띠라면\n꼭 보세요" if p.kind == "ddi" else ("내 띠는\n괜찮을까?" if p.kind == "summary" else "모르면\n손해예요")
+    return texts, {"scenes": scenes, "caps": caps, "keys": keys, "chip": chip, "hook": hook}
 
 
 def make_talk(p: Post, out: Path, seed: int = 7) -> dict:
@@ -169,7 +173,8 @@ def make_talk(p: Post, out: Path, seed: int = 7) -> dict:
         files, starts, ends, total = _voice_lines(texts, work)
         lines = [{"s": s, "e": e, "cap": c, "scene": sc} for s, e, (c, sc) in zip(starts, ends, base.pop("caps"))]
         plan = {**base, "lines": lines, "total": total}
-        audio = _mix(files, starts, total, seed, work / "audio.m4a")
+        changes = [l["s"] - 0.15 for a, l in zip(lines, lines[1:]) if l["scene"] != a["scene"]]
+        audio = _mix(files, starts, total, seed, work / "audio.m4a", [(t, "whoosh") for t in changes])
         _capture("talk.html", plan, audio, out, work)
     return {"seconds": total, "voice": voice.status()}
 
@@ -184,7 +189,7 @@ def rank_plan(p: RankPost, starts: list[float], ends: list[float], total: float)
     return {"rows": rows, "reveal": reveal, "crownAt": round(starts[12] + 1.6, 2), "crown": crown,
             "caps": [{"s": s, "e": e, "text": c} for s, e, c in zip(starts, ends, p.caps)], "total": total,
             "t1": k["head"], "t2": p.period.long, "t3": f"{k['name']} 띠 순위", "c1": f"{p.period.label} {k['name']} 1위",
-            "foot": f"내 사주로 보는 {p.period.label} {k['name']}"}
+            "foot": f"내 사주로 보는 {p.period.label} {k['name']}", "hook": "내 띠는\n몇 위?"}
 
 
 def make_rank(p: RankPost, out: Path, seed: int = 11) -> dict:
@@ -192,7 +197,8 @@ def make_rank(p: RankPost, out: Path, seed: int = 11) -> dict:
         work = Path(tmp)
         files, starts, ends, total = _voice_lines(p.lines, work)
         plan = rank_plan(p, starts, ends, total)
-        audio = _mix(files, starts, total, seed, work / "audio.m4a")
+        ev = [(t, "big" if i < 3 else "ding") for i, t in enumerate(plan["reveal"])] + [(plan["crownAt"], "crown")]
+        audio = _mix(files, starts, total, seed, work / "audio.m4a", ev)
         _capture("rank.html", plan, audio, out, work)
     return {"seconds": total, "voice": voice.status()}
 
