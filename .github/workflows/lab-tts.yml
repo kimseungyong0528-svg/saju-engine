@@ -1,0 +1,45 @@
+# 임시 시험: 한국어 목소리 엔진 비교 (작업 브랜치에서만 돈다. 끝나면 지운다)
+name: 시험 - 목소리 비교
+on:
+  push:
+    branches: [claude/project-thread-7uafe7]
+    paths: [lab/tts/**, .github/workflows/lab-tts.yml]
+permissions:
+  contents: write
+jobs:
+  tts:
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [supertonic, qwen, melo, edge]
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg sox > /dev/null
+      - name: 설치
+        run: |
+          case ${{ matrix.engine }} in
+            supertonic) pip install -q supertonic ;;
+            qwen) pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q qwen-tts ;;
+            melo) pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q git+https://github.com/myshell-ai/MeloTTS.git && python -m unidic download ;;
+            edge) pip install -q edge-tts ;;
+          esac
+      - name: 읽히기
+        run: python lab/tts/bench.py ${{ matrix.engine }}
+      - uses: actions/upload-artifact@v4
+        with: { name: tts-${{ matrix.engine }}, path: lab/tts/out }
+  collect:
+    needs: tts
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: got, merge-multiple: true }
+      - run: |
+          mkdir -p lab/tts/out && cp -r got/* lab/tts/out/ || true
+          git config user.name "lab-bot" && git config user.email "lab-bot@users.noreply.github.com"
+          git add lab/tts/out && git commit -m "시험 결과: 목소리 비교 [skip ci]" && git push || echo "nothing"
