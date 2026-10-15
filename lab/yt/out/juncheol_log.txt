@@ -1,0 +1,15 @@
+사주풀이 준철학관 쇼츠 128 개, 이미 0
+자막API 실패 UBejDG--DNM 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=UBejDG--DNM! This is most likely caused b
+실패 UBejDG--DNM -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 AYeoDaxNCBQ 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=AYeoDaxNCBQ! This is most likely caused b
+실패 AYeoDaxNCBQ -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 z5Si5Fz_a30 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=z5Si5Fz_a30! This is most likely caused b
+실패 z5Si5Fz_a30 -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 2lLy7yi7qKc 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=2lLy7yi7qKc! This is most likely caused b
+실패 2lLy7yi7qKc -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+연속 실패, 멈춤
+끝 0.9 분

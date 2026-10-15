@@ -1,0 +1,15 @@
+인생 사주 쇼츠 164 개, 이미 0
+자막API 실패 TeLBi53qsu4 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=TeLBi53qsu4! This is most likely caused b
+실패 TeLBi53qsu4 -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 UAfb0CI6D6E 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=UAfb0CI6D6E! This is most likely caused b
+실패 UAfb0CI6D6E -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 OjZdsUlLyog 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=OjZdsUlLyog! This is most likely caused b
+실패 OjZdsUlLyog -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+자막API 실패 8gp29PfFxww 
+Could not retrieve a transcript for the video https://www.youtube.com/watch?v=8gp29PfFxww! This is most likely caused b
+실패 8gp29PfFxww -from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp
+연속 실패, 멈춤
+끝 0.9 분
