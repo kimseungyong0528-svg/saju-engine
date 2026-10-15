@@ -1,0 +1,46 @@
+# 임시: 레퍼런스 채널 쇼츠 대본 보관함 만들기 (작업 브랜치에서만, 끝나면 지운다)
+name: 시험 - 쇼츠 대본 모으기
+on:
+  push:
+    branches: [claude/project-thread-7uafe7]
+    paths: [lab/yt/channels.json, lab/yt/archive.py, .github/workflows/lab-yt.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  grab:
+    strategy:
+      fail-fast: false
+      matrix:
+        key: [dohwadore, wisesaying, haengun, juncheol, insaengsaju]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+      - run: pip install -q -U yt-dlp faster-whisper
+      - name: 모으기
+        run: python lab/yt/archive.py ${{ matrix.key }} 600
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: yt-${{ matrix.key }}
+          path: lab/yt/out
+  collect:
+    needs: grab
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: got
+          merge-multiple: true
+      - run: |
+          git config user.name "lab-bot" && git config user.email "lab-bot@users.noreply.github.com"
+          mkdir -p lab/yt/out && cp -r got/* lab/yt/out/ || true
+          git add -A lab/yt/out && git commit -m "시험 결과: 쇼츠 대본 [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase -q origin ${{ github.ref_name }} && git push && break; sleep 5; done
