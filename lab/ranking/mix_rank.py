@@ -29,7 +29,7 @@ for i, (f, s) in enumerate(zip(files, starts)):
     inputs += ["-i", str(f)]; flt.append(f"[{i}]adelay={int(s*1000)}|{int(s*1000)},aformat=channel_layouts=mono[v{i}]")
 n = len(files); total = plan["total"]
 inputs += ["-i", bgm]
-flt.append("".join(f"[v{i}]" for i in range(n)) + f"amix=inputs={n}:normalize=0,loudnorm=I=-15:TP=-1.5,aresample=44100,asplit=2[voice][voice2]")
+flt.append("".join(f"[v{i}]" for i in range(n)) + f"amix=inputs={n}:normalize=0,loudnorm=I=-15:TP=-1.5,aresample=44100,apad,asplit=2[voice][voice2]")
 flt.append(f"[{n}]atrim=0:{total},volume=0.16,aformat=channel_layouts=mono,aresample=44100[bg]")
 flt.append("[bg][voice]sidechaincompress=threshold=0.05:ratio=4:attack=20:release=400[duck]")
 flt.append("[duck][voice2]amix=inputs=2:normalize=0[a]")
