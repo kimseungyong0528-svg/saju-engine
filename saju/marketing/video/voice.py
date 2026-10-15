@@ -8,6 +8,7 @@ import wave
 from pathlib import Path
 
 VOICE = os.environ.get("SAJU_VOICE", "F2")   # 여자1~5 = F1~F5, 남자1~5 = M1~M5
+SPEED = float(os.environ.get("SAJU_VOICE_SPEED", "1.1"))   # 쇼츠가 1분 안에 끝나도록 조금 빠르게
 SR = 44100
 _tts = None
 _style = None
@@ -59,8 +60,8 @@ def speak(text: str, path: Path) -> Path:
     tts = _engine()
     said = clean(text)
     if tts is None:
-        _silence(path, max(1.2, len(said) / 8.0))
+        _silence(path, max(1.2, len(said) / (8.0 * SPEED)))
         return path
-    wav, _ = tts.synthesize(said, voice_style=_style, lang="ko", total_steps=16, speed=1.0)
+    wav, _ = tts.synthesize(said, voice_style=_style, lang="ko", total_steps=16, speed=SPEED)
     tts.save_audio(wav, str(path))
     return path
