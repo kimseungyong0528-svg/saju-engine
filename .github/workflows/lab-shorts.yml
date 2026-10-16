@@ -1,6 +1,7 @@
 # 임시: 새 쇼츠(목소리·순위형) 하루치를 만들어 걸린 시간과 결과를 남긴다. 관리 사이트에는 올리지 않는다. 끝나면 지운다
 name: 시험 - 쇼츠 하루치
 on:
+  workflow_dispatch:
   push:
     branches: [claude/project-thread-7uafe7]
     paths: [saju/marketing/**, .github/workflows/lab-shorts.yml]
@@ -12,6 +13,8 @@ jobs:
     timeout-minutes: 60
     env:
       SAJU_VOICE: F2
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

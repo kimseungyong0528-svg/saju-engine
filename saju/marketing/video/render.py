@@ -12,11 +12,12 @@ import os
 import re
 import subprocess
 import tempfile
+from datetime import date
 from pathlib import Path
 
 from ..content import Post
 from ..ranking import KINDS, RankPost
-from . import music, voice
+from . import images, music, voice
 
 HERE = Path(__file__).parent
 ROOT = HERE.parents[2]
@@ -166,17 +167,33 @@ def talk_plan(p: Post) -> tuple[list[str], dict]:
     return texts, {"scenes": scenes, "caps": caps, "keys": keys, "chip": chip, "hook": hook}
 
 
-def make_talk(p: Post, out: Path, seed: int = 7) -> dict:
+def _ai_art(p: Post, scenes: list[dict], work: Path, day: str) -> int:
+    """본문·기억 장면 그림을 그날 새로 그린다. 그린 장 수를 돌려준다 (실패한 장면은 고정 그림 그대로)."""
+    animal = p.key if p.kind == "ddi" else ""
+    n = 0
+    for i, sc in enumerate(scenes):
+        if sc["type"] not in ("point", "remember"):
+            continue
+        text = sc.get("head", "") + " " + " ".join(sc.get("items") or []) + " " + sc.get("text", "")
+        prompt = images.scene_prompt(text, f"{day}|{p.kind}|{p.key}", i, animal)
+        got = images.draw(prompt, work / f"art{i}.jpg", images._seed(day, p.key, str(i)))
+        if got:
+            sc["bg"] = got.as_uri(); n += 1
+    return n
+
+
+def make_talk(p: Post, out: Path, seed: int = 7, day: str = "") -> dict:
     texts, base = talk_plan(p)
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
+        art = _ai_art(p, base["scenes"], work, day or date.today().isoformat())
         files, starts, ends, total = _voice_lines(texts, work)
         lines = [{"s": s, "e": e, "cap": c, "scene": sc} for s, e, (c, sc) in zip(starts, ends, base.pop("caps"))]
         plan = {**base, "lines": lines, "total": total}
         changes = [l["s"] - 0.15 for a, l in zip(lines, lines[1:]) if l["scene"] != a["scene"]]
         audio = _mix(files, starts, total, seed, work / "audio.m4a", [(t, "whoosh") for t in changes])
         _capture("talk.html", plan, audio, out, work)
-    return {"seconds": total, "voice": voice.status()}
+    return {"seconds": total, "voice": voice.status(), "art": art}
 
 
 def rank_plan(p: RankPost, starts: list[float], ends: list[float], total: float) -> dict:

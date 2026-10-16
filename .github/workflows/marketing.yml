@@ -29,6 +29,8 @@ jobs:
       SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
       WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
       SAJU_VOICE: ${{ vars.SAJU_VOICE || 'F2' }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
     steps:
       - name: 날짜 확인
         run: |

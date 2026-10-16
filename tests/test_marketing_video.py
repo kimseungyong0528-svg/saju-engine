@@ -49,3 +49,12 @@ def test_talk_plan_scenes_and_lines():
         assert types[0] == "cover" and types[-2:] == ["remember", "end"] and types.count("point") == len(p.slides)
         assert len(texts) == len(plan["caps"]) and texts[-1].startswith("더 궁금한 사주는")
         assert all(0 <= sc < len(plan["scenes"]) for _, sc in plan["caps"])
+
+
+def test_scene_prompt_motif_and_variety():
+    from saju.marketing.video import images
+    p = images.scene_prompt("재물운이 들어오는 해", "2026-10-19|ddi|말", 1, "말")
+    assert "gold coins" in p and "no text" in p
+    assert "horse" in images.scene_prompt("재물운", "2026-10-19|ddi|말", 2, "말")
+    days = {images.scene_prompt("재물", f"2026-10-{d:02d}", 1) for d in range(1, 15)}
+    assert len(days) > 3          # 날짜마다 계절·시간이 바뀐다

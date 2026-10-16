@@ -82,8 +82,9 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
                 # 유튜브 쇼츠: 목소리 입힌 이야기형. 인스타 릴스도 같은 영상을 쓴다
                 vid, thumb = f"유튜브/{base}_{p.key}.mp4", f"유튜브/{base}_{p.key}_표지.jpg"
                 if video:
-                    info = vr.make_talk(p, week / vid, seed=d * 2 + 1)
+                    info = vr.make_talk(p, week / vid, seed=d * 2 + 1, day=day.isoformat())
                     manifest["voice"] = info["voice"]
+                    manifest["art"] = f"{vr.images.status()} · 그린 장면 {info['art']}장"
                     _thumb(week / vid, 1.2, week / thumb)
                 else:
                     thumb = ""
