@@ -9,6 +9,8 @@ from __future__ import annotations
 import base64
 import json
 import os
+import time
+import urllib.parse
 import urllib.request
 import zlib
 from pathlib import Path
@@ -56,12 +58,39 @@ SEASON = ["spring cherry blossoms", "summer green leaves", "autumn red maple lea
 TIME = ["golden sunset light", "soft morning mist", "moonlit night with lanterns", "bright clear afternoon"]
 
 
-def ready() -> bool:
+def _cf() -> bool:
     return bool(os.environ.get("CF_ACCOUNT_ID") and os.environ.get("CF_API_TOKEN"))
 
 
+def _free() -> bool:
+    # 시험용: 열쇠 없이 쓰는 공개 그림 AI (Pollinations, FLUX). 매일 영상에는 Cloudflare 를 쓴다.
+    return os.environ.get("SAJU_ART") == "free"
+
+
+def ready() -> bool:
+    return _cf() or _free()
+
+
 def status() -> str:
-    return "그림 AI 켜짐 (Cloudflare FLUX)" if ready() else "그림 AI 꺼짐 (CF 열쇠 없음, 고정 그림 사용)"
+    if _cf():
+        return "그림 AI 켜짐 (Cloudflare FLUX)"
+    return "그림 AI 시험 (Pollinations FLUX)" if _free() else "그림 AI 꺼짐 (CF 열쇠 없음, 고정 그림 사용)"
+
+
+def _draw_free(prompt: str, out: Path, seed: int) -> Path | None:
+    url = ("https://image.pollinations.ai/prompt/" + urllib.parse.quote(prompt)
+           + f"?width=768&height=1344&seed={seed}&nologo=true&model=flux")
+    for i in range(4):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "saju-engine"}), timeout=180) as r:
+                data = r.read()
+            if len(data) > 10_000:
+                out.write_bytes(data)
+                return out
+        except Exception as e:  # noqa: BLE001
+            print(f"[그림] 다시 시도 {i + 1}: {e}")
+        time.sleep(15)
+    return None
 
 
 def _seed(*parts: str) -> int:
@@ -80,6 +109,8 @@ def scene_prompt(text: str, day: str, n: int, animal: str = "") -> str:
 def draw(prompt: str, out: Path, seed: int) -> Path | None:
     if not ready():
         return None
+    if not _cf():
+        return _draw_free(prompt, out, seed)
     url = (f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{MODEL}")
     body = json.dumps({"prompt": prompt, "steps": 8, "seed": seed}).encode()
     req = urllib.request.Request(url, data=body, method="POST", headers={

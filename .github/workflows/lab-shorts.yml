@@ -13,6 +13,7 @@ jobs:
     timeout-minutes: 60
     env:
       SAJU_VOICE: F2
+      SAJU_ART: free
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
     steps:
