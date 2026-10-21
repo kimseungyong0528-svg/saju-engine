@@ -179,6 +179,53 @@ def patch_texts(s: str, b: dict) -> str:
     return s
 
 
+# 첫 화면 상품 카드를 고급스럽게 바꾼다(2026-10-21 사장님 요청).
+# 카드에는 가격을 빼고(가격은 마지막 접수 화면에서만), 그림 위에 큰 붓글씨 제목과 붉은 낙관(한자)을 얹는다.
+CARD_SEALS = {"lifetime": "平生", "romance": "戀愛", "reunion": "再會", "intimate": "宮合", "wealth": "財物",
+              "career": "職業", "business": "事業", "health": "健康", "newyear": "丁未"}
+# 재물운·직업·이직운·사업운이 같은 그림(master.jpg)이라 카드 그림을 나눈다(시안: 직업 = 상아색, 사업 = 초록).
+CARD_COVERS = {"career": ("assets/geumwol/compatibility-cover.jpg", "상아색 한복의 금월선녀"),
+               "business": ("assets/geumwol/wealth-cover.jpg", "초록 한복의 금월선녀")}
+CARD_CSS = (
+    "<style>"
+    "@font-face{font-family:'UnmyeongTitle';src:url(assets/fonts/songmyung-title.woff2) format('woff2');font-display:swap}"
+    "@font-face{font-family:'UnmyeongSeal';src:url(assets/fonts/notoserif-seal.woff2) format('woff2');font-weight:700;font-display:swap}"
+    ".product-card.lux .product-cover{padding:0;border-radius:14px;box-shadow:0 16px 34px #000b,0 0 0 1px #e6c98a2e}"
+    ".product-card.lux .product-cover:before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;"
+    "background:linear-gradient(180deg,#0806041a 0%,#08060400 42%,#0b080699 68%,#0b0806f2 100%)}"
+    ".product-card.lux .product-cover:after{inset:7px;border:1px solid #e6c98a99;border-radius:9px;z-index:1;"
+    "box-shadow:inset 0 0 0 3px #0000,inset 0 0 0 4px #e6c98a33}"
+    ".lux-seal{position:absolute;top:15px;right:15px;z-index:2;writing-mode:vertical-rl;font:700 15px/1 'UnmyeongSeal',serif;"
+    "letter-spacing:3px;color:#fbefdc;background:linear-gradient(160deg,#b52a33,#8c1820);padding:7px 5px 4px;border-radius:3px;"
+    "box-shadow:0 3px 10px #0009,inset 0 0 0 1px #ffffff2e}"
+    ".lux-title{position:absolute;left:10px;right:10px;bottom:20px;z-index:2;text-align:center}"
+    ".product-card.lux .lux-title h3{margin:0;font:400 34px/1.15 'UnmyeongTitle',Georgia,serif;letter-spacing:.03em;"
+    "background:linear-gradient(180deg,#fff7df 0%,#f2d898 46%,#c3923f 100%);-webkit-background-clip:text;background-clip:text;"
+    "color:transparent;filter:drop-shadow(0 2px 5px #000d)}"
+    ".product-card.lux .lux-title h3.long{font-size:27px}"
+    ".lux-rule{position:relative;display:block;width:64px;height:1px;margin:10px auto 9px;"
+    "background:linear-gradient(90deg,#e6c98a00,#e6c98a,#e6c98a00)}"
+    ".lux-rule:after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;background:#e6c98a;transform:translate(-50%,-50%) rotate(45deg)}"
+    ".product-card.lux .lux-title p{margin:0;font-size:13px;line-height:1.55;color:#f1e8d8;white-space:pre-line;text-shadow:0 1px 4px #000}"
+    ".product-card.lux .product-meta{padding:12px 2px 0}"
+    ".product-card.lux .product-meta strong{font-size:16px;font-weight:600;color:#ece6dc}"
+    "</style></head>"
+)
+
+
+def upgrade_cards(s: str) -> str:
+    seals = json.dumps(CARD_SEALS, ensure_ascii=False, separators=(",", ":"))
+    s = _swap(s, "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card\">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}<div class=\"product-meta\"><strong>${p.name}</strong>${priceLabel(p)}</div></a>`}).join('')}</div>`;",
+              "const CARD_SEALS=" + seals + ";"
+              "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card lux\">${art(p,p.id+'.cover','product-cover',`<span class=\"lux-seal\" aria-hidden=\"true\">${CARD_SEALS[p.id]||''}</span><div class=\"lux-title\"><h3${[...p.short].length>4?' class=\"long\"':''}>${p.short}</h3><i class=\"lux-rule\"></i><p>${p.line}</p></div>`)}<div class=\"product-meta\"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;")
+    s = _swap(s, "<h2>${p.name}</h2>${priceLabel(p)}<span class=\"step-label\">", "<h2>${p.name}</h2><span class=\"step-label\">")
+    for pid, (img, alt) in CARD_COVERS.items():
+        s = _swap(s, f'"{pid}.cover": {{\n    "image": "assets/geumwol/master.jpg",\n    "alt": "궁궐 사주방의 금월선녀",',
+                  f'"{pid}.cover": {{\n    "image": "{img}",\n    "alt": "{alt}",')
+    s = _swap(s, "</head>", CARD_CSS)
+    return s
+
+
 def legal_js(b: dict, contact: str) -> str:
     company = b.get("company") or "운명서재"
     privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데에만 씁니다. 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
@@ -290,6 +337,7 @@ def main() -> None:
     s = add_newyear(s)
     write_intake_module(s)
     s = patch_texts(s, b)
+    s = upgrade_cards(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")
