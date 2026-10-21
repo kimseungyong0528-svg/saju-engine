@@ -202,10 +202,10 @@ CARD_CSS = (
     "background:linear-gradient(90deg,#e6c98a00,#e6c98a,#e6c98a00)}"
     ".lux-rule:after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;background:#e6c98a;transform:translate(-50%,-50%) rotate(45deg)}"
     ".product-card.lux .lux-title p{margin:0;font-size:13px;line-height:1.55;color:#f1e8d8;white-space:pre-line;text-shadow:0 1px 4px #000}"
-    # 첫 화면 줄 카드 크기: 사장님이 보낸 참고 화면처럼 화면 폭의 약 58%, 가로:세로 = 272:333.
+    # 첫 화면 줄 카드 크기: 사장님이 보낸 참고 화면처럼 화면 폭의 약 58%, 가로:세로 = 5:7(사장님 요청으로 세로를 더 길게).
     # 옆 카드가 살짝 보여서 옆으로 넘길 수 있다는 걸 알 수 있다. 맨 위 신년운세 큰 카드는 그대로.
     ".rail .product-card.lux{flex:0 0 min(58vw,260px)}"
-    ".rail .product-card.lux .product-cover{height:auto;aspect-ratio:272/333}"
+    ".rail .product-card.lux .product-cover{height:auto;aspect-ratio:5/7}"
     ".rail .product-card.lux .lux-title h3{font-size:38px}.rail .product-card.lux .lux-title h3.long{font-size:30px}"
     ".rail .product-card.lux .lux-title p{font-size:14px}"
     "</style></head>"
