@@ -877,7 +877,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .birth-info-page .guide-strip strong,.birth-info-page>.eyebrow { color:var(--birth-accent); }
 .birth-fields input:focus,.birth-fields select:focus { border-color:var(--birth-accent)!important; box-shadow:0 0 0 3px var(--birth-focus-glow); }
 .birth-fields .birth-date-number select[aria-invalid=true]:focus { border-color:#e08e80!important; }
-</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
+</style><style>.poster-card .product-cover:after,.poster-card .product-cover:before{background:none!important}</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
 MIT License
 
@@ -6049,7 +6049,7 @@ const discountPercent=p=>Math.round((p.original-p.price)/p.original*100);
 function priceLabel(p){return `<div class="product-pricing"><s class="original-price" aria-label="정가 ${money(p.original)}">${money(p.original)}</s><div class="sale-pricing"><em class="discount-rate" aria-label="약 ${discountPercent(p)}% 할인">${discountPercent(p)}%</em><strong class="sale-price">${money(p.price)}</strong></div></div>`}
 
 const link=p=>`#/f/${p.id}/intro`;
-const cards=(ids,layout='rail')=>`<div class="${layout==='grid'?'product-grid':'rail'}">${ids.map(id=>{const p=pById(id);return `<a href="${link(p)}" class="product-card">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}<div class="product-meta"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;
+const CARD_POSTERS={intimate:'assets/geumwol/intimate-poster.jpg'};for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀의 '+k,position:'50% 15%'};const cards=(ids,layout='rail')=>`<div class="${layout==='grid'?'product-grid':'rail'}">${ids.map(id=>{const p=pById(id);const poster=CARD_POSTERS[p.id];return `<a href="${link(p)}" class="product-card${poster?' poster-card':''}">${art(p,p.id+(poster?'.card':'.cover'),'product-cover',poster?'':`<h3>${p.short}</h3><p>${p.line}</p>`)}<div class="product-meta"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;
 function headerActions(){return `<div class="header-actions"><a class="icon-btn header-search" href="#/search" aria-label="검색">${icon('search')}</a><button class="icon-btn" data-action="menu" aria-label="메뉴 열기">${icon('menu')}</button></div>`}
 function header(category='전체'){return `<header class="top"><div class="top-row"><a class="brand" href="#/">${BRAND.name}<small>UNMYEONG LIBRARY</small></a>${headerActions()}</div><nav class="categories" aria-label="상품 카테고리">${CATEGORIES.map(c=>`<a class="${c===category?'active':''}" href="#/${c==='전체'?'':'?category='+encodeURIComponent(c)}">${c}</a>`).join('')}</nav></header>`}
 function footer(){return `<footer class="footer"><div class="foot-brand">${BRAND.name}</div><strong>나와 우리의 이야기를 펼치는 곳</strong><p>상호: 김승용<br>대표자: 김승용<br>사업자등록번호: 101-69-00805<br>통신판매업 신고번호: 2026-서울서대문-0179<br>주소: 서울특별시 서대문구 증가로10길 60-3, 202호 (홍은동, 수정빌)<br>이메일: benedicto528@naver.com</p><div class="footer-links"><a href="#/support">고객센터</a><a href="#/legal/privacy">개인정보 처리방침</a><a href="#/legal/terms">이용약관</a><a href="#/legal/refund">환불 안내</a></div></footer>`}
