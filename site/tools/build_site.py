@@ -185,6 +185,9 @@ def patch_texts(s: str, b: dict) -> str:
 # 재물운·직업·이직운·사업운이 같은 그림(master.jpg)이라 카드 그림을 나눈다(재물 = 금색, 직업·사업 = 상아색 한복).
 CARD_COVERS = {"career": ("assets/geumwol/compatibility-cover.jpg", "상아색 한복의 금월선녀"),
                "business": ("assets/geumwol/compatibility-story.jpg", "상아색 한복의 금월선녀")}
+# 제목 붓글씨가 그림 안에 들어간 포스터 그림(사장님이 ChatGPT로 만든 것). 있는 상품은 카드에 이 그림을 쓰고
+# 카드 위 금빛 제목 글씨는 숨긴다. 상품 소개 화면 그림은 그대로.
+CARD_POSTERS = {"romance": "assets/geumwol/romance-poster.jpg"}
 CARD_CSS = (
     "<style>"
     "@font-face{font-family:'UnmyeongTitle';src:url(assets/fonts/songmyung-title.woff2) format('woff2');font-display:swap}"
@@ -208,13 +211,18 @@ CARD_CSS = (
     ".rail .product-card.lux .product-cover{height:auto;aspect-ratio:5/7}"
     ".rail .product-card.lux .lux-title h3{font-size:38px}.rail .product-card.lux .lux-title h3.long{font-size:30px}"
     ".rail .product-card.lux .lux-title p{font-size:14px}"
+    ".product-card.lux.poster .lux-title{display:none}"
+    ".product-card.lux.poster .product-cover:before{background:none}.product-card.lux.poster .product-cover:after{background:none}"
     "</style></head>"
 )
 
 
 def upgrade_cards(s: str) -> str:
+    posters = json.dumps(CARD_POSTERS, separators=(",", ":"))
     s = _swap(s, "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card\">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}<div class=\"product-meta\"><strong>${p.name}</strong>${priceLabel(p)}</div></a>`}).join('')}</div>`;",
-              "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card lux\">${art(p,p.id+'.cover','product-cover',`<div class=\"lux-title\"><h3${[...p.short.replace(/ /g,'')].length>4?' class=\"long\"':''}>${p.short}</h3><i class=\"lux-rule\"></i><p>${p.line}</p></div>`)}<div class=\"product-meta\"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;")
+              "const CARD_POSTERS=" + posters + ";"
+              "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀 포스터',position:'50% 30%'};"
+              "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card lux${CARD_POSTERS[p.id]?' poster':''}\">${art(p,p.id+(CARD_POSTERS[p.id]?'.card':'.cover'),'product-cover',`<div class=\"lux-title\"><h3${[...p.short.replace(/ /g,'')].length>4?' class=\"long\"':''}>${p.short}</h3><i class=\"lux-rule\"></i><p>${p.line}</p></div>`)}<div class=\"product-meta\"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;")
     s = _swap(s, "<h2>${p.name}</h2>${priceLabel(p)}<span class=\"step-label\">", "<h2>${p.name}</h2><span class=\"step-label\">")
     for pid, (img, alt) in CARD_COVERS.items():
         s = _swap(s, f'"{pid}.cover": {{\n    "image": "assets/geumwol/master.jpg",\n    "alt": "궁궐 사주방의 금월선녀",',
