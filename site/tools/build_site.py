@@ -98,12 +98,12 @@ def patch_texts(s: str, b: dict) -> str:
     # 첫 화면(전체)과 카테고리 탭의 상품 카드, 검색 결과에서 가격을 뺀다(2026-10-21 사장님 요청).
     # 가격은 마지막 접수 화면에서만 보인다.
     s = _swap(s, "<div class=\"product-meta\"><strong>${p.name}</strong>${priceLabel(p)}</div>", "<div class=\"product-meta\"><strong>${p.name}</strong></div>")
-    # 깊은 궁합 카드는 제목 붓글씨가 그림 안에 들어간 포스터 그림을 쓴다(2026-10-21 사장님이 고른 그림).
+    # 연애사주·깊은 궁합 카드는 제목 붓글씨가 그림 안에 들어간 포스터 그림을 쓴다(2026-10-21 사장님이 고른 그림).
     # 그림에 제목이 있으니 카드 위 글씨와 어둡게 덮는 그늘은 뺀다. 상품 소개 화면 그림은 그대로.
     s = _swap(s, "return `<a href=\"${link(p)}\" class=\"product-card\">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}",
               "const poster=CARD_POSTERS[p.id];return `<a href=\"${link(p)}\" class=\"product-card${poster?' poster-card':''}\">${art(p,p.id+(poster?'.card':'.cover'),'product-cover',poster?'':`<h3>${p.short}</h3><p>${p.line}</p>`)}")
     s = _swap(s, "const cards=(ids,layout='rail')=>",
-              "const CARD_POSTERS={intimate:'assets/geumwol/intimate-poster.jpg'};"
+              "const CARD_POSTERS={romance:'assets/geumwol/romance-poster.jpg',intimate:'assets/geumwol/intimate-poster.jpg'};"
               "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀의 '+k,position:'50% 15%'};"
               "const cards=(ids,layout='rail')=>")
     s = _swap(s, "</head>", "<style>.poster-card .product-cover:after,.poster-card .product-cover:before{background:none!important}</style></head>")
