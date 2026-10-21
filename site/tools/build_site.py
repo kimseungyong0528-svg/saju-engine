@@ -179,58 +179,6 @@ def patch_texts(s: str, b: dict) -> str:
     return s
 
 
-# 첫 화면 상품 카드를 고급스럽게 바꾼다(2026-10-21 사장님 요청).
-# 카드에는 가격을 빼고(가격은 마지막 접수 화면에서만), 그림 위에 금빛 붓글씨 제목과 금테를 얹는다.
-# 붉은 낙관은 사장님이 빼라고 함(2026-10-21). 카드 아래 상품 이름 글씨는 크기·색을 그대로 둔다.
-# 재물운·직업·이직운·사업운이 같은 그림(master.jpg)이라 카드 그림을 나눈다(재물 = 금색, 직업·사업 = 상아색 한복).
-CARD_COVERS = {"career": ("assets/geumwol/compatibility-cover.jpg", "상아색 한복의 금월선녀"),
-               "business": ("assets/geumwol/compatibility-story.jpg", "상아색 한복의 금월선녀")}
-# 제목 붓글씨가 그림 안에 들어간 포스터 그림(사장님이 ChatGPT로 만든 것). 있는 상품은 카드에 이 그림을 쓰고
-# 카드 위 금빛 제목 글씨는 숨긴다. 상품 소개 화면 그림은 그대로.
-CARD_POSTERS = {"romance": "assets/geumwol/romance-poster.jpg"}
-CARD_CSS = (
-    "<style>"
-    "@font-face{font-family:'UnmyeongTitle';src:url(assets/fonts/songmyung-title.woff2) format('woff2');font-display:swap}"
-    ".product-card.lux .product-cover{padding:0;border-radius:14px;box-shadow:0 16px 34px #000b,0 0 0 1px #e6c98a2e}"
-    ".product-card.lux .product-cover:before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;"
-    "background:linear-gradient(180deg,#0806041a 0%,#08060400 42%,#0b080699 68%,#0b0806f2 100%)}"
-    ".product-card.lux .product-cover:after{inset:7px;border:1px solid #e6c98a99;border-radius:9px;z-index:1;"
-    "box-shadow:inset 0 0 0 3px #0000,inset 0 0 0 4px #e6c98a33}"
-    ".lux-title{position:absolute;left:10px;right:10px;bottom:20px;z-index:2;text-align:center}"
-    ".product-card.lux .lux-title h3{margin:0;font:400 34px/1.15 'UnmyeongTitle',Georgia,serif;letter-spacing:.03em;"
-    "background:linear-gradient(180deg,#fff7df 0%,#f2d898 46%,#c3923f 100%);-webkit-background-clip:text;background-clip:text;"
-    "color:transparent;filter:drop-shadow(0 2px 5px #000d)}"
-    ".product-card.lux .lux-title h3.long{font-size:27px}"
-    ".lux-rule{position:relative;display:block;width:64px;height:1px;margin:10px auto 9px;"
-    "background:linear-gradient(90deg,#e6c98a00,#e6c98a,#e6c98a00)}"
-    ".lux-rule:after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;background:#e6c98a;transform:translate(-50%,-50%) rotate(45deg)}"
-    ".product-card.lux .lux-title p{margin:0;font-size:13px;line-height:1.55;color:#f1e8d8;white-space:pre-line;text-shadow:0 1px 4px #000}"
-    # 첫 화면 줄 카드 크기: 사장님이 보낸 참고 화면처럼 화면 폭의 약 58%, 가로:세로 = 5:7(사장님 요청으로 세로를 더 길게).
-    # 옆 카드가 살짝 보여서 옆으로 넘길 수 있다는 걸 알 수 있다. 맨 위 신년운세 큰 카드는 그대로.
-    ".rail .product-card.lux{flex:0 0 min(58vw,260px)}"
-    ".rail .product-card.lux .product-cover{height:auto;aspect-ratio:5/7}"
-    ".rail .product-card.lux .lux-title h3{font-size:38px}.rail .product-card.lux .lux-title h3.long{font-size:30px}"
-    ".rail .product-card.lux .lux-title p{font-size:14px}"
-    ".product-card.lux.poster .lux-title{display:none}"
-    ".product-card.lux.poster .product-cover:before{background:none}.product-card.lux.poster .product-cover:after{background:none}"
-    "</style></head>"
-)
-
-
-def upgrade_cards(s: str) -> str:
-    posters = json.dumps(CARD_POSTERS, separators=(",", ":"))
-    s = _swap(s, "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card\">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}<div class=\"product-meta\"><strong>${p.name}</strong>${priceLabel(p)}</div></a>`}).join('')}</div>`;",
-              "const CARD_POSTERS=" + posters + ";"
-              "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀 포스터',position:'50% 30%'};"
-              "const cards=(ids,layout='rail')=>`<div class=\"${layout==='grid'?'product-grid':'rail'}\">${ids.map(id=>{const p=pById(id);return `<a href=\"${link(p)}\" class=\"product-card lux${CARD_POSTERS[p.id]?' poster':''}\">${art(p,p.id+(CARD_POSTERS[p.id]?'.card':'.cover'),'product-cover',`<div class=\"lux-title\"><h3${[...p.short.replace(/ /g,'')].length>4?' class=\"long\"':''}>${p.short}</h3><i class=\"lux-rule\"></i><p>${p.line}</p></div>`)}<div class=\"product-meta\"><strong>${p.name}</strong></div></a>`}).join('')}</div>`;")
-    s = _swap(s, "<h2>${p.name}</h2>${priceLabel(p)}<span class=\"step-label\">", "<h2>${p.name}</h2><span class=\"step-label\">")
-    for pid, (img, alt) in CARD_COVERS.items():
-        s = _swap(s, f'"{pid}.cover": {{\n    "image": "assets/geumwol/master.jpg",\n    "alt": "궁궐 사주방의 금월선녀",',
-                  f'"{pid}.cover": {{\n    "image": "{img}",\n    "alt": "{alt}",')
-    s = _swap(s, "</head>", CARD_CSS)
-    return s
-
-
 def legal_js(b: dict, contact: str) -> str:
     company = b.get("company") or "운명서재"
     privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데에만 씁니다. 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
@@ -342,7 +290,6 @@ def main() -> None:
     s = add_newyear(s)
     write_intake_module(s)
     s = patch_texts(s, b)
-    s = upgrade_cards(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")

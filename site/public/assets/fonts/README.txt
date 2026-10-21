@@ -1,1 +1,0 @@
-songmyung-title.woff2: Song Myung (SIL Open Font License 1.1, OFL-SongMyung.txt), 상품 제목 글자만 잘라 담음.
