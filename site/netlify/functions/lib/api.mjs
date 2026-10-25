@@ -40,12 +40,11 @@ export function makeApi({ store, services, env, studioStore = store }) {
       if (parts[0] === 'orders' && parts.length === 1 && m === 'POST') {
         if (!ready(env)) throw new ApiError(503, 'CHECKOUT_NOT_READY');
         const body = await readJson(req);
-        // 토스 시험 키(test_)를 쓰는 동안에는 사장님 이메일 주문만 받는다. 시험 결제는 돈이 안 나가지만 API 비용은 나가므로.
-        if (String(env.TOSS_CLIENT_KEY).startsWith('test_')
-          && String(body.email || '').trim().toLowerCase() !== String(env.OWNER_EMAIL || '').trim().toLowerCase()) {
-          throw new ApiError(403, 'TEST_MODE_OWNER_ONLY');
-        }
-        return json(await createOrder(store, body, req.headers.get('idempotency-key')), 201);
+        // 토스 시험 키(test_)를 쓰는 동안 사장님 이메일이 아닌 주문은 시험 결제창까지만 연다(토스·카드사 심사용).
+        // 시험 결제는 돈이 안 나가지만 결과 작성은 API 비용이 나가므로, 이런 주문은 결제가 끝나도 결과를 만들지 않는다.
+        const testOnly = String(env.TOSS_CLIENT_KEY).startsWith('test_')
+          && String(body.email || '').trim().toLowerCase() !== String(env.OWNER_EMAIL || '').trim().toLowerCase();
+        return json(await createOrder(store, body, req.headers.get('idempotency-key'), new Date(), { testOnly }), 201);
       }
       if (parts[0] === 'orders' && parts.length >= 2) {
         const action = parts[2] || '';

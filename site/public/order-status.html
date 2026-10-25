@@ -58,8 +58,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search);
 const orderId=params.get('orderId')||'';
-const FINAL=new Set(['email_accepted','held','refunded','payment_failed','payment_expired','payment_adjusted','erased']);
-const TITLES={awaiting_payment:'결제를 확인하고 있어요',queued:'결제가 완료되었어요',processing:'사주 결과를 작성하고 있어요',retry:'사주 결과를 작성하고 있어요',held:'발송을 잠시 보류했어요',email_accepted:'결과를 이메일로 보냈어요',refund_pending:'결제를 취소하고 있어요',refunded:'결제가 취소되었어요',payment_adjusted:'결제가 중단되었어요',payment_failed:'결제가 완료되지 않았어요',payment_expired:'결제 시간이 지났어요',erased:'보관 기간이 끝난 주문이에요'};
+const FINAL=new Set(['email_accepted','test_paid','held','refunded','payment_failed','payment_expired','payment_adjusted','erased']);
+const TITLES={awaiting_payment:'결제를 확인하고 있어요',queued:'결제가 완료되었어요',processing:'사주 결과를 작성하고 있어요',retry:'사주 결과를 작성하고 있어요',held:'발송을 잠시 보류했어요',email_accepted:'결과를 이메일로 보냈어요',test_paid:'시험 결제가 끝났어요',refund_pending:'결제를 취소하고 있어요',refunded:'결제가 취소되었어요',payment_adjusted:'결제가 중단되었어요',payment_failed:'결제가 완료되지 않았어요',payment_expired:'결제 시간이 지났어요',erased:'보관 기간이 끝난 주문이에요'};
 let saved=null;try{saved=JSON.parse(sessionStorage.getItem('unmyeong.order.'+orderId));}catch{}
 
 let fileName='';
