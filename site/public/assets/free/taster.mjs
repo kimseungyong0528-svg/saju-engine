@@ -8,8 +8,7 @@ import { analyze, branchRelation, branchTenGod, tenGod, ELEMENTS, BRANCHES, BRAN
 const WHERE = { 년주: '태어난 해', 월주: '태어난 달', 일주: '태어난 날', 시주: '태어난 시' };
 const HANJA_GOD = { 비견: '比肩', 겁재: '劫財', 식신: '食神', 상관: '傷官', 편재: '偏財', 정재: '正財', 편관: '偏官', 정관: '正官', 편인: '偏印', 정인: '正印' };
 const STEM_HANJA = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
-const ELEMENT_HANJA = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
-const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4], BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
+const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const ZODIAC = ['쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양', '원숭이', '닭', '개', '돼지'];
 const godName = g => `${g}(${HANJA_GOD[g]})`;
 const branchName = b => `${BRANCHES[b]}(${BRANCHES_HANJA[b]})`;
@@ -170,35 +169,24 @@ const RULES = {
   },
 };
 
-// 네 기둥 아래 자세한 풀이(자리 뜻, 오행, 십신, 오행 비율, 신강약, 격국)
+// 네 기둥 아래 "내 사주 한눈에": 숫자 하나 + 그래서 생활에서 어떤지, 쉬운 말로
 function chartDetail(f, T, name) {
-  const fp = f.fp, ds = f.ds;
-  const cols = [['시주', fp.hour], ['일주', fp.day], ['월주', fp.month], ['년주', fp.year]].map(([label, p]) => {
-    if (!p) return { label, meaning: T.PILLAR_MEANING[label], unknown: true };
-    const se = ELEMENTS[STEM_EL[p.stem]], be = ELEMENTS[BRANCH_EL[p.branch]];
-    const sg = label === '일주' ? '일간' : tenGod(ds, p.stem), bg = branchTenGod(ds, p.branch);
-    return {
-      label, meaning: T.PILLAR_MEANING[label], hanja: p.hanja, ko: p.ko,
-      stem: { hanja: STEM_HANJA[p.stem], ko: STEMS[p.stem], el: se, elWord: T.ELEMENT_WORD[se], god: sg, godMeaning: T.GOD_MEANING[sg] },
-      branch: { hanja: BRANCHES_HANJA[p.branch], ko: BRANCHES[p.branch], el: be, elWord: T.ELEMENT_WORD[be], god: bg, godMeaning: T.GOD_MEANING[bg], animal: ZODIAC[p.branch] },
-    };
-  });
-  const elements = ELEMENTS.map(e => {
-    const v = f.elements[e];
-    return { el: e, hanja: ELEMENT_HANJA[e], word: T.ELEMENT_WORD[e], pct: v, status: v < 8 ? 'lack' : v >= 30 ? 'many' : 'ok' };
-  });
-  const lack = elements.filter(e => e.status === 'lack').map(e => `${e.word}(${e.el})`);
-  const many = elements.filter(e => e.status === 'many').map(e => `${e.word}(${e.el})`);
-  const elLine = `${name} 님 사주에서 가장 센 기운은 ${[...elements].sort((a, b) => b.pct - a.pct)[0].word}입니다.`
-    + (many.length ? ` ${many.join(', ')} 기운이 넘치고,` : '')
-    + (lack.length ? ` ${lack.join(', ')} 기운이 모자랍니다.` : ' 크게 모자란 기운은 없습니다.');
+  const fp = f.fp;
+  const cols = [['시주', fp.hour], ['일주', fp.day], ['월주', fp.month], ['년주', fp.year]]
+    .map(([label, p]) => ({ label: T.PILLAR_MEANING[label], hanja: p?.hanja || null, ko: p?.ko || null, me: label === '일주' }));
+  const els = ELEMENTS.map(e => ({ el: e, word: T.ELEMENT_WORD[e], pct: f.elements[e], status: f.elements[e] < 8 ? 'lack' : f.elements[e] >= 30 ? 'many' : 'ok' }));
+  const sorted = [...els].sort((a, b) => b.pct - a.pct);
+  const top = sorted[0], low = sorted[sorted.length - 1];
+  const dm = STEMS[f.ds] + ELEMENTS[STEM_EL[f.ds]];
   const gy = f.an.gyeokguk.name;
-  return {
-    zodiac: ZODIAC[fp.year.branch], columns: cols, elements, elementLine: elLine.replace(/,$/, '.'),
-    elementExplain: T.ELEMENT_EXPLAIN,
-    strength: { score: f.st, label: f.stLabel, explain: T.STRENGTH_EXPLAIN },
-    gyeokguk: { name: gy, explain: T.GYEOK_EXPLAIN, meaning: T.GYEOK_MEANING[gy] || '' },
-  };
+  const items = [
+    { head: `나를 뜻하는 글자 · ${STEM_HANJA[f.ds]} ${dm}`, text: `태어난 날의 위 글자가 나 자신입니다. ${name} 님은 ${T.DAY_MASTER[f.ds]}` },
+    { head: `가장 센 기운 · ${top.word} ${top.pct}%`, text: T.ELEMENT_STRONG[top.el] },
+    { head: `가장 ${low.status === 'lack' ? '모자란' : '적은'} 기운 · ${low.word} ${low.pct}%`, text: T.ELEMENT_WEAK[low.el] },
+    { head: `나를 받쳐 주는 힘 · 100점 중 ${Math.round(f.st)}점`, text: `${T.STRENGTH_PLAIN} ${fill(T.STRENGTH_LINE[f.stLabel], { name })}` },
+  ];
+  if (T.GYEOK_MEANING[gy]) items.push({ head: `타고난 큰 방향 · ${gy}`, text: T.GYEOK_MEANING[gy] });
+  return { zodiac: ZODIAC[fp.year.branch], columns: cols, elements: els, items };
 }
 
 // person: { name, sex }, fp: engine.chartFromPerson 결과, T: texts.json
@@ -221,7 +209,6 @@ export function reading(fp, person, T) {
     name,
     pillars: [fp.hour, fp.day, fp.month, fp.year].map((p, i) => ({ label: ['시주', '일주', '월주', '년주'][i], hanja: p?.hanja || null, ko: p?.ko || null })),
     chart: chartDetail(f, T, name),
-    intro: `${name} 님은 ${T.DAY_MASTER[f.ds]} ${fill(T.STRENGTH_LINE[f.stLabel], { name })}`,
     good: good.map(a => pick(a, 1)),
     bad: bad.map(a => pick(a, -1)),
     scores: Object.fromEntries(areas.map(a => [a.id, a.score])),
