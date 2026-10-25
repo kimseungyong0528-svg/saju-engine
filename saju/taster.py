@@ -319,6 +319,9 @@ def digest(r: dict, product: str | None = None) -> dict:
         "좋은 운": [{"운": a["title"], "맛보기에서 본 글": a["text"]} for a in r["good"]],
         "조심할 운": [{"운": a["title"], "맛보기에서 본 글": a["text"]} for a in r["bad"]],
     }
+    if product == "lifetime":
+        out["이 상품을 산 이유"] = {"쓸 점": "평생사주는 사주 전체를 보는 상품입니다. 위 좋은 운 3개와 조심할 운 3개를 "
+                                       "알맞은 장마다 빠짐없이 다시 꺼내, 맛보기보다 훨씬 자세히 풀고 강조합니다."}
     if mine:
         out["이 상품을 산 이유"] = {**mine[0], "쓸 점": "이 항목이 고객이 이 리포트를 산 가장 큰 이유입니다. 이 근거를 리포트 여러 장에 걸쳐 가장 자세히 풀어 줍니다."}
     return out

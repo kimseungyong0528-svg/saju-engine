@@ -49,10 +49,10 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     when = order_date(job.get("paidAt"))
     me = analyze_person(payload["self"], current_year=when.year)
     order, answers = order_info(product, payload, when)
-    if product == "lifetime":
-        return make_lifetime_report(me, order, out_pdf, writer)
     # 고객이 무료 맛보기에서 본 좋은 운·조심할 운(같은 사주 계산)을 글쓰기에 넘겨, 고객이 기대하는 내용을 더 깊게 풀게 한다.
     seen = taster.digest(taster.reading_for_person(me), product)
+    if product == "lifetime":
+        return make_lifetime_report(me, order, out_pdf, writer, taster=seen)
     if product == "romance":
         return make_romance_report(me, order, out_pdf, writer, taster=seen)
     partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS else None
