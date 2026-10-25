@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from .. import taster
 from ..chart import analyze_person
 from ..report import (OrderInfo, THEME_PRODUCTS, PAIR_PRODUCTS, make_lifetime_report, make_romance_report,
                       make_product_report)
@@ -48,12 +49,14 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     when = order_date(job.get("paidAt"))
     me = analyze_person(payload["self"], current_year=when.year)
     order, answers = order_info(product, payload, when)
+    # 고객이 무료 맛보기에서 본 좋은 운·조심할 운(같은 사주 계산)을 글쓰기에 넘겨, 고객이 기대하는 내용을 더 깊게 풀게 한다.
+    seen = taster.digest(taster.reading_for_person(me), product)
     if product == "lifetime":
-        return make_lifetime_report(me, order, out_pdf, writer)
+        return make_lifetime_report(me, order, out_pdf, writer, taster=seen)
     if product == "romance":
-        return make_romance_report(me, order, out_pdf, writer)
+        return make_romance_report(me, order, out_pdf, writer, taster=seen)
     partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS else None
-    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner)
+    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen)
 
 
 def blocking(issues: list[dict]) -> list[dict]:

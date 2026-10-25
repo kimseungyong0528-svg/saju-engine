@@ -174,6 +174,8 @@ def facts_digest(f: dict) -> dict:
         d["연애 재료"] = romance_digest(f["romance"])
     if f.get("theme"):
         d[f["theme"]["label"]] = f["theme"]["digest"]
+    if f.get("taster"):
+        d["무료 맛보기에서 고객이 본 내용"] = f["taster"]
     return d
 
 
