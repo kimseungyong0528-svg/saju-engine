@@ -303,6 +303,8 @@ def add_newyear(s: str) -> str:
 
 TASTER_CSS = (
     ".taster-banner{border:1px solid #d8bb7866}"
+    ".taster-banner.palace-banner{background-image:linear-gradient(90deg,#08070499 5%,#08070455 62%,#08070400),var(--palace-bg)}"
+    ".taster-banner .eyebrow,.taster-banner p{text-shadow:0 1px 6px #000,0 0 3px #000}.taster-banner p{color:#f3ecdf;font-weight:500}"
     ".taster-banner h3{color:#fff;text-shadow:0 2px 10px #000}.taster-banner p{text-shadow:0 2px 8px #000}"
     ".taster-banner .taster-cta{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:999px;background:#ee3656;color:#fff;font-size:16px;font-weight:700}"
     ".taster-form .taster-submit{width:100%;margin-top:22px}"
