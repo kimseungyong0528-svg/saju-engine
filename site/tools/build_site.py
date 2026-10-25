@@ -301,6 +301,43 @@ def add_newyear(s: str) -> str:
     return s
 
 
+TASTER_CSS = (
+    ".taster-banner{background:linear-gradient(125deg,#3a1d24,#16121a)}.taster-banner h3{color:#fff}"
+    ".taster-banner .taster-cta{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:999px;background:#ee3656;color:#fff;font-size:16px;font-weight:700}"
+    ".taster-form .taster-submit{width:100%;margin-top:22px}"
+    ".taster-result h1{font-size:29px;line-height:1.45;margin:10px 0 18px}"
+    ".taster-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px}"
+    ".taster-pillars div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 0;border:1px solid #ffffff1f;border-radius:12px;background:#151515}"
+    ".taster-pillars small{font-size:14px;color:#a3a3a3}.taster-pillars b{font:600 28px/1.2 Georgia,'Batang',serif}"
+    ".taster-note{font-size:15px;color:#a3a3a3;margin:0 0 10px}"
+    ".taster-intro{font-size:17px;line-height:1.85;color:#e5e5e5;margin:0 0 26px}"
+    ".taster-head{font-size:23px;margin:30px 0 12px;padding-left:12px;border-left:4px solid #6fcf97}.taster-head.bad{border-left-color:#ee3656}"
+    ".taster-item{padding:18px 18px 16px;margin:0 0 12px;border-radius:14px;background:#171717;border:1px solid #ffffff17}"
+    ".taster-rank span{font-size:14px;font-weight:700;color:#6fcf97}.taster-item.bad .taster-rank span{color:#ff7b8f}"
+    ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}"
+    ".taster-more{display:block;font-size:16px;line-height:1.6;color:#f4abb7;text-decoration:underline;text-underline-offset:4px}"
+    ".taster-more b{color:#fff}"
+    ".taster-lifetime{display:block;margin:28px 0 6px;padding:22px 20px;border-radius:14px;background:linear-gradient(125deg,#3b3220,#17150f);border:1px solid #d8bb7840}"
+    ".taster-lifetime strong{display:block;font-size:21px;margin:6px 0 8px;color:#fff}.taster-lifetime span:last-child{color:#d8bb78;font-size:16px;text-decoration:underline;text-underline-offset:4px}"
+)
+
+
+def add_taster(s: str) -> str:
+    """무료 사주 맛보기(#/taster): 첫 화면 배너 + 입력·결과 화면 (2026-10-25 사장님 요청).
+    계산은 public/assets/free/ 의 계산기가 브라우저에서 한다(AI 호출 없음, 0원)."""
+    page = (SITE / "tools" / "taster_page.js").read_text(encoding="utf-8")
+    s = _swap(s, "</head>", f"<style>{TASTER_CSS}</style></head>")
+    s = _swap(s, "function render(){", page + "function render(){")
+    s = _swap(s, "else if(route==='/support')supportPage();",
+              "else if(route==='/support')supportPage();else if(route==='/taster')tasterPage();")
+    s = _swap(s, '</div></div><section class="section"><div class="section-head"><h2>오리지널 연애 사주</h2>',
+              '</div></div><section class="section"><a class="banner taster-banner" href="#/taster"><span class="eyebrow">FREE · 무료</span>'
+              '<h3>무료 사주 맛보기</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를 바로 알려드려요.</p>'
+              '<span class="taster-cta">무료로 내 운 보기</span></a></section>'
+              '<section class="section"><div class="section-head"><h2>오리지널 연애 사주</h2>')
+    return s
+
+
 def write_intake_module(s: str) -> None:
     parts = []
     for a, b in INTAKE_PARTS:
@@ -321,6 +358,7 @@ def main() -> None:
     s = add_newyear(s)
     write_intake_module(s)
     s = patch_texts(s, b)
+    s = add_taster(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")

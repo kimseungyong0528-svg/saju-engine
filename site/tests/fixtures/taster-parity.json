@@ -1,0 +1,14834 @@
+[
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1978-01-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:12",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "정사 계축 신사 신묘",
+"elements": {
+"목": 10.5,
+"화": 24.6,
+"토": 18.8,
+"금": 29.3,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 1
+},
+"strength": 44.9,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2013-04-02",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "계사 을묘 무술 ??",
+"elements": {
+"목": 40.0,
+"화": 9.1,
+"토": 28.4,
+"금": 9.1,
+"수": 13.3
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 24.2,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"도화살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2008-10-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "무자 임술 임오 임인",
+"elements": {
+"목": 5.6,
+"화": 15.6,
+"토": 30.4,
+"금": 6.3,
+"수": 42.1
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 41.1,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|시주",
+"백호살|월주",
+"양인살|년주",
+"역마살|시주",
+"홍염살|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1974-12-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "갑인 을해 기묘 을축",
+"elements": {
+"목": 57.9,
+"화": 2.5,
+"토": 24.2,
+"금": 1.1,
+"수": 14.4
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 5,
+"인성": 0
+},
+"strength": 18.6,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2002-04-23",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "임오 갑진 신유 ??",
+"elements": {
+"목": 21.3,
+"화": 9.3,
+"토": 20.0,
+"금": 33.3,
+"수": 16.0
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 48.0,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|년주",
+"백호살|월주",
+"천을귀인|년주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1949-01-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:30",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "무자 갑자 임진 정미",
+"elements": {
+"목": 16.3,
+"화": 13.7,
+"토": 26.3,
+"금": 0.0,
+"수": 43.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 43.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"양인살|년주",
+"양인살|월주",
+"홍염살|년주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1943-08-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:14",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "계미 경신 경자 신사",
+"elements": {
+"목": 1.1,
+"화": 8.8,
+"토": 13.7,
+"금": 45.3,
+"수": 31.2
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 56.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"도화살|일주",
+"역마살|시주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1964-06-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "갑진 경오 을사 기묘",
+"elements": {
+"목": 34.7,
+"화": 23.2,
+"토": 26.8,
+"금": 14.2,
+"수": 1.1
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 25.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"문창귀인|월주",
+"백호살|년주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1998-09-23",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "무인 신유 계유 ??",
+"elements": {
+"목": 7.1,
+"화": 3.1,
+"토": 16.4,
+"금": 60.0,
+"수": 13.3
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 3
+},
+"strength": 73.3,
+"gyeokguk": "편인격",
+"shinsal": []
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1998-11-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "무인 계해 기사 임신",
+"elements": {
+"목": 10.5,
+"화": 10.9,
+"토": 34.6,
+"금": 9.3,
+"수": 34.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 37.4,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"역마살|시주",
+"역마살|월주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1990-01-03",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "기사 병자 무진 ??",
+"elements": {
+"목": 6.0,
+"화": 20.4,
+"토": 41.8,
+"금": 3.1,
+"수": 28.7
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 48.9,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|일주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2001-06-15",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "신사 갑오 기유 ??",
+"elements": {
+"목": 13.3,
+"화": 25.8,
+"토": 24.4,
+"금": 36.4,
+"수": 0.0
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 50.2,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|월주",
+"문창귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1953-07-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "계사 기미 병인 기축",
+"elements": {
+"목": 10.5,
+"화": 26.1,
+"토": 46.1,
+"금": 3.5,
+"수": 13.7
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 30.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1974-12-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "갑인 병자 신묘 ??",
+"elements": {
+"목": 40.4,
+"화": 16.4,
+"토": 3.1,
+"금": 13.3,
+"수": 26.7
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 0
+},
+"strength": 3.1,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|월주",
+"도화살|일주",
+"문창귀인|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2001-11-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:11",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "신사 기해 기묘 을축",
+"elements": {
+"목": 31.2,
+"화": 5.6,
+"토": 34.7,
+"금": 14.0,
+"수": 14.4
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 32.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"역마살|년주",
+"역마살|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-12-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "갑신 병자 기사 ??",
+"elements": {
+"목": 13.3,
+"화": 24.0,
+"토": 21.1,
+"금": 11.8,
+"수": 29.8
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 31.8,
+"gyeokguk": "편재격",
+"shinsal": [
+"천을귀인|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2015-10-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:30",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을미 을유 경술 병술",
+"elements": {
+"목": 22.1,
+"화": 16.3,
+"토": 22.1,
+"금": 39.5,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 61.6,
+"gyeokguk": "양인격",
+"shinsal": [
+"괴강살|일주",
+"백호살|년주",
+"백호살|시주",
+"양인살|월주",
+"천을귀인|년주",
+"홍염살|시주",
+"홍염살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2007-10-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:29",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정해 경술 을유 정축",
+"elements": {
+"목": 13.0,
+"화": 23.2,
+"토": 21.4,
+"금": 33.7,
+"수": 8.8
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 11.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|시주",
+"역마살|년주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2010-05-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:42",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "경인 경진 임자 무신",
+"elements": {
+"목": 11.9,
+"화": 2.5,
+"토": 28.1,
+"금": 26.7,
+"수": 30.9
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 48.1,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"문창귀인|년주",
+"양인살|일주",
+"역마살|년주",
+"역마살|시주",
+"홍염살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2020-03-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:21",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "경자 기묘 갑인 정묘",
+"elements": {
+"목": 50.5,
+"화": 14.2,
+"토": 14.2,
+"금": 10.5,
+"수": 10.5
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 61.1,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|년주",
+"도화살|시주",
+"도화살|월주",
+"양인살|시주",
+"양인살|월주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1960-04-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "경자 경진 무인 계해",
+"elements": {
+"목": 17.2,
+"화": 3.7,
+"토": 29.3,
+"금": 21.1,
+"수": 28.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 3,
+"관성": 1,
+"인성": 0
+},
+"strength": 28.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"역마살|일주",
+"홍염살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1983-02-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:54",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "계해 갑인 기사 을해",
+"elements": {
+"목": 37.2,
+"화": 13.3,
+"토": 24.0,
+"금": 3.7,
+"수": 21.8
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 3,
+"관성": 3,
+"인성": 1
+},
+"strength": 31.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"역마살|년주",
+"역마살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1978-02-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "무오 갑인 병오 을미",
+"elements": {
+"목": 33.3,
+"화": 37.0,
+"토": 29.6,
+"금": 0.0,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 0,
+"관성": 0,
+"인성": 3
+},
+"strength": 67.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|월주",
+"백호살|시주",
+"양인살|년주",
+"양인살|일주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2020-08-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:01",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "경자 갑신 병신 신묘",
+"elements": {
+"목": 21.1,
+"화": 10.5,
+"토": 8.6,
+"금": 40.7,
+"수": 19.1
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 4,
+"관성": 1,
+"인성": 2
+},
+"strength": 21.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"문창귀인|월주",
+"문창귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1985-04-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을축 경진 무자 정사",
+"elements": {
+"목": 16.8,
+"화": 16.1,
+"토": 31.9,
+"금": 14.0,
+"수": 21.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 43.9,
+"gyeokguk": "건록격",
+"shinsal": [
+"천을귀인|년주",
+"홍염살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1957-03-17",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "정유 계묘 무자 ??",
+"elements": {
+"목": 26.7,
+"화": 13.3,
+"토": 13.3,
+"금": 13.3,
+"수": 33.3
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 13.3,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1963-10-30",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "계묘 임술 병오 ??",
+"elements": {
+"목": 13.3,
+"화": 30.0,
+"토": 22.0,
+"금": 8.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 31.3,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|년주",
+"도화살|년주",
+"백호살|월주",
+"양인살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2000-11-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:12",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "경진 정해 무자 무오",
+"elements": {
+"목": 8.1,
+"화": 17.9,
+"토": 35.4,
+"금": 10.5,
+"수": 28.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 45.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"양인살|시주",
+"홍염살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1984-10-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "갑자 갑술 신사 기해",
+"elements": {
+"목": 23.5,
+"화": 10.5,
+"토": 29.3,
+"금": 20.5,
+"수": 16.1
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 48.8,
+"gyeokguk": "정인격",
+"shinsal": [
+"문창귀인|년주",
+"역마살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1957-10-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:47",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "정유 경술 정묘 계묘",
+"elements": {
+"목": 26.3,
+"화": 23.2,
+"토": 12.6,
+"금": 27.4,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 40.0,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2014-05-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "갑오 기사 병술 기해",
+"elements": {
+"목": 13.0,
+"화": 30.7,
+"토": 41.1,
+"금": 9.6,
+"수": 5.6
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 38.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"백호살|일주",
+"양인살|년주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1950-01-18",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "기축 정축 계축 ??",
+"elements": {
+"목": 0.0,
+"화": 13.3,
+"토": 49.3,
+"금": 6.0,
+"수": 31.3
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 4,
+"인성": 0
+},
+"strength": 29.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"백호살|월주",
+"백호살|일주",
+"화개살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1974-02-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "갑인 병인 임진 경자",
+"elements": {
+"목": 32.1,
+"화": 17.9,
+"토": 16.8,
+"금": 10.5,
+"수": 22.6
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 22.6,
+"gyeokguk": "식신격",
+"shinsal": [
+"괴강살|일주",
+"문창귀인|년주",
+"문창귀인|월주",
+"양인살|시주",
+"역마살|년주",
+"역마살|월주",
+"홍염살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1950-08-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "경인 갑신 무술 정사",
+"elements": {
+"목": 16.1,
+"화": 20.2,
+"토": 29.8,
+"금": 28.9,
+"수": 4.9
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 41.9,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"문창귀인|월주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1940-09-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "경진 갑신 무신 임술",
+"elements": {
+"목": 13.7,
+"화": 1.1,
+"토": 31.8,
+"금": 33.3,
+"수": 20.2
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 24.7,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"문창귀인|일주",
+"백호살|시주",
+"홍염살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1996-01-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:11",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "을해 무자 경자 계미",
+"elements": {
+"목": 14.0,
+"화": 3.2,
+"토": 19.3,
+"금": 10.5,
+"수": 53.0
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 19.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"도화살|월주",
+"도화살|일주",
+"문창귀인|년주",
+"천을귀인|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2021-01-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:34",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "경자 무자 임자 신해",
+"elements": {
+"목": 2.5,
+"화": 0.0,
+"토": 13.0,
+"금": 21.1,
+"수": 63.5
+},
+"groups": {
+"비겁": 4,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 84.6,
+"gyeokguk": "양인격",
+"shinsal": [
+"양인살|년주",
+"양인살|월주",
+"양인살|일주",
+"홍염살|년주",
+"홍염살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1944-08-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "갑신 임신 기미 갑자",
+"elements": {
+"목": 22.6,
+"화": 4.7,
+"토": 27.4,
+"금": 16.8,
+"수": 28.4
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 24.0,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|시주",
+"도화살|시주",
+"천을귀인|년주",
+"천을귀인|시주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2020-06-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "경자 임오 갑오 임신",
+"elements": {
+"목": 10.5,
+"화": 25.8,
+"토": 13.5,
+"금": 16.1,
+"수": 34.0
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 34.0,
+"gyeokguk": "상관격",
+"shinsal": [
+"역마살|시주",
+"홍염살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1997-09-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:42",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정축 기유 계해 임술",
+"elements": {
+"목": 3.7,
+"화": 11.6,
+"토": 26.8,
+"금": 25.3,
+"수": 32.6
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 1
+},
+"strength": 57.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"백호살|년주",
+"백호살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-10-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "갑신 갑술 을해 을유",
+"elements": {
+"목": 45.8,
+"화": 2.1,
+"토": 18.8,
+"금": 22.5,
+"수": 10.9
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 46.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"도화살|시주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1991-02-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:18",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "신미 경인 병인 임진",
+"elements": {
+"목": 23.9,
+"화": 22.3,
+"토": 21.2,
+"금": 21.1,
+"수": 11.6
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 43.7,
+"gyeokguk": "편인격",
+"shinsal": [
+"홍염살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2006-02-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:45",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "병술 경인 정묘 정미",
+"elements": {
+"목": 28.1,
+"화": 40.7,
+"토": 17.5,
+"금": 13.7,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 66.3,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"도화살|일주",
+"백호살|년주",
+"홍염살|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1976-03-10",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "병진 신묘 신유 ??",
+"elements": {
+"목": 30.7,
+"화": 13.3,
+"토": 8.0,
+"금": 46.7,
+"수": 1.3
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 41.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"도화살|일주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2010-02-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "경인 무인 경인 정축",
+"elements": {
+"목": 25.3,
+"화": 21.6,
+"토": 27.9,
+"금": 22.1,
+"수": 3.2
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 2
+},
+"strength": 41.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|시주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2014-03-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "갑오 정묘 기묘 갑술",
+"elements": {
+"목": 57.9,
+"화": 18.9,
+"토": 20.0,
+"금": 3.2,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 4,
+"인성": 2
+},
+"strength": 28.4,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|월주",
+"도화살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2014-12-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:55",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "갑오 병자 임자 경술",
+"elements": {
+"목": 10.5,
+"화": 18.9,
+"토": 9.5,
+"금": 13.7,
+"수": 47.4
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 61.1,
+"gyeokguk": "양인격",
+"shinsal": [
+"양인살|월주",
+"양인살|일주",
+"홍염살|월주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1961-09-21",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "신축 정유 정사 ??",
+"elements": {
+"목": 0.0,
+"화": 37.3,
+"토": 12.7,
+"금": 46.0,
+"수": 4.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 0
+},
+"strength": 24.0,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"문창귀인|월주",
+"천을귀인|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2000-02-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:57",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "경진 무인 신축 기해",
+"elements": {
+"목": 16.8,
+"화": 4.9,
+"토": 44.2,
+"금": 22.6,
+"수": 11.4
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 0,
+"인성": 4
+},
+"strength": 58.8,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"역마살|시주",
+"역마살|월주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2020-10-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:36",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경자 병술 정유 정미",
+"elements": {
+"목": 1.1,
+"화": 36.8,
+"토": 18.9,
+"금": 32.6,
+"수": 10.5
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 28.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"도화살|일주",
+"문창귀인|일주",
+"백호살|월주",
+"천을귀인|일주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2010-01-03",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:44",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "기축 병자 계축 갑인",
+"elements": {
+"목": 16.1,
+"화": 13.0,
+"토": 28.8,
+"금": 2.6,
+"수": 39.5
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 42.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"백호살|일주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1943-11-12",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "계미 계해 갑술 ??",
+"elements": {
+"목": 20.9,
+"화": 6.0,
+"토": 26.2,
+"금": 6.0,
+"수": 40.9
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 3
+},
+"strength": 58.7,
+"gyeokguk": "편인격",
+"shinsal": [
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2015-05-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "을미 신사 정해 임인",
+"elements": {
+"목": 20.9,
+"화": 27.4,
+"토": 17.4,
+"금": 15.4,
+"수": 18.9
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 43.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"백호살|년주",
+"역마살|월주",
+"천을귀인|일주",
+"홍염살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1970-11-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:20",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "경술 병술 병술 무자",
+"elements": {
+"목": 0.0,
+"화": 25.8,
+"토": 38.9,
+"금": 24.7,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 16.3,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|월주",
+"백호살|일주",
+"화개살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1961-07-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "신축 을미 기미 무진",
+"elements": {
+"목": 17.4,
+"화": 11.1,
+"토": 55.8,
+"금": 11.6,
+"수": 4.2
+},
+"groups": {
+"비겁": 5,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 0
+},
+"strength": 65.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"백호살|월주",
+"홍염살|시주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1961-03-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:21",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "신축 신묘 기해 을해",
+"elements": {
+"목": 37.7,
+"화": 0.0,
+"토": 23.0,
+"금": 22.1,
+"수": 17.2
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 12.5,
+"gyeokguk": "편관격",
+"shinsal": [
+"역마살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1973-12-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "계축 갑자 을유 신사",
+"elements": {
+"목": 21.1,
+"화": 5.6,
+"토": 8.8,
+"금": 29.8,
+"수": 34.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 55.8,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|년주",
+"천을귀인|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1965-06-26",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을사 임오 신해 ??",
+"elements": {
+"목": 18.0,
+"화": 25.8,
+"토": 15.8,
+"금": 16.4,
+"수": 24.0
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 22.9,
+"gyeokguk": "편관격",
+"shinsal": [
+"도화살|월주",
+"역마살|년주",
+"역마살|일주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1940-07-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:25",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "경진 계미 무진 계해",
+"elements": {
+"목": 12.5,
+"화": 6.3,
+"토": 41.4,
+"금": 10.5,
+"수": 29.3
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 3,
+"관성": 0,
+"인성": 0
+},
+"strength": 46.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|시주",
+"백호살|일주",
+"천을귀인|월주",
+"홍염살|년주",
+"홍염살|일주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1985-08-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "을축 갑신 정해 을사",
+"elements": {
+"목": 35.3,
+"화": 16.1,
+"토": 17.4,
+"금": 14.7,
+"수": 16.5
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 3
+},
+"strength": 40.9,
+"gyeokguk": "정재격",
+"shinsal": [
+"역마살|시주",
+"역마살|일주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-01-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "신해 신축 기유 갑술",
+"elements": {
+"목": 13.0,
+"화": 1.1,
+"토": 31.9,
+"금": 42.1,
+"수": 11.9
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 28.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|일주",
+"역마살|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1973-05-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "계축 정사 경술 무인",
+"elements": {
+"목": 5.6,
+"화": 25.8,
+"토": 33.7,
+"금": 21.2,
+"수": 13.7
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 3
+},
+"strength": 49.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"백호살|년주",
+"천을귀인|년주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1982-02-26",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "임술 임인 경진 ??",
+"elements": {
+"목": 20.2,
+"화": 7.6,
+"토": 26.2,
+"금": 17.3,
+"수": 28.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 33.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"괴강살|일주",
+"백호살|년주",
+"역마살|월주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1981-04-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "신유 임진 계축 무오",
+"elements": {
+"목": 6.3,
+"화": 7.4,
+"토": 35.8,
+"금": 22.6,
+"수": 27.9
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 41.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|시주",
+"백호살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-10-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "갑신 계유 갑인 임신",
+"elements": {
+"목": 29.5,
+"화": 3.7,
+"토": 8.6,
+"금": 32.3,
+"수": 26.0
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 2
+},
+"strength": 44.9,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|월주",
+"역마살|년주",
+"역마살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1974-10-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:24",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "갑인 계유 무인 임자",
+"elements": {
+"목": 24.6,
+"화": 6.1,
+"토": 16.7,
+"금": 21.1,
+"수": 31.6
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 3,
+"인성": 0
+},
+"strength": 12.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1956-05-13",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "병신 계사 경진 ??",
+"elements": {
+"목": 6.0,
+"화": 27.6,
+"토": 21.3,
+"금": 26.7,
+"수": 18.4
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 40.9,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2024-08-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "갑진 임신 계묘 무오",
+"elements": {
+"목": 29.5,
+"화": 7.4,
+"토": 24.9,
+"금": 11.2,
+"수": 27.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 35.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"문창귀인|일주",
+"백호살|년주",
+"천을귀인|일주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1966-07-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:02",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "병오 을미 계유 기미",
+"elements": {
+"목": 13.7,
+"화": 27.4,
+"토": 32.6,
+"금": 15.8,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 3,
+"인성": 1
+},
+"strength": 15.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"도화살|년주",
+"백호살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1974-12-08",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "갑인 병자 계미 ??",
+"elements": {
+"목": 22.4,
+"화": 22.4,
+"토": 15.1,
+"금": 0.0,
+"수": 40.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 40.0,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2019-12-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "기해 병자 을미 신사",
+"elements": {
+"목": 14.6,
+"화": 20.9,
+"토": 24.9,
+"금": 13.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 41.2,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"백호살|일주",
+"역마살|시주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1983-01-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임술 계축 기미 병인",
+"elements": {
+"목": 7.2,
+"화": 18.8,
+"토": 41.4,
+"금": 5.3,
+"수": 27.4
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 56.0,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|월주",
+"백호살|년주",
+"백호살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1949-09-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:47",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "기축 계유 갑인 계유",
+"elements": {
+"목": 18.9,
+"화": 3.7,
+"토": 20.5,
+"금": 32.6,
+"수": 24.2
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 2
+},
+"strength": 32.6,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2000-02-18",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경진 무인 병오 ??",
+"elements": {
+"목": 18.2,
+"화": 33.6,
+"토": 33.6,
+"금": 13.3,
+"수": 1.3
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 1
+},
+"strength": 48.7,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|월주",
+"양인살|일주",
+"역마살|월주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1995-09-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "을해 을유 무신 갑인",
+"elements": {
+"목": 39.6,
+"화": 2.5,
+"토": 19.1,
+"금": 29.5,
+"수": 9.3
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 4,
+"인성": 0
+},
+"strength": 11.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"문창귀인|일주",
+"역마살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1964-07-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "갑진 신미 정사 무신",
+"elements": {
+"목": 15.8,
+"화": 25.3,
+"토": 35.6,
+"금": 19.8,
+"수": 3.5
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 34.7,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|년주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1992-07-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "임신 정미 임인 갑진",
+"elements": {
+"목": 24.2,
+"화": 20.5,
+"토": 25.1,
+"금": 5.6,
+"수": 24.6
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 19.6,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|시주",
+"문창귀인|일주",
+"백호살|시주",
+"역마살|년주",
+"역마살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1945-05-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:12",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을유 신사 임진 갑진",
+"elements": {
+"목": 28.9,
+"화": 11.2,
+"토": 20.7,
+"금": 26.0,
+"수": 13.2
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 31.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"괴강살|일주",
+"도화살|년주",
+"백호살|시주",
+"천을귀인|월주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1984-10-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "갑자 갑술 병자 갑오",
+"elements": {
+"목": 31.6,
+"화": 20.0,
+"토": 15.8,
+"금": 6.3,
+"수": 26.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 42.1,
+"gyeokguk": "식신격",
+"shinsal": [
+"양인살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2017-04-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:10",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "정유 갑진 정묘 임인",
+"elements": {
+"목": 38.2,
+"화": 23.5,
+"토": 15.1,
+"금": 10.5,
+"수": 12.6
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 3
+},
+"strength": 54.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"문창귀인|년주",
+"백호살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1979-06-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "기미 경오 무진 정사",
+"elements": {
+"목": 5.8,
+"화": 34.0,
+"토": 45.6,
+"금": 13.0,
+"수": 1.6
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 0,
+"관성": 0,
+"인성": 3
+},
+"strength": 79.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"백호살|일주",
+"양인살|월주",
+"역마살|시주",
+"천을귀인|년주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-09-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:46",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "기사 계유 병자 기해",
+"elements": {
+"목": 2.5,
+"화": 16.1,
+"토": 26.0,
+"금": 23.5,
+"수": 31.9
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 8.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"도화살|월주",
+"역마살|시주",
+"천을귀인|시주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-08-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "기묘 임신 기해 경오",
+"elements": {
+"목": 14.2,
+"화": 7.4,
+"토": 32.8,
+"금": 21.8,
+"수": 23.9
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 32.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1947-05-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:24",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "정해 을사 병술 신묘",
+"elements": {
+"목": 23.5,
+"화": 33.9,
+"토": 16.8,
+"금": 20.2,
+"수": 5.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 52.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|시주",
+"백호살|일주",
+"역마살|월주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1993-12-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "계유 갑자 을유 정축",
+"elements": {
+"목": 21.1,
+"화": 10.5,
+"토": 6.3,
+"금": 27.4,
+"수": 34.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 55.8,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|시주",
+"천을귀인|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1968-03-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:25",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "무신 갑인 경오 무인",
+"elements": {
+"목": 27.4,
+"화": 18.4,
+"토": 35.6,
+"금": 16.1,
+"수": 2.5
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 2
+},
+"strength": 43.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|년주",
+"역마살|시주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2007-02-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:54",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정해 임인 정축 정미",
+"elements": {
+"목": 14.7,
+"화": 39.6,
+"토": 23.2,
+"금": 1.6,
+"수": 20.9
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 51.9,
+"gyeokguk": "정인격",
+"shinsal": [
+"백호살|일주",
+"역마살|년주",
+"천을귀인|년주",
+"홍염살|시주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1965-01-03",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "갑진 병자 정사 을사",
+"elements": {
+"목": 24.2,
+"화": 35.1,
+"토": 12.5,
+"금": 6.1,
+"수": 22.1
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 48.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|월주",
+"백호살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1992-07-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "임신 정미 병술 병신",
+"elements": {
+"목": 2.1,
+"화": 39.5,
+"토": 27.0,
+"금": 16.0,
+"수": 15.4
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 35.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"문창귀인|시주",
+"백호살|일주",
+"역마살|년주",
+"역마살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1955-02-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "을미 무인 계묘 임자",
+"elements": {
+"목": 38.6,
+"화": 8.1,
+"토": 21.8,
+"금": 0.0,
+"수": 31.6
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 0,
+"관성": 2,
+"인성": 0
+},
+"strength": 21.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|일주",
+"백호살|년주",
+"천을귀인|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2010-12-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "경인 무자 병신 갑오",
+"elements": {
+"목": 16.1,
+"화": 20.4,
+"토": 19.8,
+"금": 18.9,
+"수": 24.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 26.0,
+"gyeokguk": "정관격",
+"shinsal": [
+"문창귀인|일주",
+"양인살|시주",
+"역마살|년주",
+"역마살|일주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1975-09-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:10",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "을묘 갑신 병진 병신",
+"elements": {
+"목": 36.3,
+"화": 21.1,
+"토": 16.8,
+"금": 16.8,
+"수": 8.9
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 3
+},
+"strength": 46.8,
+"gyeokguk": "편재격",
+"shinsal": [
+"문창귀인|시주",
+"문창귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1944-08-07",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "갑신 신미 계묘 ??",
+"elements": {
+"목": 36.0,
+"화": 8.0,
+"토": 19.1,
+"금": 20.4,
+"수": 16.4
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 23.6,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|일주",
+"천을귀인|일주",
+"홍염살|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2018-07-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:34",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "무술 기미 경술 신사",
+"elements": {
+"목": 2.1,
+"화": 14.6,
+"토": 51.9,
+"금": 31.4,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 5
+},
+"strength": 79.1,
+"gyeokguk": "정인격",
+"shinsal": [
+"괴강살|일주",
+"천을귀인|월주",
+"홍염살|년주",
+"홍염살|일주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2003-11-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "계미 계해 임인 병오",
+"elements": {
+"목": 14.4,
+"화": 24.7,
+"토": 18.1,
+"금": 0.0,
+"수": 42.8
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 37.9,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-03-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:45",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "기묘 정묘 기미 경오",
+"elements": {
+"목": 33.2,
+"화": 22.6,
+"토": 33.7,
+"금": 10.5,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 45.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2012-12-12",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "임진 임자 정미 ??",
+"elements": {
+"목": 6.0,
+"화": 19.3,
+"토": 20.0,
+"금": 0.0,
+"수": 54.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 3,
+"인성": 0
+},
+"strength": 12.0,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2021-09-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:02",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "신축 정유 정축 계묘",
+"elements": {
+"목": 10.5,
+"화": 21.1,
+"토": 15.8,
+"금": 34.2,
+"수": 18.4
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 21.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"문창귀인|월주",
+"백호살|일주",
+"천을귀인|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1962-10-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "임인 경술 임오 신해",
+"elements": {
+"목": 8.1,
+"화": 15.6,
+"토": 22.3,
+"금": 27.4,
+"수": 26.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 46.7,
+"gyeokguk": "정인격",
+"shinsal": [
+"문창귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-11-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임자 신해 을축 병술",
+"elements": {
+"목": 15.4,
+"화": 11.6,
+"토": 20.7,
+"금": 15.3,
+"수": 37.0
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 50.0,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|시주",
+"공망|월주",
+"백호살|시주",
+"역마살|월주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2011-10-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "신묘 무술 갑진 경오",
+"elements": {
+"목": 25.8,
+"화": 9.5,
+"토": 35.8,
+"금": 27.4,
+"수": 1.6
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 0
+},
+"strength": 16.8,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"백호살|일주",
+"양인살|년주",
+"홍염살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1967-12-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "정미 임자 무오 기미",
+"elements": {
+"목": 2.1,
+"화": 27.9,
+"토": 38.4,
+"금": 0.0,
+"수": 31.6
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 55.8,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"도화살|월주",
+"양인살|일주",
+"천을귀인|년주",
+"천을귀인|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1988-05-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:14",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "무진 병진 기미 을축",
+"elements": {
+"목": 21.6,
+"화": 15.3,
+"토": 55.8,
+"금": 1.1,
+"수": 6.3
+},
+"groups": {
+"비겁": 5,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 66.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"백호살|년주",
+"홍염살|년주",
+"홍염살|월주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-01-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "계사 을축 무인 갑인",
+"elements": {
+"목": 35.1,
+"화": 11.8,
+"토": 31.8,
+"금": 4.6,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 4,
+"인성": 1
+},
+"strength": 39.3,
+"gyeokguk": "양인격",
+"shinsal": [
+"천을귀인|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1945-04-30",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "을유 경진 기사 ??",
+"elements": {
+"목": 21.3,
+"화": 10.7,
+"토": 34.0,
+"금": 31.3,
+"수": 2.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 39.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|년주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1987-09-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "정묘 무신 기미 무진",
+"elements": {
+"목": 15.3,
+"화": 15.3,
+"토": 52.3,
+"금": 11.2,
+"수": 6.0
+},
+"groups": {
+"비겁": 4,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 59.5,
+"gyeokguk": "상관격",
+"shinsal": [
+"백호살|시주",
+"천을귀인|월주",
+"홍염살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2023-10-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "계묘 임술 정미 ??",
+"elements": {
+"목": 15.3,
+"화": 22.0,
+"토": 28.0,
+"금": 8.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 25.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"백호살|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2017-01-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "병신 신축 신축 무자",
+"elements": {
+"목": 0.0,
+"화": 10.5,
+"토": 35.1,
+"금": 30.4,
+"수": 24.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 3
+},
+"strength": 62.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"문창귀인|시주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2009-11-17",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "기축 을해 병인 ??",
+"elements": {
+"목": 30.2,
+"화": 18.0,
+"토": 32.2,
+"금": 1.3,
+"수": 18.2
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 38.0,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|월주",
+"역마살|월주",
+"천을귀인|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2017-08-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:26",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "정유 무신 경진 계미",
+"elements": {
+"목": 5.8,
+"화": 13.7,
+"토": 31.2,
+"금": 32.3,
+"수": 17.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 3
+},
+"strength": 61.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"괴강살|일주",
+"도화살|년주",
+"양인살|년주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1946-10-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "병술 무술 경신 신사",
+"elements": {
+"목": 0.0,
+"화": 19.3,
+"토": 35.6,
+"금": 41.4,
+"수": 3.7
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 76.0,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|년주",
+"역마살|일주",
+"홍염살|년주",
+"홍염살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2019-04-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:52",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "기해 무진 병술 갑오",
+"elements": {
+"목": 19.3,
+"화": 19.5,
+"토": 48.8,
+"금": 4.7,
+"수": 7.7
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 31.4,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"백호살|월주",
+"백호살|일주",
+"양인살|시주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1947-01-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:45",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "병술 신축 정유 계묘",
+"elements": {
+"목": 10.5,
+"화": 22.1,
+"토": 18.9,
+"금": 31.6,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 22.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|일주",
+"백호살|년주",
+"천을귀인|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1969-11-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "기유 갑술 병술 정유",
+"elements": {
+"목": 10.5,
+"화": 24.7,
+"토": 32.6,
+"금": 32.1,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 25.8,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|일주",
+"천을귀인|년주",
+"천을귀인|시주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2002-07-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "임오 정미 정유 갑진",
+"elements": {
+"목": 15.8,
+"화": 34.7,
+"토": 22.1,
+"금": 15.8,
+"수": 11.6
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 44.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"도화살|년주",
+"문창귀인|일주",
+"백호살|시주",
+"천을귀인|일주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1945-08-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을유 갑신 갑인 기사",
+"elements": {
+"목": 40.0,
+"화": 9.3,
+"토": 21.6,
+"금": 24.2,
+"수": 4.9
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 36.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|시주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1996-06-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:38",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "병자 갑오 무인 무오",
+"elements": {
+"목": 18.9,
+"화": 36.3,
+"토": 34.2,
+"금": 0.0,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 3
+},
+"strength": 70.5,
+"gyeokguk": "편인격",
+"shinsal": [
+"양인살|시주",
+"양인살|월주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1980-05-24",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "경신 신사 정유 ??",
+"elements": {
+"목": 0.0,
+"화": 27.6,
+"토": 9.3,
+"금": 60.0,
+"수": 3.1
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 4,
+"관성": 0,
+"인성": 0
+},
+"strength": 21.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|월주",
+"도화살|일주",
+"문창귀인|일주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2007-12-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "정해 임자 병술 을미",
+"elements": {
+"목": 14.0,
+"화": 25.8,
+"토": 18.2,
+"금": 4.7,
+"수": 37.2
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 29.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"백호살|시주",
+"백호살|일주",
+"천을귀인|년주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1948-08-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "무자 경신 기묘 을해",
+"elements": {
+"목": 28.8,
+"화": 0.0,
+"토": 28.4,
+"금": 21.8,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 20.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"도화살|년주",
+"천을귀인|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2023-08-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "계묘 경신 정미 갑진",
+"elements": {
+"목": 25.8,
+"화": 15.3,
+"토": 20.7,
+"금": 21.8,
+"수": 16.5
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 30.5,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1982-09-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "임술 기유 갑오 을해",
+"elements": {
+"목": 23.5,
+"화": 12.1,
+"토": 24.0,
+"금": 24.2,
+"수": 16.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 29.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"백호살|년주",
+"홍염살|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2019-03-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "기해 정묘 계해 무오",
+"elements": {
+"목": 27.2,
+"화": 17.9,
+"토": 30.4,
+"금": 0.0,
+"수": 24.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 14.0,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1957-08-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:07",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "정유 정미 무신 정사",
+"elements": {
+"목": 2.1,
+"화": 43.5,
+"토": 29.3,
+"금": 21.4,
+"수": 3.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 0,
+"인성": 4
+},
+"strength": 71.8,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|년주",
+"문창귀인|일주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1966-08-11",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "병오 병신 임인 ??",
+"elements": {
+"목": 10.7,
+"화": 40.7,
+"토": 14.9,
+"금": 14.2,
+"수": 19.6
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 30.7,
+"gyeokguk": "편인격",
+"shinsal": [
+"문창귀인|일주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1960-04-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "경자 경진 갑술 ??",
+"elements": {
+"목": 21.3,
+"화": 2.0,
+"토": 28.0,
+"금": 32.7,
+"수": 16.0
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 29.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1981-06-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "신유 갑오 을축 을유",
+"elements": {
+"목": 31.6,
+"화": 14.7,
+"토": 15.8,
+"금": 33.2,
+"수": 4.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 25.8,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|월주",
+"문창귀인|월주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1947-01-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "병술 경자 경진 갑신",
+"elements": {
+"목": 15.3,
+"화": 11.6,
+"토": 18.2,
+"금": 29.8,
+"수": 25.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 37.5,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"백호살|년주",
+"역마살|시주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1978-11-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "무오 계해 신사 을미",
+"elements": {
+"목": 16.5,
+"화": 18.9,
+"토": 28.6,
+"금": 14.2,
+"수": 21.8
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 34.7,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|년주",
+"백호살|시주",
+"역마살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1966-03-12",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "병오 신묘 경오 ??",
+"elements": {
+"목": 26.7,
+"화": 36.7,
+"토": 10.0,
+"금": 26.7,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 23.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1985-10-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:14",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "을축 병술 기해 경오",
+"elements": {
+"목": 14.2,
+"화": 20.0,
+"토": 36.3,
+"금": 17.9,
+"수": 11.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 53.2,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|시주",
+"백호살|월주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-01-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "계사 갑자 신유 갑오",
+"elements": {
+"목": 21.1,
+"화": 13.0,
+"토": 5.6,
+"금": 28.8,
+"수": 31.6
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 23.9,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|월주",
+"도화살|시주",
+"문창귀인|월주",
+"천을귀인|시주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1992-12-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임신 임자 병인 ??",
+"elements": {
+"목": 10.7,
+"화": 18.0,
+"토": 7.8,
+"금": 7.1,
+"수": 56.4
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 1
+},
+"strength": 15.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|년주",
+"역마살|년주",
+"역마살|일주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2022-01-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "신축 신축 신유 신묘",
+"elements": {
+"목": 10.5,
+"화": 0.0,
+"토": 18.9,
+"금": 61.1,
+"수": 9.5
+},
+"groups": {
+"비겁": 4,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 76.8,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"홍염살|일주",
+"화개살|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1995-11-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "을해 정해 기유 을축",
+"elements": {
+"목": 28.4,
+"화": 10.5,
+"토": 24.2,
+"금": 16.8,
+"수": 20.0
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 26.7,
+"gyeokguk": "정재격",
+"shinsal": [
+"문창귀인|일주",
+"역마살|년주",
+"역마살|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2025-06-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:15",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "을사 임오 계해 정사",
+"elements": {
+"목": 14.2,
+"화": 36.5,
+"토": 14.9,
+"금": 4.9,
+"수": 29.5
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 4,
+"관성": 0,
+"인성": 0
+},
+"strength": 23.9,
+"gyeokguk": "편재격",
+"shinsal": [
+"도화살|월주",
+"역마살|년주",
+"역마살|시주",
+"역마살|일주",
+"천을귀인|년주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2001-03-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:07",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "신사 신묘 을해 정해",
+"elements": {
+"목": 37.7,
+"화": 16.1,
+"토": 8.6,
+"금": 23.5,
+"수": 14.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 51.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"역마살|년주",
+"역마살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1961-07-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:57",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "신축 갑오 경자 무인",
+"elements": {
+"목": 16.1,
+"화": 17.2,
+"토": 25.6,
+"금": 22.1,
+"수": 18.9
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 40.4,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|월주",
+"역마살|시주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2017-09-13",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정유 기유 계묘 ??",
+"elements": {
+"목": 20.0,
+"화": 13.3,
+"토": 13.3,
+"금": 40.0,
+"수": 13.3
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 53.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"문창귀인|일주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1970-11-04",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "경술 병술 무자 ??",
+"elements": {
+"목": 0.0,
+"화": 17.3,
+"토": 37.3,
+"금": 25.3,
+"수": 20.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 0,
+"인성": 1
+},
+"strength": 50.7,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1989-12-24",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "기사 병자 무오 ??",
+"elements": {
+"목": 0.0,
+"화": 34.4,
+"토": 35.8,
+"금": 3.1,
+"수": 26.7
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 3
+},
+"strength": 56.9,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"도화살|일주",
+"양인살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2011-12-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:16",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "신묘 경자 정사 갑진",
+"elements": {
+"목": 24.2,
+"화": 18.9,
+"토": 10.0,
+"금": 24.7,
+"수": 22.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 32.6,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|월주",
+"도화살|월주",
+"백호살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1998-11-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:54",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "무인 계해 신미 무자",
+"elements": {
+"목": 12.1,
+"화": 7.2,
+"토": 37.9,
+"금": 10.5,
+"수": 32.3
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 0,
+"인성": 3
+},
+"strength": 40.4,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"도화살|시주",
+"문창귀인|시주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1958-12-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:06",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "무술 계해 임자 무신",
+"elements": {
+"목": 4.9,
+"화": 1.1,
+"토": 34.7,
+"금": 8.8,
+"수": 50.5
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 54.4,
+"gyeokguk": "건록격",
+"shinsal": [
+"양인살|일주",
+"역마살|시주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1984-11-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "갑자 을해 경술 기묘",
+"elements": {
+"목": 36.5,
+"화": 1.6,
+"토": 24.9,
+"금": 15.3,
+"수": 21.8
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 3,
+"관성": 0,
+"인성": 2
+},
+"strength": 32.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"도화살|시주",
+"문창귀인|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1978-03-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:07",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "무오 을묘 기축 임신",
+"elements": {
+"목": 31.6,
+"화": 7.4,
+"토": 36.1,
+"금": 7.2,
+"수": 17.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 33.0,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"도화살|년주",
+"도화살|월주",
+"역마살|시주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1942-10-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "임오 기유 갑오 병인",
+"elements": {
+"목": 16.1,
+"화": 31.4,
+"토": 20.9,
+"금": 21.1,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 16.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"홍염살|년주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1947-02-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:15",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정해 임인 경오 계미",
+"elements": {
+"목": 14.7,
+"화": 29.6,
+"토": 18.4,
+"금": 10.5,
+"수": 26.7
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 20.9,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"문창귀인|년주",
+"천을귀인|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1961-01-30",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "경자 기축 계해 ??",
+"elements": {
+"목": 4.7,
+"화": 0.0,
+"토": 34.0,
+"금": 16.0,
+"수": 45.3
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 53.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"도화살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1949-06-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:29",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "기축 기사 임술 을사",
+"elements": {
+"목": 10.5,
+"화": 18.4,
+"토": 44.2,
+"금": 13.2,
+"수": 13.7
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 4,
+"인성": 0
+},
+"strength": 18.8,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"백호살|일주",
+"천을귀인|시주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2011-09-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "신묘 정유 기묘 갑술",
+"elements": {
+"목": 36.8,
+"화": 11.6,
+"토": 16.8,
+"금": 34.7,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 17.9,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|월주",
+"문창귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1977-06-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "정사 병오 갑진 경오",
+"elements": {
+"목": 15.3,
+"화": 48.8,
+"토": 21.4,
+"금": 13.0,
+"수": 1.6
+},
+"groups": {
+"비겁": 0,
+"식상": 5,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 6.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"도화살|시주",
+"도화살|월주",
+"문창귀인|년주",
+"백호살|일주",
+"홍염살|시주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1956-01-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:07",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을미 기축 신묘 기해",
+"elements": {
+"목": 29.8,
+"화": 3.2,
+"토": 42.5,
+"금": 12.6,
+"수": 11.9
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 4
+},
+"strength": 51.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"백호살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1963-02-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "계묘 갑인 정해 경자",
+"elements": {
+"목": 36.0,
+"화": 15.4,
+"토": 8.6,
+"금": 10.5,
+"수": 29.5
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 3
+},
+"strength": 48.9,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|시주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1993-03-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "계유 을묘 병술 신묘",
+"elements": {
+"목": 42.1,
+"화": 12.1,
+"토": 9.5,
+"금": 25.8,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 54.2,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|시주",
+"도화살|월주",
+"백호살|일주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2002-08-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "임오 무신 신미 갑오",
+"elements": {
+"목": 12.1,
+"화": 19.5,
+"토": 31.2,
+"금": 21.8,
+"수": 15.4
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 50.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"역마살|월주",
+"천을귀인|년주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2015-12-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "을미 무자 임술 경술",
+"elements": {
+"목": 11.6,
+"화": 5.8,
+"토": 32.6,
+"금": 18.4,
+"수": 31.6
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 4,
+"인성": 1
+},
+"strength": 50.0,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|월주",
+"괴강살|일주",
+"도화살|월주",
+"백호살|년주",
+"백호살|일주",
+"양인살|월주",
+"홍염살|월주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1976-12-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "병진 경자 병신 병신",
+"elements": {
+"목": 3.2,
+"화": 31.6,
+"토": 12.5,
+"금": 24.6,
+"수": 28.2
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 0
+},
+"strength": 24.2,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"문창귀인|시주",
+"문창귀인|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2002-02-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:36",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "임오 임인 계축 임술",
+"elements": {
+"목": 11.2,
+"화": 13.3,
+"토": 23.9,
+"금": 4.7,
+"수": 46.8
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 41.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"도화살|년주",
+"백호살|시주",
+"백호살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2017-12-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "정유 신해 계해 을묘",
+"elements": {
+"목": 29.6,
+"화": 10.5,
+"토": 8.6,
+"금": 21.1,
+"수": 30.2
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 46.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|시주",
+"역마살|월주",
+"역마살|일주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-04-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:44",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "기사 무진 계축 임술",
+"elements": {
+"목": 6.3,
+"화": 6.7,
+"토": 51.9,
+"금": 7.2,
+"수": 27.9
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 5,
+"인성": 0
+},
+"strength": 25.6,
+"gyeokguk": "정관격",
+"shinsal": [
+"백호살|시주",
+"백호살|월주",
+"백호살|일주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1948-02-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "무자 갑인 기묘 무진",
+"elements": {
+"목": 40.7,
+"화": 4.9,
+"토": 42.8,
+"금": 0.0,
+"수": 11.6
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 42.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|년주",
+"백호살|시주",
+"역마살|월주",
+"천을귀인|년주",
+"홍염살|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-07-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "임자 정미 신해 기해",
+"elements": {
+"목": 8.2,
+"화": 16.8,
+"토": 29.3,
+"금": 10.5,
+"수": 35.1
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 35.6,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|년주",
+"문창귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1953-04-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:16",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "계사 병진 기해 정묘",
+"elements": {
+"목": 20.5,
+"화": 26.7,
+"토": 29.3,
+"금": 2.5,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 51.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"역마살|년주",
+"역마살|일주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2023-05-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "계묘 정사 병인 무술",
+"elements": {
+"목": 18.9,
+"화": 37.0,
+"토": 25.4,
+"금": 8.1,
+"수": 10.5
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 51.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"도화살|년주",
+"역마살|월주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2023-07-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "계묘 기미 임오 병오",
+"elements": {
+"목": 12.6,
+"화": 35.3,
+"토": 31.1,
+"금": 0.0,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 0
+},
+"strength": 10.5,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|년주",
+"천을귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1949-04-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "기축 무진 정축 기유",
+"elements": {
+"목": 6.3,
+"화": 10.5,
+"토": 60.0,
+"금": 13.2,
+"수": 10.0
+},
+"groups": {
+"비겁": 0,
+"식상": 6,
+"재성": 1,
+"관성": 0,
+"인성": 0
+},
+"strength": 9.5,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"문창귀인|시주",
+"백호살|월주",
+"백호살|일주",
+"천을귀인|시주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1977-04-18",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "정사 갑진 을사 ??",
+"elements": {
+"목": 34.7,
+"화": 31.1,
+"토": 23.8,
+"금": 7.8,
+"수": 2.7
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 0,
+"인성": 0
+},
+"strength": 29.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1983-07-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "계해 기미 을사 ??",
+"elements": {
+"목": 19.1,
+"화": 18.7,
+"토": 37.1,
+"금": 4.7,
+"수": 20.4
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 27.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|년주",
+"역마살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2003-07-09",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "계미 기미 계미 ??",
+"elements": {
+"목": 6.0,
+"화": 18.0,
+"토": 49.3,
+"금": 0.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 4,
+"인성": 0
+},
+"strength": 13.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"화개살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2022-12-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:18",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임인 임자 무오 기미",
+"elements": {
+"목": 6.7,
+"화": 16.7,
+"토": 34.6,
+"금": 0.0,
+"수": 42.1
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 40.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"양인살|일주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1950-02-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "경인 무인 경진 을유",
+"elements": {
+"목": 32.1,
+"화": 7.4,
+"토": 27.4,
+"금": 31.6,
+"수": 1.6
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 3,
+"관성": 0,
+"인성": 2
+},
+"strength": 50.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"괴강살|일주",
+"도화살|시주",
+"양인살|시주",
+"역마살|년주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2012-07-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "임진 병오 정묘 경자",
+"elements": {
+"목": 18.9,
+"화": 35.8,
+"토": 12.6,
+"금": 10.5,
+"수": 22.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 51.6,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2004-04-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "갑신 무진 무오 무오",
+"elements": {
+"목": 16.8,
+"화": 18.4,
+"토": 54.6,
+"금": 5.6,
+"수": 4.6
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 68.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|년주",
+"백호살|월주",
+"양인살|시주",
+"양인살|일주",
+"역마살|년주",
+"홍염살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1965-12-08",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "을사 무자 병신 ??",
+"elements": {
+"목": 13.3,
+"화": 20.4,
+"토": 21.1,
+"금": 13.8,
+"수": 31.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 20.4,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"문창귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2023-10-10",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "계묘 임술 신축 ??",
+"elements": {
+"목": 13.3,
+"화": 2.7,
+"토": 28.0,
+"금": 23.3,
+"수": 32.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 50.0,
+"gyeokguk": "정인격",
+"shinsal": [
+"백호살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2014-04-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "갑오 무진 병오 무술",
+"elements": {
+"목": 16.8,
+"화": 30.0,
+"토": 47.9,
+"금": 3.2,
+"수": 2.1
+},
+"groups": {
+"비겁": 2,
+"식상": 4,
+"재성": 0,
+"관성": 0,
+"인성": 1
+},
+"strength": 39.5,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|월주",
+"양인살|년주",
+"양인살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2023-06-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:52",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "계묘 무오 갑진 신미",
+"elements": {
+"목": 26.8,
+"화": 17.9,
+"토": 32.6,
+"금": 10.5,
+"수": 12.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 28.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"백호살|일주",
+"양인살|년주",
+"천을귀인|시주",
+"홍염살|월주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2025-07-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "을사 임오 병자 을미",
+"elements": {
+"목": 22.1,
+"화": 34.0,
+"토": 15.1,
+"금": 2.5,
+"수": 26.3
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 53.0,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|월주",
+"백호살|시주",
+"양인살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1940-07-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "경진 계미 병인 정유",
+"elements": {
+"목": 13.7,
+"화": 31.1,
+"토": 22.6,
+"금": 21.1,
+"수": 11.6
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 38.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"도화살|시주",
+"역마살|일주",
+"천을귀인|시주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1984-01-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "계해 을축 정미 무신",
+"elements": {
+"목": 14.6,
+"화": 15.3,
+"토": 37.5,
+"금": 7.7,
+"수": 24.9
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 19.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"천을귀인|년주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2024-09-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:11",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "갑진 계유 병신 정유",
+"elements": {
+"목": 13.7,
+"화": 21.1,
+"토": 10.0,
+"금": 40.0,
+"수": 15.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 24.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|년주",
+"도화살|시주",
+"도화살|월주",
+"문창귀인|일주",
+"백호살|년주",
+"천을귀인|시주",
+"천을귀인|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-08-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "기사 신미 을미 병자",
+"elements": {
+"목": 14.2,
+"화": 27.2,
+"토": 35.1,
+"금": 13.0,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 15.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"도화살|시주",
+"백호살|일주",
+"역마살|년주",
+"천을귀인|시주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1954-05-22",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "갑오 기사 무인 ??",
+"elements": {
+"목": 24.0,
+"화": 28.2,
+"토": 41.6,
+"금": 6.2,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 66.7,
+"gyeokguk": "편인격",
+"shinsal": [
+"양인살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1975-05-05",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을묘 경진 신해 ??",
+"elements": {
+"목": 39.3,
+"화": 0.0,
+"토": 20.7,
+"금": 26.7,
+"수": 13.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 42.0,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1995-02-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을해 무인 기사 무진",
+"elements": {
+"목": 27.4,
+"화": 13.3,
+"토": 48.9,
+"금": 3.7,
+"수": 6.7
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 56.7,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"역마살|년주",
+"역마살|일주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1940-11-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "경진 정해 임신 정미",
+"elements": {
+"목": 9.1,
+"화": 24.2,
+"토": 21.2,
+"금": 18.9,
+"수": 26.5
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 2
+},
+"strength": 40.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1941-12-13",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "신사 경자 을미 ??",
+"elements": {
+"목": 15.3,
+"화": 13.1,
+"토": 15.1,
+"금": 29.8,
+"수": 26.7
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 42.0,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"도화살|월주",
+"백호살|일주",
+"역마살|년주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1968-01-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "정미 계축 병신 무술",
+"elements": {
+"목": 1.1,
+"화": 25.3,
+"토": 39.5,
+"금": 13.7,
+"수": 20.5
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 15.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"문창귀인|일주",
+"백호살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1982-06-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "임술 병오 무진 임자",
+"elements": {
+"목": 4.7,
+"화": 26.3,
+"토": 32.6,
+"금": 3.2,
+"수": 33.2
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 3,
+"관성": 0,
+"인성": 2
+},
+"strength": 58.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"백호살|년주",
+"백호살|일주",
+"양인살|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1958-01-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:32",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "정유 계축 병술 을미",
+"elements": {
+"목": 11.6,
+"화": 25.8,
+"토": 28.4,
+"금": 17.4,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 26.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|시주",
+"백호살|시주",
+"백호살|월주",
+"백호살|일주",
+"천을귀인|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1972-05-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:16",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "임자 갑진 임진 경술",
+"elements": {
+"목": 21.6,
+"화": 1.1,
+"토": 28.4,
+"금": 13.7,
+"수": 35.3
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 39.5,
+"gyeokguk": "편관격",
+"shinsal": [
+"괴강살|일주",
+"백호살|월주",
+"양인살|년주",
+"홍염살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1994-12-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:24",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "갑술 병자 무인 임술",
+"elements": {
+"목": 18.9,
+"화": 16.3,
+"토": 26.8,
+"금": 6.3,
+"수": 31.6
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 32.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"백호살|시주",
+"화개살|년주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-03-15",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "갑오 정묘 경오 ??",
+"elements": {
+"목": 40.0,
+"화": 36.7,
+"토": 10.0,
+"금": 13.3,
+"수": 0.0
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 2,
+"관성": 3,
+"인성": 0
+},
+"strength": 10.0,
+"gyeokguk": "편재격",
+"shinsal": [
+"도화살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1951-02-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:06",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "신묘 경인 병술 무술",
+"elements": {
+"목": 21.8,
+"화": 18.1,
+"토": 31.2,
+"금": 28.9,
+"수": 0.0
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 37.4,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|년주",
+"백호살|일주",
+"홍염살|월주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1948-08-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "무자 경신 병자 경인",
+"elements": {
+"목": 5.6,
+"화": 13.0,
+"토": 17.9,
+"금": 32.3,
+"수": 31.2
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 1
+},
+"strength": 8.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"문창귀인|월주",
+"역마살|시주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1962-01-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "신축 신축 을축 을유",
+"elements": {
+"목": 21.1,
+"화": 0.0,
+"토": 28.4,
+"금": 36.3,
+"수": 14.2
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 3,
+"관성": 3,
+"인성": 0
+},
+"strength": 27.9,
+"gyeokguk": "편관격",
+"shinsal": [
+"화개살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1967-12-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "정미 임자 병진 계사",
+"elements": {
+"목": 5.8,
+"화": 29.8,
+"토": 18.2,
+"금": 2.5,
+"수": 43.7
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 0,
+"관성": 3,
+"인성": 0
+},
+"strength": 25.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|월주",
+"도화살|월주",
+"역마살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1942-05-09",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "임오 을사 임술 ??",
+"elements": {
+"목": 13.3,
+"화": 25.6,
+"토": 22.2,
+"금": 12.2,
+"수": 26.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 28.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"괴강살|일주",
+"백호살|일주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1997-12-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "정축 신해 무인 경신",
+"elements": {
+"목": 13.3,
+"화": 14.2,
+"토": 27.9,
+"금": 27.7,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 34.0,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"문창귀인|시주",
+"백호살|년주",
+"역마살|시주",
+"역마살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2014-08-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "갑오 임신 임자 갑진",
+"elements": {
+"목": 24.2,
+"화": 7.4,
+"토": 14.4,
+"금": 11.2,
+"수": 42.8
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 51.6,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|시주",
+"양인살|일주",
+"역마살|월주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-04-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "정축 갑진 신축 임진",
+"elements": {
+"목": 20.0,
+"화": 10.5,
+"토": 34.7,
+"금": 13.2,
+"수": 21.6
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 4
+},
+"strength": 43.7,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|시주",
+"공망|월주",
+"백호살|년주",
+"백호살|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-02-03",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:01",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "계미 을축 임자 임인",
+"elements": {
+"목": 17.2,
+"화": 5.6,
+"토": 21.4,
+"금": 2.1,
+"수": 53.7
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 0
+},
+"strength": 49.5,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|시주",
+"도화살|일주",
+"문창귀인|시주",
+"양인살|일주",
+"역마살|시주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2002-08-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "임오 무신 임자 기유",
+"elements": {
+"목": 0.0,
+"화": 7.4,
+"토": 29.1,
+"금": 21.8,
+"수": 41.8
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 61.1,
+"gyeokguk": "편관격",
+"shinsal": [
+"도화살|시주",
+"양인살|일주",
+"역마살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1969-08-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "기유 신미 임자 기유",
+"elements": {
+"목": 2.1,
+"화": 6.3,
+"토": 33.7,
+"금": 31.6,
+"수": 26.3
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 3
+},
+"strength": 47.4,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|년주",
+"도화살|시주",
+"양인살|일주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1991-01-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "경오 기축 신축 계사",
+"elements": {
+"목": 0.0,
+"화": 13.0,
+"토": 38.2,
+"금": 27.2,
+"수": 21.6
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 62.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"도화살|년주",
+"천을귀인|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2014-07-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "갑오 신미 임인 계묘",
+"elements": {
+"목": 31.6,
+"화": 17.4,
+"토": 19.5,
+"금": 10.5,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 21.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|일주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2007-05-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:46",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "정해 을사 무신 신유",
+"elements": {
+"목": 13.0,
+"화": 21.8,
+"토": 21.6,
+"금": 34.4,
+"수": 9.3
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 40.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|일주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1999-11-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:25",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "기묘 을해 갑술 기사",
+"elements": {
+"목": 36.5,
+"화": 7.2,
+"토": 37.9,
+"금": 7.2,
+"수": 11.2
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 45.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|년주",
+"문창귀인|시주",
+"양인살|년주",
+"역마살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2003-07-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:01",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "계미 기미 병신 기해",
+"elements": {
+"목": 5.6,
+"화": 20.0,
+"토": 46.1,
+"금": 8.4,
+"수": 19.8
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 19.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"문창귀인|일주",
+"천을귀인|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1988-05-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "무진 정사 무진 계해",
+"elements": {
+"목": 10.4,
+"화": 21.8,
+"토": 44.2,
+"금": 4.9,
+"수": 18.8
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 63.5,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"백호살|년주",
+"백호살|일주",
+"홍염살|년주",
+"홍염살|일주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1952-02-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:49",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "임진 임인 신묘 정유",
+"elements": {
+"목": 30.2,
+"화": 15.4,
+"토": 11.2,
+"금": 21.1,
+"수": 22.1
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 24.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|시주",
+"역마살|월주",
+"천을귀인|월주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1954-03-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "갑오 정묘 신사 기해",
+"elements": {
+"목": 34.0,
+"화": 26.3,
+"토": 19.8,
+"금": 14.2,
+"수": 5.6
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 3,
+"인성": 1
+},
+"strength": 23.5,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|년주",
+"도화살|월주",
+"역마살|시주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1948-12-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "무자 갑자 무진 무오",
+"elements": {
+"목": 15.3,
+"화": 7.4,
+"토": 44.2,
+"금": 0.0,
+"수": 33.2
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 41.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|일주",
+"양인살|시주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2005-03-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "을유 기묘 갑오 기사",
+"elements": {
+"목": 42.1,
+"화": 16.7,
+"토": 28.2,
+"금": 13.0,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 42.1,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"도화살|일주",
+"문창귀인|시주",
+"양인살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1976-02-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "병진 경인 신축 경인",
+"elements": {
+"목": 20.0,
+"화": 17.9,
+"토": 23.2,
+"금": 33.2,
+"수": 5.8
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 48.2,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"역마살|시주",
+"역마살|월주",
+"천을귀인|시주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1973-08-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "계축 경신 기축 정묘",
+"elements": {
+"목": 10.5,
+"화": 10.5,
+"토": 31.2,
+"금": 24.4,
+"수": 23.3
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 33.7,
+"gyeokguk": "상관격",
+"shinsal": [
+"백호살|년주",
+"천을귀인|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2006-07-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:46",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "병술 을미 계묘 무오",
+"elements": {
+"목": 28.4,
+"화": 25.3,
+"토": 32.6,
+"금": 3.2,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 3,
+"인성": 0
+},
+"strength": 3.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|일주",
+"문창귀인|일주",
+"백호살|년주",
+"백호살|월주",
+"천을귀인|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2004-07-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "갑신 신미 정유 신해",
+"elements": {
+"목": 15.1,
+"화": 16.8,
+"토": 17.5,
+"금": 42.5,
+"수": 8.1
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 4,
+"관성": 1,
+"인성": 1
+},
+"strength": 25.6,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|일주",
+"문창귀인|일주",
+"역마살|시주",
+"천을귀인|시주",
+"천을귀인|일주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-03-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "갑오 정묘 기묘 계유",
+"elements": {
+"목": 47.4,
+"화": 17.9,
+"토": 13.7,
+"금": 10.5,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 21.1,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"도화살|일주",
+"문창귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2008-11-20",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "무자 계해 갑자 ??",
+"elements": {
+"목": 19.6,
+"화": 0.0,
+"토": 19.6,
+"금": 0.0,
+"수": 60.9
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 4
+},
+"strength": 77.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1998-06-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "무인 정사 갑신 병인",
+"elements": {
+"목": 21.8,
+"화": 37.2,
+"토": 24.0,
+"금": 13.3,
+"수": 3.7
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 14.9,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"역마살|년주",
+"역마살|시주",
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1984-08-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "갑자 임신 을해 병자",
+"elements": {
+"목": 24.7,
+"화": 10.5,
+"토": 8.6,
+"금": 11.2,
+"수": 44.9
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 1,
+"인성": 4
+},
+"strength": 61.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"도화살|년주",
+"도화살|시주",
+"천을귀인|년주",
+"천을귀인|시주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-04-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:57",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "정축 갑진 정해 무신",
+"elements": {
+"목": 20.5,
+"화": 21.1,
+"토": 35.6,
+"금": 6.7,
+"수": 16.1
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 34.2,
+"gyeokguk": "상관격",
+"shinsal": [
+"백호살|년주",
+"백호살|월주",
+"역마살|일주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2015-09-08",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:40",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "을미 을유 정해 무신",
+"elements": {
+"목": 25.8,
+"화": 13.7,
+"토": 23.0,
+"금": 26.7,
+"수": 10.9
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 28.9,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"문창귀인|월주",
+"백호살|년주",
+"천을귀인|월주",
+"천을귀인|일주",
+"홍염살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-06-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:44",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "기묘 경오 신해 을미",
+"elements": {
+"목": 25.8,
+"화": 17.9,
+"토": 26.8,
+"금": 21.1,
+"수": 8.4
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 40.5,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"천을귀인|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1974-06-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "갑인 경오 기해 계유",
+"elements": {
+"목": 19.8,
+"화": 17.2,
+"토": 23.0,
+"금": 21.1,
+"수": 18.9
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 40.2,
+"gyeokguk": "편인격",
+"shinsal": [
+"문창귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1969-11-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "기유 을해 임인 정미",
+"elements": {
+"목": 24.9,
+"화": 17.4,
+"토": 25.4,
+"금": 10.5,
+"수": 21.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 27.4,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|일주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-01-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:14",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "신해 신축 을사 경진",
+"elements": {
+"목": 16.1,
+"화": 8.4,
+"토": 25.1,
+"금": 37.4,
+"수": 13.0
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 3,
+"인성": 1
+},
+"strength": 21.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"역마살|년주",
+"역마살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1948-02-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:13",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "무자 갑인 임신 기유",
+"elements": {
+"목": 21.8,
+"화": 4.9,
+"토": 29.6,
+"금": 18.9,
+"수": 24.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 33.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|월주",
+"양인살|년주",
+"역마살|월주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1978-11-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "무오 계해 기묘 임신",
+"elements": {
+"목": 20.7,
+"화": 7.4,
+"토": 31.6,
+"금": 5.6,
+"수": 34.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 1,
+"인성": 1
+},
+"strength": 30.9,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|시주",
+"도화살|일주",
+"역마살|시주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2025-08-28",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "을사 갑신 기사 ??",
+"elements": {
+"목": 26.7,
+"화": 17.8,
+"토": 27.3,
+"금": 22.0,
+"수": 6.2
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 34.9,
+"gyeokguk": "상관격",
+"shinsal": [
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-05-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "기묘 기사 무오 정사",
+"elements": {
+"목": 10.5,
+"화": 38.4,
+"토": 43.7,
+"금": 7.4,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 4
+},
+"strength": 79.6,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|년주",
+"양인살|일주",
+"역마살|시주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1952-12-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "임진 임자 무술 계축",
+"elements": {
+"목": 3.2,
+"화": 1.6,
+"토": 32.6,
+"금": 5.8,
+"수": 56.8
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 4,
+"관성": 0,
+"인성": 0
+},
+"strength": 23.7,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"백호살|시주",
+"천을귀인|시주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1965-08-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:38",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "을사 갑신 갑인 갑술",
+"elements": {
+"목": 50.5,
+"화": 10.4,
+"토": 17.4,
+"금": 16.8,
+"수": 4.9
+},
+"groups": {
+"비겁": 4,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 47.4,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|년주",
+"역마살|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2015-02-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:54",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "을미 무인 을축 갑신",
+"elements": {
+"목": 43.9,
+"화": 8.1,
+"토": 33.7,
+"금": 7.2,
+"수": 7.2
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 0
+},
+"strength": 46.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|년주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1963-11-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:37",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "계묘 계해 신미 병신",
+"elements": {
+"목": 17.0,
+"화": 15.3,
+"토": 16.8,
+"금": 16.1,
+"수": 34.7
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 24.9,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1992-03-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:49",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "임신 계묘 무술 기미",
+"elements": {
+"목": 22.1,
+"화": 4.7,
+"토": 39.3,
+"금": 10.4,
+"수": 23.5
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 33.5,
+"gyeokguk": "정관격",
+"shinsal": [
+"괴강살|일주",
+"도화살|월주",
+"문창귀인|년주",
+"역마살|년주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2008-04-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "무자 병진 신묘 무자",
+"elements": {
+"목": 22.1,
+"화": 10.5,
+"토": 33.7,
+"금": 10.5,
+"수": 23.2
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 3
+},
+"strength": 40.0,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|년주",
+"도화살|시주",
+"문창귀인|년주",
+"문창귀인|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1967-08-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "정미 정미 임인 갑진",
+"elements": {
+"목": 25.3,
+"화": 34.2,
+"토": 28.9,
+"금": 0.0,
+"수": 11.6
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 3,
+"인성": 0
+},
+"strength": 1.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|시주",
+"문창귀인|일주",
+"백호살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1945-09-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "을유 을유 병신 무술",
+"elements": {
+"목": 21.1,
+"화": 11.6,
+"토": 20.5,
+"금": 43.2,
+"수": 3.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 3,
+"관성": 0,
+"인성": 2
+},
+"strength": 22.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|년주",
+"도화살|월주",
+"문창귀인|일주",
+"천을귀인|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-10-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "정축 경술 무자 병진",
+"elements": {
+"목": 3.2,
+"화": 23.2,
+"토": 35.8,
+"금": 17.9,
+"수": 20.0
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 55.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|년주",
+"천을귀인|년주",
+"홍염살|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2025-04-26",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을사 경진 을축 ??",
+"elements": {
+"목": 34.7,
+"화": 7.1,
+"토": 31.1,
+"금": 18.4,
+"수": 8.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 35.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1950-12-03",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경인 정해 임신 경자",
+"elements": {
+"목": 10.5,
+"화": 13.0,
+"토": 11.1,
+"금": 29.5,
+"수": 36.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 0,
+"인성": 3
+},
+"strength": 60.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"양인살|시주",
+"역마살|년주",
+"역마살|일주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1958-11-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "무술 계해 신묘 정유",
+"elements": {
+"목": 20.7,
+"화": 11.6,
+"토": 21.8,
+"금": 24.2,
+"수": 21.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 37.9,
+"gyeokguk": "정인격",
+"shinsal": [
+"도화살|일주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-12-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "정축 임자 경자 경진",
+"elements": {
+"목": 3.2,
+"화": 10.5,
+"토": 12.6,
+"금": 22.1,
+"수": 51.6
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 24.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"백호살|년주",
+"천을귀인|년주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1988-03-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:47",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "무진 을묘 갑자 을해",
+"elements": {
+"목": 58.2,
+"화": 0.0,
+"토": 19.3,
+"금": 0.0,
+"수": 22.5
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 80.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|시주",
+"백호살|년주",
+"양인살|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1988-09-22",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "무진 신유 경진 ??",
+"elements": {
+"목": 10.0,
+"화": 0.0,
+"토": 33.3,
+"금": 53.3,
+"수": 3.3
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 0,
+"인성": 3
+},
+"strength": 86.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|월주",
+"괴강살|일주",
+"도화살|월주",
+"백호살|년주",
+"양인살|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2006-03-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:59",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "병술 신묘 갑오 계유",
+"elements": {
+"목": 31.6,
+"화": 22.6,
+"토": 11.1,
+"금": 24.2,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 42.1,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|월주",
+"백호살|년주",
+"양인살|월주",
+"홍염살|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1969-04-06",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "기유 무진 신해 ??",
+"elements": {
+"목": 12.7,
+"화": 0.0,
+"토": 47.3,
+"금": 26.7,
+"수": 13.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 0,
+"인성": 3
+},
+"strength": 68.7,
+"gyeokguk": "정인격",
+"shinsal": [
+"백호살|월주",
+"역마살|일주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1984-07-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "갑자 신미 임술 병오",
+"elements": {
+"목": 12.6,
+"화": 25.8,
+"토": 25.3,
+"금": 15.3,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 25.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"백호살|일주",
+"양인살|년주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1970-08-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "경술 갑신 신미 계사",
+"elements": {
+"목": 12.1,
+"화": 11.4,
+"토": 23.2,
+"금": 37.9,
+"수": 15.4
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 58.6,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"역마살|시주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1975-09-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:45",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "을묘 갑신 경술 무인",
+"elements": {
+"목": 37.2,
+"화": 4.0,
+"토": 27.4,
+"금": 26.5,
+"수": 4.9
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 4,
+"관성": 0,
+"인성": 2
+},
+"strength": 51.4,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"괴강살|일주",
+"도화살|년주",
+"역마살|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1966-01-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:29",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "을사 무자 갑자 을축",
+"elements": {
+"목": 31.6,
+"화": 5.6,
+"토": 19.3,
+"금": 3.5,
+"수": 40.0
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 71.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"문창귀인|년주",
+"천을귀인|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1950-09-18",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "경인 을유 병진 ??",
+"elements": {
+"목": 26.4,
+"화": 16.4,
+"토": 15.1,
+"금": 40.0,
+"수": 2.0
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 29.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"도화살|월주",
+"역마살|년주",
+"천을귀인|월주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1984-04-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "갑자 무진 갑오 갑자",
+"elements": {
+"목": 37.9,
+"화": 11.1,
+"토": 27.9,
+"금": 0.0,
+"수": 23.2
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 54.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"백호살|월주",
+"홍염살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-07-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:11",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "갑신 신미 갑오 계유",
+"elements": {
+"목": 23.2,
+"화": 17.4,
+"토": 19.8,
+"금": 26.7,
+"수": 13.0
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 1
+},
+"strength": 26.7,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|시주",
+"역마살|년주",
+"천을귀인|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2024-05-23",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "갑진 기사 정해 ??",
+"elements": {
+"목": 22.0,
+"화": 27.6,
+"토": 32.2,
+"금": 6.2,
+"수": 12.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 43.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|년주",
+"역마살|월주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1987-01-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "병인 신축 병진 을미",
+"elements": {
+"목": 21.9,
+"화": 26.7,
+"토": 30.9,
+"금": 12.6,
+"수": 7.9
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 38.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"백호살|시주",
+"역마살|년주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-01-03",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "무인 갑자 을묘 ??",
+"elements": {
+"목": 53.8,
+"화": 3.1,
+"토": 16.4,
+"금": 0.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 1
+},
+"strength": 80.4,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|월주",
+"도화살|월주",
+"도화살|일주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1976-06-28",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "병진 갑오 신해 ??",
+"elements": {
+"목": 22.0,
+"화": 32.0,
+"토": 20.7,
+"금": 13.3,
+"수": 12.0
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 24.7,
+"gyeokguk": "정관격",
+"shinsal": [
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1965-10-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "을사 을유 임진 갑진",
+"elements": {
+"목": 39.5,
+"화": 5.6,
+"토": 18.2,
+"금": 23.5,
+"수": 13.2
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 36.7,
+"gyeokguk": "정인격",
+"shinsal": [
+"괴강살|일주",
+"도화살|월주",
+"백호살|시주",
+"천을귀인|년주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1960-04-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "경자 경진 을해 을유",
+"elements": {
+"목": 31.1,
+"화": 0.0,
+"토": 16.3,
+"금": 31.6,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 45.8,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|시주",
+"도화살|년주",
+"도화살|시주",
+"천을귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1986-05-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "병인 계사 무오 임자",
+"elements": {
+"목": 5.6,
+"화": 35.3,
+"토": 22.6,
+"금": 4.9,
+"수": 31.6
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 3
+},
+"strength": 55.4,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"양인살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2017-06-22",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "정유 병오 경진 ??",
+"elements": {
+"목": 6.0,
+"화": 45.3,
+"토": 20.0,
+"금": 26.7,
+"수": 2.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 37.3,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"도화살|년주",
+"도화살|월주",
+"양인살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1969-03-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "기유 정묘 신묘 임진",
+"elements": {
+"목": 40.0,
+"화": 10.5,
+"토": 16.8,
+"금": 21.1,
+"수": 11.6
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 27.4,
+"gyeokguk": "편재격",
+"shinsal": [
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1966-02-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "병오 경인 병오 경인",
+"elements": {
+"목": 16.8,
+"화": 46.8,
+"토": 15.3,
+"금": 21.1,
+"수": 0.0
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 61.2,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|시주",
+"공망|월주",
+"양인살|년주",
+"양인살|일주",
+"홍염살|시주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1986-09-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "병인 정유 무진 임술",
+"elements": {
+"목": 10.4,
+"화": 24.6,
+"토": 28.8,
+"금": 24.2,
+"수": 12.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 42.8,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"백호살|시주",
+"백호살|일주",
+"역마살|년주",
+"홍염살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2005-02-21",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "을유 무인 병자 ??",
+"elements": {
+"목": 27.6,
+"화": 19.6,
+"토": 19.6,
+"금": 13.3,
+"수": 20.0
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 44.0,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|년주",
+"도화살|년주",
+"역마살|월주",
+"천을귀인|년주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1948-10-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "무자 신유 임술 무신",
+"elements": {
+"목": 0.0,
+"화": 1.6,
+"토": 33.0,
+"금": 41.9,
+"수": 23.5
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 3
+},
+"strength": 65.4,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"도화살|월주",
+"백호살|일주",
+"양인살|년주",
+"역마살|시주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1940-06-03",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:43",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "경진 신사 정축 계묘",
+"elements": {
+"목": 13.7,
+"화": 21.8,
+"토": 20.7,
+"금": 27.5,
+"수": 16.3
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 30.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2005-09-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "을유 갑신 갑오 기사",
+"elements": {
+"목": 31.6,
+"화": 16.7,
+"토": 22.6,
+"금": 24.2,
+"수": 4.9
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 28.4,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|시주",
+"도화살|일주",
+"문창귀인|시주",
+"역마살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1989-06-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "기사 경오 갑진 경오",
+"elements": {
+"목": 15.3,
+"화": 27.7,
+"토": 31.9,
+"금": 23.5,
+"수": 1.6
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 6.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|시주",
+"도화살|월주",
+"문창귀인|년주",
+"백호살|일주",
+"홍염살|시주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-11-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "갑오 을해 기축 병인",
+"elements": {
+"목": 31.6,
+"화": 20.4,
+"토": 30.5,
+"금": 1.6,
+"수": 16.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 42.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"도화살|년주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2021-02-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:49",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "신축 경인 임인 기유",
+"elements": {
+"목": 19.6,
+"화": 8.6,
+"토": 25.4,
+"금": 32.6,
+"수": 13.7
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 35.8,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"문창귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1957-04-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:44",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "정유 갑진 정사 갑진",
+"elements": {
+"목": 30.5,
+"화": 29.5,
+"토": 22.6,
+"금": 14.2,
+"수": 3.2
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 52.6,
+"gyeokguk": "상관격",
+"shinsal": [
+"문창귀인|년주",
+"백호살|시주",
+"백호살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1966-07-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "병오 갑오 갑자 무진",
+"elements": {
+"목": 24.2,
+"화": 32.6,
+"토": 26.3,
+"금": 0.0,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 30.5,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|시주",
+"홍염살|년주",
+"홍염살|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1978-09-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "무오 신유 신묘 신묘",
+"elements": {
+"목": 26.3,
+"화": 7.4,
+"토": 13.7,
+"금": 52.6,
+"수": 0.0
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 66.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"도화살|시주",
+"도화살|일주",
+"천을귀인|년주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1984-06-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:49",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "갑자 기사 병인 계사",
+"elements": {
+"목": 18.9,
+"화": 31.1,
+"토": 21.6,
+"금": 7.4,
+"수": 21.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 45.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"역마살|일주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1959-06-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "기해 경오 병인 무술",
+"elements": {
+"목": 10.9,
+"화": 30.0,
+"토": 39.8,
+"금": 13.7,
+"수": 5.6
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 37.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"양인살|월주",
+"천을귀인|년주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1996-02-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:35",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "병자 경인 임신 갑진",
+"elements": {
+"목": 24.9,
+"화": 15.4,
+"토": 14.9,
+"금": 18.9,
+"수": 25.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 34.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"백호살|시주",
+"양인살|년주",
+"역마살|월주",
+"홍염살|년주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1955-02-24",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "을미 무인 병진 ??",
+"elements": {
+"목": 34.9,
+"화": 23.6,
+"토": 39.6,
+"금": 0.0,
+"수": 2.0
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 0,
+"관성": 0,
+"인성": 2
+},
+"strength": 55.3,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|년주",
+"역마살|월주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2017-02-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:08",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "정유 임인 갑자 경오",
+"elements": {
+"목": 21.8,
+"화": 22.8,
+"토": 8.1,
+"금": 21.1,
+"수": 26.3
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 2,
+"인성": 2
+},
+"strength": 43.2,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|년주",
+"도화살|시주",
+"역마살|월주",
+"홍염살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2001-11-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "신사 기해 정축 기유",
+"elements": {
+"목": 4.9,
+"화": 16.1,
+"토": 37.9,
+"금": 25.1,
+"수": 16.0
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 13.0,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|시주",
+"문창귀인|시주",
+"백호살|일주",
+"역마살|월주",
+"천을귀인|시주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1940-02-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:30",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "경진 무인 무술 신유",
+"elements": {
+"목": 14.4,
+"화": 6.5,
+"토": 41.8,
+"금": 36.3,
+"수": 1.1
+},
+"groups": {
+"비겁": 3,
+"식상": 3,
+"재성": 0,
+"관성": 1,
+"인성": 0
+},
+"strength": 42.6,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"도화살|시주",
+"역마살|월주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1941-11-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:26",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "신사 무술 기미 계유",
+"elements": {
+"목": 1.6,
+"화": 12.5,
+"토": 45.6,
+"금": 29.8,
+"수": 10.5
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 1
+},
+"strength": 54.9,
+"gyeokguk": "건록격",
+"shinsal": [
+"문창귀인|시주",
+"역마살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1946-11-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "병술 기해 정미 계묘",
+"elements": {
+"목": 17.0,
+"화": 26.8,
+"토": 31.2,
+"금": 3.2,
+"수": 21.8
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 35.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|시주",
+"도화살|시주",
+"백호살|년주",
+"천을귀인|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1946-02-18",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "병술 경인 계해 ??",
+"elements": {
+"목": 18.9,
+"화": 20.9,
+"토": 18.9,
+"금": 17.3,
+"수": 24.0
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 28.0,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1992-02-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임신 임인 경술 정해",
+"elements": {
+"목": 13.7,
+"화": 17.0,
+"토": 19.3,
+"금": 20.9,
+"수": 29.1
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 32.1,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|월주",
+"괴강살|일주",
+"문창귀인|시주",
+"역마살|년주",
+"역마살|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1976-06-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "병진 갑오 신해 을미",
+"elements": {
+"목": 28.9,
+"화": 28.4,
+"토": 22.6,
+"금": 10.5,
+"수": 9.5
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 2
+},
+"strength": 25.8,
+"gyeokguk": "정관격",
+"shinsal": [
+"백호살|시주",
+"천을귀인|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1951-03-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:38",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "신묘 신묘 갑자 임신",
+"elements": {
+"목": 42.1,
+"화": 0.0,
+"토": 2.5,
+"금": 26.7,
+"수": 28.8
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 3,
+"인성": 2
+},
+"strength": 70.9,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|일주",
+"양인살|년주",
+"양인살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2011-04-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:13",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "신묘 임진 을사 계미",
+"elements": {
+"목": 28.4,
+"화": 11.6,
+"토": 22.6,
+"금": 14.2,
+"수": 23.2
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 2
+},
+"strength": 45.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"역마살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1943-03-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:16",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "계미 을묘 갑술 갑자",
+"elements": {
+"목": 53.7,
+"화": 4.7,
+"토": 15.8,
+"금": 4.7,
+"수": 21.1
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 74.7,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|시주",
+"도화살|월주",
+"양인살|월주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1958-06-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:11",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "무술 무오 병인 을미",
+"elements": {
+"목": 20.0,
+"화": 33.2,
+"토": 43.7,
+"금": 3.2,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 0,
+"관성": 0,
+"인성": 2
+},
+"strength": 50.0,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"양인살|월주",
+"홍염살|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1965-04-13",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "을사 경진 정유 ??",
+"elements": {
+"목": 21.3,
+"화": 20.4,
+"토": 19.1,
+"금": 36.4,
+"수": 2.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 32.4,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"문창귀인|일주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-05-25",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "기사 기사 을유 ??",
+"elements": {
+"목": 13.3,
+"화": 21.3,
+"토": 36.0,
+"금": 29.3,
+"수": 0.0
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 0.0,
+"gyeokguk": "상관격",
+"shinsal": []
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1981-05-17",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "신유 계사 을미 ??",
+"elements": {
+"목": 15.3,
+"화": 20.2,
+"토": 18.2,
+"금": 32.9,
+"수": 13.3
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 15.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"백호살|일주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1942-12-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "임오 임자 경자 경진",
+"elements": {
+"목": 3.2,
+"화": 7.4,
+"토": 9.5,
+"금": 21.1,
+"수": 58.9
+},
+"groups": {
+"비겁": 1,
+"식상": 4,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 20.0,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1945-06-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "을유 임오 갑인 무진",
+"elements": {
+"목": 32.6,
+"화": 18.4,
+"토": 26.8,
+"금": 10.5,
+"수": 11.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 33.7,
+"gyeokguk": "상관격",
+"shinsal": [
+"도화살|월주",
+"백호살|시주",
+"홍염살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1954-02-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "갑오 병인 갑인 임신",
+"elements": {
+"목": 40.7,
+"화": 26.5,
+"토": 14.2,
+"금": 5.6,
+"수": 13.0
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 48.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"역마살|시주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1983-09-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:40",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "계해 신유 정사 신축",
+"elements": {
+"목": 2.5,
+"화": 18.9,
+"토": 12.5,
+"금": 46.8,
+"수": 19.3
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 0
+},
+"strength": 10.9,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"문창귀인|월주",
+"역마살|년주",
+"역마살|일주",
+"천을귀인|년주",
+"천을귀인|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1974-11-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "갑인 을해 신미 기축",
+"elements": {
+"목": 33.2,
+"화": 7.2,
+"토": 33.7,
+"금": 11.6,
+"수": 14.4
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 0,
+"인성": 3
+},
+"strength": 37.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"천을귀인|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1964-10-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "06:06",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "갑진 갑술 신묘 신묘",
+"elements": {
+"목": 50.5,
+"화": 2.1,
+"토": 18.9,
+"금": 27.4,
+"수": 1.1
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 4,
+"관성": 0,
+"인성": 2
+},
+"strength": 45.3,
+"gyeokguk": "정인격",
+"shinsal": [
+"백호살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1985-03-21",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "을축 기묘 기미 ??",
+"elements": {
+"목": 42.0,
+"화": 6.0,
+"토": 46.7,
+"금": 1.3,
+"수": 4.0
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 0
+},
+"strength": 39.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1972-09-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "임자 기유 갑자 을축",
+"elements": {
+"목": 21.1,
+"화": 0.0,
+"토": 16.8,
+"금": 22.1,
+"수": 40.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 50.5,
+"gyeokguk": "정관격",
+"shinsal": [
+"도화살|월주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1976-01-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:45",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "을묘 기축 무진 무오",
+"elements": {
+"목": 25.8,
+"화": 7.4,
+"토": 56.8,
+"금": 2.1,
+"수": 7.9
+},
+"groups": {
+"비겁": 4,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 1
+},
+"strength": 60.0,
+"gyeokguk": "양인격",
+"shinsal": [
+"백호살|일주",
+"양인살|시주",
+"천을귀인|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-03-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:52",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "임자 계묘 임인 을사",
+"elements": {
+"목": 40.0,
+"화": 9.3,
+"토": 6.1,
+"금": 2.5,
+"수": 42.1
+},
+"groups": {
+"비겁": 3,
+"식상": 3,
+"재성": 1,
+"관성": 0,
+"인성": 0
+},
+"strength": 34.0,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"도화살|월주",
+"문창귀인|일주",
+"양인살|년주",
+"역마살|일주",
+"천을귀인|시주",
+"천을귀인|월주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2006-02-14",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:21",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "병술 경인 갑술 병인",
+"elements": {
+"목": 27.4,
+"화": 31.1,
+"토": 23.2,
+"금": 18.4,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 0
+},
+"strength": 22.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|년주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1990-03-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경오 기묘 계유 기미",
+"elements": {
+"목": 22.1,
+"화": 10.5,
+"토": 30.5,
+"금": 26.3,
+"수": 10.5
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 26.3,
+"gyeokguk": "식신격",
+"shinsal": [
+"도화살|년주",
+"도화살|월주",
+"문창귀인|월주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1948-06-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "05:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "무자 무오 병술 경인",
+"elements": {
+"목": 5.6,
+"화": 29.3,
+"토": 39.3,
+"금": 15.3,
+"수": 10.5
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 31.8,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|월주",
+"백호살|일주",
+"양인살|월주",
+"역마살|시주",
+"홍염살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1972-10-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "임자 경술 정축 신축",
+"elements": {
+"목": 0.0,
+"화": 12.6,
+"토": 28.4,
+"금": 30.0,
+"수": 28.9
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 3.2,
+"gyeokguk": "편재격",
+"shinsal": [
+"백호살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2012-06-26",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임진 병오 무오 ??",
+"elements": {
+"목": 4.0,
+"화": 46.0,
+"토": 35.3,
+"금": 0.0,
+"수": 14.7
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 3
+},
+"strength": 81.3,
+"gyeokguk": "편인격",
+"shinsal": [
+"양인살|월주",
+"양인살|일주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1996-04-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:13",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "병자 임진 병자 병신",
+"elements": {
+"목": 6.3,
+"화": 31.6,
+"토": 15.1,
+"금": 5.6,
+"수": 41.4
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 30.5,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|시주",
+"문창귀인|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1943-04-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "02:10",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "계미 병진 을사 정축",
+"elements": {
+"목": 17.9,
+"화": 32.6,
+"토": 28.9,
+"금": 4.7,
+"수": 15.8
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 27.4,
+"gyeokguk": "편인격",
+"shinsal": [
+"백호살|시주",
+"역마살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1947-01-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "10:47",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "병술 신축 병오 계사",
+"elements": {
+"목": 0.0,
+"화": 38.8,
+"토": 26.1,
+"금": 18.2,
+"수": 16.8
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 28.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|년주",
+"양인살|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2005-06-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:17",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "을유 임오 갑술 갑자",
+"elements": {
+"목": 31.6,
+"화": 16.3,
+"토": 15.8,
+"금": 15.3,
+"수": 21.1
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 42.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"도화살|월주",
+"홍염살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1940-07-31",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:15",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경진 계미 을해 무인",
+"elements": {
+"목": 25.1,
+"화": 8.8,
+"토": 35.6,
+"금": 10.5,
+"수": 20.0
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 3,
+"관성": 1,
+"인성": 2
+},
+"strength": 35.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1940-01-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:03",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "기묘 정축 정사 을사",
+"elements": {
+"목": 21.1,
+"화": 35.1,
+"토": 29.3,
+"금": 8.2,
+"수": 6.3
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 0,
+"관성": 0,
+"인성": 2
+},
+"strength": 45.6,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|월주",
+"백호살|월주",
+"역마살|시주",
+"역마살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2018-01-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "정유 계축 무오 임술",
+"elements": {
+"목": 0.0,
+"화": 22.6,
+"토": 34.2,
+"금": 15.8,
+"수": 27.4
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 52.6,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|월주",
+"도화살|일주",
+"백호살|시주",
+"백호살|월주",
+"양인살|일주",
+"천을귀인|월주",
+"화개살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1985-12-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:42",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "을축 정해 무인 신유",
+"elements": {
+"목": 23.9,
+"화": 14.2,
+"토": 25.4,
+"금": 22.1,
+"수": 14.4
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 31.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"역마살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2008-07-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "무자 기미 경신 정해",
+"elements": {
+"목": 4.6,
+"화": 16.8,
+"토": 39.8,
+"금": 18.9,
+"수": 19.8
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 3
+},
+"strength": 54.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"문창귀인|시주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1997-07-09",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "정축 정미 임자 ??",
+"elements": {
+"목": 2.7,
+"화": 34.7,
+"토": 24.0,
+"금": 1.3,
+"수": 37.3
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 25.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|년주",
+"양인살|일주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1953-06-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "계사 무오 갑오 갑자",
+"elements": {
+"목": 21.1,
+"화": 31.4,
+"토": 24.0,
+"금": 2.5,
+"수": 21.1
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 31.6,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"도화살|월주",
+"도화살|일주",
+"문창귀인|년주",
+"홍염살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2014-12-25",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "갑오 병자 경오 병술",
+"elements": {
+"목": 10.5,
+"화": 40.5,
+"토": 14.2,
+"금": 13.7,
+"수": 21.1
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 4,
+"인성": 1
+},
+"strength": 17.4,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"백호살|시주",
+"홍염살|시주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1987-04-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:23",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "정묘 계묘 신사 임진",
+"elements": {
+"목": 34.7,
+"화": 18.9,
+"토": 10.0,
+"금": 14.2,
+"수": 22.1
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 13.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1999-04-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:56",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "기묘 무진 신축 갑오",
+"elements": {
+"목": 27.4,
+"화": 7.4,
+"토": 46.3,
+"금": 12.1,
+"수": 6.8
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 4
+},
+"strength": 54.2,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"도화살|시주",
+"백호살|월주",
+"천을귀인|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1975-08-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:28",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "을묘 갑신 임인 병오",
+"elements": {
+"목": 40.0,
+"화": 21.6,
+"토": 11.8,
+"금": 11.2,
+"수": 15.4
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 24.2,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|년주",
+"문창귀인|일주",
+"역마살|월주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1956-10-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "15:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "병신 무술 경오 갑신",
+"elements": {
+"목": 10.5,
+"화": 23.7,
+"토": 32.8,
+"금": 28.1,
+"수": 4.9
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 59.8,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|월주",
+"역마살|년주",
+"역마살|시주",
+"홍염살|월주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1941-07-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:52",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "신사 을미 을축 경진",
+"elements": {
+"목": 26.3,
+"화": 11.9,
+"토": 30.9,
+"금": 25.1,
+"수": 5.8
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 0
+},
+"strength": 22.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"백호살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1965-07-29",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을사 계미 갑신 ??",
+"elements": {
+"목": 29.3,
+"화": 15.1,
+"토": 23.8,
+"금": 13.8,
+"수": 18.0
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 35.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2002-09-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:14",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "임오 무신 을해 정해",
+"elements": {
+"목": 16.7,
+"화": 17.9,
+"토": 24.7,
+"금": 11.2,
+"수": 29.5
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 3
+},
+"strength": 38.1,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"역마살|월주",
+"천을귀인|월주",
+"홍염살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1971-05-02",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "신해 임진 정해 ??",
+"elements": {
+"목": 15.8,
+"화": 13.3,
+"토": 23.8,
+"금": 13.3,
+"수": 33.8
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 19.8,
+"gyeokguk": "상관격",
+"shinsal": [
+"천을귀인|년주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1988-08-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "04:07",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "무진 기미 계사 계축",
+"elements": {
+"목": 5.3,
+"화": 14.7,
+"토": 50.0,
+"금": 4.7,
+"수": 25.3
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 1,
+"관성": 5,
+"인성": 0
+},
+"strength": 19.5,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|월주",
+"백호살|년주",
+"백호살|시주",
+"천을귀인|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1982-05-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:18",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임술 을사 계축 임자",
+"elements": {
+"목": 10.5,
+"화": 12.3,
+"토": 20.7,
+"금": 9.6,
+"수": 46.8
+},
+"groups": {
+"비겁": 3,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 0
+},
+"strength": 48.4,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|년주",
+"백호살|일주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2023-10-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:15",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "계묘 임술 갑진 계유",
+"elements": {
+"목": 25.8,
+"화": 2.1,
+"토": 22.1,
+"금": 16.8,
+"수": 33.2
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 48.4,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|년주",
+"도화살|시주",
+"백호살|월주",
+"백호살|일주",
+"양인살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-01-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:55",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "계사 을축 정묘 신축",
+"elements": {
+"목": 26.3,
+"화": 16.1,
+"토": 21.4,
+"금": 16.1,
+"수": 20.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 2
+},
+"strength": 31.9,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|년주",
+"화개살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1968-01-24",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:10",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "정미 계축 계사 경신",
+"elements": {
+"목": 1.1,
+"화": 22.1,
+"토": 25.1,
+"금": 21.9,
+"수": 29.8
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 2
+},
+"strength": 45.4,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"백호살|월주",
+"역마살|일주",
+"천을귀인|일주",
+"홍염살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2018-04-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "09:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "무술 병진 계유 정사",
+"elements": {
+"목": 6.3,
+"화": 27.7,
+"토": 31.9,
+"금": 21.4,
+"수": 12.6
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 3,
+"관성": 3,
+"인성": 1
+},
+"strength": 24.6,
+"gyeokguk": "정관격",
+"shinsal": [
+"공망|년주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1943-07-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:50",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "계미 기미 을해 계미",
+"elements": {
+"목": 18.4,
+"화": 12.6,
+"토": 39.5,
+"금": 0.0,
+"수": 29.5
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 4,
+"관성": 0,
+"인성": 3
+},
+"strength": 38.4,
+"gyeokguk": "편재격",
+"shinsal": [
+"화개살|년주",
+"화개살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2018-08-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:33",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "무술 경신 정축 경술",
+"elements": {
+"목": 0.0,
+"화": 12.6,
+"토": 37.5,
+"금": 40.2,
+"수": 9.6
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 3,
+"관성": 0,
+"인성": 0
+},
+"strength": 2.1,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"백호살|일주",
+"역마살|월주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1942-08-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:20",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임오 정미 임진 신해",
+"elements": {
+"목": 9.3,
+"화": 24.2,
+"토": 27.7,
+"금": 10.5,
+"수": 28.2
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 28.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|년주",
+"공망|월주",
+"괴강살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2011-09-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:46",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "신묘 정유 계유 임자",
+"elements": {
+"목": 10.5,
+"화": 10.5,
+"토": 0.0,
+"금": 47.4,
+"수": 31.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 0,
+"인성": 3
+},
+"strength": 78.9,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|시주",
+"문창귀인|년주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1960-08-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:34",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "경자 계미 병인 임진",
+"elements": {
+"목": 13.7,
+"화": 20.5,
+"토": 22.6,
+"금": 10.5,
+"수": 32.6
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 1,
+"관성": 3,
+"인성": 1
+},
+"strength": 27.9,
+"gyeokguk": "상관격",
+"shinsal": [
+"역마살|일주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1941-02-28",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:02",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "신사 경인 정미 갑진",
+"elements": {
+"목": 26.5,
+"화": 25.8,
+"토": 23.2,
+"금": 23.5,
+"수": 1.1
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 49.8,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"백호살|시주",
+"역마살|년주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2011-10-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:54",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "신묘 무술 정미 경술",
+"elements": {
+"목": 12.1,
+"화": 18.4,
+"토": 38.9,
+"금": 30.5,
+"수": 0.0
+},
+"groups": {
+"비겁": 0,
+"식상": 4,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 21.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-04-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:19",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "기사 무진 을사 병술",
+"elements": {
+"목": 16.8,
+"화": 25.6,
+"토": 46.1,
+"금": 9.3,
+"수": 2.1
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 4,
+"관성": 0,
+"인성": 0
+},
+"strength": 12.6,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|시주",
+"백호살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2024-05-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:26",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "갑진 기사 갑신 임신",
+"elements": {
+"목": 24.2,
+"화": 11.2,
+"토": 27.9,
+"금": 18.9,
+"수": 17.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 31.4,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|월주",
+"백호살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1940-01-26",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:29",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "기묘 정축 무진 무오",
+"elements": {
+"목": 15.3,
+"화": 17.9,
+"토": 56.8,
+"금": 2.1,
+"수": 7.9
+},
+"groups": {
+"비겁": 4,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 70.5,
+"gyeokguk": "양인격",
+"shinsal": [
+"백호살|월주",
+"백호살|일주",
+"양인살|시주",
+"천을귀인|월주",
+"홍염살|일주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2006-06-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:47",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "병술 갑오 경진 정해",
+"elements": {
+"목": 17.7,
+"화": 36.8,
+"토": 24.6,
+"금": 13.7,
+"수": 7.2
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 30.9,
+"gyeokguk": "정관격",
+"shinsal": [
+"괴강살|일주",
+"문창귀인|시주",
+"백호살|년주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1958-08-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:22",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "무술 경신 무오 경신",
+"elements": {
+"목": 0.0,
+"화": 12.1,
+"토": 39.5,
+"금": 41.1,
+"수": 7.4
+},
+"groups": {
+"비겁": 2,
+"식상": 4,
+"재성": 0,
+"관성": 0,
+"인성": 1
+},
+"strength": 43.5,
+"gyeokguk": "식신격",
+"shinsal": [
+"문창귀인|시주",
+"문창귀인|월주",
+"양인살|일주",
+"역마살|시주",
+"역마살|월주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1986-12-27",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "병인 경자 을사 ??",
+"elements": {
+"목": 20.4,
+"화": 27.1,
+"토": 7.8,
+"금": 18.0,
+"수": 26.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 1,
+"인성": 1
+},
+"strength": 47.1,
+"gyeokguk": "편인격",
+"shinsal": [
+"공망|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2009-05-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:57",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "기축 기사 정묘 병오",
+"elements": {
+"목": 15.8,
+"화": 39.6,
+"토": 35.4,
+"금": 6.0,
+"수": 3.2
+},
+"groups": {
+"비겁": 3,
+"식상": 3,
+"재성": 0,
+"관성": 0,
+"인성": 1
+},
+"strength": 50.5,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|시주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1999-08-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "16:30",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "기묘 임신 병오 병신",
+"elements": {
+"목": 10.5,
+"화": 32.1,
+"토": 22.6,
+"금": 16.8,
+"수": 17.9
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 32.1,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|년주",
+"도화살|년주",
+"문창귀인|시주",
+"문창귀인|월주",
+"양인살|일주",
+"역마살|시주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1957-12-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "정유 임자 병진 임진",
+"elements": {
+"목": 7.9,
+"화": 21.1,
+"토": 15.8,
+"금": 10.5,
+"수": 44.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 18.4,
+"gyeokguk": "편관격",
+"shinsal": [
+"공망|월주",
+"도화살|년주",
+"천을귀인|년주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2000-06-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:06",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "경진 임오 갑진 경오",
+"elements": {
+"목": 18.4,
+"화": 22.1,
+"토": 25.3,
+"금": 21.1,
+"수": 13.2
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 1
+},
+"strength": 21.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"백호살|일주",
+"홍염살|시주",
+"홍염살|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2022-06-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:38",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2600000000"
+}
+},
+"key": "임인 병오 갑오 갑자",
+"elements": {
+"목": 26.7,
+"화": 38.8,
+"토": 13.5,
+"금": 0.0,
+"수": 21.1
+},
+"groups": {
+"비겁": 2,
+"식상": 3,
+"재성": 0,
+"관성": 0,
+"인성": 2
+},
+"strength": 37.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"홍염살|월주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2023-11-25",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "계묘 계해 정해 ??",
+"elements": {
+"목": 24.2,
+"화": 13.3,
+"토": 10.9,
+"금": 0.0,
+"수": 51.6
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 0,
+"관성": 4,
+"인성": 1
+},
+"strength": 27.3,
+"gyeokguk": "정관격",
+"shinsal": [
+"천을귀인|월주",
+"천을귀인|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1987-01-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "병인 신축 임술 경술",
+"elements": {
+"목": 5.6,
+"화": 15.6,
+"토": 30.9,
+"금": 31.1,
+"수": 16.8
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 1,
+"관성": 3,
+"인성": 2
+},
+"strength": 41.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|월주",
+"괴강살|일주",
+"문창귀인|년주",
+"백호살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2004-09-18",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "18:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "갑신 계유 경자 을유",
+"elements": {
+"목": 21.1,
+"화": 0.0,
+"토": 2.5,
+"금": 47.7,
+"수": 28.8
+},
+"groups": {
+"비겁": 3,
+"식상": 2,
+"재성": 2,
+"관성": 0,
+"인성": 0
+},
+"strength": 50.2,
+"gyeokguk": "양인격",
+"shinsal": [
+"도화살|시주",
+"도화살|월주",
+"양인살|시주",
+"양인살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2001-07-16",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:21",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "신사 을미 경진 병자",
+"elements": {
+"목": 17.4,
+"화": 22.5,
+"토": 24.6,
+"금": 23.5,
+"수": 12.1
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 43.9,
+"gyeokguk": "정재격",
+"shinsal": [
+"괴강살|일주",
+"백호살|월주",
+"천을귀인|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1989-05-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:27",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "기사 기사 병인 경인",
+"elements": {
+"목": 14.0,
+"화": 33.5,
+"토": 34.6,
+"금": 17.9,
+"수": 0.0
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 42.6,
+"gyeokguk": "건록격",
+"shinsal": [
+"홍염살|시주",
+"홍염살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2007-03-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "정해 임인 무술 기미",
+"elements": {
+"목": 14.7,
+"화": 20.2,
+"토": 44.2,
+"금": 4.7,
+"수": 16.1
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 58.8,
+"gyeokguk": "편관격",
+"shinsal": [
+"괴강살|일주",
+"천을귀인|시주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1960-04-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "경자 경진 을해 병술",
+"elements": {
+"목": 20.5,
+"화": 11.6,
+"토": 22.6,
+"금": 24.2,
+"수": 21.1
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 2,
+"인성": 2
+},
+"strength": 35.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|년주",
+"백호살|시주",
+"천을귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1970-02-13",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:41",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "경술 무인 갑자 무진",
+"elements": {
+"목": 24.9,
+"화": 6.0,
+"토": 38.6,
+"금": 13.7,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 4,
+"관성": 1,
+"인성": 1
+},
+"strength": 36.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"역마살|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2021-03-04",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:29",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4700000000"
+}
+},
+"key": "신축 경인 신해 기해",
+"elements": {
+"목": 17.4,
+"화": 4.9,
+"토": 27.9,
+"금": 32.6,
+"수": 17.2
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 52.5,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"역마살|시주",
+"역마살|일주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1946-04-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:57",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "병술 임진 병인 을미",
+"elements": {
+"목": 26.3,
+"화": 28.9,
+"토": 28.9,
+"금": 3.2,
+"수": 12.6
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 0,
+"관성": 1,
+"인성": 2
+},
+"strength": 47.9,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"백호살|년주",
+"백호살|시주",
+"홍염살|일주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1967-10-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "11:58",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "정미 경술 갑인 경오",
+"elements": {
+"목": 20.0,
+"화": 26.8,
+"토": 25.8,
+"금": 27.4,
+"수": 0.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 2,
+"인성": 0
+},
+"strength": 9.5,
+"gyeokguk": "상관격",
+"shinsal": [
+"천을귀인|년주",
+"홍염살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2012-08-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:25",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "임진 정미 무술 임자",
+"elements": {
+"목": 5.3,
+"화": 18.4,
+"토": 38.9,
+"금": 4.7,
+"수": 32.6
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 56.3,
+"gyeokguk": "양인격",
+"shinsal": [
+"공망|년주",
+"괴강살|일주",
+"천을귀인|월주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2001-02-10",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "22:18",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "신사 경인 갑진 을해",
+"elements": {
+"목": 39.5,
+"화": 10.5,
+"토": 19.3,
+"금": 23.5,
+"수": 7.2
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 41.8,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"백호살|일주",
+"역마살|시주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1960-04-06",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "경자 경진 갑자 ??",
+"elements": {
+"목": 21.3,
+"화": 0.0,
+"토": 16.0,
+"금": 26.7,
+"수": 36.0
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 2,
+"인성": 2
+},
+"strength": 49.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1970-03-20",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "경술 기묘 기해 ??",
+"elements": {
+"목": 31.3,
+"화": 1.3,
+"토": 39.3,
+"금": 17.3,
+"수": 10.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 27.3,
+"gyeokguk": "편관격",
+"shinsal": [
+"도화살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2020-12-09",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:48",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "경자 무자 병술 임진",
+"elements": {
+"목": 3.2,
+"화": 12.1,
+"토": 26.3,
+"금": 15.3,
+"수": 43.2
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 1,
+"관성": 3,
+"인성": 0
+},
+"strength": 4.7,
+"gyeokguk": "편관격",
+"shinsal": [
+"백호살|일주",
+"화개살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2000-06-27",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "경진 임오 병진 ??",
+"elements": {
+"목": 10.0,
+"화": 32.0,
+"토": 28.0,
+"금": 13.3,
+"수": 16.7
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 0
+},
+"strength": 38.0,
+"gyeokguk": "양인격",
+"shinsal": [
+"양인살|월주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1980-08-21",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "20:53",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "경신 갑신 병인 무술",
+"elements": {
+"목": 18.9,
+"화": 15.3,
+"토": 27.9,
+"금": 30.5,
+"수": 7.4
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 3,
+"관성": 0,
+"인성": 2
+},
+"strength": 23.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"문창귀인|년주",
+"문창귀인|월주",
+"역마살|년주",
+"역마살|월주",
+"역마살|일주",
+"홍염살|일주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1986-01-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "01:52",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "을축 기축 신미 기축",
+"elements": {
+"목": 12.1,
+"화": 4.7,
+"토": 55.8,
+"금": 14.7,
+"수": 12.6
+},
+"groups": {
+"비겁": 0,
+"식상": 0,
+"재성": 1,
+"관성": 0,
+"인성": 6
+},
+"strength": 67.4,
+"gyeokguk": "편인격",
+"shinsal": [
+"화개살|시주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1982-10-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:21",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "임술 기유 임술 계묘",
+"elements": {
+"목": 10.5,
+"화": 2.6,
+"토": 26.3,
+"금": 28.9,
+"수": 31.6
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 3,
+"인성": 1
+},
+"strength": 60.5,
+"gyeokguk": "정인격",
+"shinsal": [
+"괴강살|일주",
+"도화살|시주",
+"백호살|년주",
+"백호살|일주",
+"천을귀인|시주",
+"화개살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1978-01-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "12:15",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "정사 계축 기묘 경오",
+"elements": {
+"목": 15.8,
+"화": 23.5,
+"토": 28.8,
+"금": 15.1,
+"수": 16.8
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 1,
+"관성": 1,
+"인성": 3
+},
+"strength": 48.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"도화살|시주",
+"백호살|월주",
+"역마살|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-05-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:06",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "정축 을사 갑인 임신",
+"elements": {
+"목": 29.5,
+"화": 25.4,
+"토": 17.4,
+"금": 11.6,
+"수": 16.1
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 35.1,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|년주",
+"문창귀인|월주",
+"백호살|년주",
+"역마살|시주",
+"천을귀인|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1989-02-27",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "14:36",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "기사 병인 무오 기미",
+"elements": {
+"목": 12.3,
+"화": 35.3,
+"토": 50.0,
+"금": 2.5,
+"수": 0.0
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 0,
+"관성": 1,
+"인성": 3
+},
+"strength": 79.6,
+"gyeokguk": "편인격",
+"shinsal": [
+"도화살|일주",
+"양인살|일주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1985-11-11",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:36",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "을축 정해 을묘 병자",
+"elements": {
+"목": 41.8,
+"화": 21.1,
+"토": 11.2,
+"금": 1.1,
+"수": 24.9
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 0,
+"인성": 2
+},
+"strength": 64.2,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"도화살|시주",
+"역마살|월주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1990-08-09",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "경오 갑신 병오 ??",
+"elements": {
+"목": 13.3,
+"화": 36.7,
+"토": 16.2,
+"금": 27.6,
+"수": 6.2
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 36.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"문창귀인|월주",
+"양인살|년주",
+"양인살|일주",
+"역마살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1954-05-17",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:39",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "갑오 기사 계유 병진",
+"elements": {
+"목": 13.7,
+"화": 29.1,
+"토": 24.9,
+"금": 20.7,
+"수": 11.6
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 3,
+"관성": 2,
+"인성": 1
+},
+"strength": 24.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"도화살|년주",
+"천을귀인|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1994-05-29",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:51",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5100000000"
+}
+},
+"key": "갑술 기사 을묘 병자",
+"elements": {
+"목": 36.8,
+"화": 22.8,
+"토": 21.8,
+"금": 8.1,
+"수": 10.5
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 36.8,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|시주",
+"도화살|시주",
+"도화살|일주",
+"역마살|월주",
+"천을귀인|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1973-09-23",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "00:02",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "계축 신유 임술 경자",
+"elements": {
+"목": 0.0,
+"화": 1.6,
+"토": 15.8,
+"금": 47.9,
+"수": 34.7
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 0,
+"관성": 2,
+"인성": 3
+},
+"strength": 82.6,
+"gyeokguk": "정인격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"괴강살|일주",
+"백호살|년주",
+"백호살|일주",
+"양인살|시주",
+"홍염살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "2016-05-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:12",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3100000000"
+}
+},
+"key": "병신 계사 임인 갑진",
+"elements": {
+"목": 22.1,
+"화": 25.4,
+"토": 17.4,
+"금": 10.5,
+"수": 24.6
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 27.0,
+"gyeokguk": "편재격",
+"shinsal": [
+"공망|시주",
+"공망|월주",
+"문창귀인|일주",
+"백호살|시주",
+"역마살|년주",
+"역마살|일주",
+"천을귀인|월주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2017-12-19",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2700000000"
+}
+},
+"key": "정유 임자 경진 을유",
+"elements": {
+"목": 15.3,
+"화": 10.5,
+"토": 9.5,
+"금": 31.6,
+"수": 33.2
+},
+"groups": {
+"비겁": 2,
+"식상": 2,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 30.5,
+"gyeokguk": "식신격",
+"shinsal": [
+"공망|년주",
+"공망|시주",
+"괴강살|일주",
+"도화살|년주",
+"도화살|시주",
+"양인살|년주",
+"양인살|시주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1982-05-12",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:55",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "임술 을사 을미 무인",
+"elements": {
+"목": 28.2,
+"화": 19.5,
+"토": 33.7,
+"금": 8.1,
+"수": 10.5
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 28.2,
+"gyeokguk": "정재격",
+"shinsal": [
+"공망|월주",
+"백호살|년주",
+"백호살|일주",
+"역마살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2002-04-30",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "03:00",
+"birthPlace": {
+"status": "known",
+"regionChoice": "3000000000"
+}
+},
+"key": "임오 갑진 무진 계축",
+"elements": {
+"목": 21.6,
+"화": 7.4,
+"토": 42.1,
+"금": 1.1,
+"수": 27.9
+},
+"groups": {
+"비겁": 3,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 1
+},
+"strength": 45.3,
+"gyeokguk": "건록격",
+"shinsal": [
+"백호살|시주",
+"백호살|월주",
+"백호살|일주",
+"양인살|년주",
+"천을귀인|시주",
+"홍염살|월주",
+"홍염살|일주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1974-11-02",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "08:09",
+"birthPlace": {
+"status": "known",
+"regionChoice": "2800000000"
+}
+},
+"key": "갑인 갑술 정미 갑진",
+"elements": {
+"목": 41.9,
+"화": 19.8,
+"토": 30.9,
+"금": 6.3,
+"수": 1.1
+},
+"groups": {
+"비겁": 0,
+"식상": 3,
+"재성": 0,
+"관성": 0,
+"인성": 4
+},
+"strength": 52.3,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|년주",
+"백호살|시주",
+"홍염살|일주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1949-07-20",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "1200000000"
+}
+},
+"key": "기축 신미 신해 ??",
+"elements": {
+"목": 7.3,
+"화": 8.0,
+"토": 42.0,
+"금": 28.0,
+"수": 14.7
+},
+"groups": {
+"비겁": 1,
+"식상": 1,
+"재성": 0,
+"관성": 0,
+"인성": 3
+},
+"strength": 64.7,
+"gyeokguk": "편인격",
+"shinsal": [
+"역마살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1966-06-05",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "17:05",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4800000000"
+}
+},
+"key": "병오 계사 을미 갑신",
+"elements": {
+"목": 22.6,
+"화": 33.9,
+"토": 20.0,
+"금": 10.5,
+"수": 13.0
+},
+"groups": {
+"비겁": 1,
+"식상": 3,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 25.1,
+"gyeokguk": "상관격",
+"shinsal": [
+"공망|월주",
+"문창귀인|년주",
+"백호살|일주",
+"역마살|시주",
+"역마살|월주",
+"천을귀인|시주",
+"홍염살|년주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1997-05-22",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:34",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "정축 을사 갑자 무진",
+"elements": {
+"목": 24.2,
+"화": 21.8,
+"토": 28.1,
+"금": 6.0,
+"수": 20.0
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 3,
+"관성": 0,
+"인성": 1
+},
+"strength": 33.7,
+"gyeokguk": "편재격",
+"shinsal": [
+"문창귀인|월주",
+"백호살|년주",
+"백호살|시주",
+"천을귀인|년주",
+"화개살|시주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1978-01-07",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "23:31",
+"birthPlace": {
+"status": "known",
+"regionChoice": "1100000000"
+}
+},
+"key": "정사 계축 기사 을해",
+"elements": {
+"목": 13.0,
+"화": 24.6,
+"토": 31.8,
+"금": 8.2,
+"수": 22.5
+},
+"groups": {
+"비겁": 1,
+"식상": 0,
+"재성": 2,
+"관성": 1,
+"인성": 3
+},
+"strength": 52.1,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"백호살|월주",
+"역마살|시주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1963-07-19",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "5000000000"
+}
+},
+"key": "계묘 기미 계해 ??",
+"elements": {
+"목": 20.7,
+"화": 8.0,
+"토": 34.0,
+"금": 0.0,
+"수": 37.3
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 0,
+"관성": 2,
+"인성": 0
+},
+"strength": 24.0,
+"gyeokguk": "편관격",
+"shinsal": [
+"문창귀인|년주",
+"천을귀인|년주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "1993-01-20",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "21:04",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "임신 계축 신축 무술",
+"elements": {
+"목": 0.0,
+"화": 1.1,
+"토": 41.4,
+"금": 23.0,
+"수": 34.6
+},
+"groups": {
+"비겁": 1,
+"식상": 2,
+"재성": 0,
+"관성": 0,
+"인성": 4
+},
+"strength": 61.2,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|월주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1983-07-16",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "4400000000"
+}
+},
+"key": "계해 기미 을사 ??",
+"elements": {
+"목": 19.1,
+"화": 18.7,
+"토": 37.1,
+"금": 4.7,
+"수": 20.4
+},
+"groups": {
+"비겁": 0,
+"식상": 1,
+"재성": 2,
+"관성": 0,
+"인성": 2
+},
+"strength": 27.6,
+"gyeokguk": "편재격",
+"shinsal": [
+"역마살|년주",
+"역마살|일주",
+"화개살|월주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1982-07-21",
+"calendar": "solar",
+"timeAccuracy": "unknown",
+"time": null,
+"birthPlace": {
+"status": "known",
+"regionChoice": "3600000000"
+}
+},
+"key": "임술 정미 을사 ??",
+"elements": {
+"목": 16.0,
+"화": 33.3,
+"토": 28.7,
+"금": 8.7,
+"수": 13.3
+},
+"groups": {
+"비겁": 0,
+"식상": 2,
+"재성": 2,
+"관성": 0,
+"인성": 1
+},
+"strength": 17.3,
+"gyeokguk": "식신격",
+"shinsal": [
+"백호살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1994-10-15",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "07:46",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4300000000"
+}
+},
+"key": "갑술 갑술 갑술 무진",
+"elements": {
+"목": 34.7,
+"화": 4.7,
+"토": 45.3,
+"금": 14.2,
+"수": 1.1
+},
+"groups": {
+"비겁": 2,
+"식상": 0,
+"재성": 5,
+"관성": 0,
+"인성": 0
+},
+"strength": 25.3,
+"gyeokguk": "편재격",
+"shinsal": [
+"백호살|시주",
+"화개살|년주",
+"화개살|월주",
+"화개살|일주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "female",
+"birth": "1973-08-01",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "19:44",
+"birthPlace": {
+"status": "known",
+"regionChoice": "4100000000"
+}
+},
+"key": "계축 기미 기사 갑술",
+"elements": {
+"목": 12.6,
+"화": 15.8,
+"토": 50.0,
+"금": 7.9,
+"수": 13.7
+},
+"groups": {
+"비겁": 4,
+"식상": 0,
+"재성": 1,
+"관성": 1,
+"인성": 1
+},
+"strength": 64.7,
+"gyeokguk": "건록격",
+"shinsal": [
+"공망|시주",
+"백호살|년주",
+"화개살|년주"
+]
+},
+{
+"person": {
+"name": "",
+"sex": "male",
+"birth": "2016-08-06",
+"calendar": "solar",
+"timeAccuracy": "exact",
+"time": "13:13",
+"birthPlace": {
+"status": "known",
+"regionChoice": "5200000000"
+}
+},
+"key": "병신 을미 경신 임오",
+"elements": {
+"목": 12.6,
+"화": 24.2,
+"토": 21.9,
+"금": 24.6,
+"수": 16.7
+},
+"groups": {
+"비겁": 2,
+"식상": 1,
+"재성": 1,
+"관성": 2,
+"인성": 1
+},
+"strength": 42.3,
+"gyeokguk": "정재격",
+"shinsal": [
+"백호살|월주",
+"천을귀인|월주"
+]
+}
+]
