@@ -14,6 +14,7 @@ export const STATUS_MESSAGES = {
   retry: '처리가 잠시 지연되어 다시 진행하고 있어요.',
   held: '결과 준비 중 문제가 확인되어 발송을 보류했어요. 확인 후 다시 보내드리거나 환불해 드릴게요.',
   email_accepted: '결과 PDF를 이메일로 보냈어요.',
+  test_paid: '시험 결제가 확인되었어요. 지금은 시험 운영 중이라 결과 PDF는 만들지 않아요.',
   refund_pending: '결제 취소를 처리하고 있어요.',
   refunded: '결제 취소가 확인되었어요.',
   payment_adjusted: '결제 금액이 변경되어 결과 발송이 중단되었어요.',
@@ -69,7 +70,7 @@ export function assess(body) {
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 
-export async function createOrder(store, body, idempotencyKey, now = new Date()) {
+export async function createOrder(store, body, idempotencyKey, now = new Date(), { testOnly = false } = {}) {
   if (!idempotencyKey || !/^[\w-]{8,80}$/.test(idempotencyKey)) throw new ApiError(400, 'IDEMPOTENCY_KEY_REQUIRED');
   const seen = await store.get(`idem/${idempotencyKey}`);
   if (seen) {
@@ -88,7 +89,7 @@ export async function createOrder(store, body, idempotencyKey, now = new Date())
     id, productId: product.id, amount: product.price, email, status: 'awaiting_payment',
     tokenHash: sha256(accessToken), payload: decision.payload, disclosures: decision.disclosures || [],
     createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'awaiting_payment', at: now.toISOString() }],
-    resends: 0,
+    resends: 0, ...(testOnly ? { testOnly: true } : {}),
   };
   await store.set(`orders/${id}`, order);
   await store.set(`idem/${idempotencyKey}`, { orderId: id, accessToken });
@@ -138,6 +139,13 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
   }
   order.paymentKey = paymentKey;
   order.paidAt = now.toISOString();
+  if (order.testOnly) {
+    // 시험 결제(심사용): 결과를 만들지 않고 출생 정보·질문은 바로 지운다.
+    setStatus(order, 'test_paid', now);
+    delete order.payload; delete order.disclosures;
+    await store.set(`orders/${order.id}`, order);
+    return order;
+  }
   setStatus(order, 'queued', now);
   await store.set(`orders/${order.id}`, order);
   try { await services.startWorker(order.id); }
@@ -209,7 +217,7 @@ export async function flagStuck(store, services, now = new Date()) {
 }
 
 // 개인정보 지우기: 끝난 주문은 7일 뒤 남은 출생 정보·질문·PDF를 지운다(발송된 주문은 출생 정보를 발송 때 이미 지움). 결제 안 된 주문은 1일 뒤 만료.
-const DONE = new Set(['email_accepted', 'held', 'refunded', 'payment_failed', 'payment_expired', 'payment_adjusted']);
+const DONE = new Set(['email_accepted', 'test_paid', 'held', 'refunded', 'payment_failed', 'payment_expired', 'payment_adjusted']);
 
 export async function eraseOld(store, now = new Date()) {
   let erased = 0;

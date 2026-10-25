@@ -31,10 +31,15 @@ async function order(t, extra = {}) {
   return { r, body: await r.json() };
 }
 
-test('시험 키일 때는 사장님 이메일 주문만 받는다', async () => {
+test('시험 키일 때 사장님 이메일이 아닌 주문은 결제창까지만 열고 결과는 만들지 않는다', async () => {
   let t = setup();
   let { r, body } = await order(t, { email: 'someone@example.com' });
-  assert.equal(r.status, 403); assert.equal(body.code, 'TEST_MODE_OWNER_ONLY');
+  assert.equal(r.status, 201);
+  const c = await t.call('POST', `/api/orders/${body.orderId}/confirm`, { body: { paymentKey: 'pk', amount: body.amount }, headers: { Authorization: 'Bearer ' + body.accessToken } });
+  const v = await c.json();
+  assert.equal(c.status, 200); assert.equal(v.status, 'test_paid');
+  assert.equal(t.calls.dispatch.length, 0); assert.equal(t.calls.confirm.length, 1);
+  assert.equal((await t.store.get(`orders/${body.orderId}`)).payload, undefined);
   ({ r } = await order(t, { email: ' buyer@EXAMPLE.com ' })); assert.equal(r.status, 201);
   t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck', TOSS_SECRET_KEY: 'live_sk' } });
   ({ r } = await order(t, { email: 'someone@example.com' })); assert.equal(r.status, 201);
