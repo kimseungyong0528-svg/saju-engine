@@ -47,6 +47,13 @@ def test_make_pdf_from_site_payload(tmp_path, product, answers, partner):
     out = tmp_path / "r.pdf"
     r = make_pdf(job, out)
     assert out.read_bytes()[:4] == b"%PDF" and r["pages"] >= 30
+    # 무료 맛보기에서 고객이 본 내용이 리포트 글쓰기 재료에 들어간다(평생사주는 v1.0.0 그대로라 넣지 않음)
+    from saju.report.writer import facts_digest
+    seen = facts_digest(r["facts"]).get("무료 맛보기에서 고객이 본 내용")
+    if product == "lifetime":
+        assert seen is None
+    else:
+        assert len(seen["좋은 운"]) == 3 and len(seen["조심할 운"]) == 3
 
 
 def test_hedge_words_flagged():

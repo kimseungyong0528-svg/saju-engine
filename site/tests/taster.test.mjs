@@ -5,6 +5,7 @@ import * as eng from '../public/assets/free/engine.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../public/assets/free/saju-data.json', import.meta.url)));
 const cases = JSON.parse(readFileSync(new URL('./fixtures/taster-parity.json', import.meta.url)));
+const T = JSON.parse(readFileSync(new URL('../public/assets/free/texts.json', import.meta.url)));
 
 test('맛보기 계산기가 파이썬 사주 엔진과 같은 명식·분석을 낸다', () => {
   const bad = [];
@@ -23,11 +24,11 @@ test('맛보기 계산기가 파이썬 사주 엔진과 같은 명식·분석을
   assert.equal(bad.length, 0, JSON.stringify(bad.slice(0, 3), null, 1));
 });
 
-test('맛보기 결과: 좋은 운 3개·조심할 운 3개, 빈칸 없는 글, 상품 링크', async () => {
+test('맛보기 결과: 좋은 운 3개·조심할 운 3개, 빈칸 없는 글, 파이썬(결제 리포트 쪽)과 같은 결과', async () => {
   const { reading } = await import('../public/assets/free/taster.mjs');
   const ids = new Set(['newyear', 'romance', 'intimate', 'reunion', 'wealth', 'career', 'business', 'health']);
   for (const c of cases) {
-    const r = reading(eng.chartFromPerson(data, c.person, c.person.birth), { ...c.person, name: '하늘' });
+    const r = reading(eng.chartFromPerson(data, c.person, c.person.birth), c.person, T);
     assert.equal(r.good.length, 3); assert.equal(r.bad.length, 3);
     const all = [...r.good, ...r.bad];
     assert.equal(new Set(all.map(a => a.id)).size, 6);
@@ -36,5 +37,9 @@ test('맛보기 결과: 좋은 운 3개·조심할 운 3개, 빈칸 없는 글, 
       assert.ok(!/[{}]|undefined|NaN/.test(a.text), a.text);
       assert.ok(!/참고용|재미로/.test(a.text));
     }
+    const pick = x => x.map(a => [a.id, a.reason, a.text]);
+    assert.deepEqual({ good: pick(r.good), bad: pick(r.bad), scores: r.scores },
+      { good: pick(c.reading.good), bad: pick(c.reading.bad), scores: c.reading.scores }, c.person.birth + ' ' + c.person.time);
+    assert.ok(r.chart.columns.length === 4 && r.chart.elements.length === 5);
   }
 });

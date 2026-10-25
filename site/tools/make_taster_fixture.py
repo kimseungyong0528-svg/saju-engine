@@ -10,6 +10,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from saju.chart import analyze_person
+from saju import taster
 from saju.regions import REGIONS
 
 OUT = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "taster-parity.json"
@@ -24,7 +25,7 @@ def main() -> None:
         known = rnd.random() < 0.8
         t = f"{rnd.randrange(24):02d}:{rnd.randrange(60):02d}" if known else None
         code = rnd.choice(codes)
-        person = {"name": "", "sex": rnd.choice(["male", "female"]), "birth": d.isoformat(), "calendar": "solar",
+        person = {"name": "하늘", "sex": rnd.choice(["male", "female"]), "birth": d.isoformat(), "calendar": "solar",
                   "timeAccuracy": "exact" if known else "unknown", "time": t,
                   "birthPlace": {"status": "known", "regionChoice": code}}
         r = analyze_person(person)
@@ -39,6 +40,7 @@ def main() -> None:
             "strength": an["strength"]["score"],
             "gyeokguk": an["gyeokguk"]["name"],
             "shinsal": sorted(f"{s['name']}|{s['pillar']}" for s in an["shinsal"]),
+            "reading": taster.reading(taster.pillars_from_result(r), "하늘", person["sex"]),
         })
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(cases, ensure_ascii=False, indent=0), encoding="utf-8")

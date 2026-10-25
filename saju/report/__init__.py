@@ -36,12 +36,14 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
 
 
 def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
-                        html_out: str | Path | None = None) -> dict:
+                        html_out: str | Path | None = None, taster: dict | None = None) -> dict:
     """analyze_person() 결과로 연애사주 PDF(약 50쪽)를 만든다. 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다."""
     from . import romance as R
     from .outline import STATIC
     facts = build_facts(result, order)
     facts["romance"] = R.build_romance(facts, result, order)
+    if taster:
+        facts["taster"] = taster
     sections = R.build_outline(facts)
     writer = writer or DraftWriter()
     if isinstance(writer, ClaudeWriter):
@@ -98,11 +100,13 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
 
 def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                         html_out: str | Path | None = None, answers: dict | None = None, partner: dict | None = None,
-                        texts: dict | None = None) -> dict:
+                        texts: dict | None = None, taster: dict | None = None) -> dict:
     """재회·깊은 궁합·재물·직업·사업·건강·2027 신년운세 PDF(50쪽 이상). 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다.
     texts를 주면 글을 새로 쓰지 않고 그 글로 만든다(미리 써 둔 글 확인용)."""
     from .outline import STATIC
     M, facts, sections = prepare_product(product, result, order, answers, partner)
+    if taster:
+        facts["taster"] = taster   # 고객이 무료 맛보기에서 본 내용(saju/taster.py). 리포트가 이와 어긋나지 않게 쓴다.
     if texts is None:
         writer = writer or DraftWriter()
         if isinstance(writer, ClaudeWriter):
