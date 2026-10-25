@@ -18,7 +18,7 @@
 ## 결제 리포트와 내용 맞추기
 - 화면 계산: `site/public/assets/free/engine.mjs`, `taster.mjs`, 글: `texts.json`
 - 같은 규칙의 파이썬판: `saju/taster.py`. 주문 처리(`saju/order`)가 리포트를 쓸 때 고객이 본 좋은 운·조심할 운을
-  글쓰기 재료("무료 맛보기에서 고객이 본 내용")로 넘겨, 리포트가 이와 어긋나지 않게 쓴다. (평생사주는 v1.0.0 고정이라 제외)
+  글쓰기 재료("무료 맛보기에서 고객이 본 내용")로 넘긴다. 맛보기와 리포트는 같은 사주 계산에서 나오고, 리포트는 고객이 맛보기에서 보고 더 궁금해한 내용(특히 그 상품과 이어진 항목)을 시기·방법까지 더 깊게 푼다. 맛보기와 반대 해석은 쓰지 않는다. (평생사주는 v1.0.0 고정이라 제외)
 - 규칙이나 글을 바꾸면 `taster.mjs`와 `saju/taster.py`를 함께 바꾸고 `python site/tools/make_taster_fixture.py` 후
   `cd site && npm test` 로 화면과 파이썬이 400건 모두 같은지 확인한다.
 - 화면 코드 `site/tools/taster_page.js`, 사이트에 넣는 곳 `site/tools/build_site.py`의 `add_taster()`.

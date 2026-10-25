@@ -307,15 +307,21 @@ def reading(fp: FourPillars, name: str, sex: str) -> dict:
             "scores": {a["id"]: a["score"] for a in areas}}
 
 
-def digest(r: dict) -> dict:
-    """리포트 글쓰기에 넘길 맛보기 내용."""
-    return {
-        "지킬 점": "고객은 결제 전에 무료 맛보기에서 아래 내용을 이미 읽었습니다. 리포트는 이 내용과 어긋나면 안 됩니다. "
-                 "좋은 운으로 나온 것은 리포트에서도 좋은 운으로, 조심할 운으로 나온 것은 조심할 운으로 쓰고, "
-                 "같은 근거를 더 자세히 풀어 줍니다.",
-        "좋은 운": [{"운": a["title"], "근거와 풀이": a["text"]} for a in r["good"]],
-        "조심할 운": [{"운": a["title"], "근거와 풀이": a["text"]} for a in r["bad"]],
+def digest(r: dict, product: str | None = None) -> dict:
+    """리포트 글쓰기에 넘길 맛보기 내용. 고객이 결제 전에 무엇을 봤고, 그래서 무엇을 더 알고 싶어 하는지 알려 준다."""
+    items = [("좋은 운", a) for a in r["good"]] + [("조심할 운", a) for a in r["bad"]]
+    mine = [{"구분": k, "운": a["title"], "맛보기에서 본 글": a["text"]} for k, a in items if a["id"] == product]
+    out = {
+        "읽는 법": "이 고객은 무료 맛보기에서 아래 내용을 먼저 읽고 결제했습니다. 맛보기와 리포트는 같은 사주 계산에서 나왔습니다. "
+                 "고객은 맛보기에서 본 근거가 리포트에서 더 깊고 구체적으로 풀리기를 기대합니다. "
+                 "맛보기에서 좋은 운이라고 한 것은 언제, 어디서, 어떻게 그 운을 크게 쓰는지까지 쓰고, "
+                 "조심할 운이라고 한 것은 언제 조심하고 어떻게 막는지까지 씁니다. 맛보기와 반대되는 해석은 쓰지 않습니다.",
+        "좋은 운": [{"운": a["title"], "맛보기에서 본 글": a["text"]} for a in r["good"]],
+        "조심할 운": [{"운": a["title"], "맛보기에서 본 글": a["text"]} for a in r["bad"]],
     }
+    if mine:
+        out["이 상품을 산 이유"] = {**mine[0], "쓸 점": "이 항목이 고객이 이 리포트를 산 가장 큰 이유입니다. 이 근거를 리포트 여러 장에 걸쳐 가장 자세히 풀어 줍니다."}
+    return out
 
 
 def pillars_from_result(result: dict) -> FourPillars:
