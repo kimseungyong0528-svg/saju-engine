@@ -103,7 +103,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "return `<a href=\"${link(p)}\" class=\"product-card\">${art(p,p.id+'.cover','product-cover',`<h3>${p.short}</h3><p>${p.line}</p>`)}",
               "const poster=CARD_POSTERS[p.id];return `<a href=\"${link(p)}\" class=\"product-card${poster?' poster-card':''}\">${art(p,p.id+(poster?'.card':'.cover'),'product-cover',poster?'':`<h3>${p.short}</h3><p>${p.line}</p>`)}")
     s = _swap(s, "const cards=(ids,layout='rail')=>",
-              "const CARD_POSTERS={romance:'assets/geumwol/romance-poster-v2.jpg',intimate:'assets/geumwol/intimate-poster.jpg'};"
+              "const CARD_POSTERS={romance:'assets/geumwol/romance-poster-v2.jpg',intimate:'assets/geumwol/intimate-poster.jpg',reunion:'assets/geumwol/reunion-poster.jpg',career:'assets/geumwol/career-poster.jpg',business:'assets/geumwol/business-poster.jpg',wealth:'assets/geumwol/wealth-poster.jpg'};"
               "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀의 '+k,position:'50% 15%'};"
               "const cards=(ids,layout='rail')=>")
     s = _swap(s, "</head>", "<style>.poster-card .product-cover:after,.poster-card .product-cover:before{background:none!important}</style></head>")
