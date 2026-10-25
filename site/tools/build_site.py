@@ -302,7 +302,8 @@ def add_newyear(s: str) -> str:
 
 
 TASTER_CSS = (
-    ".taster-banner{background:linear-gradient(125deg,#3a1d24,#16121a)}.taster-banner h3{color:#fff}"
+    ".taster-banner{border:1px solid #d8bb7866;background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
+    ".taster-banner h3{color:#fff;text-shadow:0 2px 10px #000}.taster-banner p{text-shadow:0 2px 8px #000}"
     ".taster-banner .taster-cta{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:999px;background:#ee3656;color:#fff;font-size:16px;font-weight:700}"
     ".taster-form .taster-submit{width:100%;margin-top:22px}"
     ".taster-result h1{font-size:29px;line-height:1.45;margin:10px 0 18px}"
