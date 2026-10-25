@@ -342,8 +342,8 @@ def add_taster(s: str) -> str:
               "else if(route==='/support')supportPage();else if(route==='/taster')tasterPage();")
     s = _swap(s, '</div></div><section class="section"><div class="section-head"><h2>오리지널 연애 사주</h2>',
               '</div></div><section class="section"><a class="banner taster-banner" href="#/taster"><span class="eyebrow">무료 사주 분석</span>'
-              '<h3>당신의 6가지 핵심 운을<br>무료로 풀어드립니다.</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를 바로 알려드려요.</p>'
-              '<span class="taster-cta">무료로 내 운 보기</span></a></section>'
+              '<h3>당신의 6가지 핵심 운을<br>무료로 풀어드립니다.</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를<br>바로 알려드려요.</p>'
+              '<span class="taster-cta">무료로 나의 운 확인하기</span></a></section>'
               '<section class="section"><div class="section-head"><h2>오리지널 연애 사주</h2>')
     return s
 
