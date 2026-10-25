@@ -325,8 +325,9 @@ TASTER_CSS = (
     ".taster-more{display:block;font-size:17px;font-weight:700;line-height:1.6;color:#ff7b8f;text-decoration:underline;text-underline-offset:4px}"
     ".taster-item.good .taster-more{color:#6fcf97}"
     ".taster-lifetime{display:block;margin:28px 0 6px;padding:26px 20px;min-height:190px;border-radius:14px;border:1px solid #d8bb7866;"
-    "background:linear-gradient(90deg,#0d0a06f2 0%,#0d0a06c8 52%,#0d0a0630 100%),url(assets/geumwol/lifetime-story.jpg) right 32% / cover no-repeat}"
-    ".taster-lifetime strong{display:block;font-size:21px;margin:6px 0 8px;color:#fff}.taster-lifetime span:last-child{color:#d8bb78;font-size:16px;text-decoration:underline;text-underline-offset:4px}"
+    "background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
+    ".taster-lifetime strong{display:block;font-size:27px;line-height:1.4;margin:8px 0 12px;color:#fff;text-shadow:0 2px 10px #000}"
+    ".taster-lifetime span:last-child{color:#d8bb78;font-size:19px;font-weight:700;text-decoration:underline;text-underline-offset:4px;text-shadow:0 2px 8px #000}"
 )
 
 
