@@ -118,7 +118,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '<section class="section"><div class="section-head"><h2>오늘은 가볍게, 무료 사주</h2><p>혼자 발견하고, 함께 나누는 나의 이야기</p></div><div class="rail free-rail"><a href="#/free" class="banner"><span class="eyebrow">FREE READING</span><h3>내 안의<br>또 다른 나</h3><p>사주팔자 · 운명지도 · 전생</p><span class="pill">무료로 시작하기</span></a><a href="#/friends" class="banner friend-banner"><span class="eyebrow">OUR UNIVERSE</span><h3>친구와 나의<br>인연 우주</h3><p>우리 사이, 새로운 발견</p><span class="pill">함께 알아보기</span></a></div></section>', '')
     s = _swap(s, '<section class="section"><div class="section-head"><h2>태어난 시간을 모르겠다면</h2><p>나의 성향에서 찾는 시간의 실마리</p></div><a class="banner time-banner" href="#/birth"><span class="eyebrow">FIND MY TIME</span><h3>내가 태어난<br>시간을 찾아서</h3><p>몇 가지 질문으로 시작하는 시간 여행</p></a></section>', '')
     s = _swap(s, '<section class="section"><div class="section-head"><h2>이번 계절의 이야기</h2><p>지금 나에게 필요한 운세와 소식</p></div><div class="rail free-rail"><a class="banner monthly-banner" href="#/monthly"><span class="eyebrow">MONTHLY LETTER</span><h3>${new Date().getMonth()+1}월,<br>나의 운세 편지</h3><p>일간별로 펼쳐보는 이번 달</p></a><a class="banner" href="#/support"><span class="eyebrow">WITH YOU</span><h3>궁금한 이야기를<br>직접 물어보세요</h3><p>상담과 서비스 문의</p></a></div></section>',
-              '<section class="section"><div class="section-head"><h2>궁금한 점이 있다면</h2><p>주문과 결과 받기에 관한 문의</p></div><a class="banner" href="#/support"><span class="eyebrow">WITH YOU</span><h3>궁금한 이야기를<br>직접 물어보세요</h3><p>카카오톡으로 문의하기</p></a></section>')
+              '')  # 첫 화면 문의 배너는 뺀다(2026-10-25 사장님). 고객센터는 메뉴에 남아 있다.
     s = _swap(s, '<section class="section"><div class="section-head"><h2>조금 더 깊은 이야기</h2><p>프리미엄 1대1 상담</p></div><a class="banner premium-banner" href="#/support?type=premium"><span class="eyebrow">PRIVATE CONSULTATION</span><h3>오직 당신의<br>이야기에 집중하는 시간</h3><p>상담 일정과 이용 방법 알아보기</p></a></section>', '')
     s = _swap(s, '<div class="drawer-bottom"><a href="#/free">무료 사주</a><a href="#/support">고객센터</a></div>', '<div class="drawer-bottom"><a href="#/support">고객센터</a></div>')
     s = _swap(s, '서비스 이용과 리포트, 프리미엄 상담에 관한 안내를 확인하세요.', '주문과 결과 받기에 관한 안내를 확인하세요.')
@@ -302,7 +302,9 @@ def add_newyear(s: str) -> str:
 
 
 TASTER_CSS = (
-    ".taster-banner{border:1px solid #d8bb7866;background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
+    ".taster-banner{border:1px solid #d8bb7866}"
+    ".taster-banner.palace-banner{background-image:linear-gradient(90deg,#000000e0 5%,#000000c8 62%,#000000b0),var(--palace-bg)}"
+    ".taster-banner .eyebrow,.taster-banner p{text-shadow:0 1px 6px #000,0 0 3px #000}.taster-banner p{color:#f3ecdf;font-weight:500}"
     ".taster-banner h3{color:#fff;text-shadow:0 2px 10px #000}.taster-banner p{text-shadow:0 2px 8px #000}"
     ".taster-banner .taster-cta{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:999px;background:#ee3656;color:#fff;font-size:16px;font-weight:700}"
     ".taster-form .taster-submit{width:100%;margin-top:22px}"
@@ -338,6 +340,8 @@ def add_taster(s: str) -> str:
     page = (SITE / "tools" / "taster_page.js").read_text(encoding="utf-8")
     s = _swap(s, "</head>", f"<style>{TASTER_CSS}</style></head>")
     s = _swap(s, "function render(){", page + "function render(){")
+    # 배너 배경: 예전 문의 배너와 같은 서재 그림(palace.study).
+    s = _swap(s, "href.includes('support')?'palace.study'", "href.includes('support')||href.includes('taster')?'palace.study'")
     s = _swap(s, "else if(route==='/support')supportPage();",
               "else if(route==='/support')supportPage();else if(route==='/taster')tasterPage();")
     s = _swap(s, '</div></div><section class="section"><div class="section-head"><h2>오리지널 연애 사주</h2>',
