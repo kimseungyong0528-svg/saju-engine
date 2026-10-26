@@ -327,6 +327,10 @@ TASTER_CSS = (
     ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}"
     ".taster-more{display:block;font-size:17px;font-weight:700;line-height:1.6;color:#ff7b8f;text-decoration:underline;text-underline-offset:4px}"
     ".taster-item.good .taster-more{color:#6fcf97}"
+    ".taster-redo{display:block;width:100%;margin:14px 0 6px;padding:15px;border-radius:12px;border:1px solid #ffffff40;background:#1b1b1b;color:#fff;font-size:17px;font-weight:700}"
+    ".reuse-me{display:flex;gap:12px;align-items:flex-start;margin:0 0 16px;padding:16px;border-radius:14px;border:1px solid #d8bb7880;background:#1a1610;cursor:pointer}"
+    ".reuse-me input{width:22px;height:22px;margin:2px 0 0;flex:0 0 22px;accent-color:#d8bb78}"
+    ".reuse-me b{display:block;font-size:17px;color:#fff}.reuse-me small{display:block;margin-top:4px;font-size:14px;line-height:1.6;color:#bfb6a5}"
     ".taster-lifetime{display:block;margin:28px 0 6px;padding:26px 20px;min-height:190px;border-radius:14px;border:1px solid #d8bb7866;"
     "background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
     ".taster-lifetime strong{display:block;font-size:27px;line-height:1.4;margin:8px 0 12px;color:#fff;text-shadow:0 2px 10px #000}"
@@ -352,6 +356,30 @@ def add_taster(s: str) -> str:
     return s
 
 
+def add_input_helpers(s: str) -> str:
+    """입력 화면 손보기 (2026-10-26 사장님 요청).
+    1) 본인 정보 입력 화면 맨 위에 '전에 입력한 내 정보 그대로 쓰기' 체크.
+    2) 시·도 목록에서 옛 지역명을 빼고 짧은 이름(서울, 강원도, 광주·전남 …)으로 보여 준다.
+    3) '선택한 지역명은 언제 기준인가요?' 질문을 뺀다(사람들이 헷갈려 함)."""
+    page = (SITE / "tools" / "reuse_me.js").read_text(encoding="utf-8")
+    s = _swap(s, "function render(){", page + "function render(){")
+    s = _swap(s, '<form id="person-form" novalidate>${personFields(s.who,d[s.who])}',
+              '<form id="person-form" novalidate>${s.who===\'self\'?reuseBox(d.self,\'reuse-me\'):\'\'}${personFields(s.who,d[s.who])}')
+    s = _swap(s, "(v,valid)=>{d[s.who]=v;next.disabled=!valid;save()});",
+              "(v,valid)=>{d[s.who]=v;next.disabled=!valid;if(valid&&s.who==='self')rememberMe(v);save()});"
+              "if(s.type==='info'&&s.who==='self')bindReuse('reuse-me',v=>{d.self=v;save()});")
+    s = _swap(s, "KOREA_REGIONS.filter(r=>!r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}"
+                 "<optgroup label=\"예전 지역명으로 찾기\">${KOREA_REGIONS.filter(r=>r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}</optgroup>",
+              "plainRegions().map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(REGION_PLAIN[r.name])}</option>`).join('')}")
+    s = _swap(s, "목록에 없는 옛 지역명", "목록에 없어요 (직접 입력)")
+    s = _swap(s, "기억나는 옛 지역명", "태어난 곳 이름")
+    s = _swap(s, "예: 옛 시·군·구 이름", "예: 시·군·구 이름")
+    s = _swap(s, "q('[data-place-reference]').hidden=!referenceEnabled;", "q('[data-place-reference]').hidden=true;")
+    s = _swap(s, "enable('placeReferenceEra',referenceEnabled);", "enable('placeReferenceEra',false);")
+    s = _swap(s, "+(place&&['known','region-only'].includes(place.status)?'<br>'+e(locationEra):'');", ";")
+    return s
+
+
 def write_intake_module(s: str) -> None:
     parts = []
     for a, b in INTAKE_PARTS:
@@ -373,6 +401,7 @@ def main() -> None:
     write_intake_module(s)
     s = patch_texts(s, b)
     s = add_taster(s)
+    s = add_input_helpers(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")
