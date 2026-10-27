@@ -93,6 +93,7 @@ document.addEventListener('scroll',e=>{const r=e.target;if(!r.matches?.('[data-p
 
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
 // 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)
+const discounted=v=>Math.round(v*0.9);
 const BUNDLE_IDS=['newyear','lifetime','romance','wealth','career','business','health'];
 (()=>{try{const q=new URLSearchParams(location.search),ref=q.get('ref'),cp=q.get('coupon');
  if(ref)localStorage.setItem('unmyeong.ref',JSON.stringify({code:ref.slice(0,20),at:Date.now()}));
@@ -107,7 +108,7 @@ function bundleBlock(p,d){
   const mine=d.answers?.[st.id];if(!ea[x.id]?.[st.id]&&mine&&st.options.includes(mine))(ea[x.id]||(ea[x.id]={}))[st.id]=mine;
   const cur=ea[x.id]?.[st.id]||'';
   return `<label class="bundle-ask"><span>${esc(st.title)}</span><select data-extra-q="${x.id}" data-step="${st.id}"><option value="">선택해주세요</option>${st.options.map(o=>`<option${o===cur?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`}).join('');
- return `<section class="bundle-x"><span class="x-eyebrow">FIRST ORDER</span><h2 class="x-title">첫 구매 묶음 할인 <em>10%</em></h2><p class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 <b>전부 10% 할인</b>돼요. 같은 출생 정보로 리포트를 한 권씩 따로 보내드려요.</p><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price">${money(x.price)}</span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>`}).join('')}</div></section>`;
+ return `<section class="bundle-x"><span class="x-eyebrow">FIRST ORDER</span><h2 class="x-title">첫 구매 묶음 할인 <em>10%</em></h2><p class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 <b>전부 10% 할인</b>돼요. 같은 출생 정보로 리포트를 한 권씩 따로 보내드려요.</p><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>`}).join('')}</div></section>`;
 }
 const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문에 답해주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
@@ -116,7 +117,7 @@ function quoteBox(p,q){
  const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${money(x.price)}</span></div>`).join('')}</div>`:'';
  const dc=q.discount?`<div class="qb-disc"><span>${esc(q.discount.label)} <em>${q.discount.percent}%</em></span><strong>−${money(q.discount.amount)}</strong></div>`:'';
  const notes=[...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${QUOTE_NOTES[n]}</p>`).join('');
- return `<div class="price-box">${list}<div><span>정가</span><s>${money(orig)}</s></div><div><span>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span><strong>${money(q.amount)}</strong></div></div>${notes}`;
+ return `<div class="price-box">${list}<div><span>정가</span><s>${money(orig)}</s></div><div><span>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong><em>${q.discount.percent}%</em>${money(q.amount)}</strong></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
 }
 let quoteSeq=0;
 async function refreshQuote(p,d){
