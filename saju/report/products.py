@@ -111,3 +111,15 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
               "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
     items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
+
+
+def taster_recap(view: dict, current: str, site: str | None = None) -> dict:
+    """리포트 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' (2026-10-27 사장님 요청).
+    무료 분석과 같은 계산(saju/taster.py)의 6가지를 다시 짚고, 운마다 그 운을 깊게 다룬 리포트로 잇는다."""
+    names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
+    def item(kind: str, n: int, a: dict) -> dict:
+        pid = a["product"]
+        return {"kind": kind, "rank": n, "title": a["title"], "text": a["text"], "hook": a["hook"], "product": pid,
+                "product_name": names.get(pid, ""), "url": product_url(pid, site), "here": pid == current}
+    return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],
+            "bad": [item("bad", n, a) for n, a in enumerate(view["bad"], 1)]}

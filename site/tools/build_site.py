@@ -191,7 +191,8 @@ def patch_texts(s: str, b: dict) -> str:
               '<li>사주 결과는 리포트로 정리해서, 위에 적어 주신 이메일로 PDF 파일을 보내드려요.</li>'
               '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
               '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li>'
-              '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul></section>')
+              '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul>'
+              '<button type="button" class="kakao x-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button></section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
@@ -211,7 +212,7 @@ def patch_texts(s: str, b: dict) -> str:
 
 def legal_js(b: dict, contact: str) -> str:
     company = b.get("company") or "운명서재"
-    privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데에만 씁니다. 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
+    privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데 씁니다. 결제 화면에서 '할인·이벤트 소식 이메일 받기(선택)'에 동의하신 분께만 재구매 할인 코드와 친구 초대 링크를 이메일로 보냅니다. 동의하지 않아도 구매할 수 있고, 메일 끝의 링크로 언제든 수신을 거부할 수 있습니다. 그 밖의 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다. 첫 구매 묶음 할인을 확인하려고 이메일을 알아볼 수 없게 바꾼 값(해시)과 구매 여부를 보관하고, 할인 코드 사용 기록과 수신 거부 기록도 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
     terms = """<h2>1. 서비스</h2><p>운명서재는 입력한 출생 정보로 사주를 계산하고, 개인별 결과를 PDF로 작성해 결제 후 1일 이내에 이메일로 보내드립니다.</p><h2>2. 콘텐츠의 성격</h2><p>사주 결과는 자기 이해와 오락을 위한 참고 자료입니다. 의료, 법률, 투자 같은 중요한 판단을 대신하지 않습니다.</p><h2>3. 입력 정보</h2><p>결과는 입력한 정보로 작성됩니다. 생년월일이나 시간이 틀리면 결과도 달라지므로 정확히 입력해주세요.</p><h2>4. 저작권</h2><p>결과 PDF는 구매한 분의 개인적인 이용을 위해 제공되며, 무단으로 다시 팔거나 배포할 수 없습니다.</p>"""
     refund = f"""<h2>서비스 제공 기간</h2><p>결과 PDF는 결제 후 1일 이내에 주문할 때 입력한 이메일로 보내드립니다. 보통 10분 안에 도착합니다. 배송 상품이 아닙니다.</p><h2>결과를 보내기 전</h2><p>결제 후 결과 이메일을 보내기 전에는 전액 환불해 드립니다.</p><h2>결과를 보낸 뒤</h2><p>결과는 결제 후 개인별로 작성하는 디지털 콘텐츠라서, 이메일로 보낸 뒤에는 단순 변심으로 인한 환불이 어렵습니다(전자상거래법 제17조 제2항).</p><h2>오류가 있을 때</h2><p>이메일이 오지 않거나, 입력한 정보와 다른 내용으로 작성되는 등 오류가 있으면 다시 보내드리거나 전액 환불해 드립니다.</p><h2>문의</h2><p>{contact}</p>"""
     return "type==='privacy'?`" + privacy + "`:type==='terms'?`" + terms + "`:`" + refund + "`"
@@ -392,7 +393,7 @@ TRUST_CSS = (
     ".trust-stats div{padding:14px 12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff14}"
     ".trust-stats strong{display:block;font-size:24px;color:#d8bb78;margin-bottom:4px}.trust-stats span{font-size:14px;line-height:1.6;color:#bdb5a6}"
     ".trust-close{margin-top:24px;padding-top:20px;border-top:1px solid #d8bb7855}"
-    ".taster-after{padding-top:0!important;margin-top:-31px!important}.taster-after .taster-banner h3{font-size:21px;line-height:1.5;letter-spacing:0}"
+    ".taster-after{padding-top:0!important;margin-top:-31px!important}.taster-after .taster-banner h3{font-size:clamp(18px,calc((100vw - 90px)/12.8),26px);line-height:1.45;letter-spacing:0}.taster-after .taster-banner p{font-size:clamp(14px,calc((100vw - 90px)/16.8),18px)}"
     ".trust-close strong{display:block;font-size:21px;line-height:1.5;color:#fff}.trust-close p{font-size:16px;line-height:1.8;color:#e2dccf;margin:8px 0 0}"
 )
 
@@ -462,6 +463,144 @@ def fix_checkout_flow(s: str) -> str:
     return s
 
 
+
+# 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
+NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+PREVIEW_CAPS = ["표지", "목차", "오행 그림", "나의 사주표", "한눈에 보기"]
+REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
+                  "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
+
+EXTRAS_CSS = (
+    # 디자인 기준(UI UX Pro Max 추천: 검정 + 금색, 고급스러운 명조 제목, 얇은 금색 선, 큰 터치 영역 44px 이상)
+    ":root{--x-gold:#d8bb78;--x-gold-2:#f0d896;--x-ink:#0e0d0b;--x-card:#16130e;--x-line:#d8bb7838;--x-text:#efe8da;--x-muted:#a99f8c}"
+    ".x-eyebrow{display:block;font-size:12px;letter-spacing:.32em;color:var(--x-gold);font-weight:600}"
+    ".x-title{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-weight:700;font-size:28px;line-height:1.35;color:#fff;margin:10px 0 6px;letter-spacing:-.01em}"
+    ".x-sub{font-size:15px;line-height:1.6;color:var(--x-muted);margin:0 0 20px}"
+    ".x-cta{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:linear-gradient(180deg,var(--x-gold-2),var(--x-gold));color:#1a140a;font-size:17px;font-weight:800;text-decoration:none;box-shadow:0 6px 20px #d8bb7833;transition:transform .15s ease,box-shadow .2s ease}"
+    ".x-cta:active{transform:scale(.98)}"
+    ".x-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:50px;margin-top:14px;border-radius:12px;border:1px solid var(--x-line);background:#ffffff08;color:var(--x-gold);font-size:16px;font-weight:700;cursor:pointer}"
+    ".x-more svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .2s ease}.x-more[data-open='1'] svg{transform:rotate(180deg)}"
+    # 목차
+    ".toc-x{margin:24px 20px;padding:28px 20px 22px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
+    ".toc-list{list-style:none;margin:0;padding:0;counter-reset:none}"
+    ".toc-list li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid #ffffff12}"
+    ".toc-list li:first-child{border-top:0}"
+    ".toc-n{flex:0 0 34px;font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:20px;line-height:1.3;color:var(--x-gold);font-weight:700}"
+    ".toc-list b{display:block;font-size:17px;line-height:1.45;color:var(--x-text);font-weight:700}"
+    ".toc-list small{display:block;margin-top:3px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
+    # 미리보기
+    ".pv-x{margin:24px 0;padding:0 20px;text-align:left}"
+    ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:4px 20px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.pv-rail::-webkit-scrollbar{display:none}"
+    ".pv-page{position:relative;flex:0 0 68%;max-width:280px;scroll-snap-align:center;padding:0;border:1px solid var(--x-line);background:#f1e8d4;border-radius:10px;overflow:hidden;cursor:zoom-in;box-shadow:0 12px 28px #000a}"
+    ".pv-page img{display:block;width:100%;height:auto;aspect-ratio:720/1018}"
+    ".pv-cap{position:absolute;left:10px;bottom:10px;padding:5px 11px;border-radius:999px;background:#0e0d0bd9;color:var(--x-gold);font-size:13px;font-weight:700;border:1px solid var(--x-line)}"
+    ".pv-dots{display:flex;justify-content:center;gap:6px}.pv-dots i{width:6px;height:6px;border-radius:50%;background:#ffffff30;transition:all .2s ease}.pv-dots i.on{width:18px;border-radius:3px;background:var(--x-gold)}"
+    ".pv-modal{padding:0;max-width:min(94vw,640px);background:var(--x-ink);border:1px solid var(--x-line);border-radius:14px;overflow:hidden}"
+    ".pv-fig{margin:0}.pv-big{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;background:#f1e8d4}"
+    ".pv-fig figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;color:var(--x-text);font-size:15px;font-weight:700}"
+    ".pv-fig em{font-style:normal;color:var(--x-muted);font-weight:500;margin-left:6px}"
+    ".pv-nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--x-line);background:#ffffff0a;color:var(--x-gold);font-size:24px;line-height:1;cursor:pointer}"
+    # 결제 화면(밝은 바탕이 아닌 검정 화면) 안의 목차·미리보기는 여백만 줄인다.
+    ".checkout .toc-x{margin:18px 0}.checkout .pv-x{padding:0;margin:18px 0}.checkout .pv-rail{margin:0;padding:4px 0 14px}"
+    # 신년 이벤트
+    ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
+    ".entry-modal{padding:0;overflow:hidden;width:min(90vw,380px);max-width:none;border:1px solid var(--x-line);border-radius:20px;background:var(--x-ink);color:#fff;box-shadow:0 30px 80px #000}"
+    ".entry-art{position:relative;height:190px;overflow:hidden}.entry-art img{width:100%;height:100%;object-fit:cover;object-position:center 25%}"
+    ".entry-art:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,var(--x-ink))}"
+    ".entry-tag{position:absolute;left:16px;top:16px;z-index:1;padding:4px 12px;border-radius:999px;background:#a8262b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.14em}"
+    ".entry-body{padding:4px 24px 20px;text-align:center}.entry-title{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:30px;font-weight:700;margin:6px 0 8px}"
+    ".entry-lead{font-size:15px;line-height:1.65;color:var(--x-text);margin:0 0 16px}"
+    ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:14px;background:#ffffff08;border:1px solid var(--x-line);margin-bottom:12px}"
+    ".entry-count span{font-size:14px;color:var(--x-muted)}.entry-count b{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:28px;color:var(--x-gold-2);letter-spacing:.02em}"
+    ".entry-bundle{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;background:#a8262b22;border:1px solid #f09c9c55;margin-bottom:12px}"
+    ".entry-bundle b{color:#ffd5d5;font-size:15px}.entry-bundle span{font-size:14px;line-height:1.55;color:var(--x-text)}"
+    ".entry-go{margin:14px 0 6px}.entry-hide{min-height:44px;border:0;background:none;color:var(--x-muted);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
+    # 무료 결과 공유
+    ".taster-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin:22px 0 0;border-radius:14px;border:1px solid var(--x-gold);background:#d8bb7812;color:var(--x-gold-2);font-size:17px;font-weight:800;cursor:pointer}"
+    ".taster-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}"
+    # 카카오톡 버튼(카카오 공식 노란색 + 말풍선)
+    ".kakao.x-kakao{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;background:#fee500;color:#191600;border-radius:14px;font-size:17px;font-weight:700}"
+    ".x-kakao svg{width:20px;height:20px;fill:#191600}.foot-kakao{margin:0 0 20px;min-height:50px!important;font-size:16px!important}"
+    # 2단계 할인: 첫 구매 묶음 할인 고르기, 금액 안내, 광고 메일 동의
+    ".bundle-x{margin:22px 0;padding:24px 18px 18px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
+    ".bundle-x .x-title{font-size:24px}.bundle-x .x-title em{font-style:normal;color:var(--x-gold-2)}.bundle-x .x-sub b{color:var(--x-text)}"
+    ".bundle-list{display:flex;flex-direction:column;gap:8px}"
+    ".bundle-item{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px 14px;border-radius:12px;border:1px solid #ffffff18;background:#ffffff06;cursor:pointer;transition:border-color .15s ease,background .15s ease}"
+    ".bundle-item:has(input:checked){border-color:var(--x-gold);background:#d8bb7814}"
+    ".bundle-item input{width:22px;height:22px;accent-color:var(--x-gold);flex:0 0 auto}"
+    ".bundle-q{display:none;padding:10px 4px 4px 14px}.bundle-row:has(input:checked) .bundle-q{display:block}"
+    ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
+    ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
+    ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}.bundle-price{font-size:15px;color:var(--x-muted)}"
+    ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
+    ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
+    ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
+    ".mk-help{margin:2px 0 6px 30px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
+    "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.pv-dots i,.bundle-item{transition:none}}"
+)
+
+
+def extras_data() -> dict:
+    """목차(saju/report 의 SECTIONS, 숫자 장만)와 미리보기 그림 목록."""
+    import importlib
+    sys.path.insert(0, str(SITE.parent))
+    toc = {}
+    for pid, mod in REPORT_MODULES.items():
+        sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
+        toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
+    caps = {"lifetime": ["표지", "목차", "오행 그림", "나의 사주표", "타고난 기질"]}
+    preview = {pid: [[f"assets/preview/{f.name}", caps.get(pid, PREVIEW_CAPS)[n]]
+                     for n, f in enumerate(sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp")))]
+               for pid in REPORT_MODULES}
+    return {"toc": toc, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
+
+
+def add_extras(s: str) -> str:
+    """사이트 추가 기능 1단계 (2026-10-27 사장님 선택 12개 중 화면만 바뀌는 것).
+    목차 펼쳐보기, 리포트 미리보기, 카카오톡 버튼, 신년 이벤트 남은 날짜와 첫 화면 팝업, 무료 결과 공유 그림."""
+    page = (SITE / "tools" / "extras.js").read_text(encoding="utf-8")
+    data = json.dumps(extras_data(), ensure_ascii=False, separators=(",", ":"))
+    s = _swap(s, "</head>", '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+              '<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">'
+              f"<style>{EXTRAS_CSS}</style></head>")
+    s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
+    # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
+    s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
+              "${tocBlock(p)}${previewBlock(p)}")
+    # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
+    s = _swap(s, '<section class="checkout-birth-summary">', '${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
+    s = _swap(s, '<span class=\"event-tag\">EVENT</span>', '<span class=\"event-tag\">EVENT</span>${eventBadge()}')
+    s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
+              '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
+    s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
+    s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao x-kakao foot-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button><div class="footer-links">')
+    return add_discounts(s)
+
+
+def add_discounts(s: str) -> str:
+    """사이트 추가 기능 2단계: 결제 화면의 첫 구매 묶음 할인·할인 코드·친구 초대·광고 메일 동의. 금액은 서버가 계산한다."""
+    s = _swap(s, '<div class="field" hidden><label for="coupon">할인 쿠폰</label><p class="field-help">이메일을 입력한 뒤 쿠폰을 적용해주세요.</p>',
+              '<div class="field"><label for="coupon">할인 코드 (선택)</label><p class="field-help">재구매·친구 초대로 받은 코드가 있으면 넣고 적용을 눌러주세요.</p>')
+    s = _swap(s, 'placeholder="쿠폰 코드"', 'placeholder="예) UNM-ABC123"')
+    s = _swap(s, '<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,d.discount||0)}</div>',
+              '${bundleBlock(p,d)}<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,0)}</div>')
+    s = _swap(s, '<button type="button" data-consent="payment">자세히</button></div></fieldset>',
+              '<button type="button" data-consent="payment">자세히</button></div><div><label class="check-line"><input type="checkbox" name="marketing">할인·이벤트 소식 이메일 받기 (선택)</label></div>'
+              '<p class="mk-help">동의하시면 재구매 10% 할인 코드와 친구 초대 링크를 메일로 보내드려요. 메일 끝의 링크로 언제든 수신 거부할 수 있어요.</p></fieldset>')
+    s = _swap(s, "form.elements.payment.checked=e.target.checked;update()}",
+              "form.elements.payment.checked=e.target.checked;if(form.elements.marketing){form.elements.marketing.checked=e.target.checked;d.marketing=e.target.checked}update()}")
+    s = _swap(s, "update();if(d.discount)document.querySelector('#coupon-message').textContent=money(d.discount)+' 체험 할인이 적용되어 있어요.'}",
+              "update();bindDiscounts(p,d)}")
+    # 예전 체험용 쿠폰(UNMYEONG5000) 대신 서버가 확인하는 코드만 쓴다. 친구 초대 코드와 묶음 상품을 주문에 함께 보낸다.
+    s = _swap(s, " if(Number(draft.discount||0)>0)throw Error('COUPON_NOT_AVAILABLE');\n",
+              " draft={...draft,ref:savedRef(),extras:EXTRA_DATA.bundle?(draft.extras||[]):[]};delete draft.discount;\n")
+    s = _swap(s, "orderName:config.productNames?.[productId]??'운명서재 사주 결과',",
+              "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
+    s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
+              "e.message==='COUPON_INVALID'?'할인 코드를 쓸 수 없어요. 코드 칸을 비우고 다시 결제해주세요.'")
+    return s
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -528,6 +667,7 @@ def main() -> None:
     s = add_input_helpers(s)
     s = add_trust(s)
     s = fix_checkout_flow(s)
+    s = add_extras(s)
     s = extract_font(s)
     s = fix_story_face(s)
     s = optimize_images(s)

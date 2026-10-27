@@ -73,11 +73,12 @@ test('접수 확인: 두 사람 상품은 상대방 생일이 없으면 막는�
   assert.equal(d.paymentAllowed, false); assert.equal(d.code, 'PARTNER_BIRTH_REQUIRED');
 });
 
-test('주문: 금액은 서버 가격, 쿠폰·이메일 오류는 거절, 같은 키는 같은 주문', async () => {
+test('주문: 금액은 서버 가격, 없는 할인 코드·이메일 오류는 거절, 같은 키는 같은 주문', async () => {
   const t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck' } });
   const { r, body } = await order(t);
   assert.equal(r.status, 201); assert.equal(body.amount, 49800); assert.match(body.orderId, /^[a-f0-9-]{36}$/);
-  assert.equal((await order(t, { discount: 5000 })).body.code, 'COUPON_NOT_AVAILABLE');
+  assert.equal((await order(t, { discount: 5000 })).body.amount, 49800);   // 화면이 보낸 할인값은 무시
+  assert.equal((await order(t, { coupon: 'UNMYEONG5000' })).body.code, 'COUPON_INVALID');
   assert.equal((await order(t, { email: 'nope' })).body.code, 'EMAIL_REQUIRED');
   const h = { 'Idempotency-Key': 'same-key-123' };
   const a = await (await t.call('POST', '/api/orders', { body: { ...draft, productId: 'lifetime' }, headers: h })).json();

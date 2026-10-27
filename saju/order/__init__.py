@@ -50,13 +50,16 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     me = analyze_person(payload["self"], current_year=when.year)
     order, answers = order_info(product, payload, when)
     # 고객이 무료 맛보기에서 본 좋은 운·조심할 운(같은 사주 계산)을 글쓰기에 넘겨, 고객이 기대하는 내용을 더 깊게 풀게 한다.
-    seen = taster.digest(taster.reading_for_person(me), product)
+    # 같은 6가지는 책 맨 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' 쪽에도 그대로 싣는다(2026-10-27 사장님).
+    # 재구매 10% 할인 코드도 그 쪽에 크게 싣는다(주문 서버가 주문마다 만들어 job["rebuy"]로 준다).
+    view = taster.reading_for_person(me)
+    seen = taster.digest(view, product)
     if product == "lifetime":
-        return make_lifetime_report(me, order, out_pdf, writer, taster=seen)
+        return make_lifetime_report(me, order, out_pdf, writer, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
     if product == "romance":
-        return make_romance_report(me, order, out_pdf, writer, taster=seen)
+        return make_romance_report(me, order, out_pdf, writer, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
     partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS else None
-    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen)
+    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
 
 
 def blocking(issues: list[dict]) -> list[dict]:
