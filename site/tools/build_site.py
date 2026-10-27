@@ -441,6 +441,27 @@ def write_intake_module(s: str) -> None:
     (LIB / "intake.mjs").write_text(code, encoding="utf-8")
 
 
+def fix_checkout_flow(s: str) -> str:
+    """결제 화면 버튼은 처음부터 카드 그림 + '결제하고 결과 받기' 하나만 둔다(사장님 2026-10-27).
+
+    누르면 입력·접수 기준을 확인하고, 통과하면 바로 결제창을 연다. 확인 결과 칸은 버튼 바로 아래에 두어
+    화면이 위로 튀지 않게 한다(예전에는 이메일 칸 위에 있었다).
+    """
+    card = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3ZM3 10h18"/></svg>'
+
+    status = '<section id="intake-status" aria-live="polite">${intakeNotice(evaluateIntake(intakePayload(p.id,d)),p.id)}</section>'
+    s = _swap(s, status, "")
+    s = _swap(s, '<button class="primary dark-primary" id="pay" type="submit" disabled>입력 확인하기</button><p class="fine-print">입력 확인이 끝나면 결제 버튼이 나타나요. 결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p>',
+              '<button class="primary dark-primary pay-button" id="pay" type="submit" disabled>' + card + '결제하고 결과 받기</button>' + status)
+    # 확인을 통과하면 숨은 결제 시작 버튼을 바로 눌러 결제창을 연다. 실패 안내는 그 아래에 뜨고, '결제하기'를 다시 누르면 된다.
+    s = _swap(s, "if(result.paymentAllowed)bindReadyCheckout(area,p,d);area.scrollIntoView({behavior:'smooth',block:'center'});",
+              "if(result.paymentAllowed){bindReadyCheckout(area,p,d);area.querySelector('[data-start-payment]')?.click()}area.scrollIntoView({behavior:'smooth',block:'nearest'});")
+    s = _swap(s, "button.dataset.startPayment='true';button.textContent=product.price.toLocaleString('ko-KR')+'원 결제하기';",
+              "button.dataset.startPayment='true';button.hidden=true;button.style.display='none';button.textContent='결제하기';")
+    s = _swap(s, "</head>", "<style>.pay-button{display:flex;align-items:center;justify-content:center;gap:8px}.pay-button .icon{width:20px;height:20px}</style></head>")
+    return s
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -506,6 +527,7 @@ def main() -> None:
     s = add_taster(s)
     s = add_input_helpers(s)
     s = add_trust(s)
+    s = fix_checkout_flow(s)
     s = extract_font(s)
     s = fix_story_face(s)
     s = optimize_images(s)
