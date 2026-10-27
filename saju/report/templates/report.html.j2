@@ -196,6 +196,25 @@
   <tr><th>사주의 틀</th><td class="left">{{ f.strength.label }} · {{ f.gyeokguk.name }}</td></tr>
   <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
   <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
+{%- elif k == "taster_recap" -%}
+  <p>{{ f.person.name }} 님은 운명서재 무료 사주 분석에서 좋은 운 3개와 조심할 운 3개를 먼저 보셨어요. 이 책과 같은 사주 계산에서 나온 결과예요. 여섯 가지를 다시 짚고, 운마다 그 운을 가장 깊게 풀어 주는 리포트를 함께 알려 드릴게요.</p>
+  {% for group, label in [(recap.good, "좋은 운"), (recap.bad, "조심할 운")] %}
+  <h3 class="recap-head {{ 'good' if label == '좋은 운' else 'bad' }}">{{ label }} TOP 3</h3>
+  {% for a in group %}
+  <div class="recap {{ a.kind }}">
+    <p class="recap-title"><span class="recap-rank">{{ label }} {{ a.rank }}위</span> {{ a.title }}</p>
+    <p>{{ a.text }}</p>
+    <p class="recap-hook">{{ a.hook }}</p>
+    {% if a.here %}<p class="recap-go">이 책에서 이 운을 가장 자세히 풀었어요.</p>{% else %}<p class="recap-go"><a href="{{ a.url }}">나의 {{ a.product_name }} 자세히 보기 →</a></p>{% endif %}
+  </div>{% endfor %}{% endfor %}
+  {% if f.rebuy %}
+  <div class="rebuy">
+    <p class="rebuy-top">{{ f.person.name }} 님만을 위한 다음 리포트 할인</p>
+    <p class="rebuy-big">10% 할인</p>
+    <p>이 책을 받아 보신 분께 다음 리포트를 10% 할인해 드려요. 위에서 더 알고 싶은 운이 있다면 지금이 가장 좋은 때예요.</p>
+    <p class="rebuy-code">할인 코드 <b>{{ f.rebuy.code }}</b></p>
+    <p class="rebuy-sub">{{ f.rebuy.until }}까지 · 주문할 때 할인 코드 칸에 넣거나, <a href="{{ f.rebuy.url }}">여기를 누르면</a> 자동으로 들어가요.</p>
+  </div>{% endif %}
 {%- elif k == "cross_sell" -%}
   <p>{{ product.more_intro }} 이름이나 '바로 보기'를 누르면 운명서재의 해당 페이지로 이동해요.</p>
   {% for p in more %}
