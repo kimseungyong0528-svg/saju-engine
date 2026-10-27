@@ -1,6 +1,7 @@
 // 주문 규칙: 접수 확인, 주문 만들기, 상태 바꾸기. 저장소(store)와 바깥 서비스(services)는 밖에서 넣어 준다.
 import { createHash, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { INTAKE_POLICY_VERSION, PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
+import { quote, afterPaid, extraBody } from './discounts.mjs';
 
 export const CALCULATION_VERSION = 'saju-engine-0.2';
 export const COVERAGE_VERSION = '2026-10-12';
@@ -78,15 +79,24 @@ export async function createOrder(store, body, idempotencyKey, now = new Date(),
     if (order && order.status === 'awaiting_payment') return { orderId: order.id, accessToken: seen.accessToken, amount: order.amount, status: order.status };
     throw new ApiError(409, 'ORDER_ALREADY_USED');
   }
-  if (Number(body?.discount || 0) > 0) throw new ApiError(400, 'COUPON_NOT_AVAILABLE');
   const email = String(body?.email || '').trim();
   if (!EMAIL.test(email) || email.length > 254) throw new ApiError(400, 'EMAIL_REQUIRED');
   const decision = assess(body);
   if (!decision.paymentAllowed) throw new ApiError(400, decision.code || 'INTAKE_NOT_ALLOWED');
-  const product = PRODUCTS.find(p => p.id === decision.payload.productId);
+  // 금액은 서버가 계산한다(묶음·할인 코드·친구 초대 중 하나만, 모두 10%). 화면이 보낸 금액·할인값은 쓰지 않는다.
+  const price = await quote(store, { ...body, email }, now);
+  if (price.notes.includes('COUPON_INVALID')) throw new ApiError(400, 'COUPON_INVALID');
+  // 함께 사는 상품은 같은 출생 정보로 결제가 끝난 뒤 따로 만든다(상품마다 PDF 한 권).
+  const bundle = price.extras.map(pid => {
+    const x = assess(extraBody(body, pid));
+    if (!x.paymentAllowed) throw new ApiError(400, x.code || 'INTAKE_NOT_ALLOWED');
+    return { productId: pid, payload: x.payload, disclosures: x.disclosures || [] };
+  });
   const id = randomUUID(), accessToken = randomBytes(24).toString('base64url');
   const order = {
-    id, productId: product.id, amount: product.price, email, status: 'awaiting_payment',
+    id, productId: decision.payload.productId, amount: price.amount, base: price.base, email, status: 'awaiting_payment',
+    ...(price.discount ? { discount: price.discount } : {}), ...(bundle.length ? { bundle } : {}),
+    marketing: body?.marketing === true,
     tokenHash: sha256(accessToken), payload: decision.payload, disclosures: decision.disclosures || [],
     createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'awaiting_payment', at: now.toISOString() }],
     resends: 0, ...(testOnly ? { testOnly: true } : {}),
@@ -142,14 +152,30 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
   if (order.testOnly) {
     // 시험 결제(심사용): 결과를 만들지 않고 출생 정보·질문은 바로 지운다.
     setStatus(order, 'test_paid', now);
-    delete order.payload; delete order.disclosures;
+    delete order.payload; delete order.disclosures; delete order.bundle;
     await store.set(`orders/${order.id}`, order);
     return order;
   }
   setStatus(order, 'queued', now);
+  const bundle = order.bundle || [];
+  delete order.bundle;
+  order.children = [];
+  const children = bundle.map(b => {
+    const child = {
+      id: randomUUID(), productId: b.productId, amount: 0, parentId: order.id, email: order.email, status: 'queued',
+      tokenHash: order.tokenHash, payload: b.payload, disclosures: b.disclosures || [], marketing: order.marketing,
+      createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'queued', at: now.toISOString() }], resends: 0,
+    };
+    order.children.push(child.id);
+    return child;
+  });
   await store.set(`orders/${order.id}`, order);
-  try { await services.startWorker(order.id); }
-  catch (e) { setStatus(order, 'retry', now, 'worker dispatch failed'); await store.set(`orders/${order.id}`, order); }
+  for (const c of children) await store.set(`orders/${c.id}`, c);
+  await afterPaid(store, services, order, now).catch(e => console.error('afterPaid', e?.message));
+  for (const o of [order, ...children]) {
+    try { await services.startWorker(o.id); }
+    catch (e) { setStatus(o, 'retry', now, 'worker dispatch failed'); await store.set(`orders/${o.id}`, o); }
+  }
   return order;
 }
 
@@ -230,7 +256,7 @@ export async function eraseOld(store, now = new Date()) {
       setStatus(order, 'payment_expired', now);
     } else if (DONE.has(order.status) && age > RETENTION_DAYS) {
       setStatus(order, 'erased', now);
-      delete order.payload; delete order.disclosures; delete order.mailName;
+      delete order.payload; delete order.disclosures; delete order.mailName; delete order.bundle;
       await store.delete(`pdf/${order.id}`);
       erased += 1;
     } else continue;
