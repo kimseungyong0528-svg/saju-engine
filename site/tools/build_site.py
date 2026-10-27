@@ -191,7 +191,8 @@ def patch_texts(s: str, b: dict) -> str:
               '<li>사주 결과는 리포트로 정리해서, 위에 적어 주신 이메일로 PDF 파일을 보내드려요.</li>'
               '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
               '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li>'
-              '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul></section>')
+              '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul>'
+              '<button type="button" class="kakao" data-action="support">카카오톡으로 물어보기</button></section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
@@ -462,6 +463,66 @@ def fix_checkout_flow(s: str) -> str:
     return s
 
 
+
+# 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
+NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
+                  "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
+
+EXTRAS_CSS = (
+    ".toc-toggle{display:block;margin:6px auto 0;padding:13px 22px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:16px;font-weight:700}"
+    ".report-preview{padding:10px 0 40px;text-align:center}.report-preview>h2{font-size:30px;margin:16px 0 8px}.pv-lead{font-size:15px;color:#bdb5a6;margin:0 0 16px}"
+    ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 24px 12px;-webkit-overflow-scrolling:touch}"
+    ".pv-page{flex:0 0 72%;max-width:300px;scroll-snap-align:center;padding:0;border:0;background:none;border-radius:6px;overflow:hidden;box-shadow:0 8px 24px #0009}"
+    ".pv-page img{display:block;width:100%;height:auto}.pv-note{font-size:14px;color:#9b937f;margin:6px 24px 0}"
+    ".pv-modal{padding:0;max-width:min(94vw,720px);background:#111}.pv-big{display:block;width:100%;height:auto;max-height:88vh;object-fit:contain}"
+    ".event-dday{display:inline-block;margin-left:6px;padding:3px 10px;border-radius:999px;background:#fff;color:#a8262b;font-size:13px;font-weight:800;vertical-align:middle}"
+    ".taster-share{display:block;width:100%;margin:22px 0 0;padding:16px;border-radius:14px;border:1px solid #d8bb78;background:#d8bb7814;color:#f0c75e;font-size:17px;font-weight:800}"
+    ".foot-kakao{margin:0 0 18px}"
+    ".checkout .chapters{padding:28px 0 8px}.checkout .chapters>h2{font-size:26px;margin:10px 0 18px}.checkout .chapter{padding:16px 18px;margin:10px 0}"
+    ".checkout .chapter>span{font-size:22px}.checkout .chapter h3{font-size:19px;line-height:1.5}.checkout .chapter p{font-size:14px;line-height:1.6;margin:4px 0 0}"
+    ".checkout .report-preview{padding:4px 0 24px}.checkout .pv-rail{padding:4px 0 12px}"
+    ".entry-modal{padding:0;overflow:hidden;max-width:min(88vw,380px);border:1px solid #f09c9c66;background:linear-gradient(180deg,#000000b0,#000000f0),var(--entry-bg,#2b1515) center/cover;color:#fff}"
+    ".entry-pop{padding:34px 24px 22px;text-align:center}.entry-tag{display:inline-block;padding:3px 12px;border-radius:999px;background:#a8262b;font-size:13px;font-weight:800;letter-spacing:.08em}"
+    ".entry-pop h2{font-size:28px;margin:12px 0 6px}.entry-dday{font-size:18px;margin:0 0 14px;color:#f6c4c4}.entry-dday b{font-size:26px;color:#fff}"
+    ".entry-pop p{font-size:16px;line-height:1.7;margin:0 0 12px}.entry-bundle{padding:12px;border-radius:12px;background:#ffffff14;border:1px solid #f09c9c55}.entry-bundle b{color:#f0c75e}"
+    ".entry-go{display:block;margin:18px 0 10px;text-decoration:none}.entry-hide{border:0;background:none;color:#bdb5a6;font-size:14px;text-decoration:underline}"
+)
+
+
+def extras_data() -> dict:
+    """목차(saju/report 의 SECTIONS, 숫자 장만)와 미리보기 그림 목록."""
+    import importlib
+    sys.path.insert(0, str(SITE.parent))
+    toc = {}
+    for pid, mod in REPORT_MODULES.items():
+        sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
+        toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
+    preview = {pid: [f"assets/preview/{f.name}" for f in sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp"))]
+               for pid in REPORT_MODULES}
+    return {"toc": toc, "preview": preview, "event": NEWYEAR_EVENT, "bundle": False}
+
+
+def add_extras(s: str) -> str:
+    """사이트 추가 기능 1단계 (2026-10-27 사장님 선택 12개 중 화면만 바뀌는 것).
+    목차 펼쳐보기, 리포트 미리보기, 카카오톡 버튼, 신년 이벤트 남은 날짜와 첫 화면 팝업, 무료 결과 공유 그림."""
+    page = (SITE / "tools" / "extras.js").read_text(encoding="utf-8")
+    data = json.dumps(extras_data(), ensure_ascii=False, separators=(",", ":"))
+    s = _swap(s, "</head>", f"<style>{EXTRAS_CSS}</style></head>")
+    s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
+    # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
+    s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
+              "${tocBlock(p)}${previewBlock(p)}")
+    # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
+    s = _swap(s, '<section class="checkout-birth-summary">', '${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
+    s = _swap(s, '<span class=\"event-tag\">EVENT</span>', '<span class=\"event-tag\">EVENT</span>${eventBadge()}')
+    s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
+              '<button type="button" class="taster-share" data-taster-share>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
+    s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
+    s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao foot-kakao" data-action="support">카카오톡으로 물어보기</button><div class="footer-links">')
+    return s
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -528,6 +589,7 @@ def main() -> None:
     s = add_input_helpers(s)
     s = add_trust(s)
     s = fix_checkout_flow(s)
+    s = add_extras(s)
     s = extract_font(s)
     s = fix_story_face(s)
     s = optimize_images(s)
