@@ -301,7 +301,8 @@ def reading(fp: FourPillars, name: str, sex: str) -> dict:
         own = sorted([r for r in a["reasons"] if (r[1] > 0) - (r[1] < 0) == sign], key=lambda r: -abs(r[1]))
         key, _, values = own[0] if own else (f"{PREFIX[a['id']]}_base_{'good' if sign > 0 else 'bad'}", 0, {})
         return {**T["AREAS"][a["id"]], "id": a["id"], "score": a["score"], "reason": key,
-                "text": fill(T["REASONS"][key], {"name": name, **values})}
+                "text": fill(T["REASONS"][key], {"name": name, **values}),
+                "hook": fill(T["HOOKS"][key], {"name": name, **values})}
 
     return {"good": [pick(a, 1) for a in good], "bad": [pick(a, -1) for a in bad],
             "scores": {a["id"]: a["score"] for a in areas}}

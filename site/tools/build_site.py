@@ -13,6 +13,7 @@
 
 import base64
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -324,7 +325,7 @@ TASTER_CSS = (
     ".taster-head{font-size:23px;margin:30px 0 12px;padding-left:12px;border-left:4px solid #6fcf97}.taster-head.bad{border-left-color:#ee3656}"
     ".taster-item{padding:18px 18px 16px;margin:0 0 12px;border-radius:14px;background:#171717;border:1px solid #ffffff17}"
     ".taster-rank span{font-size:14px;font-weight:700;color:#6fcf97}.taster-item.bad .taster-rank span{color:#ff7b8f}"
-    ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}"
+    ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}.taster-item p.taster-hook{font-weight:800;color:#fff;margin:-2px 0 14px}"
     ".taster-more{display:block;font-size:17px;font-weight:700;line-height:1.6;color:#ff7b8f;text-decoration:underline;text-underline-offset:4px}"
     ".taster-item.good .taster-more{color:#6fcf97}"
     ".taster-redo{display:block;width:100%;margin:14px 0 6px;padding:15px;border-radius:12px;border:1px solid #ffffff40;background:#1b1b1b;color:#fff;font-size:17px;font-weight:700}"
@@ -442,6 +443,60 @@ def write_intake_module(s: str) -> None:
     (LIB / "intake.mjs").write_text(code, encoding="utf-8")
 
 
+def extract_font(s: str) -> str:
+    """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
+    m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
+    if not m:
+        return s
+    out = PUBLIC / "assets/fonts/PretendardVariable.woff2"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(base64.b64decode(m.group(1)))
+    s = s[:m.start()] + "url('assets/fonts/PretendardVariable.woff2')" + s[m.end():]
+    return _swap(s, '<meta charset="UTF-8">', '<meta charset="UTF-8"><link rel="preload" href="assets/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>')
+
+
+def fix_story_face(s: str) -> str:
+    """눈·입 조각은 인물 사진이 다 뜬 뒤에만 보이게 한다(2026-10-27 사장님: 눈코입만 둥둥 뜸).
+
+    SVG의 visibility="visible"은 숨긴 부모 안에서도 보이므로, 인물보다 먼저 받은 눈·입 그림이 따로 떠 있었다.
+    """
+    s = _swap(s, "loadImage(face.neural.atlas).then(ok=>{if(disposed)return;blinkReady=ok;eyeWindow.setAttribute('visibility',ok?'visible':'hidden')});",
+              "const personShown=new Promise(r=>{showFace=r});"
+              "Promise.all([loadImage(face.neural.atlas),personShown]).then(([ok])=>{if(disposed)return;blinkReady=ok;eyeWindow.setAttribute('visibility',ok?'visible':'hidden')});")
+    s = _swap(s, "smileLoaded.then(ok=>{if(disposed)return;smileReady=ok;if(ok)paintExpression();smileWindow.setAttribute('visibility',ok?'visible':'hidden')});",
+              "Promise.all([smileLoaded,personShown]).then(([ok])=>{if(disposed)return;smileReady=ok;if(ok)paintExpression();smileWindow.setAttribute('visibility',ok?'visible':'hidden')});")
+    # 인물 사진을 받은 뒤 그림으로 풀어 놓기(decode)까지 기다려야 빈칸 없이 한 번에 나온다.
+    s = _swap(s, "stage.classList.toggle('story-person-missing',!ok);portrait.classList.add('is-ready')});",
+              "stage.classList.toggle('story-person-missing',!ok);portrait.classList.add('is-ready');if(ok)showFace()});")
+    s = _swap(s, " const initial=STORY_MEDIA[stage.dataset.artKey],face=STORY_FACES[stage.dataset.product];",
+              " let showFace=()=>{};const initial=STORY_MEDIA[stage.dataset.artKey],face=STORY_FACES[stage.dataset.product];")
+    # 다 받은 사진도 화면에 그리기 전에 풀어 두어야 몸과 눈이 같이 나온다.
+    s = _swap(s, "img.onload=()=>finish(true);",
+              "img.onload=()=>{if(img.decode)img.decode().then(()=>finish(true),()=>finish(true));else finish(true)};")
+    return s
+
+
+def optimize_images(s: str) -> str:
+    """큰 사진을 WebP로 줄여 이야기 화면이 늦게 뜨지 않게 한다(2026-10-27 사장님: 첫 장면 렉).
+
+    인물 PNG가 장당 2.7MB라 휴대폰에서 눈·입 조각이 먼저 뜨고 몸이 늦게 떴다. 원본 파일은 그대로 둔다.
+    """
+    from PIL import Image
+    saved = 0
+    for path in sorted(set(re.findall(r"assets/[\w/.-]+\.(?:png|jpg)", s))):
+        src = PUBLIC / path
+        if not src.exists() or src.stat().st_size < 150_000:
+            continue
+        webp = path.rsplit(".", 1)[0] + ".webp"
+        out = PUBLIC / webp
+        if not out.exists() or out.stat().st_mtime < src.stat().st_mtime:
+            Image.open(src).save(out, "WEBP", quality=85, method=6)
+        saved += src.stat().st_size - out.stat().st_size
+        s = s.replace(path, webp)
+    print(f"사진 WebP 변환으로 {saved // 1024}KB 줄임")
+    return s
+
+
 def main() -> None:
     src = Path(sys.argv[1])
     b = json.loads((SITE / "business.json").read_text(encoding="utf-8"))
@@ -453,6 +508,9 @@ def main() -> None:
     s = add_taster(s)
     s = add_input_helpers(s)
     s = add_trust(s)
+    s = extract_font(s)
+    s = fix_story_face(s)
+    s = optimize_images(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")

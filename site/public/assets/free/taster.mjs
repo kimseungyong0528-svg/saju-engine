@@ -203,7 +203,7 @@ export function reading(fp, person, T) {
   const pick = (a, sign) => {
     const own = a.reasons.filter(r => Math.sign(r[1]) === sign).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
     const [key, , vars = {}] = own[0] || [`${PREFIX[a.id]}_base_${sign > 0 ? 'good' : 'bad'}`];
-    return { ...T.AREAS[a.id], id: a.id, score: a.score, reason: key, text: fill(T.REASONS[key], { name, ...vars }) };
+    return { ...T.AREAS[a.id], id: a.id, score: a.score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
   };
   return {
     name,
