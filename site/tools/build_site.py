@@ -376,13 +376,13 @@ TRUST_HTML = (
     '<div class="trust-close"><strong>내 사주가 제대로 계산됐는지,<br>이제 확인할 수 있습니다.</strong>'
     '<p>어떤 자료로 어떻게 계산했는지 모두 공개합니다.<br>확인할 수 있는 정확함, 그것이 운명서재의 기준입니다.</p></div></section>'
     # 근거를 다 읽은 사람이 바로 누를 수 있게 무료 분석 배너를 한 번 더 둔다(2026-10-27 사장님).
-    '<section class="section"><a class="banner taster-banner" href="#/taster"><span class="eyebrow">무료 사주 분석</span>'
-    '<h3>정확한 기준으로 계산한<br>내 사주, 지금 무료로<br>확인해 보세요.</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를<br>바로 알려드려요.</p>'
+    '<section class="section taster-after"><a class="banner taster-banner" href="#/taster"><span class="eyebrow">무료 사주 분석</span>'
+    '<h3>정확한 기준으로 계산한 내 사주,<br>지금 무료로 확인해 보세요.</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를<br>바로 알려드려요.</p>'
     '<span class="taster-cta">무료로 나의 운 확인하기</span></a></section>'
 )
 
 TRUST_CSS = (
-    ".trust-box{margin:8px 20px 30px;padding:26px 20px;border-radius:16px;border:1px solid #d8bb7855;background:linear-gradient(180deg,#17130c,#0e0d0b)}"
+    ".trust-box{margin:8px 20px 12px;padding:26px 20px;border-radius:16px;border:1px solid #d8bb7855;background:linear-gradient(180deg,#17130c,#0e0d0b)}"
     ".trust-box .eyebrow{color:#d8bb78}.trust-box h2{font-size:25px;line-height:1.45;margin:10px 0 14px;color:#fff}.trust-box h2 em{font-style:normal;color:#f0c75e}"
     ".trust-lead{font-size:16px;line-height:1.8;color:#e2dccf;margin:0 0 22px}"
     ".trust-box h3{font-size:18px;line-height:1.5;margin:22px 0 10px;color:#d8bb78}"
@@ -393,6 +393,7 @@ TRUST_CSS = (
     ".trust-stats div{padding:14px 12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff14}"
     ".trust-stats strong{display:block;font-size:24px;color:#d8bb78;margin-bottom:4px}.trust-stats span{font-size:14px;line-height:1.6;color:#bdb5a6}"
     ".trust-close{margin-top:24px;padding-top:20px;border-top:1px solid #d8bb7855}"
+    ".taster-after{padding-top:0!important;margin-top:-31px!important}.taster-after .taster-banner h3{font-size:21px;line-height:1.5;letter-spacing:0}"
     ".trust-close strong{display:block;font-size:21px;line-height:1.5;color:#fff}.trust-close p{font-size:16px;line-height:1.8;color:#e2dccf;margin:8px 0 0}"
 )
 
