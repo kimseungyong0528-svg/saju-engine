@@ -31,34 +31,41 @@ function entryPopup(){
  m.querySelector('[data-entry-hide]').onclick=()=>{try{localStorage.setItem('unmyeong.entryHide',today)}catch{}closeModal()};
 }
 
-// 11. 무료 결과 공유 이미지: 좋은 운 3개만 담은 세로 그림(1080×1920)을 손님 폰에서 만든다. 이름·생일·시간은 넣지 않는다.
-async function tasterShareImage(r){
- const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
- const sans=(w,px)=>`${w} ${px}px "Pretendard Variable",Pretendard,sans-serif`,serif=px=>`700 ${px}px "Noto Serif KR","Noto Serif CJK KR",Georgia,serif`;
- try{await Promise.all([document.fonts.load(serif(80),'나의좋은운'),document.fonts.ready])}catch{}
- const GOLD='#d8bb78',GOLD2='#f0d896';
- const bg=g.createRadialGradient(W/2,560,80,W/2,900,1300);bg.addColorStop(0,'#2a2114');bg.addColorStop(.55,'#120f0a');bg.addColorStop(1,'#050505');g.fillStyle=bg;g.fillRect(0,0,W,H);
- // 두 겹 금색 테두리 + 모서리 장식
- g.strokeStyle=GOLD;g.lineWidth=2.5;g.strokeRect(54,54,W-108,H-108);g.strokeStyle=GOLD+'55';g.lineWidth=1.5;g.strokeRect(72,72,W-144,H-144);
- g.fillStyle=GOLD;for(const [x,y] of [[54,54],[W-54,54],[54,H-54],[W-54,H-54]]){g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-9,-9,18,18);g.restore()}
- const line=(y,w=180)=>{const lg=g.createLinearGradient(W/2-w,0,W/2+w,0);lg.addColorStop(0,GOLD+'00');lg.addColorStop(.5,GOLD);lg.addColorStop(1,GOLD+'00');g.fillStyle=lg;g.fillRect(W/2-w,y,w*2,2)};
- g.textAlign='center';g.textBaseline='alphabetic';
- g.fillStyle=GOLD;g.font=sans(600,34);g.letterSpacing='10px';g.fillText('運命書齋 · 운명서재',W/2,200);g.letterSpacing='0px';
- line(240);
- const day=r.pillars?.[1]?.ko,hanja=r.pillars?.[1]?.hanja;
- g.fillStyle='#ffffff';g.font=serif(96);g.fillText(day?`나는 ${day}일주`:'나의 좋은 운',W/2,390);
- if(hanja){g.fillStyle=GOLD+'cc';g.font=serif(46);g.fillText(hanja+'日柱',W/2,462)}
- g.fillStyle=GOLD2;g.font=sans(800,46);g.fillText('내 사주의 좋은 운 TOP 3',W/2,600);
- r.good.slice(0,3).forEach((a,n)=>{const y=660+n*270,x=150,w=W-300,h=220;
-  const cg=g.createLinearGradient(0,y,0,y+h);cg.addColorStop(0,'#ffffff12');cg.addColorStop(1,'#ffffff05');g.fillStyle=cg;
-  g.beginPath();g.roundRect?g.roundRect(x,y,w,h,30):g.rect(x,y,w,h);g.fill();g.strokeStyle=GOLD+'66';g.lineWidth=2;g.stroke();
-  g.fillStyle=GOLD;g.beginPath();g.arc(x+110,y+h/2,52,0,Math.PI*2);g.fill();
-  g.fillStyle='#1a140a';g.font=serif(52);g.fillText(String(n+1),x+110,y+h/2+18);
-  g.textAlign='left';g.fillStyle='#ffffff';g.font=sans(800,62);g.fillText(a.title,x+200,y+h/2+40);
-  g.fillStyle='#bdb5a6';g.font=sans(500,30);g.fillText(n?'좋은 운':'가장 강한 운',x+200,y+h/2-40);g.textAlign='center'});
- line(1520,240);
- g.fillStyle='#e9e2d4';g.font=sans(600,42);g.fillText('나의 좋은 운도 무료로 확인해 보세요',W/2,1620);
- g.fillStyle=GOLD2;g.font=sans(800,54);g.fillText('unmyeong-saju.com',W/2,1712);
+// 11. 무료 결과 공유 이미지: 좋은 운 3개만 담은 세로 그림(1080×1920, 인스타 스토리 크기)을 손님 폰에서 만든다. 이름·생일·시간은 넣지 않는다.
+// 2026-10-27 사장님: 인스타 감성으로 세련되고 고급스럽게. 잡지 표지처럼 여백을 넉넉히 두고, 한지색 바탕(ivory) 또는 먹색 바탕(ink).
+const SHARE_THEMES={
+ ivory:{bg:['#f4eee4','#e9e0d1'],ink:'#2a241f',soft:'#7a6d60',accent:'#9a4b32',line:'#2a241f33',mark:'#2a241f0d'},
+ ink:{bg:['#1c1915','#0d0c0a'],ink:'#f3ece1',soft:'#a89c8c',accent:'#d6b77a',line:'#f3ece133',mark:'#f3ece10b'},
+};
+async function tasterShareImage(r,theme='ivory'){
+ const T=SHARE_THEMES[theme]||SHARE_THEMES.ivory,W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const sans=(w,px)=>`${w} ${px}px "Pretendard Variable",Pretendard,sans-serif`,serif=(w,px)=>`${w} ${px}px "Gowun Batang","Noto Serif KR","Noto Serif CJK KR",Georgia,serif`;
+ // 구글 글꼴은 글자 묶음별로 내려받으므로, 그림에 쓰는 글자를 모두 넘겨 미리 받아 둔다.
+ const words=['나는','일주','나의 좋은 운','나의 사주','내 사주에 들어 있는 좋은 운 세 가지','運命書齋','unmyeong-saju.com','0123',r.pillars?.[1]?.ko||'',r.pillars?.[1]?.hanja||'',...r.good.map(a=>a.title)].join('');
+ try{await Promise.all([document.fonts.load(serif(700,80),words),document.fonts.load(serif(400,40),words),document.fonts.ready])}catch{}
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,T.bg[0]);bg.addColorStop(1,T.bg[1]);g.fillStyle=bg;g.fillRect(0,0,W,H);
+ // 필름처럼 고운 입자
+ const img=g.getImageData(0,0,W,H),px=img.data;for(let i=0;i<px.length;i+=4){const n=(Math.random()-.5)*14;px[i]+=n;px[i+1]+=n;px[i+2]+=n}g.putImageData(img,0,0);
+ const hair=(x1,y,x2)=>{g.fillStyle=T.line;g.fillRect(x1,y,x2-x1,2)};
+ const day=r.pillars?.[1]?.ko,hanja=r.pillars?.[1]?.hanja,M=96;
+ // 윗줄: 상호 · 쪽 번호처럼
+ g.textBaseline='alphabetic';g.fillStyle=T.ink;g.font=sans(600,26);g.letterSpacing='8px';g.textAlign='left';g.fillText('UNMYEONG SEOJAE',M,150);
+ g.textAlign='right';g.fillText('FREE SAJU',W-M,150);g.letterSpacing='0px';hair(M,182,W-M);
+ // 일주 한자를 크게 흐리게 깔고, 그 위에 제목
+ if(hanja){g.textAlign='center';g.fillStyle=T.mark;g.font=serif(700,560);g.fillText(hanja,W/2,900)}
+ g.textAlign='left';g.fillStyle=T.soft;g.font=serif(400,40);g.fillText(hanja?`${hanja}日柱`:'나의 사주',M,330);
+ g.fillStyle=T.ink;g.font=serif(700,112);g.fillText(day?`나는 ${day}일주`:'나의 좋은 운',M,470);
+ g.fillStyle=T.accent;g.font=serif(400,44);g.fillText('내 사주에 들어 있는 좋은 운 세 가지',M,560);
+ // 좋은 운 세 줄: 가는 줄 사이에 번호와 이름
+ r.good.slice(0,3).forEach((a,n)=>{const y=760+n*250;hair(M,y,W-M);
+  g.textAlign='left';g.fillStyle=T.accent;g.font=serif(400,42);g.fillText(`0${n+1}`,M,y+120);
+  g.fillStyle=T.soft;g.font=sans(500,28);g.letterSpacing='4px';g.fillText(n?'좋은 운':'가장 강한 운',M+120,y+80);g.letterSpacing='0px';
+  g.fillStyle=T.ink;g.font=serif(700,76);g.fillText(a.title,M+120,y+170)});
+ hair(M,1510,W-M);
+ // 아랫줄
+ g.textAlign='left';g.fillStyle=T.soft;g.font=sans(500,32);g.fillText('나의 좋은 운도 무료로 볼 수 있어요',M,1660);
+ g.fillStyle=T.ink;g.font=serif(700,54);g.fillText('unmyeong-saju.com',M,1740);
+ g.textAlign='right';g.fillStyle=T.accent;g.font=serif(700,64);g.fillText('運命書齋',W-M,1740);
  return await new Promise(res=>c.toBlob(res,'image/png'));
 }
 async function shareTaster(r,btn){

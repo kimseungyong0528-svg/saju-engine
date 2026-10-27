@@ -192,7 +192,7 @@ def patch_texts(s: str, b: dict) -> str:
               '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
               '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li>'
               '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul>'
-              '<button type="button" class="kakao x-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button></section>')
+              '</section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
@@ -514,8 +514,6 @@ EXTRAS_CSS = (
     ".taster-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin:22px 0 0;border-radius:14px;border:1px solid var(--x-gold);background:#d8bb7812;color:var(--x-gold-2);font-size:17px;font-weight:800;cursor:pointer}"
     ".taster-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}"
     # 카카오톡 버튼(카카오 공식 노란색 + 말풍선)
-    ".kakao.x-kakao{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;background:#fee500;color:#191600;border-radius:14px;font-size:17px;font-weight:700}"
-    ".x-kakao svg{width:20px;height:20px;fill:#191600}.foot-kakao{margin:0 0 20px;min-height:50px!important;font-size:16px!important}"
     # 2단계 할인: 첫 구매 묶음 할인 고르기, 금액 안내, 광고 메일 동의
     ".bundle-x{margin:22px 0;padding:24px 18px 18px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
     ".bundle-x .x-title{font-size:24px}.bundle-x .x-title em{font-style:normal;color:var(--x-gold-2)}.bundle-x .x-sub b{color:var(--x-text)}"
@@ -576,7 +574,6 @@ def add_extras(s: str) -> str:
     s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
               '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
-    s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao x-kakao foot-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button><div class="footer-links">')
     return add_sales_pages(add_discounts(s))
 
 
