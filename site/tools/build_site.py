@@ -105,9 +105,9 @@ def patch_texts(s: str, b: dict) -> str:
               "const poster=CARD_POSTERS[p.id];return `<a href=\"${link(p)}\" class=\"product-card${poster?' poster-card':''}\">${art(p,p.id+(poster?'.card':'.cover'),'product-cover',poster?'':`<h3>${p.short}</h3><p>${p.line}</p>`)}")
     s = _swap(s, "const cards=(ids,layout='rail')=>",
               "const CARD_POSTERS={romance:'assets/geumwol/romance-poster-v2.jpg',intimate:'assets/geumwol/intimate-poster.jpg',reunion:'assets/geumwol/reunion-poster.jpg',career:'assets/geumwol/career-poster.jpg',business:'assets/geumwol/business-poster.jpg',wealth:'assets/geumwol/wealth-poster.jpg',health:'assets/geumwol/health-poster.jpg',lifetime:'assets/geumwol/lifetime-poster.jpg',newyear:'assets/geumwol/newyear-poster.jpg'};"
-              "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀의 '+k,position:'50% 15%'};"
+              "for(const [k,v] of Object.entries(CARD_POSTERS))MEDIA[k+'.card']={image:v,alt:'금월선녀의 '+k,position:'50% 15%'};MEDIA['newyear.hero']={image:CARD_POSTERS.newyear,alt:'금월선녀의 2027 신년운세',position:'50% 0%'};"
               "const cards=(ids,layout='rail')=>")
-    s = _swap(s, "</head>", "<style>.poster-card .product-cover:after,.poster-card .product-cover:before{background:none!important}</style></head>")
+    s = _swap(s, "</head>", "<style>.poster-card .product-cover:after,.poster-card .product-cover:before{background:none!important}.hero-card[data-art-key='newyear.hero'] .art-media{object-position:50% 0%!important}.hero-card[data-art-key='newyear.hero'] .ny-name{display:none}</style></head>")
     s = _swap(s, "<h2>${p.name}</h2>${priceLabel(p)}<span class=\"step-label\">", "<h2>${p.name}</h2><span class=\"step-label\">")
     # 접수 화면: 입력이 맞으면 "입력 확인 완료 · 분석 범위 확인 필요" 안내 묶음을 보여주지 않는다(입력이 틀렸을 때만 보임).
     s = _swap(s, "function intakeNotice(decision,productId){", "function intakeNotice(decision,productId){if(decision.inputAccepted)return '';")
@@ -272,7 +272,7 @@ def add_newyear(s: str) -> str:
     s = _swap(s, "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id)", "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id).sort((a,b)=>(b==='newyear')-(a==='newyear'))")
     # 첫 화면 큰 배너: 신년운세 한 장, 위에 EVENT 딱지. 넘기는 점은 뺀다.
     s = _swap(s, "['lifetime','wealth','reunion','intimate'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"eyebrow\">${p.guide} · ORIGINAL SAJU</span>",
-              "['newyear'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>")
+              "['newyear'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.hero','hero-card',`<div class=\"hero-copy\"><span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>")
     s = _swap(s, "<div class=\"dots\">${[0,1,2,3].map(i=>`<button aria-label=\"슬라이드 ${i+1}\" class=\"dot ${!i?'active':''}\" data-slide=\"${i}\"></button>`).join('')}</div>", "")
     s = _swap(s, "advance((i+1)%4)", "advance((i+1)%track.children.length)")
     s = _swap(s, ".hero-copy{position:absolute;inset:auto 26px 32px}",
