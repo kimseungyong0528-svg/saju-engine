@@ -466,6 +466,17 @@ def fix_checkout_flow(s: str) -> str:
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
 NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+PREVIEW_TEXT_CAPS = {
+    "lifetime": ["돈 조심해야 할 시기", "연애·결혼하기 좋은 시기", "조심해야 할 시기"],
+    "romance": ["우리의 첫 만남 장면", "나에게 상처 줄 사람", "전 애인이 다시 연락 올까"],
+    "reunion": ["그 사람이 이별을 정리하는 방식", "놓아야 할 때의 신호", "다시 만나면 오래 갈까"],
+    "intimate": ["연락과 표현 방식의 차이", "가장 좋은 해", "결혼까지 갈 수 있을까"],
+    "wealth": ["돈이 새기 쉬운 시기", "빚과 대출을 다루는 법", "큰돈이 오가는 해"],
+    "career": ["승진과 평가를 잡는 법", "면접과 시험운", "지금 지나는 10년의 직업운"],
+    "business": ["돈이 들어오는 길", "돈이 새는 때와 막는 법", "위기가 오기 쉬운 해"],
+    "health": ["모자란 기운이 보내는 신호", "마음이 흔들리는 순간", "쉬어 갈 때와 검진"],
+    "newyear": ["이직과 새 일 시작하기 좋은 시기", "새로운 사랑이 찾아오는 시기", "가장 좋은 달과 조심할 달"],
+}
 PREVIEW_CAPS = ["표지", "목차", "오행 그림", "나의 사주표", "한눈에 보기"]
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
@@ -506,18 +517,18 @@ EXTRAS_CSS = (
     # 결제 화면(밝은 바탕이 아닌 검정 화면) 안의 목차·미리보기는 여백만 줄인다.
     ".checkout .toc-x{margin:18px 0}.checkout .pv-x{padding:0;margin:18px 0}.checkout .pv-rail{margin:0;padding:4px 0 14px}"
     # 신년 이벤트
+    ".hero-tags{display:flex;align-items:center;gap:6px;margin:0 0 6px}.hero-tags .event-tag{margin:0!important}.hero-tags .event-dday{margin:0}"
     ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
-    ".entry-modal{padding:0;overflow:hidden;width:min(90vw,380px);max-width:none;border:1px solid var(--x-line);border-radius:20px;background:var(--x-ink);color:#fff;box-shadow:0 30px 80px #000}"
-    ".entry-art{position:relative;height:190px;overflow:hidden}.entry-art img{width:100%;height:100%;object-fit:cover;object-position:center 25%}"
-    ".entry-art:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,var(--x-ink))}"
-    ".entry-tag{position:absolute;left:16px;top:16px;z-index:1;padding:4px 12px;border-radius:999px;background:#a8262b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.14em}"
-    ".entry-body{padding:4px 24px 20px;text-align:center}.entry-title{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:30px;font-weight:700;margin:6px 0 8px}"
-    ".entry-lead{font-size:15px;line-height:1.65;color:var(--x-text);margin:0 0 16px}"
-    ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:14px;background:#ffffff08;border:1px solid var(--x-line);margin-bottom:12px}"
-    ".entry-count span{font-size:14px;color:var(--x-muted)}.entry-count b{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:28px;color:var(--x-gold-2);letter-spacing:.02em}"
-    ".entry-bundle{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;background:#a8262b22;border:1px solid #f09c9c55;margin-bottom:12px}"
-    ".entry-bundle b{color:#ffd5d5;font-size:15px}.entry-bundle span{font-size:14px;line-height:1.55;color:var(--x-text)}"
-    ".entry-go{margin:14px 0 6px}.entry-hide{min-height:44px;border:0;background:none;color:var(--x-muted);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
+    # 첫 화면 팝업(2026-10-27 사장님: 너무 어둡다 → 밝게). 신년 포스터 그림 + 밝은 한지색 바탕 + 붉은 버튼. 묶음 할인은 결제 화면에만.
+    ".entry-modal{padding:0;overflow:hidden;width:min(88vw,360px);max-width:none;border:0;border-radius:20px;background:#fff8ef;color:#2b1a12;box-shadow:0 24px 60px #0008}"
+    ".entry-art{position:relative;height:250px;overflow:hidden;background:#f6d9c4}.entry-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 0}"
+    ".entry-tag{position:absolute;left:14px;bottom:14px;z-index:1;padding:4px 12px;border-radius:999px;background:#c8102e;color:#fff;font-size:13px;font-weight:800;letter-spacing:.14em}"
+    ".entry-body{padding:18px 22px 14px;text-align:center}"
+    ".entry-modal .entry-lead{font-size:16px;line-height:1.6;color:#4a3426!important;margin:0 0 14px;word-break:keep-all}"
+    ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;border-radius:14px;background:#fde8e3;border:1px solid #f09c9c;margin-bottom:14px}"
+    ".entry-count span{font-size:15px;color:#8a3a2c;font-weight:600}.entry-count b{font-size:26px;color:#c8102e;font-weight:900;letter-spacing:.02em}"
+    ".entry-go{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:linear-gradient(180deg,#e0313f,#b3141f);color:#fff;font-size:17px;font-weight:800;text-decoration:none;box-shadow:0 8px 20px #c8102e40}"
+    ".entry-hide{min-height:44px;margin-top:4px;border:0;background:none;color:#8a7466;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
     # 무료 결과 공유
     ".taster-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin:22px 0 0;border-radius:14px;border:1px solid var(--x-gold);background:#d8bb7812;color:var(--x-gold-2);font-size:17px;font-weight:800;cursor:pointer}"
     ".taster-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}"
@@ -552,9 +563,13 @@ def extras_data() -> dict:
         sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
         toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
     caps = {"lifetime": ["표지", "목차", "오행 그림", "나의 사주표", "타고난 기질"]}
-    preview = {pid: [[f"assets/preview/{f.name}", caps.get(pid, PREVIEW_CAPS)[n]]
-                     for n, f in enumerate(sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp")))]
-               for pid in REPORT_MODULES}
+    # 풀이 쪽 3장(make_previews.py 의 TEXT_PICKS, 6~8번). 표지·목차 다음에 먼저 보여 준다(2026-10-27 사장님).
+    order = [1, 2, 6, 7, 8, 3, 4, 5]
+    preview = {}
+    for pid in REPORT_MODULES:
+        names = caps.get(pid, PREVIEW_CAPS) + PREVIEW_TEXT_CAPS[pid]
+        preview[pid] = [[f"assets/preview/{pid}-{n}.webp", names[n - 1]] for n in order
+                        if (PUBLIC / "assets" / "preview" / f"{pid}-{n}.webp").exists()]
     from saju.report.render import PRODUCT
     header = {pid: PRODUCT.get(pid, {}).get("header", "平生四柱") for pid in REPORT_MODULES}
     return {"toc": toc, "header": header, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
@@ -573,13 +588,45 @@ def add_extras(s: str) -> str:
     s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
               "${tocBlock(p)}${previewBlock(p)}")
     # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
-    s = _swap(s, '<section class="checkout-birth-summary">', '${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
-    s = _swap(s, '<span class=\"event-tag\">EVENT</span>', '<span class=\"event-tag\">EVENT</span>${eventBadge()}')
+    # 첫 구매 묶음 할인은 결제 화면 맨 위(상품 그림 바로 아래)에 둔다(2026-10-27 사장님).
+    s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
+    # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
+    s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
+              '<span class=\"hero-tags\"><span class=\"event-tag\">EVENT</span>${eventBadge()}</span>')
     s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
               '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
     s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao x-kakao foot-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button><div class="footer-links">')
-    return add_discounts(s)
+    return add_sales_pages(add_discounts(s))
+
+
+def add_sales_pages(s: str) -> str:
+    """재물운·직업운에도 리포트 안내 화면을 붙인다(2026-10-27 사장님: 대충이라도 만들어 목차·미리보기를 거기에, 나중에 다시 고침)."""
+    s = _swap(s, "'언제 나아질지 궁금해요','잠시 쉬고 있어요'],true),checkout]",
+              "'언제 나아질지 궁금해요','잠시 쉬고 있어요'],true),"
+              "scene('ready','나의 재물운을\\n한 권에 담았어요','돈이 들어오는 길과 새는 곳, 좋은 해와 조심할 해를 차례로 확인해 보세요.','재물운 리포트 살펴보기'),sales,checkout]")
+    s = _swap(s, "{...question,title:'직업에 관해 꼭 묻고 싶은 것이 있나요?'},checkout],",
+              "{...question,title:'직업에 관해 꼭 묻고 싶은 것이 있나요?'},"
+              "scene('ready','나의 직업운을\\n한 권에 담았어요','나에게 맞는 일과 이직하기 좋은 시기를 차례로 확인해 보세요.','직업운 리포트 살펴보기'),sales,checkout],")
+    s = _swap(s, "DEMO_REVIEWS.push({product:'business'", (
+        "SALES.wealth={opening:'내 돈은 언제 들어오고\\n어디로 새고 있을까요',empathy:'열심히 버는데\\n왜 돈이 모이지 않을까요',"
+        "empathyBody:'월급은 그대로인데 나가는 돈만 늘고, 큰돈이 들어올 때는 언제인지 궁금할 때. 내 사주로 돈이 들어오는 길과 새는 곳을 정리해 드려요.',"
+        "reveal:'내 사주로 계산한\\n나의 재물 흐름',locks:['타고난 재물 그릇의 크기','돈이 새기 쉬운 해와 달','큰돈이 들어오는 시기와 준비할 일'],"
+        "chapters:['한눈에 보는 나의 재물운','돈을 버는 방식과 새는 곳','나이별·연도별 재물운','월별 재물운','재물운을 키우는 방법'],"
+        "ending:'내 돈의 흐름을\\n미리 확인하세요'};\n"
+        "DETAIL_BLOCKS.wealth=[['bowl','타고난 재물 그릇을\\n먼저 확인해요','내 사주에 돈이 얼마나, 어떤 모양으로 들어오는지 알려드려요.',''],"
+        "['leak','돈이 새는 곳과\\n막는 방법','나도 몰랐던 소비 습관과 돈이 빠지기 쉬운 시기를 짚어요.',''],"
+        "['years','큰돈이 오가는 해와\\n달마다 할 일','앞으로 5년과 12개월의 재물 흐름을 정리해요.','timeline']];\n"
+        "SALES.career={opening:'나에게 맞는 일과\\n옮겨야 할 때',empathy:'지금 일이 맞는지\\n계속 고민되나요',"
+        "empathyBody:'이직을 해야 할지, 버텨야 할지, 다른 일을 시작해도 될지 고민될 때. 내 사주로 맞는 일과 움직이기 좋은 시기를 정리해 드려요.',"
+        "reveal:'내 사주로 계산한\\n나의 직업 흐름',locks:['나에게 맞는 일과 일하는 방식','이직하기 좋은 해와 피할 해','승진·면접·시험에 좋은 시기'],"
+        "chapters:['한눈에 보는 나의 직업운','나에게 맞는 일과 환경','이직과 승진의 시기','10년마다 바뀌는 직업운','나의 다음 선택'],"
+        "ending:'다음 선택을 하기 전에\\n먼저 확인하세요'};\n"
+        "DETAIL_BLOCKS.career=[['fit','나에게 맞는 일을\\n먼저 찾아요','타고난 성향으로 잘 맞는 직업과 일하는 환경을 알려드려요.',''],"
+        "['move','이직하기 좋은 해와\\n피할 해','움직이면 좋은 시기와 버티는 게 나은 시기를 짚어요.',''],"
+        "['ten','10년마다 바뀌는\\n직업 흐름','지금 지나는 10년과 다음 10년의 직업운을 정리해요.','timeline']];\n"
+        "DEMO_REVIEWS.push({product:'business'"))
+    return s
 
 
 def add_discounts(s: str) -> str:
@@ -588,7 +635,7 @@ def add_discounts(s: str) -> str:
               '<div class="field"><label for="coupon">할인 코드 (선택)</label><p class="field-help">재구매·친구 초대로 받은 코드가 있으면 넣고 적용을 눌러주세요.</p>')
     s = _swap(s, 'placeholder="쿠폰 코드"', 'placeholder="예) UNM-ABC123"')
     s = _swap(s, '<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,d.discount||0)}</div>',
-              '${bundleBlock(p,d)}<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,0)}</div>')
+              '<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,0)}</div>')
     s = _swap(s, '<button type="button" data-consent="payment">자세히</button></div></fieldset>',
               '<button type="button" data-consent="payment">자세히</button></div><div><label class="check-line"><input type="checkbox" name="marketing">할인·이벤트 소식 이메일 받기 (선택)</label></div>'
               '<p class="mk-help">동의하시면 재구매 10% 할인 코드와 친구 초대 링크를 메일로 보내드려요. 메일 끝의 링크로 언제든 수신 거부할 수 있어요.</p></fieldset>')

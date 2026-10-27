@@ -37,7 +37,7 @@ function entryPopup(){
  const today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
  try{if(sessionStorage.getItem('unmyeong.entry')||localStorage.getItem('unmyeong.entryHide')===today)return;sessionStorage.setItem('unmyeong.entry','1')}catch{}
  const p=pById('newyear');
- const m=modal(`<div class="entry-pop"><div class="entry-art"><img src="assets/geumwol/newyear-cover.webp" alt="" aria-hidden="true"><span class="entry-tag">EVENT</span></div><div class="entry-body"><p class="x-eyebrow">2027 NEW YEAR</p><h2 class="entry-title">2027 신년운세</h2><p class="entry-lead">내 사주로 보는 2027년 열두 달의 흐름을<br>한 권의 리포트로 받아 보세요.</p><div class="entry-count"><span>이벤트 마감까지</span><b>${d?'D-'+d:'오늘 마감'}</b></div>${EXTRA_DATA.bundle?'<div class="entry-bundle"><b>첫 구매 묶음 할인</b><span>처음 구매하시는 분이 2개 이상 함께 사면<br>전부 10% 할인해 드려요.</span></div>':''}<a class="x-cta entry-go" href="#${link(p)}">신년운세 보러 가기</a><button type="button" class="entry-hide" data-entry-hide>오늘 하루 보지 않기</button></div></div>`,'entry-modal','이벤트 안내');
+ const m=modal(`<div class="entry-pop"><div class="entry-art"><img src="assets/geumwol/newyear-poster.webp" alt="금월선녀의 2027 신년운세" width="720" height="1018"><span class="entry-tag">EVENT</span></div><div class="entry-body"><p class="entry-lead">내 사주로 보는 2027년 열두 달의 흐름을<br>한 권의 리포트로 받아 보세요.</p><div class="entry-count"><span>이벤트 마감까지</span><b>${d?'D-'+d:'오늘 마감'}</b></div><a class="entry-go" href="#${link(p)}">신년운세 보러 가기</a><button type="button" class="entry-hide" data-entry-hide>오늘 하루 보지 않기</button></div></div>`,'entry-modal','이벤트 안내');
  m.querySelector('.entry-go').onclick=()=>closeModal();
  m.querySelector('[data-entry-hide]').onclick=()=>{try{localStorage.setItem('unmyeong.entryHide',today)}catch{}closeModal()};
 }
