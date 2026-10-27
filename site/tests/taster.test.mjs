@@ -36,8 +36,11 @@ test('맛보기 결과: 좋은 운 3개·조심할 운 3개, 빈칸 없는 글, 
       assert.ok(ids.has(a.product));
       assert.ok(!/[{}]|undefined|NaN/.test(a.text), a.text);
       assert.ok(!/참고용|재미로/.test(a.text));
+      assert.ok(a.hook && !/[{}]|undefined|NaN/.test(a.hook), a.hook);
+      // 후킹 적정선(사장님 2026-10-27): 반발심이 들 만큼 겁주는 말은 쓰지 않는다. docs/free-taster.md
+      assert.ok(!/돌이킬/.test(a.hook), a.hook);
     }
-    const pick = x => x.map(a => [a.id, a.reason, a.text]);
+    const pick = x => x.map(a => [a.id, a.reason, a.text, a.hook]);
     assert.deepEqual({ good: pick(r.good), bad: pick(r.bad), scores: r.scores },
       { good: pick(c.reading.good), bad: pick(c.reading.bad), scores: c.reading.scores }, c.person.birth + ' ' + c.person.time);
     assert.ok(r.chart.columns.length === 4 && r.chart.elements.length === 5);
