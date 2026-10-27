@@ -506,6 +506,7 @@ EXTRAS_CSS = (
     # 결제 화면(밝은 바탕이 아닌 검정 화면) 안의 목차·미리보기는 여백만 줄인다.
     ".checkout .toc-x{margin:18px 0}.checkout .pv-x{padding:0;margin:18px 0}.checkout .pv-rail{margin:0;padding:4px 0 14px}"
     # 신년 이벤트
+    ".hero-tags{display:flex;align-items:center;gap:6px;margin:0 0 6px}.hero-tags .event-tag{margin:0!important}.hero-tags .event-dday{margin:0}"
     ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
     ".entry-modal{padding:0;overflow:hidden;width:min(90vw,380px);max-width:none;border:1px solid var(--x-line);border-radius:20px;background:var(--x-ink);color:#fff;box-shadow:0 30px 80px #000}"
     ".entry-art{position:relative;height:190px;overflow:hidden}.entry-art img{width:100%;height:100%;object-fit:cover;object-position:center 25%}"
@@ -574,7 +575,9 @@ def add_extras(s: str) -> str:
               "${tocBlock(p)}${previewBlock(p)}")
     # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
     s = _swap(s, '<section class="checkout-birth-summary">', '${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
-    s = _swap(s, '<span class=\"event-tag\">EVENT</span>', '<span class=\"event-tag\">EVENT</span>${eventBadge()}')
+    # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
+    s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
+              '<span class=\"hero-tags\"><span class=\"event-tag\">EVENT</span>${eventBadge()}</span>')
     s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
               '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
