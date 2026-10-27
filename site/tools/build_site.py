@@ -356,6 +356,51 @@ def add_taster(s: str) -> str:
     return s
 
 
+TRUST_HTML = (
+    '<section class="trust-box" aria-labelledby="trust-title"><span class="eyebrow">운명서재의 계산 근거</span>'
+    '<h2 id="trust-title">국가기관 공식 자료와<br>국제 천문 계산법으로<br>사주를 계산합니다</h2>'
+    '<p class="trust-lead">풀이가 아무리 좋아도 사주 여덟 글자 계산이 틀리면 리포트 전체가 틀립니다. '
+    '그래서 운명서재는 계산의 기준을 감으로 정하지 않고, 모두 공식 자료에 맞췄습니다.</p>'
+    '<h3>믿을 수 있는 4가지 공식 출처</h3><ul class="trust-sources">'
+    '<li><b>한국천문연구원 음력 기준</b><span>음력 생일과 윤달을 국가 천문 기관 기준으로 바꿉니다.</span></li>'
+    '<li><b>행정안전부 지역 목록</b><span>태어난 지역의 경도로 실제 해의 시각을 맞춥니다.</span></li>'
+    '<li><b>국제 표준 시간대 자료</b><span>한국 표준시가 바뀐 기록과 서머타임 기간을 그대로 반영합니다.</span></li>'
+    '<li><b>국제 천문 계산법(VSOP87)</b><span>태양의 실제 위치로 24절기 시각을 분 단위까지 계산합니다.</span></li></ul>'
+    '<h3>계산이 자주 어긋나는 3가지 경우도<br>정확하게 맞춥니다</h3><ul class="trust-cases">'
+    '<li><b>절기 날 태어난 분</b><span>몇 분 차이로 태어난 달이 바뀌는데, 절기 시각을 분 단위로 계산해 정확히 나눕니다.</span></li>'
+    '<li><b>1948~1961년, 1987~1988년에 태어난 분</b><span>표준시와 서머타임이 지금과 달랐던 시기라 그 시절 시계 기준으로 다시 계산합니다.</span></li>'
+    '<li><b>서울이 아닌 지역에서 태어난 분</b><span>같은 시각이라도 지역마다 해의 위치가 달라서 출생 지역 기준으로 시각을 보정합니다.</span></li></ul>'
+    '<h3>직접 검증한 결과</h3><div class="trust-stats">'
+    '<div><strong>2,664개</strong><span>1940~2050년 절기 시각을 다른 만세력 프로그램과 하나씩 대조, 차이는 모두 30초 이내</span></div>'
+    '<div><strong>10,000개</strong><span>무작위로 고른 생년월일시의 사주팔자를 다른 만세력 프로그램과 대조, 모두 똑같이 나왔습니다</span></div></div>'
+    '<div class="trust-close"><strong>내 사주가 제대로 계산됐는지,<br>이제 확인할 수 있습니다.</strong>'
+    '<p>어떤 자료로 어떻게 계산했는지 모두 공개합니다. 확인할 수 있는 정확함, 그것이 운명서재의 기준입니다.</p></div></section>'
+)
+
+TRUST_CSS = (
+    ".trust-box{margin:8px 20px 30px;padding:26px 20px;border-radius:16px;border:1px solid #d8bb7855;background:linear-gradient(180deg,#17130c,#0e0d0b)}"
+    ".trust-box .eyebrow{color:#d8bb78}.trust-box h2{font-size:25px;line-height:1.45;margin:10px 0 14px;color:#fff}"
+    ".trust-lead{font-size:16px;line-height:1.8;color:#e2dccf;margin:0 0 22px}"
+    ".trust-box h3{font-size:18px;line-height:1.5;margin:22px 0 10px;color:#d8bb78}"
+    ".trust-box ul{list-style:none;margin:0;padding:0}.trust-box li{padding:12px 0;border-top:1px solid #ffffff14}"
+    ".trust-box li b{display:block;font-size:16px;color:#fff;margin-bottom:3px}.trust-box li span{font-size:15px;line-height:1.7;color:#bdb5a6}"
+    ".trust-sources li b::before{content:'✓ ';color:#d8bb78}"
+    ".trust-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}"
+    ".trust-stats div{padding:14px 12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff14}"
+    ".trust-stats strong{display:block;font-size:24px;color:#d8bb78;margin-bottom:4px}.trust-stats span{font-size:14px;line-height:1.6;color:#bdb5a6}"
+    ".trust-close{margin-top:24px;padding-top:20px;border-top:1px solid #d8bb7855}"
+    ".trust-close strong{display:block;font-size:21px;line-height:1.5;color:#fff}.trust-close p{font-size:16px;line-height:1.8;color:#e2dccf;margin:8px 0 0}"
+)
+
+
+def add_trust(s: str) -> str:
+    """첫 화면 맨 아래 안내 칸 자리에 '계산 근거' 소개를 넣는다 (2026-10-27 사장님 문구 확정).
+    숫자는 tests/test_calendar.py 대조 결과(절기 1940~2050년 최대 약 27초, 무작위 10,000건, tests/test_calendar.py)와 맞춰 둔다."""
+    s = _swap(s, "</head>", f"<style>{TRUST_CSS}</style></head>")
+    s = _swap(s, '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>', TRUST_HTML)
+    return s
+
+
 def add_input_helpers(s: str) -> str:
     """입력 화면 손보기 (2026-10-26 사장님 요청).
     1) 본인 정보 입력 화면 맨 위에 '전에 입력한 내 정보 그대로 쓰기' 체크.
@@ -402,6 +447,7 @@ def main() -> None:
     s = patch_texts(s, b)
     s = add_taster(s)
     s = add_input_helpers(s)
+    s = add_trust(s)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "index.html").write_text(s, encoding="utf-8")
     print(f"public/index.html {len(s.encode()) // 1024}KB")
