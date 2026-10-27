@@ -192,7 +192,7 @@ def patch_texts(s: str, b: dict) -> str:
               '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
               '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li>'
               '<li>메일을 보내기 전이라면 전액 환불해 드려요.<br><a href="#/legal/refund">환불 안내 보기</a></li></ul>'
-              '<button type="button" class="kakao" data-action="support">카카오톡으로 물어보기</button></section>')
+              '<button type="button" class="kakao x-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button></section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
@@ -466,27 +466,62 @@ def fix_checkout_flow(s: str) -> str:
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
 NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+PREVIEW_CAPS = ["표지", "목차", "오행 그림", "나의 사주표", "한눈에 보기"]
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
 
 EXTRAS_CSS = (
-    ".toc-toggle{display:block;margin:6px auto 0;padding:13px 22px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:16px;font-weight:700}"
-    ".report-preview{padding:10px 0 40px;text-align:center}.report-preview>h2{font-size:30px;margin:16px 0 8px}.pv-lead{font-size:15px;color:#bdb5a6;margin:0 0 16px}"
-    ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 24px 12px;-webkit-overflow-scrolling:touch}"
-    ".pv-page{flex:0 0 72%;max-width:300px;scroll-snap-align:center;padding:0;border:0;background:none;border-radius:6px;overflow:hidden;box-shadow:0 8px 24px #0009}"
-    ".pv-page img{display:block;width:100%;height:auto}.pv-note{font-size:14px;color:#9b937f;margin:6px 24px 0}"
-    ".pv-modal{padding:0;max-width:min(94vw,720px);background:#111}.pv-big{display:block;width:100%;height:auto;max-height:88vh;object-fit:contain}"
-    ".event-dday{display:inline-block;margin-left:6px;padding:3px 10px;border-radius:999px;background:#fff;color:#a8262b;font-size:13px;font-weight:800;vertical-align:middle}"
-    ".taster-share{display:block;width:100%;margin:22px 0 0;padding:16px;border-radius:14px;border:1px solid #d8bb78;background:#d8bb7814;color:#f0c75e;font-size:17px;font-weight:800}"
-    ".foot-kakao{margin:0 0 18px}"
-    ".checkout .chapters{padding:28px 0 8px}.checkout .chapters>h2{font-size:26px;margin:10px 0 18px}.checkout .chapter{padding:16px 18px;margin:10px 0}"
-    ".checkout .chapter>span{font-size:22px}.checkout .chapter h3{font-size:19px;line-height:1.5}.checkout .chapter p{font-size:14px;line-height:1.6;margin:4px 0 0}"
-    ".checkout .report-preview{padding:4px 0 24px}.checkout .pv-rail{padding:4px 0 12px}"
-    ".entry-modal{padding:0;overflow:hidden;max-width:min(88vw,380px);border:1px solid #f09c9c66;background:linear-gradient(180deg,#000000b0,#000000f0),var(--entry-bg,#2b1515) center/cover;color:#fff}"
-    ".entry-pop{padding:34px 24px 22px;text-align:center}.entry-tag{display:inline-block;padding:3px 12px;border-radius:999px;background:#a8262b;font-size:13px;font-weight:800;letter-spacing:.08em}"
-    ".entry-pop h2{font-size:28px;margin:12px 0 6px}.entry-dday{font-size:18px;margin:0 0 14px;color:#f6c4c4}.entry-dday b{font-size:26px;color:#fff}"
-    ".entry-pop p{font-size:16px;line-height:1.7;margin:0 0 12px}.entry-bundle{padding:12px;border-radius:12px;background:#ffffff14;border:1px solid #f09c9c55}.entry-bundle b{color:#f0c75e}"
-    ".entry-go{display:block;margin:18px 0 10px;text-decoration:none}.entry-hide{border:0;background:none;color:#bdb5a6;font-size:14px;text-decoration:underline}"
+    # 디자인 기준(UI UX Pro Max 추천: 검정 + 금색, 고급스러운 명조 제목, 얇은 금색 선, 큰 터치 영역 44px 이상)
+    ":root{--x-gold:#d8bb78;--x-gold-2:#f0d896;--x-ink:#0e0d0b;--x-card:#16130e;--x-line:#d8bb7838;--x-text:#efe8da;--x-muted:#a99f8c}"
+    ".x-eyebrow{display:block;font-size:12px;letter-spacing:.32em;color:var(--x-gold);font-weight:600}"
+    ".x-title{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-weight:700;font-size:28px;line-height:1.35;color:#fff;margin:10px 0 6px;letter-spacing:-.01em}"
+    ".x-sub{font-size:15px;line-height:1.6;color:var(--x-muted);margin:0 0 20px}"
+    ".x-cta{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:linear-gradient(180deg,var(--x-gold-2),var(--x-gold));color:#1a140a;font-size:17px;font-weight:800;text-decoration:none;box-shadow:0 6px 20px #d8bb7833;transition:transform .15s ease,box-shadow .2s ease}"
+    ".x-cta:active{transform:scale(.98)}"
+    ".x-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:50px;margin-top:14px;border-radius:12px;border:1px solid var(--x-line);background:#ffffff08;color:var(--x-gold);font-size:16px;font-weight:700;cursor:pointer}"
+    ".x-more svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .2s ease}.x-more[data-open='1'] svg{transform:rotate(180deg)}"
+    # 목차
+    ".toc-x{margin:24px 20px;padding:28px 20px 22px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
+    ".toc-list{list-style:none;margin:0;padding:0;counter-reset:none}"
+    ".toc-list li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid #ffffff12}"
+    ".toc-list li:first-child{border-top:0}"
+    ".toc-n{flex:0 0 34px;font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:20px;line-height:1.3;color:var(--x-gold);font-weight:700}"
+    ".toc-list b{display:block;font-size:17px;line-height:1.45;color:var(--x-text);font-weight:700}"
+    ".toc-list small{display:block;margin-top:3px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
+    # 미리보기
+    ".pv-x{margin:24px 0;padding:0 20px;text-align:left}"
+    ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:4px 20px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.pv-rail::-webkit-scrollbar{display:none}"
+    ".pv-page{position:relative;flex:0 0 68%;max-width:280px;scroll-snap-align:center;padding:0;border:1px solid var(--x-line);background:#f1e8d4;border-radius:10px;overflow:hidden;cursor:zoom-in;box-shadow:0 12px 28px #000a}"
+    ".pv-page img{display:block;width:100%;height:auto;aspect-ratio:720/1018}"
+    ".pv-cap{position:absolute;left:10px;bottom:10px;padding:5px 11px;border-radius:999px;background:#0e0d0bd9;color:var(--x-gold);font-size:13px;font-weight:700;border:1px solid var(--x-line)}"
+    ".pv-dots{display:flex;justify-content:center;gap:6px}.pv-dots i{width:6px;height:6px;border-radius:50%;background:#ffffff30;transition:all .2s ease}.pv-dots i.on{width:18px;border-radius:3px;background:var(--x-gold)}"
+    ".pv-modal{padding:0;max-width:min(94vw,640px);background:var(--x-ink);border:1px solid var(--x-line);border-radius:14px;overflow:hidden}"
+    ".pv-fig{margin:0}.pv-big{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;background:#f1e8d4}"
+    ".pv-fig figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;color:var(--x-text);font-size:15px;font-weight:700}"
+    ".pv-fig em{font-style:normal;color:var(--x-muted);font-weight:500;margin-left:6px}"
+    ".pv-nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--x-line);background:#ffffff0a;color:var(--x-gold);font-size:24px;line-height:1;cursor:pointer}"
+    # 결제 화면(밝은 바탕이 아닌 검정 화면) 안의 목차·미리보기는 여백만 줄인다.
+    ".checkout .toc-x{margin:18px 0}.checkout .pv-x{padding:0;margin:18px 0}.checkout .pv-rail{margin:0;padding:4px 0 14px}"
+    # 신년 이벤트
+    ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
+    ".entry-modal{padding:0;overflow:hidden;width:min(90vw,380px);max-width:none;border:1px solid var(--x-line);border-radius:20px;background:var(--x-ink);color:#fff;box-shadow:0 30px 80px #000}"
+    ".entry-art{position:relative;height:190px;overflow:hidden}.entry-art img{width:100%;height:100%;object-fit:cover;object-position:center 25%}"
+    ".entry-art:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,var(--x-ink))}"
+    ".entry-tag{position:absolute;left:16px;top:16px;z-index:1;padding:4px 12px;border-radius:999px;background:#a8262b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.14em}"
+    ".entry-body{padding:4px 24px 20px;text-align:center}.entry-title{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:30px;font-weight:700;margin:6px 0 8px}"
+    ".entry-lead{font-size:15px;line-height:1.65;color:var(--x-text);margin:0 0 16px}"
+    ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:14px;background:#ffffff08;border:1px solid var(--x-line);margin-bottom:12px}"
+    ".entry-count span{font-size:14px;color:var(--x-muted)}.entry-count b{font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:28px;color:var(--x-gold-2);letter-spacing:.02em}"
+    ".entry-bundle{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;background:#a8262b22;border:1px solid #f09c9c55;margin-bottom:12px}"
+    ".entry-bundle b{color:#ffd5d5;font-size:15px}.entry-bundle span{font-size:14px;line-height:1.55;color:var(--x-text)}"
+    ".entry-go{margin:14px 0 6px}.entry-hide{min-height:44px;border:0;background:none;color:var(--x-muted);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
+    # 무료 결과 공유
+    ".taster-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin:22px 0 0;border-radius:14px;border:1px solid var(--x-gold);background:#d8bb7812;color:var(--x-gold-2);font-size:17px;font-weight:800;cursor:pointer}"
+    ".taster-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}"
+    # 카카오톡 버튼(카카오 공식 노란색 + 말풍선)
+    ".kakao.x-kakao{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;background:#fee500;color:#191600;border-radius:14px;font-size:17px;font-weight:700}"
+    ".x-kakao svg{width:20px;height:20px;fill:#191600}.foot-kakao{margin:0 0 20px;min-height:50px!important;font-size:16px!important}"
+    "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.pv-dots i{transition:none}}"
 )
 
 
@@ -498,7 +533,9 @@ def extras_data() -> dict:
     for pid, mod in REPORT_MODULES.items():
         sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
         toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
-    preview = {pid: [f"assets/preview/{f.name}" for f in sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp"))]
+    caps = {"lifetime": ["표지", "목차", "오행 그림", "나의 사주표", "타고난 기질"]}
+    preview = {pid: [[f"assets/preview/{f.name}", caps.get(pid, PREVIEW_CAPS)[n]]
+                     for n, f in enumerate(sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp")))]
                for pid in REPORT_MODULES}
     return {"toc": toc, "preview": preview, "event": NEWYEAR_EVENT, "bundle": False}
 
@@ -508,7 +545,9 @@ def add_extras(s: str) -> str:
     목차 펼쳐보기, 리포트 미리보기, 카카오톡 버튼, 신년 이벤트 남은 날짜와 첫 화면 팝업, 무료 결과 공유 그림."""
     page = (SITE / "tools" / "extras.js").read_text(encoding="utf-8")
     data = json.dumps(extras_data(), ensure_ascii=False, separators=(",", ":"))
-    s = _swap(s, "</head>", f"<style>{EXTRAS_CSS}</style></head>")
+    s = _swap(s, "</head>", '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+              '<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">'
+              f"<style>{EXTRAS_CSS}</style></head>")
     s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
     # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
     s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
@@ -517,9 +556,9 @@ def add_extras(s: str) -> str:
     s = _swap(s, '<section class="checkout-birth-summary">', '${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
     s = _swap(s, '<span class=\"event-tag\">EVENT</span>', '<span class=\"event-tag\">EVENT</span>${eventBadge()}')
     s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
-              '<button type="button" class="taster-share" data-taster-share>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
+              '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
-    s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao foot-kakao" data-action="support">카카오톡으로 물어보기</button><div class="footer-links">')
+    s = _swap(s, '<div class="footer-links">', '<button type="button" class="kakao x-kakao foot-kakao" data-action="support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3Z"/></svg>카카오톡으로 물어보기</button><div class="footer-links">')
     return s
 
 
