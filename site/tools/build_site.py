@@ -325,7 +325,7 @@ TASTER_CSS = (
     ".taster-head{font-size:23px;margin:30px 0 12px;padding-left:12px;border-left:4px solid #6fcf97}.taster-head.bad{border-left-color:#ee3656}"
     ".taster-item{padding:18px 18px 16px;margin:0 0 12px;border-radius:14px;background:#171717;border:1px solid #ffffff17}"
     ".taster-rank span{font-size:14px;font-weight:700;color:#6fcf97}.taster-item.bad .taster-rank span{color:#ff7b8f}"
-    ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}"
+    ".taster-rank h3{font-size:21px;margin:4px 0 10px}.taster-item p{font-size:17px;line-height:1.85;margin:0 0 12px;color:#e5e5e5}.taster-item p.taster-hook{font-weight:800;color:#fff;margin:-2px 0 14px}"
     ".taster-more{display:block;font-size:17px;font-weight:700;line-height:1.6;color:#ff7b8f;text-decoration:underline;text-underline-offset:4px}"
     ".taster-item.good .taster-more{color:#6fcf97}"
     ".taster-redo{display:block;width:100%;margin:14px 0 6px;padding:15px;border-radius:12px;border:1px solid #ffffff40;background:#1b1b1b;color:#fff;font-size:17px;font-weight:700}"
