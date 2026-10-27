@@ -81,7 +81,7 @@ document.addEventListener('click',e=>{
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
 // 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)
 const discounted=v=>Math.round(v*0.9);
-// 묶음 목록과 금액 안내의 상품 순서(2026-10-27 사장님). 재회·깊은궁합은 상대방 정보를 이미 받은 주문(재회·깊은궁합·궁합)에만 보인다.
+// 묶음 목록과 금액 안내의 상품 순서(2026-10-27 사장님). 재회·깊은궁합은 상대방 정보가 필요하다(아래 bundleBlock).
 const BUNDLE_IDS=['newyear','romance','intimate','reunion','wealth','career','business','health','lifetime'];
 const PAIR_IDS=['intimate','reunion'];
 const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+1||99);
@@ -93,15 +93,18 @@ function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}ca
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
- const others=BUNDLE_IDS.filter(id=>id!==p.id&&(pair||!PAIR_IDS.includes(id))).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
+ const others=BUNDLE_IDS.filter(id=>id!==p.id).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
  const ea=d.extraAnswers||(d.extraAnswers={});
  const qs=x=>FLOWS[x.id].filter(st=>st.type==='choice'&&st.required).map(st=>{
   const mine=d.answers?.[st.id];if(!ea[x.id]?.[st.id]&&mine&&st.options.includes(mine))(ea[x.id]||(ea[x.id]={}))[st.id]=mine;
   const cur=ea[x.id]?.[st.id]||'';
   return `<label class="bundle-ask"><span>${esc(st.title)}</span><select data-extra-q="${x.id}" data-step="${st.id}"><option value="">선택해주세요</option>${st.options.map(o=>`<option${o===cur?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`}).join('');
- return `<section class="bundle-x"><span class="x-eyebrow">FIRST ORDER</span><h2 class="x-title">첫 구매 묶음 할인 <em>10%</em></h2><p class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 <b>전부 10% 할인</b>돼요. 같은 출생 정보로 리포트를 한 권씩 따로 보내드려요.</p><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>`}).join('')}</div></section>`;
+ // 재회·깊은궁합은 상대방 정보가 필요하다. 주 주문에서 상대방 정보를 받지 않았으면, 둘 중 하나를 고를 때 바로 아래에 상대방 입력칸을 펼친다(2026-10-27 사장님).
+ const lastPair=[...others].reverse().find(x=>PAIR_IDS.includes(x.id))?.id;
+ const partnerForm=`<form class="bundle-partner" data-bundle-partner novalidate><p class="bundle-partner-title">상대방 정보</p><p class="bundle-partner-sub">재회사주·깊은 궁합은 상대방의 출생 정보로 두 사람을 함께 봐요.</p>${personFields('bundle-partner',d.partner||{}).replace('나의 이야기 준비하기','상대방 정보 준비하기')}</form>`;
+ return `<section class="bundle-x"><span class="x-eyebrow">FIRST ORDER</span><h2 class="x-title">첫 구매 묶음 할인 <em>10%</em></h2><p class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 <b>전부 10% 할인</b>돼요. 같은 출생 정보로 리포트를 한 권씩 따로 보내드려요.</p><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`}).join('')}</div></section>`;
 }
-const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문에 답해주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
+const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워 주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
  if(!q)return priceBox(p,0);
  const items=q.items.map(it=>PRODUCTS.find(x=>x.id===it.id)||{...it,original:it.price}).sort(byOrder),orig=items.reduce((a,x)=>a+x.original,0);
@@ -126,6 +129,8 @@ function bindDiscounts(p,d){
  const coupon=form.elements.coupon;if(coupon&&d.coupon)coupon.value=d.coupon;
  delete d.discount;
  document.querySelectorAll('.bundle-x input[name=extra]').forEach(b=>b.onchange=()=>{d.extras=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].map(x=>x.value);save();refreshQuote(p,d)});
+ const pf=document.querySelector('[data-bundle-partner]');
+ if(pf){let pt;bindPerson(pf,(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
  const mk=form.elements.marketing;if(mk){mk.checked=d.marketing===true;mk.onchange=()=>{d.marketing=mk.checked;save()}}
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600)});
