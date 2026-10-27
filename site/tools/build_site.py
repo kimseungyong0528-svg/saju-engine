@@ -392,7 +392,7 @@ TRUST_CSS = (
     ".trust-stats div{padding:14px 12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff14}"
     ".trust-stats strong{display:block;font-size:24px;color:#d8bb78;margin-bottom:4px}.trust-stats span{font-size:14px;line-height:1.6;color:#bdb5a6}"
     ".trust-close{margin-top:24px;padding-top:20px;border-top:1px solid #d8bb7855}"
-    ".taster-after{padding-top:0!important;margin-top:-31px!important}.taster-after .taster-banner h3{font-size:21px;line-height:1.5;letter-spacing:0}"
+    ".taster-after{padding-top:0!important;margin-top:-31px!important}.taster-after .taster-banner h3{font-size:clamp(18px,calc((100vw - 90px)/12.8),26px);line-height:1.45;letter-spacing:0}.taster-after .taster-banner p{font-size:clamp(14px,calc((100vw - 90px)/16.8),18px)}"
     ".trust-close strong{display:block;font-size:21px;line-height:1.5;color:#fff}.trust-close p{font-size:16px;line-height:1.8;color:#e2dccf;margin:8px 0 0}"
 )
 
