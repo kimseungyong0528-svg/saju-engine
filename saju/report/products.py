@@ -111,7 +111,9 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
     h = hooks(f)
     items = [{**p, "url": product_url(p["id"], site, coupon), "hook": h.get(p["id"], ""),
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
-              "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
+              "discount": discount_percent(p),
+              # 재구매 링크로 들어가면 서버(discounts.mjs)가 10%를 더 깎는다. 같은 계산(반올림)으로 보여 준다.
+              "rebuy_text": f"{round(p['price'] * 0.9):,}원" if coupon else None} for p in PRODUCTS if p["id"] != current]
     items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
 

@@ -149,6 +149,7 @@ ul.checklist li::before { content: ""; position: absolute; left: 1mm; top: 2.6mm
 .product .price strong { color: #1f1b16; }
 a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space: nowrap; }
 .hook a.go { float: right; margin-left: 3mm; }
+.product::after { content: ""; display: block; clear: both; }
 .end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 2mm; }
 
 /* 무료 분석 다시 보기 + 재구매 할인 (2026-10-27) */
@@ -171,3 +172,6 @@ a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space
 .rebuy-how li { margin: 0; }
 .rebuy-sub { font-size: 14pt; color: #4a4033; }
 .rebuy a { color: #9e2f22; text-decoration: underline; }
+.more-rebuy { font-weight: 700; color: #9e2f22; border: 1.2pt solid #9e2f22; background: #fbeee6; padding: 1.5mm 3mm; margin: 0 0 2.5mm; }
+.rebuy-price { color: #9e2f22; font-size: 14pt; }
+.rebuy-price strong { color: #9e2f22; }
