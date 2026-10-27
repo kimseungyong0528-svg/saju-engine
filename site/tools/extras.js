@@ -1,12 +1,13 @@
 // 사이트 추가 기능 1단계 (2026-10-27 사장님 선택): 목차 펼쳐보기, 리포트 미리보기, 신년 이벤트 남은 날짜와 첫 화면 팝업,
 // 무료 결과 공유 이미지. build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
 
-// 18. 목차 펼쳐보기: 실제 리포트 목차(saju/report 의 SECTIONS)를 처음 5장만 보여 주고 나머지는 버튼으로 편다.
+// 18. 리포트 목차: 실제 리포트 목차(saju/report 의 SECTIONS)를 리포트 목차 쪽과 같은 모양(한지 바탕, 붉은 줄, 붉은 숫자)으로 다 펼쳐 보여 준다.
+// 2026-10-27 사장님: 펼치기·닫기 없이 늘 펼쳐 두고, 실제 리포트 디자인으로.
 const CHEVRON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
 function tocBlock(p){
  const toc=EXTRA_DATA.toc[p.id]||[];if(!toc.length)return '';
- const row=(c,n)=>`<li${n>=5?' class="toc-more" hidden':''}><span class="toc-n">${String(c[0]).padStart(2,'0')}</span><div><b>${esc(c[1])}</b>${c[2]?`<small>${esc(c[2])}</small>`:''}</div></li>`;
- return `<section class="toc-x"><span class="x-eyebrow">CONTENTS</span><h2 class="x-title">리포트 목차</h2><p class="x-sub">실제 리포트에 들어가는 ${toc.length}개 장이에요.</p><ol class="toc-list">${toc.map(row).join('')}</ol>${toc.length>5?`<button type="button" class="x-more" data-toc-toggle><span>목차 전체 보기</span>${CHEVRON}</button>`:''}</section>`;
+ const row=c=>`<li><span class="tp-no">${esc(String(c[0]))}</span><span class="tp-t"><b>${esc(c[1])}</b>${c[2]?`<small>${esc(c[2])}</small>`:''}</span></li>`;
+ return `<section class="toc-x"><span class="x-eyebrow">CONTENTS</span><h2 class="x-title">리포트 목차</h2><p class="x-sub">실제 리포트의 목차 쪽 그대로예요. ${toc.length}개 장으로 되어 있어요.</p><div class="tp-page"><div class="tp-frame"><div class="tp-head">${esc(EXTRA_DATA.header?.[p.id]||'')}</div><h3 class="tp-h">목차</h3><ol class="tp-list">${toc.map(row).join('')}</ol></div></div></section>`;
 }
 
 // 2. 리포트 미리보기: 가상의 인물로 만든 실제 리포트에서 뽑은 쪽을 옆으로 넘겨 본다. 누르면 크게 본다.

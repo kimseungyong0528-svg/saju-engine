@@ -480,14 +480,17 @@ EXTRAS_CSS = (
     ".x-cta:active{transform:scale(.98)}"
     ".x-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:50px;margin-top:14px;border-radius:12px;border:1px solid var(--x-line);background:#ffffff08;color:var(--x-gold);font-size:16px;font-weight:700;cursor:pointer}"
     ".x-more svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .2s ease}.x-more[data-open='1'] svg{transform:rotate(180deg)}"
-    # 목차
-    ".toc-x{margin:24px 20px;padding:28px 20px 22px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
-    ".toc-list{list-style:none;margin:0;padding:0;counter-reset:none}"
-    ".toc-list li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid #ffffff12}"
-    ".toc-list li:first-child{border-top:0}"
-    ".toc-n{flex:0 0 34px;font-family:'Noto Serif KR','Noto Serif CJK KR',Georgia,serif;font-size:20px;line-height:1.3;color:var(--x-gold);font-weight:700}"
-    ".toc-list b{display:block;font-size:17px;line-height:1.45;color:var(--x-text);font-weight:700}"
-    ".toc-list small{display:block;margin-top:3px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
+    # 목차: 실제 리포트 목차 쪽과 같은 모양(saju/report/templates/style.css 의 .toc-sec·h2·@page)
+    ".toc-x{margin:24px 20px;text-align:left}"
+    ".tp-page{background:#f1e9d6;padding:12px;border-radius:4px;box-shadow:0 12px 30px #000a}"
+    ".tp-frame{border:4px double #3a2e22;padding:14px 16px 18px;color:#1f1b16;font-family:'Gowun Batang','Noto Serif CJK KR',serif}"
+    ".tp-head{font-family:'Song Myung','Noto Serif CJK KR',serif;font-size:15px;color:#3d362c;margin:0 0 14px}"
+    ".tp-h{font-family:'Song Myung','Noto Serif CJK KR',serif;font-weight:400;font-size:24px;line-height:1.35;margin:0 0 10px;padding-left:10px;border-left:6px solid #9e2f22;color:#1f1b16}"
+    ".tp-list{list-style:none;margin:0;padding:0}"
+    ".tp-list li{display:flex;align-items:baseline;gap:6px;padding:9px 0;border-bottom:1px solid #d3c5a3}"
+    ".tp-no{flex:0 0 34px;font-family:'Song Myung','Noto Serif CJK KR',serif;color:#9e2f22;font-size:21px}"
+    ".tp-t{word-break:keep-all}.tp-t b{display:block;font-weight:700;font-size:17px;line-height:1.5;color:#1f1b16}"
+    ".tp-t small{display:block;font-size:15px;line-height:1.55;color:#5a5144}"
     # 미리보기
     ".pv-x{margin:24px 0;padding:0 20px;text-align:left}"
     ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:4px 20px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.pv-rail::-webkit-scrollbar{display:none}"
@@ -552,7 +555,9 @@ def extras_data() -> dict:
     preview = {pid: [[f"assets/preview/{f.name}", caps.get(pid, PREVIEW_CAPS)[n]]
                      for n, f in enumerate(sorted((PUBLIC / "assets" / "preview").glob(f"{pid}-*.webp")))]
                for pid in REPORT_MODULES}
-    return {"toc": toc, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
+    from saju.report.render import PRODUCT
+    header = {pid: PRODUCT.get(pid, {}).get("header", "平生四柱") for pid in REPORT_MODULES}
+    return {"toc": toc, "header": header, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
 
 
 def add_extras(s: str) -> str:
@@ -561,7 +566,7 @@ def add_extras(s: str) -> str:
     page = (SITE / "tools" / "extras.js").read_text(encoding="utf-8")
     data = json.dumps(extras_data(), ensure_ascii=False, separators=(",", ":"))
     s = _swap(s, "</head>", '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-              '<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">'
+              '<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Song+Myung&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">'
               f"<style>{EXTRAS_CSS}</style></head>")
     s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
     # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
