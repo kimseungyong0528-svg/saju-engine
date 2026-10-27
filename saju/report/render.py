@@ -212,9 +212,9 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
                                              facts["daewoon"]["current_index"])
     recap = None
     if facts.get("taster_view"):
-        # 책 맨 끝 '더보기' 앞쪽에 무료 분석 6가지 다시 보기를 넣는다(목차 줄은 그대로).
+        # 책 맨 끝 '더보기' 앞쪽에 보너스로 6가지 핵심운(좋은 운 3·조심할 운 3)을 넣는다(목차 줄은 그대로).
         recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"))
-        sections = [dict(sec, pages=[{"id": "recap", "title": "무료 분석에서 본 나의 좋은 운과 조심할 운", "figure": "taster_recap",
+        sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 나의 6가지 핵심운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
                                       *[dict(pg, opener=False) for pg in sec["pages"]]])
                     if sec.get("no") == "더보기" else sec for sec in sections]

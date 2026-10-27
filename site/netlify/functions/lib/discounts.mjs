@@ -1,12 +1,11 @@
 // 할인 장치 (2026-10-27 사장님 결정). 할인은 모두 10%이고, 한 주문에는 하나만 들어간다(더하지 않음).
 // 1) 첫 구매 묶음 할인: 처음 사는 이메일이 상품 2개 이상을 함께 사면 전부 10%.
-// 2) 재구매 할인: 리포트 끝의 링크(?coupon=)로 들어온 손님. 30일 안에 한 번만. 할인 코드 칸·친구 초대·할인 메일은 없다.
+// 2) 재구매 할인: 리포트 끝의 링크(?coupon=)로 들어온 손님. 기한·횟수 제한 없음(2026-10-27 사장님). 할인 코드 칸·친구 초대·할인 메일은 없다.
 // 금액은 항상 서버가 계산한다. 화면에서 보낸 금액·할인값은 믿지 않는다.
 import { createHash, randomBytes } from 'node:crypto';
 import { PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
 
 export const PERCENT = 10;
-export const COUPON_DAYS = 30;
 // 묶음에 함께 담을 수 있는 상품. 재회·깊은궁합은 상대방 정보가 필요해서, 주 주문에 상대방 정보가 있을 때만 접수 검사를 통과한다.
 export const BUNDLE_PRODUCTS = ['newyear', 'romance', 'intimate', 'reunion', 'wealth', 'career', 'business', 'health', 'lifetime'];
 const LABELS = { bundle: '첫 구매 묶음 할인', rebuy: '재구매 할인' };
@@ -16,11 +15,6 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const newCode = (prefix = 'UNM') => prefix + '-' + Array.from(randomBytes(6), b => CODE_CHARS[b % CODE_CHARS.length]).join('');
 const normCode = c => String(c || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
 export const discounted = base => Math.round(base * (100 - PERCENT) / 100);
-
-export function kstDate(iso) {
-  const d = new Date(new Date(iso).getTime() + 9 * 3600e3);
-  return `${d.getUTCFullYear()}년 ${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
-}
 
 // 함께 사는 상품: 중복·주 상품·묶음 불가 상품을 빼고, 같은 출생 정보와 그 상품 질문의 답으로 접수가 되는 것만 남긴다.
 export function bundleItems(body) {
@@ -36,11 +30,10 @@ export function extraBody(body, id) {
   return { ...body, productId: id, answers: ans && typeof ans === 'object' ? ans : {}, question: '' };
 }
 
-async function validCoupon(store, code, now) {
+async function validCoupon(store, code) {
   if (!code) return null;
   const c = await store.get(`coupons/${code}`);
-  if (!c || c.usedAt || new Date(c.expiresAt) < now) return null;
-  return c;
+  return c || null;
 }
 
 // 가격 계산. 화면의 '상품 금액 안내'와 실제 주문 금액이 같은 함수에서 나온다.
@@ -53,7 +46,7 @@ export async function quote(store, body, now = new Date()) {
   const hash = body?.email ? emailHash(body.email) : null;
   const buyer = hash ? Boolean(await store.get(`buyers/${hash}`)) : null;
   const code = normCode(body?.coupon);
-  const coupon = await validCoupon(store, code, now);
+  const coupon = await validCoupon(store, code);
   let discount = null;
   if (coupon) discount = { kind: coupon.kind, code };
   else if (extras.length && hash && !buyer) discount = { kind: 'bundle' };
@@ -65,25 +58,25 @@ export async function quote(store, body, now = new Date()) {
   return { items, extras, base, discount, amount: discount ? base - discount.amount : base, firstPurchase: hash ? !buyer : null, notes };
 }
 
-// 결제가 확인된 뒤: 재구매 코드 사용 처리, 첫 구매 기록.
+// 결제가 확인된 뒤: 첫 구매 기록, 재구매 링크로 산 횟수 기록(링크는 계속 쓸 수 있다).
 export async function afterPaid(store, order, now = new Date()) {
   const hash = emailHash(order.email);
   if (!(await store.get(`buyers/${hash}`))) await store.set(`buyers/${hash}`, { firstPaidAt: now.toISOString() });
   const d = order.discount;
   if (d?.code) {
     const c = await store.get(`coupons/${d.code}`);
-    if (c && !c.usedAt) await store.set(`coupons/${d.code}`, { ...c, usedAt: now.toISOString(), usedBy: order.id });
+    if (c) await store.set(`coupons/${d.code}`, { ...c, uses: (c.uses || 0) + 1, lastUsedAt: now.toISOString() });
   }
 }
 
 export async function issueCoupon(store, kind, now = new Date()) {
   const code = newCode();
-  const coupon = { code, kind, percent: PERCENT, createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + COUPON_DAYS * 864e5).toISOString() };
+  const coupon = { code, kind, percent: PERCENT, createdAt: now.toISOString() };
   await store.set(`coupons/${code}`, coupon);
   return coupon;
 }
 
-// 리포트 끝에 넣는 재구매 할인 링크. 주문마다 한 번만 만든다. 할인 코드 칸이 없어서 이 링크로 들어와야만 할인된다.
+// 리포트 끝에 넣는 재구매 할인 링크. 주문마다 하나 만든다. 할인 코드 칸이 없어서 이 링크로 들어와야만 할인된다.
 export async function rebuyFor(store, order, site, now = new Date()) {
   let c = order.rebuyCode ? await store.get(`coupons/${order.rebuyCode}`) : null;
   if (!c) {
@@ -91,7 +84,7 @@ export async function rebuyFor(store, order, site, now = new Date()) {
     order.rebuyCode = c.code;
     await store.set(`orders/${order.id}`, order);
   }
-  return { code: c.code, until: kstDate(c.expiresAt), url: `${String(site || 'https://unmyeong-saju.com').replace(/\/$/, '')}/?coupon=${c.code}` };
+  return { code: c.code, url: `${String(site || 'https://unmyeong-saju.com').replace(/\/$/, '')}/?coupon=${c.code}` };
 }
 
 // 묶음으로 함께 만든 책은 본 주문의 코드를 같이 쓴다(한 번 결제에 코드 하나).

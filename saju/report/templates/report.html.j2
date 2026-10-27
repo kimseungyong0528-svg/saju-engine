@@ -197,19 +197,8 @@
   <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
   <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
 {%- elif k == "taster_recap" -%}
-  <p>{{ f.person.name }} 님이 무료 사주 분석에서 본 좋은 운 3개와 조심할 운 3개를 다시 짚고, 운마다 그 운을 가장 깊게 풀어 주는 리포트를 알려 드릴게요.</p>
-  {% if f.rebuy %}
-  <div class="rebuy">
-    <p class="rebuy-big">다음 리포트 10% 할인</p>
-    <p class="rebuy-lead">{{ f.person.name }} 님, 아래 운마다 붙은 '나의 ○○ 자세히 보기 (재구매 10% 할인)'를 누르면, 그 리포트를 10% 싸게 받아 보실 수 있어요.</p>
-    <ul class="rebuy-how">
-      <li>이 책 안의 링크로 들어가야만 할인돼요.</li>
-      <li>코드 없이, 링크를 누르고 주문하면 10%가 저절로 빠져요.</li>
-      <li>책 맨 끝의 '바로 보기'를 눌러도 똑같이 할인돼요.</li>
-      <li>{{ f.rebuy.until }}까지, 한 번만 쓸 수 있어요.</li>
-    </ul>
-  </div>
-  {% endif %}
+  <p>{{ f.person.name }} 님이 {{ product.name }} 리포트를 확인하실 때 입력한 정보로, 다른 6가지 핵심운도 함께 분석해 드렸어요. 연애·인기, 결혼·궁합, 헤어진 인연, 돈 모으기, 직장·이직, 내 사업, 몸의 힘, 2027년 한 해 흐름까지 여덟 가지 운을 하나하나 살펴서, {{ f.person.name }} 님 사주에서 가장 좋은 운 3개와 가장 조심해야 할 운 3개를 골랐어요.</p>
+  <p>이 책에서 다 담지 못한 운을 보너스로 미리 짚어 드려요. 운마다 그 운을 가장 깊게 풀어 주는 리포트도 함께 알려 드릴게요.</p>
   {% for group, label in [(recap.good, "좋은 운"), (recap.bad, "조심할 운")] %}
   <h3 class="recap-head {{ 'good' if label == '좋은 운' else 'bad' }}">{{ label }} TOP 3</h3>
   {% for a in group %}
@@ -219,6 +208,17 @@
     <p class="recap-hook">{{ a.hook }}</p>
     {% if a.here %}<p class="recap-go">이 책에서 이 운을 가장 자세히 풀었어요.</p>{% else %}<p class="recap-go"><a href="{{ a.url }}">나의 {{ a.product_name }} 자세히 보기{% if f.rebuy %} (재구매 10% 할인){% endif %} →</a></p>{% endif %}
   </div>{% endfor %}{% endfor %}
+  {% if f.rebuy %}
+  <div class="rebuy">
+    <p class="rebuy-big">다음 리포트 10% 할인</p>
+    <p class="rebuy-lead">{{ f.person.name }} 님, 위 운마다 붙은 '나의 ○○사주 자세히 보기'를 누르면 그 리포트를 10% 싸게 받아 보실 수 있어요.</p>
+    <p>위의 운들은 {{ f.person.name }} 님에게 중요한 핵심 사주예요. 이 책을 구매해 주신 감사의 마음을 담아, 특별히 10% 싸게 드려요.</p>
+    <ul class="rebuy-how">
+      <li>이 책 안의 링크로 들어가야만 할인돼요.</li>
+      <li>코드 없이, 링크를 누르고 주문하면 저절로 할인돼요.</li>
+    </ul>
+  </div>
+  {% endif %}
 {%- elif k == "cross_sell" -%}
   <p>{{ product.more_intro }} 이름이나 '바로 보기'를 누르면 운명서재의 해당 페이지로 이동해요.</p>
   {% for p in more %}

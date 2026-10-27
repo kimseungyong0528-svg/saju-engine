@@ -70,7 +70,7 @@ async function refreshQuote(p,d){
  const seq=++quoteSeq,box=document.querySelector('#checkout-price');if(!box)return;
  let q=null;try{const r=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,productId:p.id,email:d.email||'',extras:d.extras||[],coupon:d.coupon||''}),signal:AbortSignal.timeout(15000)});if(r.ok)q=await r.json()}catch{}
  if(seq!==quoteSeq||!box.isConnected)return;
- if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크가 이미 쓰였거나 기한이 지났어요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
+ if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
  if(q)q.missing=(d.extras||[]).some(id=>!q.items.some(i=>i.id===id));
  box.innerHTML=quoteBox(p,q);
 }

@@ -611,7 +611,7 @@ def add_discounts(s: str) -> str:
     s = _swap(s, "orderName:config.productNames?.[productId]??'운명서재 사주 결과',",
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
-              "e.message==='COUPON_INVALID'?'재구매 할인 링크가 이미 쓰였거나 기한이 지났어요. 화면을 새로 고친 뒤 다시 결제해주세요.'")
+              "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'")
     return s
 
 
