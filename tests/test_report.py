@@ -129,7 +129,8 @@ def test_cross_sell_follows_site_order(facts):
     # 재구매 할인 링크: 리포트 끝 링크로 들어가야만 10% 할인되므로 모든 상품 링크에 코드가 붙는다.
     coupon = cross_sell(facts, site="https://unmyeong.test", coupon="UNM-ABC234")
     assert coupon[1]["url"] == "https://unmyeong.test/?coupon=UNM-ABC234#/f/romance/intro"
-    assert coupon[1]["rebuy_text"] == "26,820원" and coupon[-1]["rebuy_text"] == "44,820원"   # 서버 재구매 10%와 같은 금액
+    assert coupon[1]["rebuy_text"] == "26,820원"   # 서버 재구매 10%와 같은 금액
+    assert cross_sell(facts, current="wealth", coupon="UNM-ABC234")[-1]["rebuy_text"] == "44,820원"
     assert all(p["rebuy_text"] is None for p in cross_sell(facts, site="https://unmyeong.test"))
 
 
