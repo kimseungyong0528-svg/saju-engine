@@ -375,6 +375,10 @@ TRUST_HTML = (
     '<div><strong>10,000개</strong><span>서로 다른 생년월일시 10,000개로 사주팔자를 계산해 수성만년력 결과와 대조했고, 한 글자도 틀리지 않았습니다.</span></div></div>'
     '<div class="trust-close"><strong>내 사주가 제대로 계산됐는지,<br>이제 확인할 수 있습니다.</strong>'
     '<p>어떤 자료로 어떻게 계산했는지 모두 공개합니다.<br>확인할 수 있는 정확함, 그것이 운명서재의 기준입니다.</p></div></section>'
+    # 근거를 다 읽은 사람이 바로 누를 수 있게 무료 분석 배너를 한 번 더 둔다(2026-10-27 사장님).
+    '<section class="section"><a class="banner taster-banner" href="#/taster"><span class="eyebrow">무료 사주 분석</span>'
+    '<h3>정확한 기준으로 계산한<br>내 사주, 지금 무료로<br>확인해 보세요.</h3><p>내 사주에서 좋은 운 3개, 조심할 운 3개를<br>바로 알려드려요.</p>'
+    '<span class="taster-cta">무료로 나의 운 확인하기</span></a></section>'
 )
 
 TRUST_CSS = (
