@@ -441,6 +441,20 @@ def write_intake_module(s: str) -> None:
     (LIB / "intake.mjs").write_text(code, encoding="utf-8")
 
 
+def fix_checkout_flow(s: str) -> str:
+    """'입력 확인하기'를 누르면 결제 버튼이 그 자리에 나오고 화면은 아래로만 움직이게 한다(사장님 2026-10-27).
+
+    예전에는 확인 결과 칸이 이메일 칸 위에 있어서, 버튼을 누르면 화면이 위로 튀어 올라갔다.
+    """
+    status = '<section id="intake-status" aria-live="polite">${intakeNotice(evaluateIntake(intakePayload(p.id,d)),p.id)}</section>'
+    s = _swap(s, status, "")
+    s = _swap(s, '<button class="primary dark-primary" id="pay" type="submit" disabled>입력 확인하기</button>',
+              '<button class="primary dark-primary" id="pay" type="submit" disabled>입력 확인하기</button>' + status)
+    s = _swap(s, "if(result.paymentAllowed)bindReadyCheckout(area,p,d);area.scrollIntoView({behavior:'smooth',block:'center'});",
+              "if(result.paymentAllowed){bindReadyCheckout(area,p,d);pay.style.display='none'}area.scrollIntoView({behavior:'smooth',block:'nearest'});")
+    return s
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -506,6 +520,7 @@ def main() -> None:
     s = add_taster(s)
     s = add_input_helpers(s)
     s = add_trust(s)
+    s = fix_checkout_flow(s)
     s = extract_font(s)
     s = fix_story_face(s)
     s = optimize_images(s)
