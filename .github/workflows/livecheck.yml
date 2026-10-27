@@ -1,9 +1,0 @@
-name: livecheck
-on: push
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          curl -s https://unmyeong-saju.com/ -o page.html || true
-          echo "bytes=$(wc -c < page.html) taster-share=$(grep -c 'taster-share' page.html || true) x-kakao=$(grep -c 'x-kakao' page.html || true) bundle-partner=$(grep -c 'bundle-partner' page.html || true)"
