@@ -1,5 +1,5 @@
-// 사이트 추가 기능 1단계 (2026-10-27 사장님 선택): 목차 펼쳐보기, 리포트 미리보기, 신년 이벤트 남은 날짜와 첫 화면 팝업,
-// 무료 결과 공유 이미지. build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
+// 사이트 추가 기능 (2026-10-27 사장님 선택): 리포트 목차, 신년 이벤트 남은 날짜와 첫 화면 팝업, 할인.
+// build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
 
 // 18. 리포트 목차: 실제 리포트 목차(saju/report 의 SECTIONS)를 리포트 목차 쪽과 같은 모양(한지 바탕, 붉은 줄, 붉은 숫자)으로 다 펼쳐 보여 준다.
 // 2026-10-27 사장님: 펼치기·닫기 없이 늘 펼쳐 두고, 실제 리포트 디자인으로.
@@ -30,53 +30,6 @@ function entryPopup(){
  m.querySelector('.entry-go').onclick=()=>closeModal();
  m.querySelector('[data-entry-hide]').onclick=()=>{try{localStorage.setItem('unmyeong.entryHide',today)}catch{}closeModal()};
 }
-
-// 11. 무료 결과 공유 이미지: 좋은 운 3개만 담은 세로 그림(1080×1920)을 손님 폰에서 만든다. 이름·생일·시간은 넣지 않는다.
-async function tasterShareImage(r){
- const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
- const sans=(w,px)=>`${w} ${px}px "Pretendard Variable",Pretendard,sans-serif`,serif=px=>`700 ${px}px "Noto Serif KR","Noto Serif CJK KR",Georgia,serif`;
- try{await Promise.all([document.fonts.load(serif(80),'나의좋은운'),document.fonts.ready])}catch{}
- const GOLD='#d8bb78',GOLD2='#f0d896';
- const bg=g.createRadialGradient(W/2,560,80,W/2,900,1300);bg.addColorStop(0,'#2a2114');bg.addColorStop(.55,'#120f0a');bg.addColorStop(1,'#050505');g.fillStyle=bg;g.fillRect(0,0,W,H);
- // 두 겹 금색 테두리 + 모서리 장식
- g.strokeStyle=GOLD;g.lineWidth=2.5;g.strokeRect(54,54,W-108,H-108);g.strokeStyle=GOLD+'55';g.lineWidth=1.5;g.strokeRect(72,72,W-144,H-144);
- g.fillStyle=GOLD;for(const [x,y] of [[54,54],[W-54,54],[54,H-54],[W-54,H-54]]){g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-9,-9,18,18);g.restore()}
- const line=(y,w=180)=>{const lg=g.createLinearGradient(W/2-w,0,W/2+w,0);lg.addColorStop(0,GOLD+'00');lg.addColorStop(.5,GOLD);lg.addColorStop(1,GOLD+'00');g.fillStyle=lg;g.fillRect(W/2-w,y,w*2,2)};
- g.textAlign='center';g.textBaseline='alphabetic';
- g.fillStyle=GOLD;g.font=sans(600,34);g.letterSpacing='10px';g.fillText('運命書齋 · 운명서재',W/2,200);g.letterSpacing='0px';
- line(240);
- const day=r.pillars?.[1]?.ko,hanja=r.pillars?.[1]?.hanja;
- g.fillStyle='#ffffff';g.font=serif(96);g.fillText(day?`나는 ${day}일주`:'나의 좋은 운',W/2,390);
- if(hanja){g.fillStyle=GOLD+'cc';g.font=serif(46);g.fillText(hanja+'日柱',W/2,462)}
- g.fillStyle=GOLD2;g.font=sans(800,46);g.fillText('내 사주의 좋은 운 TOP 3',W/2,600);
- r.good.slice(0,3).forEach((a,n)=>{const y=660+n*270,x=150,w=W-300,h=220;
-  const cg=g.createLinearGradient(0,y,0,y+h);cg.addColorStop(0,'#ffffff12');cg.addColorStop(1,'#ffffff05');g.fillStyle=cg;
-  g.beginPath();g.roundRect?g.roundRect(x,y,w,h,30):g.rect(x,y,w,h);g.fill();g.strokeStyle=GOLD+'66';g.lineWidth=2;g.stroke();
-  g.fillStyle=GOLD;g.beginPath();g.arc(x+110,y+h/2,52,0,Math.PI*2);g.fill();
-  g.fillStyle='#1a140a';g.font=serif(52);g.fillText(String(n+1),x+110,y+h/2+18);
-  g.textAlign='left';g.fillStyle='#ffffff';g.font=sans(800,62);g.fillText(a.title,x+200,y+h/2+40);
-  g.fillStyle='#bdb5a6';g.font=sans(500,30);g.fillText(n?'좋은 운':'가장 강한 운',x+200,y+h/2-40);g.textAlign='center'});
- line(1520,240);
- g.fillStyle='#e9e2d4';g.font=sans(600,42);g.fillText('나의 좋은 운도 무료로 확인해 보세요',W/2,1620);
- g.fillStyle=GOLD2;g.font=sans(800,54);g.fillText('unmyeong-saju.com',W/2,1712);
- return await new Promise(res=>c.toBlob(res,'image/png'));
-}
-async function shareTaster(r,btn){
- btn.disabled=true;
- try{const blob=await tasterShareImage(r),file=new File([blob],'운명서재-나의-좋은운.png',{type:'image/png'});
-  if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],text:'나의 좋은 운 TOP 3 · 운명서재 무료 사주 분석 https://unmyeong-saju.com/#/taster'})}catch(e){if(e.name!=='AbortError')throw e}}
-  else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('그림을 내려받았어요. 카톡이나 인스타에 올려 보세요.')}}
- catch(e){console.error(e);toast('그림을 만들지 못했어요. 잠시 뒤 다시 눌러 주세요.')}
- finally{btn.disabled=false}
-}
-
-// 버튼들은 화면이 새로 그려져도 동작하도록 문서 전체에서 한 번만 받는다.
-document.addEventListener('click',e=>{
- const t=e.target.closest('[data-toc-toggle],[data-taster-share]');if(!t)return;
- if(t.matches('[data-toc-toggle]')){const sec=t.closest('.toc-x'),open=t.dataset.open!=='1';sec.querySelectorAll('.toc-more').forEach(a=>a.hidden=!open);t.dataset.open=open?'1':'';t.querySelector('span').textContent=open?'목차 접기':'목차 전체 보기';if(!open)sec.scrollIntoView({behavior:'smooth'})}
- if(t.matches('[data-taster-share]')&&tasterState.result)shareTaster(tasterState.result,t);
-});
-// 미리보기를 옆으로 넘길 때 아래 점이 따라 움직인다.
 
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
 // 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)
