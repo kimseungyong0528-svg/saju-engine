@@ -358,7 +358,7 @@ def add_taster(s: str) -> str:
 
 TRUST_HTML = (
     '<section class="trust-box" aria-labelledby="trust-title"><span class="eyebrow">운명서재의 계산 근거</span>'
-    '<h2 id="trust-title">국가기관 공식 자료와<br>국제 천문 계산법으로<br>사주를 계산합니다</h2>'
+    '<h2 id="trust-title"><em>국가기관 공식 자료</em>와<br><em>국제 천문 계산법</em>으로<br>사주를 계산합니다</h2>'
     '<p class="trust-lead">풀이가 아무리 좋아도 사주 여덟 글자 계산이 틀리면 리포트 전체가 틀립니다. '
     '그래서 운명서재는 계산의 기준을 감으로 정하지 않고, 모두 공식 자료에 맞췄습니다.</p>'
     '<h3>믿을 수 있는 4가지 공식 출처</h3><ul class="trust-sources">'
@@ -371,15 +371,15 @@ TRUST_HTML = (
     '<li><b>1948~1961년, 1987~1988년에 태어난 분</b><span>표준시와 서머타임이 지금과 달랐던 시기라 그 시절 시계 기준으로 다시 계산합니다.</span></li>'
     '<li><b>서울이 아닌 지역에서 태어난 분</b><span>같은 시각이라도 지역마다 해의 위치가 달라서 출생 지역 기준으로 시각을 보정합니다.</span></li></ul>'
     '<h3>직접 검증한 결과</h3><div class="trust-stats">'
-    '<div><strong>2,664개</strong><span>1940~2050년 절기 시각을 다른 만세력 프로그램과 하나씩 대조, 차이는 모두 30초 이내</span></div>'
-    '<div><strong>10,000개</strong><span>무작위로 고른 생년월일시의 사주팔자를 다른 만세력 프로그램과 대조, 모두 똑같이 나왔습니다</span></div></div>'
+    '<div><strong>2,664개</strong><span>1940~2050년 24절기 시각 2,664개를 천문 전문 만세력(수성만년력)과 하나씩 대조했고, 차이는 모두 30초 이내였습니다.</span></div>'
+    '<div><strong>10,000개</strong><span>서로 다른 생년월일시 10,000개로 사주팔자를 계산해 수성만년력 결과와 대조했고, 한 글자도 틀리지 않았습니다.</span></div></div>'
     '<div class="trust-close"><strong>내 사주가 제대로 계산됐는지,<br>이제 확인할 수 있습니다.</strong>'
     '<p>어떤 자료로 어떻게 계산했는지 모두 공개합니다. 확인할 수 있는 정확함, 그것이 운명서재의 기준입니다.</p></div></section>'
 )
 
 TRUST_CSS = (
     ".trust-box{margin:8px 20px 30px;padding:26px 20px;border-radius:16px;border:1px solid #d8bb7855;background:linear-gradient(180deg,#17130c,#0e0d0b)}"
-    ".trust-box .eyebrow{color:#d8bb78}.trust-box h2{font-size:25px;line-height:1.45;margin:10px 0 14px;color:#fff}"
+    ".trust-box .eyebrow{color:#d8bb78}.trust-box h2{font-size:25px;line-height:1.45;margin:10px 0 14px;color:#fff}.trust-box h2 em{font-style:normal;color:#f0c75e}"
     ".trust-lead{font-size:16px;line-height:1.8;color:#e2dccf;margin:0 0 22px}"
     ".trust-box h3{font-size:18px;line-height:1.5;margin:22px 0 10px;color:#d8bb78}"
     ".trust-box ul{list-style:none;margin:0;padding:0}.trust-box li{padding:12px 0;border-top:1px solid #ffffff14}"
