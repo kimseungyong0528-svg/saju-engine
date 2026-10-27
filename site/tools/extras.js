@@ -1,5 +1,5 @@
-// 사이트 추가 기능 1단계 (2026-10-27 사장님 선택): 목차 펼쳐보기, 리포트 미리보기, 신년 이벤트 남은 날짜와 첫 화면 팝업,
-// 무료 결과 공유 이미지. build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
+// 사이트 추가 기능 (2026-10-27 사장님 선택): 리포트 목차, 신년 이벤트 남은 날짜와 첫 화면 팝업, 할인.
+// build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
 
 // 18. 리포트 목차: 실제 리포트 목차(saju/report 의 SECTIONS)를 리포트 목차 쪽과 같은 모양(한지 바탕, 붉은 줄, 붉은 숫자)으로 다 펼쳐 보여 준다.
 // 2026-10-27 사장님: 펼치기·닫기 없이 늘 펼쳐 두고, 실제 리포트 디자인으로.
@@ -30,60 +30,6 @@ function entryPopup(){
  m.querySelector('.entry-go').onclick=()=>closeModal();
  m.querySelector('[data-entry-hide]').onclick=()=>{try{localStorage.setItem('unmyeong.entryHide',today)}catch{}closeModal()};
 }
-
-// 11. 무료 결과 공유 이미지: 좋은 운 3개만 담은 세로 그림(1080×1920, 인스타 스토리 크기)을 손님 폰에서 만든다. 이름·생일·시간은 넣지 않는다.
-// 2026-10-27 사장님: 인스타 감성으로 세련되고 고급스럽게. 잡지 표지처럼 여백을 넉넉히 두고, 한지색 바탕(ivory) 또는 먹색 바탕(ink).
-const SHARE_THEMES={
- ivory:{bg:['#f4eee4','#e9e0d1'],ink:'#2a241f',soft:'#7a6d60',accent:'#9a4b32',line:'#2a241f33',mark:'#2a241f0d'},
- ink:{bg:['#1c1915','#0d0c0a'],ink:'#f3ece1',soft:'#a89c8c',accent:'#d6b77a',line:'#f3ece133',mark:'#f3ece10b'},
-};
-async function tasterShareImage(r,theme='ivory'){
- const T=SHARE_THEMES[theme]||SHARE_THEMES.ivory,W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
- const sans=(w,px)=>`${w} ${px}px "Pretendard Variable",Pretendard,sans-serif`,serif=(w,px)=>`${w} ${px}px "Gowun Batang","Noto Serif KR","Noto Serif CJK KR",Georgia,serif`;
- // 구글 글꼴은 글자 묶음별로 내려받으므로, 그림에 쓰는 글자를 모두 넘겨 미리 받아 둔다.
- const words=['나는','일주','나의 좋은 운','나의 사주','내 사주에 들어 있는 좋은 운 세 가지','運命書齋','unmyeong-saju.com','0123',r.pillars?.[1]?.ko||'',r.pillars?.[1]?.hanja||'',...r.good.map(a=>a.title)].join('');
- try{await Promise.all([document.fonts.load(serif(700,80),words),document.fonts.load(serif(400,40),words),document.fonts.ready])}catch{}
- const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,T.bg[0]);bg.addColorStop(1,T.bg[1]);g.fillStyle=bg;g.fillRect(0,0,W,H);
- // 필름처럼 고운 입자
- const img=g.getImageData(0,0,W,H),px=img.data;for(let i=0;i<px.length;i+=4){const n=(Math.random()-.5)*14;px[i]+=n;px[i+1]+=n;px[i+2]+=n}g.putImageData(img,0,0);
- const hair=(x1,y,x2)=>{g.fillStyle=T.line;g.fillRect(x1,y,x2-x1,2)};
- const day=r.pillars?.[1]?.ko,hanja=r.pillars?.[1]?.hanja,M=96;
- // 윗줄: 상호 · 쪽 번호처럼
- g.textBaseline='alphabetic';g.fillStyle=T.ink;g.font=sans(600,26);g.letterSpacing='8px';g.textAlign='left';g.fillText('UNMYEONG SEOJAE',M,150);
- g.textAlign='right';g.fillText('FREE SAJU',W-M,150);g.letterSpacing='0px';hair(M,182,W-M);
- // 일주 한자를 크게 흐리게 깔고, 그 위에 제목
- if(hanja){g.textAlign='center';g.fillStyle=T.mark;g.font=serif(700,560);g.fillText(hanja,W/2,900)}
- g.textAlign='left';g.fillStyle=T.soft;g.font=serif(400,40);g.fillText(hanja?`${hanja}日柱`:'나의 사주',M,330);
- g.fillStyle=T.ink;g.font=serif(700,112);g.fillText(day?`나는 ${day}일주`:'나의 좋은 운',M,470);
- g.fillStyle=T.accent;g.font=serif(400,44);g.fillText('내 사주에 들어 있는 좋은 운 세 가지',M,560);
- // 좋은 운 세 줄: 가는 줄 사이에 번호와 이름
- r.good.slice(0,3).forEach((a,n)=>{const y=760+n*250;hair(M,y,W-M);
-  g.textAlign='left';g.fillStyle=T.accent;g.font=serif(400,42);g.fillText(`0${n+1}`,M,y+120);
-  g.fillStyle=T.soft;g.font=sans(500,28);g.letterSpacing='4px';g.fillText(n?'좋은 운':'가장 강한 운',M+120,y+80);g.letterSpacing='0px';
-  g.fillStyle=T.ink;g.font=serif(700,76);g.fillText(a.title,M+120,y+170)});
- hair(M,1510,W-M);
- // 아랫줄
- g.textAlign='left';g.fillStyle=T.soft;g.font=sans(500,32);g.fillText('나의 좋은 운도 무료로 볼 수 있어요',M,1660);
- g.fillStyle=T.ink;g.font=serif(700,54);g.fillText('unmyeong-saju.com',M,1740);
- g.textAlign='right';g.fillStyle=T.accent;g.font=serif(700,64);g.fillText('運命書齋',W-M,1740);
- return await new Promise(res=>c.toBlob(res,'image/png'));
-}
-async function shareTaster(r,btn){
- btn.disabled=true;
- try{const blob=await tasterShareImage(r),file=new File([blob],'운명서재-나의-좋은운.png',{type:'image/png'});
-  if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],text:'나의 좋은 운 TOP 3 · 운명서재 무료 사주 분석 https://unmyeong-saju.com/#/taster'})}catch(e){if(e.name!=='AbortError')throw e}}
-  else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('그림을 내려받았어요. 카톡이나 인스타에 올려 보세요.')}}
- catch(e){console.error(e);toast('그림을 만들지 못했어요. 잠시 뒤 다시 눌러 주세요.')}
- finally{btn.disabled=false}
-}
-
-// 버튼들은 화면이 새로 그려져도 동작하도록 문서 전체에서 한 번만 받는다.
-document.addEventListener('click',e=>{
- const t=e.target.closest('[data-toc-toggle],[data-taster-share]');if(!t)return;
- if(t.matches('[data-toc-toggle]')){const sec=t.closest('.toc-x'),open=t.dataset.open!=='1';sec.querySelectorAll('.toc-more').forEach(a=>a.hidden=!open);t.dataset.open=open?'1':'';t.querySelector('span').textContent=open?'목차 접기':'목차 전체 보기';if(!open)sec.scrollIntoView({behavior:'smooth'})}
- if(t.matches('[data-taster-share]')&&tasterState.result)shareTaster(tasterState.result,t);
-});
-// 미리보기를 옆으로 넘길 때 아래 점이 따라 움직인다.
 
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
 // 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)

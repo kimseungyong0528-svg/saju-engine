@@ -510,10 +510,6 @@ EXTRAS_CSS = (
     ".entry-count span{font-size:15px;color:#8a3a2c;font-weight:600}.entry-count b{font-size:26px;color:#c8102e;font-weight:900;letter-spacing:.02em}"
     ".entry-go{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:linear-gradient(180deg,#e0313f,#b3141f);color:#fff;font-size:17px;font-weight:800;text-decoration:none;box-shadow:0 8px 20px #c8102e40}"
     ".entry-hide{min-height:44px;margin-top:4px;border:0;background:none;color:#8a7466;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
-    # 무료 결과 공유
-    ".taster-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin:22px 0 0;border-radius:14px;border:1px solid var(--x-gold);background:#d8bb7812;color:var(--x-gold-2);font-size:17px;font-weight:800;cursor:pointer}"
-    ".taster-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}"
-    # 카카오톡 버튼(카카오 공식 노란색 + 말풍선)
     # 2단계 할인: 첫 구매 묶음 할인 고르기, 금액 안내, 광고 메일 동의
     ".bundle-x{margin:22px 0;padding:24px 18px 18px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
     ".bundle-x .x-title{font-size:24px}.bundle-x .x-title em{font-style:normal;color:var(--x-gold-2)}.bundle-x .x-sub b{color:var(--x-text)}"
@@ -555,7 +551,7 @@ def extras_data() -> dict:
 
 def add_extras(s: str) -> str:
     """사이트 추가 기능 1단계 (2026-10-27 사장님 선택 12개 중 화면만 바뀌는 것).
-    목차 펼쳐보기, 리포트 미리보기, 카카오톡 버튼, 신년 이벤트 남은 날짜와 첫 화면 팝업, 무료 결과 공유 그림."""
+    리포트 목차, 신년 이벤트 남은 날짜와 첫 화면 팝업."""
     page = (SITE / "tools" / "extras.js").read_text(encoding="utf-8")
     data = json.dumps(extras_data(), ensure_ascii=False, separators=(",", ":"))
     s = _swap(s, "</head>", '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -571,8 +567,6 @@ def add_extras(s: str) -> str:
     # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
     s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
               '<span class=\"hero-tags\"><span class=\"event-tag\">EVENT</span>${eventBadge()}</span>')
-    s = _swap(s, '<a class="taster-lifetime" href="#/f/lifetime/intro"',
-              '<button type="button" class="taster-share" data-taster-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg>내 좋은 운을 그림으로 공유하기</button><a class="taster-lifetime" href="#/f/lifetime/intro"')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
     return add_sales_pages(add_discounts(s))
 
