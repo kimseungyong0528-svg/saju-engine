@@ -442,7 +442,7 @@ def write_intake_module(s: str) -> None:
 
 
 def fix_checkout_flow(s: str) -> str:
-    """결제 화면 버튼은 처음부터 카드 그림 + '결제하기' 하나만 둔다(사장님 2026-10-27).
+    """결제 화면 버튼은 처음부터 카드 그림 + '결제하고 결과 받기' 하나만 둔다(사장님 2026-10-27).
 
     누르면 입력·접수 기준을 확인하고, 통과하면 바로 결제창을 연다. 확인 결과 칸은 버튼 바로 아래에 두어
     화면이 위로 튀지 않게 한다(예전에는 이메일 칸 위에 있었다).
@@ -452,7 +452,7 @@ def fix_checkout_flow(s: str) -> str:
     status = '<section id="intake-status" aria-live="polite">${intakeNotice(evaluateIntake(intakePayload(p.id,d)),p.id)}</section>'
     s = _swap(s, status, "")
     s = _swap(s, '<button class="primary dark-primary" id="pay" type="submit" disabled>입력 확인하기</button><p class="fine-print">입력 확인이 끝나면 결제 버튼이 나타나요. 결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p>',
-              '<button class="primary dark-primary pay-button" id="pay" type="submit" disabled>' + card + '결제하기</button>' + status)
+              '<button class="primary dark-primary pay-button" id="pay" type="submit" disabled>' + card + '결제하고 결과 받기</button>' + status)
     # 확인을 통과하면 숨은 결제 시작 버튼을 바로 눌러 결제창을 연다. 실패 안내는 그 아래에 뜨고, '결제하기'를 다시 누르면 된다.
     s = _swap(s, "if(result.paymentAllowed)bindReadyCheckout(area,p,d);area.scrollIntoView({behavior:'smooth',block:'center'});",
               "if(result.paymentAllowed){bindReadyCheckout(area,p,d);area.querySelector('[data-start-payment]')?.click()}area.scrollIntoView({behavior:'smooth',block:'nearest'});")
