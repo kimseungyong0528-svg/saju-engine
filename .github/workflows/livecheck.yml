@@ -1,0 +1,15 @@
+name: livecheck
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sleep 150
+          for i in 1 2 3 4 5 6; do
+            n=$(curl -s https://unmyeong-saju.com/ | grep -c "bundleBlock")
+            echo "try $i bundleBlock=$n"; [ "$n" -gt 0 ] && break; sleep 60
+          done
+          curl -s https://unmyeong-saju.com/ | grep -o "newyear-poster[^\"']*" | head -2
+          curl -s -X POST https://unmyeong-saju.com/api/quote -H 'Content-Type: application/json' -d '{"productId":"wealth"}'; echo
+          curl -s -o /dev/null -w "preview %{http_code}\n" https://unmyeong-saju.com/assets/preview/lifetime-1.webp
