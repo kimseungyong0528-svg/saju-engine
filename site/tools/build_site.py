@@ -188,10 +188,10 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '<div id="checkout-price">${priceBox(p,d.discount||0)}</div>',
               '<div id="checkout-price">${priceBox(p,d.discount||0)}</div>'
               '<section class="purchase-info"><h2>주문 전에 알아 두시면 좋아요</h2><ul>'
-              '<li>리포트는 위에 적어 주신 이메일로 PDF 파일로 보내드려요. 따로 배송되는 물건은 없어요.</li>'
+              '<li>사주 결과는 리포트로 정리해서, 위에 적어 주신 이메일로 PDF 파일을 보내드려요.</li>'
               '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
-              '<li>메일을 보내기 전이라면 전액 환불해 드려요. <a href="#/legal/refund">환불 안내 보기</a></li>'
-              '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li></ul></section>')
+              '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li>'
+              '<li>메일을 보내기 전이라면 전액 환불해 드려요. <a href="#/legal/refund">환불 안내 보기</a></li></ul></section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
