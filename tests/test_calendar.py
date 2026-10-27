@@ -40,9 +40,10 @@ def test_day_pillar_known_value():
 
 
 def test_pillars_match_reference_random_sample():
-    rng = random.Random(7)
+    # 첫 화면 '계산 근거'의 "10,000개 모두 일치" 문구가 이 검사에 기대므로 줄이지 말 것.
+    rng = random.Random(2027)
     checked = 0
-    for _ in range(3000):
+    while checked < 10000:
         y, m, d = rng.randint(1940, 2049), rng.randint(1, 12), rng.randint(1, 28)
         h, mi = rng.randint(0, 22), rng.randint(0, 59)
         day = sxtwl.fromSolar(y, m, d)
@@ -55,7 +56,6 @@ def test_pillars_match_reference_random_sample():
         exp = [Pillar(g.tg, g.dz) for g in (day.getYearGZ(), day.getMonthGZ(), day.getDayGZ(), day.getHourGZ(h))]
         assert fp.as_list() == exp, bj
         checked += 1
-    assert checked > 2500
 
 
 @pytest.mark.parametrize("d,t,offset", [
