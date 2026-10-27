@@ -175,11 +175,11 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
 
     # 오행
     strength = an["elements"]["strength"]
-    total = sum(strength.values()) or 1
     elements = []
     for el in K.ELEMENT_ORDER:
         info = K.ELEMENT[el]
-        pct = round(strength[el] / total * 100)
+        pct = strength[el]   # 이미 합계 100 기준(소수 한 자리). 다시 나누지 않아야 무료 분석·보너스 쪽 숫자와 똑같다.
+        pct = int(pct) if float(pct).is_integer() else pct   # 무료 분석·보너스 쪽과 같은 숫자(4.0 → 4, 1.6 → 1.6)
         status = "많음" if el in an["elements"]["judgement"]["과다"] else "부족" if el in an["elements"]["judgement"]["부족"] else "보통"
         elements.append({"el": el, "hanja": info["hanja"], "name": info["name"], "count": an["elements"]["count"][el],
                          "pct": pct, "status": status, "trait": info["trait"],
