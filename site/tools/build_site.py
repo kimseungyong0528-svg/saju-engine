@@ -18,8 +18,6 @@ import sys
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
-# 리포트 안내 페이지 '구매 안내' 칸에 가격을 보일지 (2026-10-25 토스 심사 준비)
-SHOW_SALES_PRICE = True
 PUBLIC = SITE / "public"
 LIB = SITE / "netlify" / "functions" / "lib"
 
@@ -179,21 +177,21 @@ def patch_texts(s: str, b: dict) -> str:
     # 리포트 안내(판매) 페이지에서 가격 칸을 뺀다. 가격은 마지막 접수 화면에서만 보인다.
     s = _swap(s, '<section class="sales-interlude"><span class="eyebrow">ONE STORY, MANY CHAPTERS</span><h2 class="serif">한 권으로 만나는<br>${p.short}</h2>${priceBox(p)}<p class="fine-print">결제 후 보통 10분 안에 이메일로 PDF를 보내드려요.</p></section>', '')
 
-    # 토스·카드사 심사(2026-10-25): 리포트 안내 페이지에 상품명·가격·받는 방법·서비스 제공 기간·환불 안내를 한 칸으로 보여준다.
-    price_row = "<dt>가격</dt><dd>${money(p.price)}</dd>" if SHOW_SALES_PRICE else ""
-    s = _swap(s, '<section class="faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join(\'\')}</section></main>${bottom(p,i,',
-              '<section class="purchase-info"><h2>구매 안내</h2><dl><dt>상품</dt><dd>${p.name} (PDF 리포트)</dd>' + price_row +
-              '<dt>받는 방법</dt><dd>주문할 때 입력한 이메일로 PDF 파일을 보내드려요. 배송 상품이 아니에요.</dd>'
-              '<dt>서비스 제공 기간</dt><dd>결제 후 1일 이내 (보통 10분 안에 도착)</dd>'
-              '<dt>환불</dt><dd>결과 메일을 보내기 전에는 전액 환불해 드려요. <a href="#/legal/refund">환불 안내 보기</a></dd></dl></section>'
-              '<section class="faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join(\'\')}</section></main>${bottom(p,i,')
+    # 구매 안내는 리포트 안내 페이지에 두지 않고, 결제 화면에서만 친절한 말투로 알려 준다(사장님 2026-10-27, 9개 상품 모두).
+    # 처음엔 토스·카드사 심사(2026-10-25) 때문에 안내 페이지 끝에 두었다. 심사에서 보완 요청이 오면 되살린다.
     s = _swap(s, "</head>", "<style>.purchase-info{margin:28px 24px 8px;padding:22px 20px;border:1px solid #ffffff26;border-radius:16px;background:#ffffff0a}"
-              ".purchase-info h2{margin:0 0 14px;font-size:20px}.purchase-info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:15px;line-height:1.55}"
+              ".purchase-info h2{margin:0 0 12px;font-size:18px}.purchase-info ul{margin:0;padding-left:18px;font-size:15px;line-height:1.7}.purchase-info li+li{margin-top:6px}.checkout .purchase-info{margin:16px 0 8px;word-break:keep-all}"
+              ".purchase-info h2{margin:0 0 12px;font-size:18px}.purchase-info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:15px;line-height:1.55}"
               ".purchase-info dt{font-weight:700;opacity:.8;white-space:nowrap}.purchase-info dd{margin:0}.purchase-info a{color:inherit;text-decoration:underline}"
               ".service-period{margin:10px 0 0;font-size:14px;line-height:1.55}</style></head>")
     # 접수 화면: 금액 아래에 서비스 제공 기간을 적는다.
     s = _swap(s, '<div id="checkout-price">${priceBox(p,d.discount||0)}</div>',
-              '<div id="checkout-price">${priceBox(p,d.discount||0)}</div><p class="service-period"><b>서비스 제공 기간</b>: 결제 후 1일 이내 이메일로 PDF 발송 (보통 10분 안에 도착)</p>')
+              '<div id="checkout-price">${priceBox(p,d.discount||0)}</div>'
+              '<section class="purchase-info"><h2>주문 전에 알아 두시면 좋아요</h2><ul>'
+              '<li>리포트는 위에 적어 주신 이메일로 PDF 파일로 보내드려요. 따로 배송되는 물건은 없어요.</li>'
+              '<li>결제하고 보통 10분 안에 도착해요. 늦어도 1일 이내에는 꼭 보내드려요.</li>'
+              '<li>메일을 보내기 전이라면 전액 환불해 드려요. <a href="#/legal/refund">환불 안내 보기</a></li>'
+              '<li>메일이 보이지 않으면 스팸함도 한 번 확인해 주세요.</li></ul></section>')
 
     s = _swap(s, '<div class="preview-note">미리보기 · 금월선녀와 함께 펼치는 사주 이야기. 후기·결과는 화면 구성을 위한 예시이며, 실제 결제는 진행되지 않습니다.</div>',
               '<div class="preview-note">금월선녀와 함께 펼치는 사주 이야기. 모든 리포트는 결제 후 한 분 한 분의 사주로 새로 작성해 이메일로 보내드려요.</div>')
