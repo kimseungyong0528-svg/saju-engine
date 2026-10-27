@@ -213,14 +213,14 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     recap = None
     if facts.get("taster_view"):
         # 책 맨 끝 '더보기' 앞쪽에 무료 분석 6가지 다시 보기를 넣는다(목차 줄은 그대로).
-        recap = taster_recap(facts["taster_view"], product, site_url)
+        recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"))
         sections = [dict(sec, pages=[{"id": "recap", "title": "무료 분석에서 본 나의 좋은 운과 조심할 운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
                                       *[dict(pg, opener=False) for pg in sec["pages"]]])
                     if sec.get("no") == "더보기" else sec for sec in sections]
     return tpl.render(
         f=facts, sections=sections, recap=recap, texts=texts, static=static or STATIC, kb=_kb(),
-        more=cross_sell(facts, current=product, site=site_url, first=first), secmark={"더보기": "續"},
+        more=cross_sell(facts, current=product, site=site_url, first=first, coupon=(facts.get("rebuy") or {}).get("code")), secmark={"더보기": "續"},
         glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts), product=PRODUCT[product],
         svg=svg,
     )
