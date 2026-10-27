@@ -8,8 +8,8 @@ import { PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
 
 export const PERCENT = 10;
 export const COUPON_DAYS = 30;
-// 묶음에 함께 담을 수 있는 상품: 내 정보만으로 만드는 상품(상대방 정보가 필요한 재회·궁합은 따로 산다).
-export const BUNDLE_PRODUCTS = ['newyear', 'lifetime', 'romance', 'wealth', 'career', 'business', 'health'];
+// 묶음에 함께 담을 수 있는 상품. 재회·깊은궁합은 상대방 정보가 필요해서, 주 주문에 상대방 정보가 있을 때만 접수 검사를 통과한다.
+export const BUNDLE_PRODUCTS = ['newyear', 'romance', 'intimate', 'reunion', 'wealth', 'career', 'business', 'health', 'lifetime'];
 const LABELS = { bundle: '첫 구매 묶음 할인', rebuy: '재구매 할인', 'referral-reward': '친구 초대 보상 할인', referral: '친구 초대 할인' };
 
 export const emailHash = email => createHash('sha256').update('unmyeong:' + String(email || '').trim().toLowerCase()).digest('hex');

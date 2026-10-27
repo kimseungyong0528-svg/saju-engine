@@ -10,17 +10,6 @@ function tocBlock(p){
  return `<section class="toc-x"><span class="x-eyebrow">CONTENTS</span><h2 class="x-title">리포트 목차</h2><p class="x-sub">실제 리포트의 목차 쪽 그대로예요. ${toc.length}개 장으로 되어 있어요.</p><div class="tp-page"><div class="tp-frame"><div class="tp-head">${esc(EXTRA_DATA.header?.[p.id]||'')}</div><h3 class="tp-h">목차</h3><ol class="tp-list">${toc.map(row).join('')}</ol></div></div></section>`;
 }
 
-// 2. 리포트 미리보기: 가상의 인물로 만든 실제 리포트에서 뽑은 쪽을 옆으로 넘겨 본다. 누르면 크게 본다.
-function previewBlock(p){
- const pages=EXTRA_DATA.preview[p.id]||[];if(!pages.length)return '';
- return `<section class="pv-x"><span class="x-eyebrow">PREVIEW</span><h2 class="x-title">리포트 미리보기</h2><p class="x-sub">가상의 인물로 만든 실제 리포트예요. 눌러서 크게 보세요.</p><div class="pv-rail" data-pv-rail>${pages.map(([src,cap],n)=>`<button type="button" class="pv-page" data-pv="${n}" data-pv-product="${p.id}" aria-label="${esc(cap)} 크게 보기"><img src="${esc(src)}" alt="리포트 미리보기: ${esc(cap)}" loading="lazy" decoding="async" width="720" height="1018"><span class="pv-cap">${esc(cap)}</span></button>`).join('')}</div><div class="pv-dots" aria-hidden="true">${pages.map((_,n)=>`<i${n?'':' class="on"'}></i>`).join('')}</div></section>`;
-}
-function previewModal(pid,n){
- const pages=EXTRA_DATA.preview[pid]||[];n=(n+pages.length)%pages.length;const [src,cap]=pages[n];
- const d=modal(`<figure class="pv-fig"><img class="pv-big" src="${esc(src)}" alt="리포트 미리보기: ${esc(cap)}"><figcaption><button type="button" class="pv-nav" data-pv-step="-1" aria-label="이전 쪽">‹</button><span>${esc(cap)} <em>${n+1} / ${pages.length}</em></span><button type="button" class="pv-nav" data-pv-step="1" aria-label="다음 쪽">›</button></figcaption></figure>`,'pv-modal','리포트 미리보기');
- d.querySelectorAll('[data-pv-step]').forEach(b=>b.onclick=()=>previewModal(pid,n+Number(b.dataset.pvStep)));
-}
-
 // 17. 신년운세 이벤트: 기간 안에만 남은 날짜를 보여 주고, 기간이 끝나면 저절로 사라진다.
 function eventDays(now=new Date()){
  const ev=EXTRA_DATA.event;if(!ev||!ev.start||!ev.end)return null;
@@ -83,18 +72,19 @@ async function shareTaster(r,btn){
 
 // 버튼들은 화면이 새로 그려져도 동작하도록 문서 전체에서 한 번만 받는다.
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-toc-toggle],[data-pv],[data-taster-share]');if(!t)return;
+ const t=e.target.closest('[data-toc-toggle],[data-taster-share]');if(!t)return;
  if(t.matches('[data-toc-toggle]')){const sec=t.closest('.toc-x'),open=t.dataset.open!=='1';sec.querySelectorAll('.toc-more').forEach(a=>a.hidden=!open);t.dataset.open=open?'1':'';t.querySelector('span').textContent=open?'목차 접기':'목차 전체 보기';if(!open)sec.scrollIntoView({behavior:'smooth'})}
- if(t.matches('[data-pv]'))previewModal(t.dataset.pvProduct,Number(t.dataset.pv));
  if(t.matches('[data-taster-share]')&&tasterState.result)shareTaster(tasterState.result,t);
 });
 // 미리보기를 옆으로 넘길 때 아래 점이 따라 움직인다.
-document.addEventListener('scroll',e=>{const r=e.target;if(!r.matches?.('[data-pv-rail]'))return;const w=r.firstElementChild?.offsetWidth||1,n=Math.round(r.scrollLeft/(w+12));r.nextElementSibling?.querySelectorAll('i').forEach((d,k)=>d.classList.toggle('on',k===n))},true);
 
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
 // 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)
 const discounted=v=>Math.round(v*0.9);
-const BUNDLE_IDS=['newyear','lifetime','romance','wealth','career','business','health'];
+// 묶음 목록과 금액 안내의 상품 순서(2026-10-27 사장님). 재회·깊은궁합은 상대방 정보를 이미 받은 주문(재회·깊은궁합·궁합)에만 보인다.
+const BUNDLE_IDS=['newyear','romance','intimate','reunion','wealth','career','business','health','lifetime'];
+const PAIR_IDS=['intimate','reunion'];
+const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+1||99);
 (()=>{try{const q=new URLSearchParams(location.search),ref=q.get('ref'),cp=q.get('coupon');
  if(ref)localStorage.setItem('unmyeong.ref',JSON.stringify({code:ref.slice(0,20),at:Date.now()}));
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
@@ -102,7 +92,8 @@ function savedRef(){try{const r=JSON.parse(localStorage.getItem('unmyeong.ref'))
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
- const others=BUNDLE_IDS.filter(id=>id!==p.id).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
+ const pair=FLOWS[p.id].some(st=>st.who==='partner');
+ const others=BUNDLE_IDS.filter(id=>id!==p.id&&(pair||!PAIR_IDS.includes(id))).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
  const ea=d.extraAnswers||(d.extraAnswers={});
  const qs=x=>FLOWS[x.id].filter(st=>st.type==='choice'&&st.required).map(st=>{
   const mine=d.answers?.[st.id];if(!ea[x.id]?.[st.id]&&mine&&st.options.includes(mine))(ea[x.id]||(ea[x.id]={}))[st.id]=mine;
@@ -113,7 +104,7 @@ function bundleBlock(p,d){
 const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문에 답해주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
  if(!q)return priceBox(p,0);
- const items=q.items.map(it=>PRODUCTS.find(x=>x.id===it.id)||{...it,original:it.price}),orig=items.reduce((a,x)=>a+x.original,0);
+ const items=q.items.map(it=>PRODUCTS.find(x=>x.id===it.id)||{...it,original:it.price}).sort(byOrder),orig=items.reduce((a,x)=>a+x.original,0);
  const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${money(x.price)}</span></div>`).join('')}</div>`:'';
  const dc=q.discount?`<div class="qb-disc"><span>${esc(q.discount.label)} <em>${q.discount.percent}%</em></span><strong>−${money(q.discount.amount)}</strong></div>`:'';
  const notes=[...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${QUOTE_NOTES[n]}</p>`).join('');
