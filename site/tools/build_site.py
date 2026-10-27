@@ -466,18 +466,6 @@ def fix_checkout_flow(s: str) -> str:
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
 NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
-PREVIEW_TEXT_CAPS = {
-    "lifetime": ["돈 조심해야 할 시기", "연애·결혼하기 좋은 시기", "조심해야 할 시기"],
-    "romance": ["우리의 첫 만남 장면", "나에게 상처 줄 사람", "전 애인이 다시 연락 올까"],
-    "reunion": ["그 사람이 이별을 정리하는 방식", "놓아야 할 때의 신호", "다시 만나면 오래 갈까"],
-    "intimate": ["연락과 표현 방식의 차이", "가장 좋은 해", "결혼까지 갈 수 있을까"],
-    "wealth": ["돈이 새기 쉬운 시기", "빚과 대출을 다루는 법", "큰돈이 오가는 해"],
-    "career": ["승진과 평가를 잡는 법", "면접과 시험운", "지금 지나는 10년의 직업운"],
-    "business": ["돈이 들어오는 길", "돈이 새는 때와 막는 법", "위기가 오기 쉬운 해"],
-    "health": ["모자란 기운이 보내는 신호", "마음이 흔들리는 순간", "쉬어 갈 때와 검진"],
-    "newyear": ["이직과 새 일 시작하기 좋은 시기", "새로운 사랑이 찾아오는 시기", "가장 좋은 달과 조심할 달"],
-}
-PREVIEW_CAPS = ["표지", "목차", "오행 그림", "나의 사주표", "한눈에 보기"]
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
 
@@ -521,8 +509,10 @@ EXTRAS_CSS = (
     ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
     # 첫 화면 팝업(2026-10-27 사장님: 너무 어둡다 → 밝게). 신년 포스터 그림 + 밝은 한지색 바탕 + 붉은 버튼. 묶음 할인은 결제 화면에만.
     ".entry-modal{padding:0;overflow:hidden;width:min(88vw,360px);max-width:none;border:0;border-radius:20px;background:#fff8ef;color:#2b1a12;box-shadow:0 24px 60px #0008}"
-    ".entry-art{position:relative;height:250px;overflow:hidden;background:#f6d9c4}.entry-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 0}"
-    ".entry-tag{position:absolute;left:14px;bottom:14px;z-index:1;padding:4px 12px;border-radius:999px;background:#c8102e;color:#fff;font-size:13px;font-weight:800;letter-spacing:.14em}"
+    ".entry-art{position:relative;height:min(112vw,420px,56vh);overflow:hidden;background:#f6d9c4}.entry-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 0}"
+    ".entry-art:after{content:'';position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(180deg,#fff8ef00,#fff8efcc 60%,#fff8ef)}"
+    ".entry-body{position:relative;margin-top:-34px}"
+    ".entry-tag{position:absolute;left:14px;bottom:44px;z-index:1;padding:4px 12px;border-radius:999px;background:#c8102e;color:#fff;font-size:13px;font-weight:800;letter-spacing:.14em}"
     ".entry-body{padding:18px 22px 14px;text-align:center}"
     ".entry-modal .entry-lead{font-size:16px;line-height:1.6;color:#4a3426!important;margin:0 0 14px;word-break:keep-all}"
     ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;border-radius:14px;background:#fde8e3;border:1px solid #f09c9c;margin-bottom:14px}"
@@ -545,7 +535,11 @@ EXTRAS_CSS = (
     ".bundle-q{display:none;padding:10px 4px 4px 14px}.bundle-row:has(input:checked) .bundle-q{display:block}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
     ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
-    ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}.bundle-price{font-size:15px;color:var(--x-muted)}"
+    ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}"
+    # 가격: 위에 원래 값(가운데 줄), 아래에 빨간 10% + 할인된 값(2026-10-27 사장님)
+    ".bundle-price{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35}.bundle-price s{font-size:13px;color:var(--x-muted)}"
+    ".bundle-price span{font-size:16px;font-weight:800;color:var(--x-text);white-space:nowrap}.bundle-price em,.qb-final em{font-style:normal;color:#ff4d5a;font-weight:800;margin-right:6px}"
+    ".price-box .qb-final{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3}.price-box .qb-final s{font-size:15px;color:var(--x-muted);font-weight:500}"
     ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
     ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
     ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
@@ -562,14 +556,10 @@ def extras_data() -> dict:
     for pid, mod in REPORT_MODULES.items():
         sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
         toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
-    caps = {"lifetime": ["표지", "목차", "오행 그림", "나의 사주표", "타고난 기질"]}
-    # 풀이 쪽 3장(make_previews.py 의 TEXT_PICKS, 6~8번). 표지·목차 다음에 먼저 보여 준다(2026-10-27 사장님).
-    order = [1, 2, 6, 7, 8, 3, 4, 5]
-    preview = {}
-    for pid in REPORT_MODULES:
-        names = caps.get(pid, PREVIEW_CAPS) + PREVIEW_TEXT_CAPS[pid]
-        preview[pid] = [[f"assets/preview/{pid}-{n}.webp", names[n - 1]] for n in order
-                        if (PUBLIC / "assets" / "preview" / f"{pid}-{n}.webp").exists()]
+    # 미리보기: 풀이 쪽 8장(make_previews.py 가 만든 그림과 소제목 captions.json)
+    caps = json.loads((PUBLIC / "assets" / "preview" / "captions.json").read_text(encoding="utf-8"))
+    preview = {pid: [[f"assets/preview/{pid}-{n}.webp", cap] for n, cap in enumerate(caps.get(pid, []), 1)]
+               for pid in REPORT_MODULES}
     from saju.report.render import PRODUCT
     header = {pid: PRODUCT.get(pid, {}).get("header", "平生四柱") for pid in REPORT_MODULES}
     return {"toc": toc, "header": header, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
