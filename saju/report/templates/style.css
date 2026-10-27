@@ -152,10 +152,10 @@ a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space
 .end-mark { text-align: center; font-family: "Song Myung", "Noto Serif CJK KR", serif; color: #9e2f22; margin-top: 2mm; }
 
 /* 무료 분석 다시 보기 + 재구매 할인 (2026-10-27) */
-.recap-head { font-size: 16pt; margin: 4mm 0 2mm; }
+.recap-head { font-size: 16pt; margin: 3mm 0 1.5mm; }
 .recap-head.good { color: #2f6b3a; }
 .recap-head.bad { color: #9e2f22; }
-.recap { border-left: 2.2pt solid #2f6b3a; padding: 0.5mm 0 0.5mm 4mm; margin: 0 0 3.5mm; }
+.recap { border-left: 2.2pt solid #2f6b3a; padding: 0.5mm 0 0.5mm 4mm; margin: 0 0 2.5mm; }
 .recap.bad { border-left-color: #9e2f22; }
 .recap p { margin-bottom: 0.3em; }
 .recap-title { font-weight: 700; font-size: 15pt; }
@@ -163,10 +163,11 @@ a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space
 .recap-hook { font-weight: 700; }
 .recap-go a { color: #9e2f22; font-weight: 700; text-decoration: underline; }
 .recap-go { color: #6b6152; }
-.rebuy { border: 2pt solid #9e2f22; outline: 0.8pt solid #9e2f22; outline-offset: 1.2mm; background: #fbeee6; padding: 4mm 6mm; margin: 5mm 1.5mm 2mm; text-align: center; break-inside: avoid; }
+.rebuy { border: 2pt solid #9e2f22; outline: 0.8pt solid #9e2f22; outline-offset: 1.2mm; background: #fbeee6; padding: 3mm 6mm; margin: 4mm 1.5mm 2mm; text-align: center; break-inside: avoid; }
 .rebuy-top { font-weight: 700; color: #1f2a3d; margin: 0; }
-.rebuy-big { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 34pt; color: #9e2f22; line-height: 1.2; margin: 1mm 0; }
-.rebuy-code { font-size: 15pt; margin: 2mm 0 1mm; }
-.rebuy .rebuy-code a { display: inline-block; font-weight: 700; color: #fff; background: #9e2f22; padding: 1.5mm 6mm; text-decoration: none; }
+.rebuy-big { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 26pt; color: #9e2f22; line-height: 1.15; margin: 0.5mm 0; }
+.rebuy-lead { font-weight: 700; color: #1f2a3d; margin: 1mm 0 2mm; }
+.rebuy-how { text-align: left; margin: 0 auto 2mm; padding-left: 6mm; }
+.rebuy-how li { margin: 0 0 1mm; }
 .rebuy-sub { font-size: 14pt; color: #4a4033; }
 .rebuy a { color: #9e2f22; text-decoration: underline; }
