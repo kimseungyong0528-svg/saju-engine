@@ -1,0 +1,13 @@
+name: livecheck
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sleep 120
+          for i in 1 2 3 4 5 6; do
+            n=$(curl -s https://unmyeong-saju.com/ | grep -c "taster-share")
+            echo "try $i taster-share=$n"; [ "$n" -eq 0 ] && break; sleep 60
+          done
+          echo "x-kakao=$(curl -s https://unmyeong-saju.com/ | grep -c 'x-kakao') bundle-partner=$(curl -s https://unmyeong-saju.com/ | grep -c 'bundle-partner')"
