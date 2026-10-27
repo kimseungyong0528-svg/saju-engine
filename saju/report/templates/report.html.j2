@@ -212,9 +212,10 @@
     <p class="rebuy-top">{{ f.person.name }} 님만을 위한 다음 리포트 할인</p>
     <p class="rebuy-big">10% 할인</p>
     <p>이 책을 받아 보신 분께 다음 리포트를 10% 할인해 드려요. 위에서 더 알고 싶은 운이 있다면 지금이 가장 좋은 때예요.</p>
-    <p class="rebuy-code">할인 코드 <b>{{ f.rebuy.code }}</b></p>
-    <p class="rebuy-sub">{{ f.rebuy.until }}까지 · 주문할 때 할인 코드 칸에 넣거나, <a href="{{ f.rebuy.url }}">여기를 누르면</a> 자동으로 들어가요.</p>
-  </div>{% endif %}
+    <p class="rebuy-code"><a href="{{ f.rebuy.url }}">여기를 눌러 할인받기 →</a></p>
+    <p class="rebuy-sub">{{ f.rebuy.until }}까지 · 한 번만 쓸 수 있어요. 이 링크로 들어가서 주문하면 10%가 자동으로 빠져요.</p>
+  </div>
+  {% endif %}
 {%- elif k == "cross_sell" -%}
   <p>{{ product.more_intro }} 이름이나 '바로 보기'를 누르면 운명서재의 해당 페이지로 이동해요.</p>
   {% for p in more %}

@@ -5,7 +5,7 @@ import {
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName,
 } from './orders.mjs';
 import { ready } from './services.mjs';
-import { quote, rebuyForJob, unsubToken } from './discounts.mjs';
+import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -39,15 +39,6 @@ export function makeApi({ store, services, env, studioStore = store }) {
         const q = await quote(store, await readJson(req));
         if (!q) throw new ApiError(400, 'PRODUCT_REQUIRED');
         return json({ items: q.items, base: q.base, discount: q.discount, amount: q.amount, notes: q.notes });
-      }
-      // 광고 메일 끝의 수신 거부 링크.
-      if (m === 'GET' && parts.join('/') === 'unsubscribe') {
-        const h = String(url.searchParams.get('h') || ''), t = String(url.searchParams.get('t') || '');
-        const ok = /^[a-f0-9]{64}$/.test(h) && env.WORKER_SECRET && sameSecret(t, unsubToken(h, env.WORKER_SECRET));
-        if (ok) await store.set(`unsub/${h}`, { at: new Date().toISOString() });
-        const msg = ok ? '수신 거부가 완료되었어요. 앞으로 할인·이벤트 메일을 보내지 않아요.' : '링크가 올바르지 않아요. 메일에 답장으로 수신 거부를 알려주시면 바로 처리해 드릴게요.';
-        return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>운명서재 수신 거부</title><body style="font-family:sans-serif;background:#0e0d0b;color:#efe8da;padding:48px 20px;text-align:center;font-size:17px;line-height:1.6"><p>${msg}</p><p><a style="color:#d8bb78" href="/">운명서재로 가기</a></p></body>`,
-          { status: ok ? 200 : 400, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
       }
       if (m === 'POST' && parts.join('/') === 'intake/assess') {
         const { payload, ...decision } = assess(await readJson(req));

@@ -167,6 +167,6 @@ a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space
 .rebuy-top { font-weight: 700; color: #1f2a3d; margin: 0; }
 .rebuy-big { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 34pt; color: #9e2f22; line-height: 1.2; margin: 1mm 0; }
 .rebuy-code { font-size: 15pt; margin: 2mm 0 1mm; }
-.rebuy-code b { letter-spacing: 0.08em; color: #9e2f22; border: 1pt dashed #9e2f22; padding: 0.5mm 3mm; }
+.rebuy .rebuy-code a { display: inline-block; font-weight: 700; color: #fff; background: #9e2f22; padding: 1.5mm 6mm; text-decoration: none; }
 .rebuy-sub { font-size: 14pt; color: #4a4033; }
 .rebuy a { color: #9e2f22; text-decoration: underline; }
