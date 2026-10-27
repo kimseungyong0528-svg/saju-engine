@@ -491,24 +491,15 @@ EXTRAS_CSS = (
     ".tp-t{word-break:keep-all}.tp-t b{display:block;font-weight:700;font-size:17px;line-height:1.5;color:#1f1b16}"
     ".tp-t small{display:block;font-size:15px;line-height:1.55;color:#5a5144}"
     # 미리보기
-    ".pv-x{margin:24px 0;padding:0 20px;text-align:left}"
-    ".pv-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:4px 20px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.pv-rail::-webkit-scrollbar{display:none}"
-    ".pv-page{position:relative;flex:0 0 68%;max-width:280px;scroll-snap-align:center;padding:0;border:1px solid var(--x-line);background:#f1e8d4;border-radius:10px;overflow:hidden;cursor:zoom-in;box-shadow:0 12px 28px #000a}"
-    ".pv-page img{display:block;width:100%;height:auto;aspect-ratio:720/1018}"
-    ".pv-cap{position:absolute;left:10px;bottom:10px;padding:5px 11px;border-radius:999px;background:#0e0d0bd9;color:var(--x-gold);font-size:13px;font-weight:700;border:1px solid var(--x-line)}"
-    ".pv-dots{display:flex;justify-content:center;gap:6px}.pv-dots i{width:6px;height:6px;border-radius:50%;background:#ffffff30;transition:all .2s ease}.pv-dots i.on{width:18px;border-radius:3px;background:var(--x-gold)}"
-    ".pv-modal{padding:0;max-width:min(94vw,640px);background:var(--x-ink);border:1px solid var(--x-line);border-radius:14px;overflow:hidden}"
-    ".pv-fig{margin:0}.pv-big{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;background:#f1e8d4}"
-    ".pv-fig figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;color:var(--x-text);font-size:15px;font-weight:700}"
-    ".pv-fig em{font-style:normal;color:var(--x-muted);font-weight:500;margin-left:6px}"
-    ".pv-nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--x-line);background:#ffffff0a;color:var(--x-gold);font-size:24px;line-height:1;cursor:pointer}"
     # 결제 화면(밝은 바탕이 아닌 검정 화면) 안의 목차·미리보기는 여백만 줄인다.
-    ".checkout .toc-x{margin:18px 0}.checkout .pv-x{padding:0;margin:18px 0}.checkout .pv-rail{margin:0;padding:4px 0 14px}"
+    ".checkout .toc-x{margin:18px 0}"
     # 신년 이벤트
     ".hero-tags{display:flex;align-items:center;gap:6px;margin:0 0 6px}.hero-tags .event-tag{margin:0!important}.hero-tags .event-dday{margin:0}"
     ".event-dday{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:4px 10px 4px 11px;border-radius:999px;background:#0e0d0bcc;border:1px solid #f09c9c88;color:#f6d4d4;font-size:12px;font-weight:600;vertical-align:middle}.event-dday b{color:#fff;font-size:13px;font-weight:800}"
     # 첫 화면 팝업(2026-10-27 사장님: 너무 어둡다 → 밝게). 신년 포스터 그림 + 밝은 한지색 바탕 + 붉은 버튼. 묶음 할인은 결제 화면에만.
     ".entry-modal{padding:0;overflow:hidden;width:min(88vw,360px);max-width:none;border:0;border-radius:20px;background:#fff8ef;color:#2b1a12;box-shadow:0 24px 60px #0008}"
+    # 팝업 닫기 X(사장님): 검정, 굵게, 테두리 네모 없이.
+    ".entry-modal .modal-close{top:6px;right:6px;color:#111;outline:none;box-shadow:none;border:0;background:none}.entry-modal .modal-close .icon{width:26px;height:26px;stroke-width:3.2}"
     ".entry-art{position:relative;height:min(112vw,420px,56vh);overflow:hidden;background:#f6d9c4}.entry-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 0}"
     ".entry-art:after{content:'';position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(180deg,#fff8ef00,#fff8efcc 60%,#fff8ef)}"
     ".entry-body{position:relative;margin-top:-34px}"
@@ -533,6 +524,9 @@ EXTRAS_CSS = (
     ".bundle-item:has(input:checked){border-color:var(--x-gold);background:#d8bb7814}"
     ".bundle-item input{width:22px;height:22px;accent-color:var(--x-gold);flex:0 0 auto}"
     ".bundle-q{display:none;padding:10px 4px 4px 14px}.bundle-row:has(input:checked) .bundle-q{display:block}"
+    ".bundle-partner{display:none;margin:2px 0 10px;padding:16px 14px;border:1px solid var(--x-line);border-radius:14px;background:#ffffff08}"
+    ".bundle-x:has(input[value=reunion]:checked) .bundle-partner,.bundle-x:has(input[value=intimate]:checked) .bundle-partner{display:block}"
+    ".bundle-partner .birth-reassurance{display:none}.bundle-partner-title{margin:0 0 4px;color:var(--x-gold);font-size:17px;font-weight:800}.bundle-partner-sub{margin:0 0 12px;color:var(--x-muted);font-size:14px;line-height:1.6;word-break:keep-all}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
     ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
     ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}"
@@ -544,7 +538,7 @@ EXTRAS_CSS = (
     ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
     ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
     ".mk-help{margin:2px 0 6px 30px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
-    "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.pv-dots i,.bundle-item{transition:none}}"
+    "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.bundle-item{transition:none}}"
 )
 
 
@@ -556,13 +550,9 @@ def extras_data() -> dict:
     for pid, mod in REPORT_MODULES.items():
         sections = importlib.import_module(f"saju.report.{mod}").SECTIONS
         toc[pid] = [[num, title, desc] for num, title, desc in sections if str(num).isdigit()]
-    # 미리보기: 풀이 쪽 8장(make_previews.py 가 만든 그림과 소제목 captions.json)
-    caps = json.loads((PUBLIC / "assets" / "preview" / "captions.json").read_text(encoding="utf-8"))
-    preview = {pid: [[f"assets/preview/{pid}-{n}.webp", cap] for n, cap in enumerate(caps.get(pid, []), 1)]
-               for pid in REPORT_MODULES}
     from saju.report.render import PRODUCT
     header = {pid: PRODUCT.get(pid, {}).get("header", "平生四柱") for pid in REPORT_MODULES}
-    return {"toc": toc, "header": header, "preview": preview, "event": NEWYEAR_EVENT, "bundle": True}
+    return {"toc": toc, "header": header, "event": NEWYEAR_EVENT, "bundle": True}
 
 
 def add_extras(s: str) -> str:
@@ -576,10 +566,10 @@ def add_extras(s: str) -> str:
     s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
     # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
     s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
-              "${tocBlock(p)}${previewBlock(p)}")
+              "${tocBlock(p)}")
     # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
     # 첫 구매 묶음 할인은 결제 화면 맨 위(상품 그림 바로 아래)에 둔다(2026-10-27 사장님).
-    s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)+previewBlock(p)}<section class="checkout-birth-summary">')
+    s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)}<section class="checkout-birth-summary">')
     # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
     s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
               '<span class=\"hero-tags\"><span class=\"event-tag\">EVENT</span>${eventBadge()}</span>')

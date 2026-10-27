@@ -109,3 +109,12 @@ test('광고 메일: 동의 안 하면 안 보내고, 수신 거부하면 안 �
   assert.equal((await t2.call('GET', '/api/unsubscribe?h=' + emailHash('c@example.com') + '&t=bad')).status, 400);
   assert.equal(await remindRebuy(t2.store, { sendCoupon: async () => {} }), 0);
 });
+
+test('재회·깊은궁합 묶음: 상대방 정보가 있는 주문에서만 함께 담긴다', async () => {
+  const t = setup();
+  const partner = { ...self, name: '이상대', sex: 'male', birth: '1993-07-01' };
+  const q = await (await t.call('POST', '/api/quote', { ...draft, productId: 'reunion', partner, answers: { breakup: '3개월 이내예요' },
+    extras: ['intimate'], extraAnswers: { intimate: { status: '헤어진 사이예요', duration: '1~3년' } } })).json();
+  assert.deepEqual(q.items.map(i => i.id).sort(), ['intimate', 'reunion']);
+  assert.equal(q.discount.kind, 'bundle');
+});
