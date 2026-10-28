@@ -16,13 +16,16 @@ export const newCode = (prefix = 'UNM') => prefix + '-' + Array.from(randomBytes
 const normCode = c => String(c || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
 export const discounted = base => Math.round(base * (100 - PERCENT) / 100);
 
-// 함께 사는 상품: 중복·주 상품·묶음 불가 상품을 빼고, 같은 출생 정보와 그 상품 질문의 답으로 접수가 되는 것만 남긴다.
-export function bundleItems(body) {
+// 함께 사는 상품: 중복·주 상품·묶음 불가 상품을 뺀, 손님이 체크한 상품 전부.
+export function bundleWanted(body) {
   const main = String(body?.productId || '');
-  const want = [...new Set(Array.isArray(body?.extras) ? body.extras.map(String) : [])]
+  return [...new Set(Array.isArray(body?.extras) ? body.extras.map(String) : [])]
     .filter(id => id !== main && BUNDLE_PRODUCTS.includes(id)).slice(0, BUNDLE_PRODUCTS.length);
-  return want.filter(id => evaluateIntake(intakePayload(id, extraBody(body, id))).inputAccepted);
 }
+// 체크한 상품 가운데 그 상품 질문의 답(재회·깊은궁합은 상대방 정보)이 아직 없어 접수가 안 되는 것.
+export const bundleIncomplete = body => bundleWanted(body).filter(id => !evaluateIntake(intakePayload(id, extraBody(body, id))).inputAccepted);
+// 접수가 되는 것만(예전 이름).
+export const bundleItems = body => { const bad = new Set(bundleIncomplete(body)); return bundleWanted(body).filter(id => !bad.has(id)); };
 
 // 함께 사는 상품의 접수 내용: 출생 정보는 주 상품과 같고, 그 상품의 질문 답(extraAnswers)만 따로 받는다.
 export function extraBody(body, id) {
@@ -40,7 +43,9 @@ async function validCoupon(store, code) {
 export async function quote(store, body, now = new Date()) {
   const main = PRODUCTS.find(p => p.id === String(body?.productId || ''));
   if (!main) return null;
-  const extras = bundleItems(body);
+  // 체크하면 금액에 바로 담는다(2026-10-28 손님 테스트: "체크했는데 금액이 안 바뀐다"). 답이 비어 있는 상품은 incomplete 로 알려 주고,
+  // 주문(createOrder)은 그 답을 채우기 전에는 받지 않는다(말없이 빠지지 않게).
+  const extras = bundleWanted(body), incomplete = bundleIncomplete(body);
   const items = [main, ...extras.map(id => PRODUCTS.find(p => p.id === id))].map(p => ({ id: p.id, name: p.name, price: p.price }));
   const base = items.reduce((a, p) => a + p.price, 0);
   const hash = body?.email ? emailHash(body.email) : null;
@@ -55,7 +60,8 @@ export async function quote(store, body, now = new Date()) {
   if (code && !coupon) notes.push('COUPON_INVALID');
   if (extras.length && buyer && !coupon) notes.push('BUNDLE_FIRST_ONLY');
   if (extras.length && !hash) notes.push('EMAIL_FOR_DISCOUNT');
-  return { items, extras, base, discount, amount: discount ? base - discount.amount : base, firstPurchase: hash ? !buyer : null, notes };
+  if (incomplete.length) notes.push('EXTRA_ANSWERS');
+  return { items, extras, incomplete, base, discount, amount: discount ? base - discount.amount : base, firstPurchase: hash ? !buyer : null, notes };
 }
 
 // 결제가 확인된 뒤: 첫 구매 기록, 재구매 링크로 산 횟수 기록(링크는 계속 쓸 수 있다).

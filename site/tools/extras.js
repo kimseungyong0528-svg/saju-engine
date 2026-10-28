@@ -71,7 +71,7 @@ async function refreshQuote(p,d){
  let q=null;try{const r=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,productId:p.id,email:d.email||'',extras:d.extras||[],coupon:d.coupon||''}),signal:AbortSignal.timeout(15000)});if(r.ok)q=await r.json()}catch{}
  if(seq!==quoteSeq||!box.isConnected)return;
  if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
- if(q)q.missing=(d.extras||[]).some(id=>!q.items.some(i=>i.id===id));
+ if(q)q.missing=Boolean(q.incomplete?.length);
  box.innerHTML=quoteBox(p,q);
 }
 function bindDiscounts(p,d){
@@ -82,6 +82,23 @@ function bindDiscounts(p,d){
  const pf=document.querySelector('[data-bundle-partner]');
  if(pf){let pt;bindPerson(pf,(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
- let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600)});
+ let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600);emailHintShow(form)});
+ emailHintShow(form);
  refreshQuote(p,d);
+}
+
+// 이메일 오타 알려 주기(손님 테스트 2026-10-28): 결과가 남의 메일로 가지 않게, 흔한 오타와 끝(.com)을 빠뜨린 주소를 바로 짚는다.
+const EMAIL_FIX={'gmial.com':'gmail.com','gamil.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com','gmail.cm':'gmail.com','gmail.om':'gmail.com',
+ 'naver.co':'naver.com','naver.con':'naver.com','naver.cm':'naver.com','naver.om':'naver.com','nave.com':'naver.com','navr.com':'naver.com','naer.com':'naver.com',
+ 'daum.ne':'daum.net','daum.com':'daum.net','hanmail.com':'hanmail.net','hanmail.ne':'hanmail.net','kakao.co':'kakao.com','kakao.con':'kakao.com','nate.co':'nate.com','nate.con':'nate.com'};
+const EMAIL_BARE={naver:'naver.com',gmail:'gmail.com',daum:'daum.net',hanmail:'hanmail.net',kakao:'kakao.com',nate:'nate.com'};
+function emailHint(v){const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(v||'').trim());if(!m)return null;const dom=m[2].toLowerCase();
+ if(EMAIL_FIX[dom])return {fix:m[1]+'@'+EMAIL_FIX[dom]};if(!dom.includes('.'))return EMAIL_BARE[dom]?{fix:m[1]+'@'+EMAIL_BARE[dom]}:{end:true};return null}
+function emailHintShow(form){
+ const input=form.elements.email;if(!input)return;let box=form.querySelector('.email-hint');
+ const h=emailHint(input.value);
+ if(!h){box?.remove();input.setCustomValidity('');return}
+ if(!box){box=document.createElement('p');box.className='email-hint';box.setAttribute('role','status');input.closest('label,div')?.after(box)||input.after(box)}
+ if(h.fix){box.innerHTML=`혹시 <b>${esc(h.fix)}</b> 인가요? <button type="button" class="email-fix">이 주소로 고치기</button>`;box.querySelector('.email-fix').onclick=()=>{input.value=h.fix;input.dispatchEvent(new Event('input',{bubbles:true}))};input.setCustomValidity('')}
+ else{box.textContent='이메일 주소 끝(.com, .net 같은 부분)까지 넣어 주세요. 예: name@naver.com';input.setCustomValidity('이메일 주소 끝까지 넣어 주세요.')}
 }

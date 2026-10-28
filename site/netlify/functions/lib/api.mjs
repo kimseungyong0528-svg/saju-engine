@@ -38,7 +38,7 @@ export function makeApi({ store, services, env, studioStore = store }) {
       if (m === 'POST' && parts.join('/') === 'quote') {
         const q = await quote(store, await readJson(req));
         if (!q) throw new ApiError(400, 'PRODUCT_REQUIRED');
-        return json({ items: q.items, base: q.base, discount: q.discount, amount: q.amount, notes: q.notes });
+        return json({ items: q.items, base: q.base, discount: q.discount, amount: q.amount, notes: q.notes, incomplete: q.incomplete });
       }
       if (m === 'POST' && parts.join('/') === 'intake/assess') {
         const { payload, ...decision } = assess(await readJson(req));

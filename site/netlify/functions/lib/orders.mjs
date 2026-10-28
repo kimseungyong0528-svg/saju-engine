@@ -86,6 +86,8 @@ export async function createOrder(store, body, idempotencyKey, now = new Date(),
   // 금액은 서버가 계산한다(묶음·할인 코드·친구 초대 중 하나만, 모두 10%). 화면이 보낸 금액·할인값은 쓰지 않는다.
   const price = await quote(store, { ...body, email }, now);
   if (price.notes.includes('COUPON_INVALID')) throw new ApiError(400, 'COUPON_INVALID');
+  // 체크한 묶음 상품의 질문·상대방 정보가 비어 있으면 결제하지 않는다(예전에는 말없이 빠지고 토스 이름만 '외 N건'이었다).
+  if (price.incomplete.length) throw new ApiError(400, 'BUNDLE_INCOMPLETE');
   // 함께 사는 상품은 같은 출생 정보로 결제가 끝난 뒤 따로 만든다(상품마다 PDF 한 권).
   const bundle = price.extras.map(pid => {
     const x = assess(extraBody(body, pid));

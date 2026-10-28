@@ -524,6 +524,7 @@ EXTRAS_CSS = (
     ".bundle-partner{display:none;margin:2px 0 10px;padding:16px 14px;border:1px solid var(--x-line);border-radius:14px;background:#ffffff08}"
     ".bundle-x:has(input[value=reunion]:checked) .bundle-partner,.bundle-x:has(input[value=intimate]:checked) .bundle-partner{display:block}"
     ".bundle-partner .birth-reassurance{display:none}.bundle-partner-title{margin:0 0 4px;color:var(--x-gold);font-size:17px;font-weight:800}.bundle-partner-sub{margin:0 0 12px;color:var(--x-muted);font-size:14px;line-height:1.6;word-break:keep-all}"
+    ".email-hint{margin:8px 0 0;color:#ffd38a;font-size:14px;line-height:1.6;word-break:keep-all}.email-hint b{color:#fff}.email-fix{margin-left:6px;padding:4px 10px;border:1px solid #ffd38a;border-radius:999px;background:none;color:#ffd38a;font-size:14px}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
     ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
     ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}"
@@ -658,7 +659,9 @@ def add_discounts(s: str) -> str:
     s = _swap(s, "orderName:config.productNames?.[productId]??'운명서재 사주 결과',",
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
-              "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'")
+              "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'"
+              ":e.message==='BUNDLE_INCOMPLETE'?'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.'"
+              ":e.message==='EMAIL_REQUIRED'?'이메일 주소를 다시 확인해 주세요. 끝(.com, .net)까지 넣어야 해요. 예: name@naver.com'")
     return s
 
 
