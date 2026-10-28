@@ -109,7 +109,7 @@ class Variant:
 def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions,
           center: float | None = None) -> list[Variant]:
     """가능한 명식을 모두 모은다. 맨 앞(대표 명식)은 첫 날짜·시작 시각·지역 대표 경도의 명식이다
-    (사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
+    (시간 모름은 낮 12시. 사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
     known_time = p.time_accuracy != "unknown"
     variants: dict[str, Variant] = {}
     first: list[str] = []
@@ -122,8 +122,8 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             if not known_time:
                 # 시간 미상: 일주는 입력한 날짜 기준(경도 보정으로 날짜를 옮기지 않음)
                 fp = FourPillars(fp.year, fp.month, day_pillar_for_date(civil.date()), None)
-            if not first and lon == center:
-                first.append(fp.key)
+            if not first and lon == center and (known_time or civil.time() == time(12, 0)):
+                first.append(fp.key)   # 시간 모름은 사이트처럼 낮 12시 명식을 대표로
             v = variants.get(fp.key)
             if v is None:
                 v = variants[fp.key] = Variant(fp, civil, civil, utc_sample=u)
