@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from .. import taster
+from .. import reveal, taster
 from ..chart import analyze_person
 from ..report import (OrderInfo, THEME_PRODUCTS, PAIR_PRODUCTS, make_lifetime_report, make_romance_report,
                       make_product_report)
@@ -54,6 +54,9 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     # 재구매 10% 할인 코드도 그 쪽에 크게 싣는다(주문 서버가 주문마다 만들어 job["rebuy"]로 준다).
     view = taster.reading_for_person(me)
     seen = taster.digest(view, product)
+    # 결제 직전 이야기 화면에서 본 '내 점수'와 해·달 지도(같은 계산)도 넘겨, 리포트가 그 해·달의 몇 월·방법까지 풀게 한다(2026-10-28 사장님).
+    seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
+                                                me["person"].get("sex", ""), product, when.year)
     if product == "lifetime":
         return make_lifetime_report(me, order, out_pdf, writer, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
     if product == "romance":

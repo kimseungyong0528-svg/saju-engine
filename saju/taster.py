@@ -341,3 +341,21 @@ def reading_for_person(result: dict) -> dict:
     """analyze_person() 결과로 맛보기 결과를 만든다(주문 처리용)."""
     p = result["person"]
     return reading(pillars_from_result(result), p.get("name", ""), p.get("sex", ""))
+
+
+def area_view(fp: FourPillars, name: str, sex: str, product: str) -> dict:
+    """한 상품의 운(결제 전 이야기 화면의 '내 점수'). site/public/assets/free/taster.mjs areaView 와 같은 결과."""
+    r = reading(fp, name, sex)
+    for sign, items in ((1, r["good"]), (-1, r["bad"])):
+        for a in items:
+            if a["id"] == product:
+                return {**a, "sign": sign}
+    T = texts()
+    name = (name or "").strip() or "고객"
+    score = r["scores"][product]
+    sign = 1 if score >= 50 else -1
+    own = sorted([x for x in RULES[product](_facts(fp, sex), T) if (x[1] > 0) - (x[1] < 0) == sign], key=lambda x: -abs(x[1]))
+    key, _, values = own[0] if own else (f"{PREFIX[product]}_base_{'good' if sign > 0 else 'bad'}", 0, {})
+    return {**T["AREAS"][product], "id": product, "score": score, "reason": key,
+            "text": fill(T["REASONS"][key], {"name": name, **values}),
+            "hook": fill(T["HOOKS"][key], {"name": name, **values}), "sign": sign}

@@ -214,3 +214,16 @@ export function reading(fp, person, T) {
     scores: Object.fromEntries(areas.map(a => [a.id, a.score])),
   };
 }
+
+// 상품 하나의 운(결제 전 이야기 화면의 '내 점수'): 점수와, 맛보기와 같은 쪽(좋은 운/조심할 운)의 근거 글.
+// 맛보기 TOP3 안에 있으면 맛보기와 같은 글, 가운데 운은 점수가 50 이상이면 좋은 쪽, 아니면 조심할 쪽.
+export function areaView(fp, person, T, id) {
+  const r = reading(fp, person, T);
+  const hit = [...r.good, ...r.bad].find(a => a.id === id);
+  if (hit) return { ...hit, sign: r.good.includes(hit) ? 1 : -1, scores: r.scores, chart: r.chart, pillars: r.pillars };
+  const name = (person.name || '').trim() || '고객';
+  const score = r.scores[id], sign = score >= 50 ? 1 : -1;
+  const own = RULES[id](facts(fp, person.sex), T).filter(x => Math.sign(x[1]) === sign).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
+  const [key, , vars = {}] = own[0] || [`${PREFIX[id]}_base_${sign > 0 ? 'good' : 'bad'}`];
+  return { ...T.AREAS[id], id, score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }), sign, scores: r.scores, chart: r.chart, pillars: r.pillars };
+}
