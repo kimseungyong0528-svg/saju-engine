@@ -66,8 +66,9 @@ function rvScene2(p,v){const s=SALES[p.id];
  // 제목·말풍선은 무료 풀이에서 이 운을 좋은 운/조심할 운 어느 쪽으로 보여 줬는지(areaView sign)를 따른다(제1조항: 모순 금지).
  const tone=v.area.sign>0,unitW=month?'달':'해';
  const speech=tone?(pt.good?`${word}부터 볼게요. 점수가 높아요. 그런데 높은 점수도 때를 모르면 절반밖에 받지 못해요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW}가 정해져 있어요. 그런데 그때를 모르면 그냥 지나가요.`)
-  :(good?`${word}부터 볼게요. 좋은 점도 있지만, 그냥 두면 안 되는 점이 함께 있어요.`:`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`);
- const head=tone?(pt.good?'타고난 그릇이 큽니다':`들어오는 ${unitW}를 잡아야 합니다`):'지금 막아야 합니다';
+  :(good?`${word}부터 볼게요. 좋은 점부터 말씀드릴게요. 그런데 그냥 두면 안 되는 점이 함께 있어요.`:`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`);
+ // 제목은 맨 위에 오는 점수와 맞춘다. 위가 좋은 점인데 무료 풀이에서 조심할 운이었으면 둘 다 말한다.
+ const head=good?(tone?(pt.good?'타고난 그릇이 큽니다':`들어오는 ${unitW}를 잡아야 합니다`):'좋은 점과 막을 점이 함께 있습니다'):'지금 막아야 합니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
  ${good?`${goodPart}<p class="rv-bridge bad">하지만, 아직 방심하면 안 됩니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">하지만, 아직 실망하기에는 이릅니다.</p>${goodPart}`}
