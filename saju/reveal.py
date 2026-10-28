@@ -91,6 +91,26 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
     return {"unit": unit, "cells": cells, "good": good, "bad": bad, "weak": weak}
 
 
+def months_of(year: int) -> list[dict]:
+    """그 해(입춘부터)의 열두 달 간지. 갑·기년의 첫 달은 병인, 을·경년은 무인 … (연간으로 첫 달 천간이 정해진다)."""
+    first = ((year - 4) % 10 % 5 * 2 + 2) % 10
+    return [{**_pillar((first + k) % 10, (2 + k) % 12), "label": f"{year + 1}년 1월" if k == 11 else f"{k + 2}월"} for k in range(12)]
+
+
+def months_in_year(fp: FourPillars, sex: str, key: str, year: int) -> list[str]:
+    """화면에 보인 해 안에서 같은 규칙의 기운이 실제로 들어오는 달(절기 기준). 리포트가 '몇 월'을 이 계산으로 쓴다."""
+    _, rule_of = _marker(fp, sex)
+    base = "love" if key.startswith("love") else key
+    return [mp["label"] for mp in months_of(year) if rule_of(base)(mp)]
+
+
+def shown_labels(fp: FourPillars, sex: str, product: str, order_year: int) -> list[str]:
+    """화면에 보인 해·달 이름(리포트에 빠짐없이 나와야 하는 것). 해는 '2034년', 달은 '4월'처럼."""
+    m = luck_map(fp, sex, product, start_year(order_year))
+    labels = [lb for d in (m["good"], m["bad"]) for lbs in d.values() for lb in lbs]
+    return list(dict.fromkeys(lb if m["unit"] == "month" else f"{lb}년" for lb in labels))
+
+
 def start_year(order_year: int) -> int:
     return max(FIRST_YEAR, order_year)
 
@@ -108,14 +128,22 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year: int) 
         for key, labels in d.items():
             mk = T["MARKS"][key]
             vals = {"name": name, "weak": f"{m['weak']}"}
-            out.append({unit: [lb if m["unit"] == "month" else f"{lb}년" for lb in labels],
-                        "뜻": taster.fill(mk["line"], vals), "화면에서 본 설명": taster.fill(mk["meaning"], vals)})
+            row = {unit: [lb if m["unit"] == "month" else f"{lb}년" for lb in labels],
+                   "뜻": taster.fill(mk["line"], vals), "화면에서 본 설명": taster.fill(mk["meaning"], vals)}
+            if m["unit"] == "year":
+                row["그 해 안에서 같은 기운이 들어오는 달(절기 기준, 매달 4~8일 무렵 시작)"] = {
+                    f"{lb}년": months_in_year(fp, sex, key, int(lb)) for lb in labels}
+            out.append(row)
         return out
     out = {
         "읽는 법": (f"이 고객은 결제 직전 화면에서 아래 {unit_obj} 그대로 보았습니다. 화면은 그 {unit}에 "
                   f"{'무엇을, 어떻게' if m['unit'] == 'month' else '몇 월에, 무엇을, 어떻게'} 해야 하는지는 리포트에 있다고 안내했습니다. "
                   f"리포트는 이 {unit_obj} 빠짐없이 다시 꺼내, 좋은 표시는 그 운을 크게 받는 구체적인 시기와 방법을, "
-                  "조심할 표시는 언제 조심하고 어떻게 막는지를 씁니다. 화면에서 본 것과 반대되는 해석은 쓰지 않습니다."),
+                  "조심할 표시는 언제 조심하고 어떻게 막는지를 씁니다. 화면에서 본 것과 반대되는 해석은 쓰지 않습니다. "
+                  + ("'몇 월'은 아래 '그 해 안에서 같은 기운이 들어오는 달'에 계산된 달만 씁니다. 다른 달을 지어내지 않습니다. "
+                     if m["unit"] == "year" else "")
+                  + f"화면에 나온 {unit_obj} 하나도 빠뜨리지 않고 '{'4월' if m['unit'] == 'month' else '2034년'}'처럼 이름을 그대로 적습니다."),
+        "리포트에 나와야 하는 해·달": shown_labels(fp, sex, product, order_year),
         f"좋은 {unit}": rows(m["good"]),
         f"조심할 {unit}": rows(m["bad"]),
     }

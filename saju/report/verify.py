@@ -137,10 +137,29 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                 for m in re.finditer(r"((?:19|20|21)\d\d)\s*년", sent):
                     if int(m[1]) not in year_range:
                         issues.append({"slot": sid, "kind": "연도", "detail": f"계산 범위 밖의 {m[1]}년을 썼어요: {sent[:80]}"})
+    issues += shown_checks(f, texts, skip_repeat)   # skip_repeat = 마지막 장 칸들
     issues += newyear_checks(f, texts)
     issues += repeats(texts, skip_repeat)
     issues += crowded_terms(texts, skip_repeat)
     return issues
+
+
+def shown_checks(f: dict, texts: dict, final_ids: set | frozenset = frozenset()) -> list[dict]:
+    """결제 전 이야기 화면에서 고객이 본 해·달(saju/reveal.py)이 리포트에 하나도 빠짐없이 나오는지.
+    빠진 것은 마지막 장(없으면 마지막 칸)에서 다시 쓰게 한다(2026-10-28 사장님: 화면과 리포트는 무조건 일치)."""
+    seen = (f.get("taster") or {}).get("결제 전 이야기 화면에서 본 내용") or {}
+    labels = seen.get("리포트에 나와야 하는 해·달") or []
+    if not labels or not texts:
+        return []
+    blob = " ".join(p for v in texts.values() for p in flat(v))
+    missing = [lb for lb in labels if not re.search(r"(?<!\d)" + re.escape(lb), blob)]
+    if not missing:
+        return []
+    order = list(texts)
+    slot = next((k for k in reversed(order) if k in final_ids), order[-1])
+    return [{"slot": slot, "kind": "화면 연도",
+             "detail": f"고객이 결제 전에 화면에서 본 {', '.join(missing)}이(가) 리포트에 없어요. 이 칸에서 하나씩 이름을 그대로 적고, "
+                       "계산된 달과 할 일·막는 방법을 써 주세요."}]
 
 
 # 신년운세: 삼재·대운 사실과 사장님 표현 규칙('좋은 때' → '좋은 시기')
