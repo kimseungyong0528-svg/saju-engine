@@ -111,6 +111,12 @@ def shown_labels(fp: FourPillars, sex: str, product: str, order_year: int) -> li
     return list(dict.fromkeys(lb if m["unit"] == "month" else f"{lb}년" for lb in labels))
 
 
+def side_score(n: int, kind: str) -> int:
+    """근거가 한쪽에만 있을 때 다른 쪽 점수: 12년(12달) 중 그런 해(달)가 몇 번인지로 매긴다. 사이트 reveal_page.js 와 같은 식."""
+    step = int(50 * n / 12 + 0.5)   # 자바스크립트 Math.round 와 같게(반올림)
+    return min(95, 50 + step) if kind == "good" else max(5, 50 - step)
+
+
 def start_year(order_year: int) -> int:
     return max(FIRST_YEAR, order_year)
 
@@ -148,6 +154,15 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year: int) 
         f"조심할 {unit}": rows(m["bad"]),
     }
     if product != "lifetime":
-        v = taster.area_view(fp, name, sex, product)
-        out["화면에서 본 점수"] = {"운": v["title"], "점수": v["score"], "구분": "좋은 운" if v["sign"] > 0 else "조심할 운", "글": v["text"]}
+        pt = taster.area_parts(fp, name, sex, product)
+        title = taster.texts()["AREAS"][product]["title"]
+        out["화면에서 본 점수"] = {
+            "운": title, "전체 점수": pt["score"],
+            "좋은 점": {"점수": pt["good"]["score"], "글": pt["good"]["text"]} if pt["good"] else
+                     {"점수": side_score(len({lb for ls in m["good"].values() for lb in ls}), "good"), "글": f"앞으로 운이 들어오는 {unit}(아래 '좋은 {unit}')로 매긴 점수"},
+            "조심할 점": {"점수": pt["bad"]["score"], "글": pt["bad"]["text"]} if pt["bad"] else
+                      {"점수": side_score(len({lb for ls in m["bad"].values() for lb in ls}), "bad"), "글": f"앞으로 조심할 {unit}(아래 '조심할 {unit}')로 매긴 점수"},
+            "쓸 점": "화면은 이 운의 좋은 점과 조심할 점을 모두 짚었습니다. 리포트는 두 가지 모두를 더 깊게 풀고, "
+                    "좋은 점은 크게 받는 시기와 방법을, 조심할 점은 막는 시기와 방법을 씁니다.",
+        }
     return out

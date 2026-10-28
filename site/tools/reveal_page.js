@@ -19,8 +19,8 @@ function revealCompute(p,d,lib){
  const {eng,tst,data,texts,rv}=lib,v=d.self,date=validateBirthDate(v);
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
  const r=tst.reading(fp,v,texts),R=texts.REVEAL;
- const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id);
- return {name:r.name,r,R,area,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill};
+ const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id),parts=p.id==='lifetime'?null:tst.areaParts(fp,v,texts,p.id);
+ return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill};
 }
 function revealSpeech(p,text){return `<div class="rv-guide"><img src="${esc(MEDIA[p.id+'.cover'].image)}" alt="금월선녀" decoding="async"><div><strong>금월선녀</strong><p>${esc(text)}</p></div></div>`}
 function revealLocks(items){return `<div class="rv-locks">${items.map(t=>`<div>${icon('lock')}<span>${esc(t)}</span><i>리포트에서 공개</i></div>`).join('')}</div>`}
@@ -48,13 +48,21 @@ function rvScene2(p,v){const s=SALES[p.id];
   <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의<br>여덟 가지 운 점수</h1>${rvBars(v)}
   ${all.map(([a,sg])=>`<div class="rv-card ${sg>0?'good':'bad'}"><small>${sg>0?'가장 좋은 운':'가장 조심할 운'} · ${esc(a.title)} ${a.score}점</small><p>${esc(a.text)}</p><p class="rv-hook">${esc(v.fill(sg>0?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:v.R.AREA_WORD[a.id]}))}</p></div>`).slice(0,4).join('')}
   ${revealLocks(s?.locks||[])}`}
- const a=v.area,good=a.sign>0,[k,label]=good?(a.score>=60?['good','좋은 운']:['mid','좋은 편인 운']):['bad','조심할 운'],word=v.R.AREA_WORD[p.id];
+ const pt=v.parts,good=pt.score>=50,word=v.R.AREA_WORD[p.id];
+ const M=v.R.MARKS,month=v.map.unit==='month',when=ls=>ls.map(l=>month?l:l+'년').join(' · '),vals={name:v.name,weak:v.map.weak};
+ // 좋은 점·조심할 점 모두 같은 크기의 큰 점수로 보여 준다(사장님 2026-10-28).
+ const big=(kind,sc,sub)=>`<div class="rv-score ${kind}"><small class="rv-score-label">${esc(word)}의 ${kind==='good'?'좋은 점':'조심할 점'}</small><strong>${sc}<small>점</small></strong>${sub?`<span>${esc(sub)}</span>`:''}<i><b style="width:${sc}%"></b></i></div>`;
+ // 근거가 한쪽에만 있으면 다른 쪽은 지도에서 그 쪽 해(달)를 꺼내 짚는다.
+ // 점수: 앞으로 12년(12달) 가운데 그런 해(달)가 몇 번인지로 매긴다(saju/reveal.py side_score 와 같은 식).
+ const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=kind==='good'?Math.min(95,50+Math.round(50*n/12)):Math.max(5,50-Math.round(50*n/12));
+  return Object.entries(d).slice(0,1).map(([key,ls])=>big(kind,sc,`앞으로 ${month?'열두 달':'12년'} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}"><p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다. ${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`).join('')};
+ const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
+ const goodPart=pt.good?reasonPart(pt.good,'good'):yearsPart(v.map.good,'good');
+ const badPart=pt.bad?reasonPart(pt.bad,'bad'):yearsPart(v.map.bad,'bad');
  return `${revealSpeech(p,good?`${word}부터 볼게요. 점수가 높아요. 그런데 높은 점수도 때를 모르면 절반밖에 받지 못해요.`:`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`)}
  <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${good?'타고난 그릇이 큽니다':'지금 막아야 합니다'}</h1>
- <div class="rv-score ${k}"><strong>${a.score}<small>점</small></strong><span>${label}</span><i><b style="width:${a.score}%"></b></i></div>
- <div class="rv-card ${good?'good':'bad'}"><p>${esc(a.text)}</p><p class="rv-hook">${esc(v.fill(good?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>
- ${revealLocks(s?.locks||[])}
- <h2 class="rv-sub">다른 운 점수도 함께 보세요</h2>${rvBars(v,p.id)}`}
+ ${good?`${goodPart}<p class="rv-bridge bad">하지만, 아직 방심하면 안 됩니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">하지만, 아직 실망하기에는 이릅니다.</p>${goodPart}`}
+ ${revealLocks(s?.locks||[])}`}
 // 4. 지도: 기회의 해·조심할 해는 연도까지 공개, 몇 월인지와 무엇을 해야 하는지는 잠금
 function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=month?'달':'해';
  const vals={name:v.name,weak:m.weak};

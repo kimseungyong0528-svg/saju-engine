@@ -48,7 +48,7 @@ test('맛보기 결과: 좋은 운 3개·조심할 운 3개, 빈칸 없는 글, 
 });
 
 test('결제 전 이야기 화면: 상품별 점수 글과 해·달 지도가 파이썬(결제 리포트 쪽)과 같다', async () => {
-  const { areaView } = await import('../public/assets/free/taster.mjs');
+  const { areaView, areaParts } = await import('../public/assets/free/taster.mjs');
   const { luckMap } = await import('../public/assets/free/reveal.mjs');
   for (const c of cases) {
     const fp = eng.chartFromPerson(data, c.person, c.person.birth);
@@ -56,6 +56,7 @@ test('결제 전 이야기 화면: 상품별 점수 글과 해·달 지도가 �
       const a = areaView(fp, c.person, T, id);
       assert.deepEqual({ id: a.id, score: a.score, reason: a.reason, text: a.text, hook: a.hook, sign: a.sign }, want, c.person.birth + ' ' + id);
     }
+    for (const [id, want] of Object.entries(c.parts)) assert.deepEqual(areaParts(fp, c.person, T, id), want, c.person.birth + ' parts ' + id);
     for (const [pid, want] of Object.entries(c.maps)) {
       const m = luckMap(fp, c.person.sex, pid, T);
       assert.deepEqual(m, want, c.person.birth + ' ' + pid);

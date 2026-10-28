@@ -359,3 +359,20 @@ def area_view(fp: FourPillars, name: str, sex: str, product: str) -> dict:
     return {**T["AREAS"][product], "id": product, "score": score, "reason": key,
             "text": fill(T["REASONS"][key], {"name": name, **values}),
             "hook": fill(T["HOOKS"][key], {"name": name, **values}), "sign": sign}
+
+
+def area_parts(fp: FourPillars, name: str, sex: str, product: str) -> dict:
+    """한 상품의 운을 좋은 점과 조심할 점으로 나눈다. site/public/assets/free/taster.mjs areaParts 와 같은 결과."""
+    T = texts()
+    name = (name or "").strip() or "고객"
+    reasons = RULES[product](_facts(fp, sex), T)
+
+    def part(sign):
+        own = sorted([x for x in reasons if (x[1] > 0) - (x[1] < 0) == sign], key=lambda x: -abs(x[1]))
+        if not own:
+            return None
+        key, _, values = own[0]
+        return {"score": max(5, min(95, 50 + sum(x[1] for x in own))), "reason": key,
+                "text": fill(T["REASONS"][key], {"name": name, **values}),
+                "hook": fill(T["HOOKS"][key], {"name": name, **values})}
+    return {"id": product, "score": max(5, min(95, 50 + sum(x[1] for x in reasons))), "good": part(1), "bad": part(-1)}
