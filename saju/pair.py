@@ -72,3 +72,14 @@ def compare(me: FourPillars, other: FourPillars) -> dict:
         "elements": {"me": ea, "other": eb, **complement},
         "cross_relations": {"harmony": good, "tension": hard},
     }
+
+
+def pair_score(me: FourPillars, other: FourPillars) -> int:
+    """두 사람 궁합 점수(48~96). 결제 전 이야기 화면(사이트 reveal.mjs pairScore)과 깊은 궁합·재회사주 리포트가 같은 점수를 쓴다(제1조항)."""
+    cmp = compare(me, other)
+    s = 62 + 4 * cmp["cross_relations"]["harmony"] - 3 * cmp["cross_relations"]["tension"]
+    s += 6 * (len(cmp["elements"]["상대가_채워주는_나의_부족"]) + len(cmp["elements"]["내가_채워주는_상대의_부족"]))
+    s += {"조화": 8, "긴장": -8, "복합": 2}.get(cmp["spouse_palace"]["tone"], 0)
+    s += {"상대가 나를 생함": 5, "내가 상대를 생함": 5, "같은 기운": 3}.get(cmp["day_master"]["element_relation"], 0)
+    s += 4 if any(r.startswith("천간합") for r in cmp["day_master"]["relations"]) else 0
+    return max(48, min(96, s))

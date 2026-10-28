@@ -132,7 +132,7 @@ def build_outline(f: dict) -> list[dict]:
     # 2. 타고난 기질과 사주의 구성 (11~22쪽)
     section("2", [
         page("el_ratio", "내 사주의 오행 비율", figure="elements_bar", opener=True,
-             slot=_slot("el_ratio", "오행 비율 그래프를 읽어 주고, 가장 많은 기운과 가장 적은 기운이 무엇인지 말해 주세요.", HALF)),
+             slot=_slot("el_ratio", "오행 비율 그래프를 읽어 주고, 가장 많은 기운과 가장 모자란 기운이 무엇인지 말해 주세요.", HALF)),
         page("el_many_few", "많은 오행과 부족한 오행",
              slot=_slot("el_many_few", "많은 오행과 부족한 오행이 성격과 생활에 어떻게 나타나는지, 부족한 기운을 채우는 생활 습관까지 자세히 써 주세요.")),
         page("tg_intro", "십신이란", static="tengod_intro", figure="tengod_table"),
@@ -270,7 +270,7 @@ def build_outline(f: dict) -> list[dict]:
         from .theme import screen_years
         ys = screen_years(f)
         g = page("sw_12", "앞으로 12년 한눈에", figure="grid", opener=True,
-                 slot=_slot("sw_12", "표에서 좋은 표시가 있는 해와 조심할 표시가 있는 해를 골라, 결제 전 화면에서 본 그대로 그 까닭을 짧게 정리해 주세요.", FULL - 520))
+                 slot=_slot("sw_12", "표에서 좋은 표시가 있는 해와 조심할 표시가 있는 해를 골라, " + ("표에 나온 그대로" if f.get("bundled") else "결제 전 화면에서 본 그대로") + " 그 까닭을 짧게 정리해 주세요.", FULL - 520))
         g["grid"] = {"head": ["해", "간지", "표시", "흐름"],
                      "rows": [[str(s["year"]), f"{s['hanja']} {s['ganzhi']}", ", ".join(s["r_signs"]) or "—", f"{s['score']}점"] for s in ys],
                      "hl": [i for i, s in enumerate(ys) if s["r_good"] and not s["r_bad"]], "left": [2]}

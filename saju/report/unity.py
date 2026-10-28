@@ -7,6 +7,7 @@
 - 해·달 지도: 결제 전 화면의 12년(신년운세는 2027년 12달)과 리포트 표가 같은 해·달, 같은 좋은/조심 표시
 - 점수 방향: 좋은 표시만 있는 해는 60점 이상, 조심 표시만 있는 해는 40점 이하
 - 점수: 결제 전 화면 '내 점수'(전체·좋은 점·조심할 점)가 리포트 첫 요약에 그대로
+- 두 사람 궁합 점수(깊은 궁합·재회사주): 결제 전 화면과 리포트가 같은 점수
 """
 
 from .. import reveal as RV
@@ -27,7 +28,7 @@ def _rows(product: str, facts: dict) -> tuple[list[dict], str]:
     return (th["months"] if product == "newyear" else th["years"]), "t_score"
 
 
-def problems(product: str, result: dict, facts: dict) -> list[str]:
+def problems(product: str, result: dict, facts: dict, partner: dict | None = None) -> list[str]:
     out = []
     fp = taster.pillars_from_result(result)
     sex = result["person"].get("sex", "")
@@ -59,10 +60,16 @@ def problems(product: str, result: dict, facts: dict) -> list[str]:
         want = {"score": seen["전체 점수"], "good": seen["좋은 점"]["점수"], "bad": seen["조심할 점"]["점수"]}
         if facts["theme"]["data"].get("screen_score") != want:
             out.append(f"화면 점수 {want}와 리포트 점수 {facts['theme']['data'].get('screen_score')}가 다름")
+    if partner is not None and product in ("intimate", "reunion"):
+        from ..pair import pair_score
+        want = pair_score(fp, taster.pillars_from_result(partner))
+        got = facts["theme"]["data"].get("score" if product == "intimate" else "pair_score")
+        if got != want:
+            out.append(f"화면의 두 사람 궁합 점수 {want}점과 리포트 {got}점이 다름")
     return out
 
 
-def require(product: str, result: dict, facts: dict) -> None:
-    bad = problems(product, result, facts)
+def require(product: str, result: dict, facts: dict, partner: dict | None = None) -> None:
+    bad = problems(product, result, facts, partner)
     if bad:
         raise UnityError("제1조항 위반(화면과 리포트가 다름): " + " / ".join(bad[:8]))

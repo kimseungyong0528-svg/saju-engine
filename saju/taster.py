@@ -90,6 +90,16 @@ def _facts(fp: FourPillars, sex: str) -> dict:
             "pct": lambda g: elements[ELEMENTS[(me + GROUPS.index(g)) % 5]]}
 
 
+def ny_sides(fp: FourPillars, sex: str) -> dict:
+    """2027년 정미년의 불(丁)·흙(未)이 이 사주를 돕는지("help")·부담인지("hurt")·어느 쪽도 아닌지(None). 맛보기 '2027년 운' 글과 같은 판단.
+    신년운세 리포트가 2027년 두 기운의 역할을 이것으로 쓴다(제1조항: 화면은 '돕는 기운', 리포트는 '기신'처럼 엇갈리지 않게)."""
+    f = _facts(fp, sex)
+    helpful = ["식상", "재성", "관성"] if f["st"] >= 55 else ["인성", "비겁"] if f["st"] <= 45 else []
+    g1 = TEN_GOD_GROUP[A.ten_god(f["ds"], Y2027[0])]
+    g2 = TEN_GOD_GROUP[A.branch_ten_god(f["ds"], Y2027[1])]
+    return {el: (("help" if g in helpful else "hurt") if helpful else None) for g, el in ((g1, "화"), (g2, "토"))}
+
+
 def _newyear(f, T):
     out = []
     el_name = lambda e: f"{T['ELEMENT_WORD'][e]}({e})"
@@ -137,10 +147,12 @@ def _romance(f, T):
         out.append(("ro_hongyeom", 8, {}))
     key = "female" if f["sex"] == "female" else "male"
     star = T["STAR"][key]
-    n = f["groups"]["관성" if key == "female" else "재성"]
+    sg = "관성" if key == "female" else "재성"
+    n = f["groups"][sg]
+    heavy = f["pct"](sg) >= 30 and f["st"] <= 45   # 재물운 '재다신약'·직업운 '관성 과다'인 사주에 '딱 맞게'라고 쓰지 않는다(제1조항)
     if n == 0:
         out.append(("ro_nostar", -14, star))
-    elif n <= 2:
+    elif n <= 2 and not heavy:
         out.append(("ro_star", 8, {**star, "count": n}))
     elif n >= 4:
         out.append(("ro_manystar", -10, {**star, "count": n}))

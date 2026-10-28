@@ -11,10 +11,19 @@ from pathlib import Path
 
 from saju.chart import analyze_person
 from saju import astro, reveal, taster
+from saju.pair import pair_score
 from saju.timeutil import SEOUL_TZ
 from saju.regions import REGIONS
 
 OUT = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "taster-parity.json"
+
+
+def _boundary(r: dict) -> list[str]:
+    """리포트 사주표에 나오는 '태어난 시각이 N분만 … 달라지는 경계예요' 줄(결제 전 화면 STEP 1에도 같은 줄이 나온다)."""
+    from saju.report import _BOUNDARY, _merge_boundary
+    f = {"uncertainties": [w for w in r["warnings"] if _BOUNDARY.fullmatch(w)]}
+    _merge_boundary(f)
+    return f["uncertainties"]
 
 
 def main() -> None:
@@ -62,7 +71,15 @@ def main() -> None:
             "parts": {a: taster.area_parts(taster.pillars_from_result(r), "하늘", person["sex"], a) for a in taster.AREA_ORDER},
             "maps": {pid: reveal.luck_map(taster.pillars_from_result(r), person["sex"], pid)
                      for pid in taster.texts()["REVEAL"]["PRODUCTS"]},
+            "_fp": taster.pillars_from_result(r),
+            "boundary": _boundary(r),
         })
+    # 깊은 궁합·재회사주 결제 전 화면의 '두 사람 궁합 점수': 손님 i와 손님 i+7을 짝지어 본다
+    for i, c in enumerate(cases):
+        j = (i + 7) % len(cases)
+        c["pair"] = {"with": j, "score": pair_score(c["_fp"], cases[j]["_fp"])}
+    for c in cases:
+        del c["_fp"]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(cases, ensure_ascii=False, indent=0), encoding="utf-8")
     print(f"{len(cases)}건 → {OUT}")

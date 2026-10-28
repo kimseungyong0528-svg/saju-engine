@@ -83,9 +83,11 @@ const RULES = {
     }
     if (f.names.has('홍염살')) out.push(['ro_hongyeom', 8]);
     const star = T.STAR[f.sex === 'female' ? 'female' : 'male'];
-    const n = f.groups[f.sex === 'female' ? '관성' : '재성'];
+    const sg = f.sex === 'female' ? '관성' : '재성', n = f.groups[sg];
+    // 재물운 '재다신약'·직업운 '관성이 강한데 받칠 힘이 약함'과 같은 사주에 '딱 맞게'라고 쓰지 않는다(제1조항).
+    const heavy = f.pct(sg) >= 30 && f.st <= 45;
     if (n === 0) out.push(['ro_nostar', -14, star]);
-    else if (n <= 2) out.push(['ro_star', 8, { ...star, count: n }]);
+    else if (n <= 2 && !heavy) out.push(['ro_star', 8, { ...star, count: n }]);
     else if (n >= 4) out.push(['ro_manystar', -10, { ...star, count: n }]);
     if (f.groups.식상 >= 1) out.push(['ro_express', 4]); else out.push(['ro_shy', -7]);
     if (f.dayRel.has('충')) out.push(['ro_dayclash', -10]);
@@ -182,7 +184,7 @@ function chartDetail(f, T, name) {
   const items = [
     { head: `나를 뜻하는 글자 · ${STEM_HANJA[f.ds]} ${dm}`, text: `태어난 날의 위 글자가 나 자신입니다. ${name} 님은 ${T.DAY_MASTER[f.ds]}` },
     { head: `가장 센 기운 · ${top.word} ${top.pct}%`, text: T.ELEMENT_STRONG[top.el] },
-    { head: `가장 ${low.status === 'lack' ? '모자란' : '적은'} 기운 · ${low.word} ${low.pct}%`, text: T.ELEMENT_WEAK[low.el] },
+    { head: `가장 모자란 기운 · ${low.word} ${low.pct}%`, text: T.ELEMENT_WEAK[low.el] },
     { head: `나를 받쳐 주는 힘 · 100점 중 ${Math.round(f.st)}점`, text: `${T.STRENGTH_PLAIN} ${fill(T.STRENGTH_LINE[f.stLabel], { name })}` },
   ];
   if (T.GYEOK_MEANING[gy]) items.push({ head: `타고난 큰 방향 · ${gy}`, text: T.GYEOK_MEANING[gy] });

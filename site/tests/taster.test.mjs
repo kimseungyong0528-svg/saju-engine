@@ -65,3 +65,24 @@ test('결제 전 이야기 화면: 상품별 점수 글과 해·달 지도가 �
     }
   }
 });
+
+test('두 사람 궁합 점수(깊은 궁합·재회사주 결제 전 화면)가 파이썬 리포트와 같다', async () => {
+  const { pairScore } = await import('../public/assets/free/reveal.mjs');
+  const bad = [];
+  for (const c of cases) {
+    const o = cases[c.pair.with];
+    const got = pairScore(eng.chartFromPerson(data, c.person, c.person.birth), eng.chartFromPerson(data, o.person, o.person.birth)).score;
+    if (got !== c.pair.score) bad.push({ me: c.person.birth, other: o.person.birth, got, want: c.pair.score });
+  }
+  assert.equal(bad.length, 0, JSON.stringify(bad.slice(0, 3)));
+});
+
+test('태어난 시각 경계 안내(결제 전 화면 STEP 1)가 리포트 사주표와 같다', async () => {
+  const { boundaryLines } = await import('../public/assets/free/reveal.mjs');
+  const bad = [];
+  for (const c of cases) {
+    const got = boundaryLines(data, c.person, c.person.birth);
+    try { assert.deepEqual(got, c.boundary); } catch { bad.push({ birth: c.person.birth, time: c.person.time, got, want: c.boundary }); }
+  }
+  assert.equal(bad.length, 0, JSON.stringify(bad.slice(0, 3)));
+});

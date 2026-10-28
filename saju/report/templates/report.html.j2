@@ -206,7 +206,7 @@
     <p class="recap-title"><span class="recap-rank">{{ label }} {{ a.rank }}위</span> {{ a.title }} {{ a.score }}점</p>
     <p>{{ a.text }}</p>
     <p class="recap-hook">{{ a.hook }}</p>
-    {% if a.here %}<p class="recap-go">이 책에서 이 운을 가장 자세히 풀었어요.</p>{% else %}<p class="recap-go"><a href="{{ a.url }}">나의 {{ a.product_name }} 자세히 보기{% if f.rebuy %} (재구매 10% 할인){% endif %} →</a></p>{% endif %}
+    {% if a.here %}<p class="recap-go">이 책에서 이 운을 가장 자세히 풀었어요.</p>{% elif a.owned %}<p class="recap-go">이번에 함께 받으신 '나의 {{ a.product_name }}'에 이 운을 자세히 풀었어요.</p>{% else %}<p class="recap-go"><a href="{{ a.url }}">나의 {{ a.product_name }} 자세히 보기{% if f.rebuy %} (재구매 10% 할인){% endif %} →</a></p>{% endif %}
   </div>{% endfor %}{% endfor %}
   {% if f.rebuy %}
   <div class="rebuy">

@@ -55,14 +55,22 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     view = taster.reading_for_person(me)
     seen = taster.digest(view, product)
     # 결제 직전 이야기 화면에서 본 '내 점수'와 해·달 지도(같은 계산)도 넘겨, 리포트가 그 해·달의 몇 월·방법까지 풀게 한다(2026-10-28 사장님).
-    seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
-                                                me["person"].get("sex", ""), product, when.year)
+    # 묶음으로 함께 산 상품(job["parentId"])은 손님이 그 상품의 결제 전 이야기 화면을 보지 않았다: '화면에서 보신'이라고 쓰지 않는다.
+    bundled = bool(job.get("parentId"))
+    if bundled:
+        seen["결제 전 이야기 화면"] = ("이 상품은 다른 상품과 함께 묶음으로 사서, 고객이 이 상품의 결제 전 이야기 화면을 보지 않았습니다. "
+                                "'화면에서 보신', '결제 전에 보신' 같은 말을 쓰지 않습니다.")
+    else:
+        seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
+                                                    me["person"].get("sex", ""), product, when.year)
+    # 같은 주문에서 함께 산 상품은 책 끝에서 다시 권하지 않는다.
+    extra = {"rebuy": job.get("rebuy"), "owned": [p for p in job.get("together") or [] if p != product], "bundled": bundled}
     if product == "lifetime":
-        return make_lifetime_report(me, order, out_pdf, writer, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
+        return make_lifetime_report(me, order, out_pdf, writer, taster=seen, taster_view=view, **extra)
     if product == "romance":
-        return make_romance_report(me, order, out_pdf, writer, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
+        return make_romance_report(me, order, out_pdf, writer, taster=seen, taster_view=view, **extra)
     partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS else None
-    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen, taster_view=view, rebuy=job.get("rebuy"))
+    return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen, taster_view=view, **extra)
 
 
 def blocking(issues: list[dict]) -> list[dict]:

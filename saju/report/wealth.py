@@ -136,7 +136,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("w_glance", "한눈에 보는 나의 재물운", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["돈 버는 형", t["type"]], ["투자 성향", t["risk"]],
             ["재물운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from . import theme as T
 from .outline import FULL, HALF, _slot
-from ..pair import compare
+from ..pair import compare, pair_score
 
 FINAL_SECTION = "12"
 
@@ -47,15 +47,6 @@ STATIC = {
 
 _STATUS = {"연애 중이에요": "연애 중", "혼자 좋아하고 있어요": "짝사랑", "서로 알아가는 중이에요": "썸",
            "결혼한 사이예요": "부부", "헤어진 사이예요": "헤어짐"}
-
-
-def _score(cmp: dict) -> int:
-    s = 62 + 4 * cmp["cross_relations"]["harmony"] - 3 * cmp["cross_relations"]["tension"]
-    s += 6 * (len(cmp["elements"]["상대가_채워주는_나의_부족"]) + len(cmp["elements"]["내가_채워주는_상대의_부족"]))
-    s += {"조화": 8, "긴장": -8, "복합": 2}.get(cmp["spouse_palace"]["tone"], 0)
-    s += {"상대가 나를 생함": 5, "내가 상대를 생함": 5, "같은 기운": 3}.get(cmp["day_master"]["element_relation"], 0)
-    s += 4 if any(r.startswith("천간합") for r in cmp["day_master"]["relations"]) else 0
-    return max(48, min(96, s))
 
 
 def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
@@ -98,7 +89,7 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
         "screen_score": screen,
         "status": _STATUS.get(answers.get("status", ""), answers.get("status", "")),
         "duration": answers.get("duration", ""),
-        "compare": cmp, "score": _score(cmp),
+        "compare": cmp, "score": pair_score(T.fourpillars(result), T.fourpillars(partner)),   # 결제 전 화면의 '두 사람 궁합 점수'와 같다
         "best_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "money": {"나": {"재성": T.count(f, "재성"), "비겁": T.count(f, "비겁"), "식상": T.count(f, "식상")},
@@ -147,8 +138,8 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("im_glance", "한눈에 보는 우리 궁합", static="im_pair", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
-            ["두 사람 궁합 점수(두 사람 사주를 함께 본 점수)", f"{t['score']}점 "],
+            T.screen_row(t["screen_score"], t.get("seen", True)),
+            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['score']}점 ({oname}님 사주와 함께 본 점수)"],
             ["일간끼리", f"{cmp['day_master']['me']}·{cmp['day_master']['other']} · {cmp['day_master']['element_relation']}"],
             ["배우자 자리끼리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} · {cmp['spouse_palace']['tone']}"],
             ["합 · 충", f"손잡는 관계 {cmp['cross_relations']['harmony']}개 · 부딪히는 관계 {cmp['cross_relations']['tension']}개"],

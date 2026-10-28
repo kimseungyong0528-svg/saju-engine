@@ -151,7 +151,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("b_glance", "한눈에 보는 나의 사업운", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["사업 체질", t["type"]], ["함께 일하는 원칙", t["partner_rule"]], ["어울리는 분야", t["fields"]],
             ["넓히기 좋은 해", yrs(t["grow_years"])], ["지키며 다질 해", yrs(t["keep_years"])],
             ["가까운 좋은 달", ", ".join(t["best_months"])], ["조심할 달", ", ".join(t["careful_months"]) or "—"],

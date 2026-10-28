@@ -257,5 +257,6 @@ def screen_score(f: dict, result: dict, product: str) -> dict:
     return {"score": d["전체 점수"], "good": d["좋은 점"]["점수"], "bad": d["조심할 점"]["점수"]}
 
 
-def screen_row(s: dict) -> list[str]:
-    return ["결제 전에 보신 점수", f"전체 {s['score']}점 · 좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점"]
+def screen_row(s: dict, seen: bool = True) -> list[str]:
+    """첫 요약의 점수 줄. 묶음으로 산 상품은 결제 전 화면을 보지 않았으므로 '결제 전에 보신'이라고 쓰지 않는다."""
+    return ["결제 전에 보신 점수" if seen else "이 운의 점수", f"전체 {s['score']}점 · 좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점"]

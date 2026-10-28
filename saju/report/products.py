@@ -113,18 +113,20 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
               "discount": discount_percent(p),
               # 재구매 링크로 들어가면 서버(discounts.mjs)가 10%를 더 깎는다. 같은 계산(반올림)으로 보여 준다.
-              "rebuy_text": f"{round(p['price'] * 0.9):,}원" if coupon else None} for p in PRODUCTS if p["id"] != current]
+              "rebuy_text": f"{round(p['price'] * 0.9):,}원" if coupon else None} for p in PRODUCTS
+             if p["id"] != current and p["id"] not in (f.get("owned") or [])]   # 같은 주문에서 함께 산 상품은 다시 권하지 않는다
     items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
 
 
-def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None) -> dict:
+def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None, owned=()) -> dict:
     """리포트 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' (2026-10-27 사장님 요청).
     무료 분석과 같은 계산(saju/taster.py)의 6가지를 다시 짚고, 운마다 그 운을 깊게 다룬 리포트로 잇는다."""
     names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
     def item(kind: str, n: int, a: dict) -> dict:
         pid = a["product"]
         return {"kind": kind, "rank": n, "title": a["title"], "score": a["score"], "text": a["text"], "hook": a["hook"], "product": pid,
-                "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current}
+                "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current,
+                "owned": pid != current and pid in owned}   # 같은 주문에서 함께 받은 리포트
     return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],
             "bad": [item("bad", n, a) for n, a in enumerate(view["bad"], 1)]}

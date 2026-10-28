@@ -20,7 +20,13 @@ function revealCompute(p,d,lib){
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
  const r=tst.reading(fp,v,texts),R=texts.REVEAL;
  const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id),parts=p.id==='lifetime'?null:tst.areaParts(fp,v,texts,p.id);
- return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill,A:texts.AREAS};
+ return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill,A:texts.AREAS,pair:revealPair(p,d,lib,fp),boundary:rv.boundaryLines(data,v,v.calendar==='lunar'?date.solarDate:v.birth)};
+}
+// 깊은 궁합·재회사주: 그 사람 사주와 함께 본 '두 사람 궁합 점수'(saju/pair.py pair_score 와 같은 계산, 리포트에 같은 점수가 나온다).
+function revealPair(p,d,lib,fp){
+ if(!['intimate','reunion'].includes(p.id)||!d.partner||!personValid(d.partner))return null;
+ const {eng,data,rv}=lib,o=d.partner,od=validateBirthDate(o);
+ return {...rv.pairScore(fp,eng.chartFromPerson(data,o,o.calendar==='lunar'?od.solarDate:o.birth)),name:(o.name||'').trim()||'그 사람'};
 }
 function revealSpeech(p,text){return `<div class="rv-guide"><img src="${esc(MEDIA[p.id+'.cover'].image)}" alt="금월선녀" decoding="async"><div><strong>금월선녀</strong><p>${esc(text)}</p></div></div>`}
 function revealLocks(items){return `<div class="rv-locks">${items.map(t=>`<div>${icon('lock')}<span>${esc(t)}</span><i>리포트에서 공개</i></div>`).join('')}</div>`}
@@ -29,7 +35,7 @@ function rvScene0(p,v){const c=v.r.chart,me=c.items[0],gy=c.items[4];
  return `${revealSpeech(p,`${v.name} 님이 태어난 순간의 여덟 글자를 펼쳤어요. 성격도, 돈도, 사람도, 운이 들어오는 해도 모두 이 여덟 글자 안에 있어요.`)}
  <span class="eyebrow">STEP 1 · 내 사주 펼치기</span><h1>${esc(v.name)} 님의 사주팔자</h1>
  <div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div>
- 
+ ${v.boundary.length?`<div class="rv-card rv-boundary">${v.boundary.map(l=>`<p>${esc(l)}</p>`).join('')}</div>`:''}
  <div class="rv-card"><strong>${esc(me.head)}</strong><p>${esc(me.text)}</p></div>
  ${gy?`<div class="rv-card"><strong>${esc(gy.head)}</strong><p>${esc(gy.text)}</p></div>`:''}
  <div class="rv-card"><strong>다섯 기운의 비율</strong><div class="tb-bars">${c.elements.map(e=>`<div class="tb-bar ${e.status}"><span>${esc(e.word)}</span><i><b style="width:${Math.min(100,e.pct*2)}%"></b></i><em>${e.pct}%</em></div>`).join('')}</div></div>`}
@@ -57,7 +63,9 @@ function rvScene2(p,v){const s=SALES[p.id];
  // 점수: 앞으로 12년(12달) 가운데 그런 해(달)가 몇 번인지로 매긴다(saju/reveal.py side_score 와 같은 식).
  const sideScore=(d,kind)=>{const n=new Set(Object.values(d).flat()).size;return kind==='good'?Math.min(95,50+Math.round(50*n/12)):Math.max(5,50-Math.round(50*n/12))};
  const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=sideScore(d,kind);
-  return Object.entries(d).slice(0,1).map(([key,ls])=>big(kind,sc,`앞으로 ${month?'열두 달':'12년'} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}"><p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다. ${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`).join('')};
+  // 'N번'이라고 했으면 N개를 모두 적는다(표시마다 한 줄). 뜻 풀이는 첫 표시 하나만.
+  const ents=Object.entries(d);if(!ents.length)return '';const [k0]=ents[0];
+  return big(kind,sc,`앞으로 ${month?'열두 달':'12년'} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}">${ents.map(([key,ls])=>`<p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`).join('')}<p>${esc(v.fill(M[k0].meaning,vals))}</p><p class="rv-hook">${esc(M[k0].hook)}</p></div>`};
  const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
  const goodPart=pt.good?reasonPart(pt.good,'good'):yearsPart(v.map.good,'good');
  const badPart=pt.bad?reasonPart(pt.bad,'bad'):yearsPart(v.map.bad,'bad');
@@ -68,9 +76,14 @@ function rvScene2(p,v){const s=SALES[p.id];
  const tone=v.area.sign>0,unitW=month?'달':'해';
  const speech=tone?(pt.good?`${word}부터 볼게요. 점수가 높아요. 그런데 높은 점수도 때를 모르면 절반밖에 받지 못해요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW}가 정해져 있어요. 그런데 그때를 모르면 그냥 지나가요.`)
   :(good?`${word}부터 볼게요. 좋은 점도 있지만, 그냥 두면 안 되는 점이 함께 있어요.`:`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`);
+ const pairCard=v.pair?(()=>{const q=v.pair,ew=e=>({목:'나무',화:'불',토:'흙',금:'쇠',수:'물'})[e]+'('+e+')';
+  const palace={조화:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 손을 잡는 사이입니다. 함께 있을수록 마음이 편해집니다.',긴장:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 부딪히는 사이입니다. 가까워질수록 작은 일로 다투기 쉬워, 다투는 때와 푸는 법을 알아 두면 좋습니다.',복합:'두 사람의 배우자 자리(태어난 날의 지지)에 손잡는 면과 부딪히는 면이 함께 있습니다.',중립:'두 사람의 배우자 자리(태어난 날의 지지)는 크게 끌리지도 부딪히지도 않는 담담한 사이입니다.'}[q.palace];
+  const fill=[...q.fill.map(e=>`${q.name} 님은 ${v.name} 님에게 모자란 ${ew(e)} 기운을 채워 줍니다.`),...q.give.map(e=>`${v.name} 님은 ${q.name} 님에게 모자란 ${ew(e)} 기운을 채워 줍니다.`)].join(' ');
+  return big(q.score>=60?'good':'bad',q.score,`${v.name} 님과 ${q.name} 님 사주를 함께 본 점수`).replace(`${esc(word)}의 ${q.score>=60?'좋은 점':'조심할 점'}`,'두 사람 궁합 점수')+`<div class="rv-card ${q.score>=60?'good':'bad'}"><p>${esc(palace)}${fill?' '+esc(fill):''}</p><p class="rv-hook">두 사람이 언제 가까워지고 언제 부딪히는지는 리포트에 달 이름까지 담았습니다.</p></div>`})():'';
  const head=tone?(pt.good?'타고난 그릇이 큽니다':`들어오는 ${unitW}를 잡아야 합니다`):'지금 막아야 합니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
+ ${pairCard}
  ${good?`${goodPart}<p class="rv-bridge bad">하지만, 아직 방심하면 안 됩니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">하지만, 아직 실망하기에는 이릅니다.</p>${goodPart}`}
  ${revealLocks(s?.locks||[])}`}
 // 4. 지도: 기회의 해·조심할 해는 연도까지 공개, 몇 월인지와 무엇을 해야 하는지는 잠금

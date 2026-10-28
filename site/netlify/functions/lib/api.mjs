@@ -86,7 +86,12 @@ export function makeApi({ store, services, env, studioStore = store }) {
         if (m === 'GET' && !action) {
           if (!order.payload) throw new ApiError(410, 'ERASED');
           const rebuy = await rebuyForJob(store, order, env.SITE_URL).catch(() => null);
-          return json({ orderId: order.id, productId: order.productId, status: order.status, paidAt: order.paidAt, payload: order.payload, disclosures: order.disclosures, rebuy });
+          // 같은 주문(묶음)에서 함께 산 상품: 리포트가 이미 산 상품을 다시 권하지 않고, 묶음 상품은 '결제 전에 보신'이라고 쓰지 않는다.
+          const root = order.parentId ? await store.get(`orders/${order.parentId}`) : order;
+          const kids = await Promise.all((root?.children || []).map(id => store.get(`orders/${id}`)));
+          const together = [root?.productId, ...kids.map(k => k?.productId)].filter(Boolean);
+          return json({ orderId: order.id, productId: order.productId, status: order.status, paidAt: order.paidAt || root?.paidAt, payload: order.payload, disclosures: order.disclosures, rebuy,
+            together, ...(order.parentId ? { parentId: order.parentId } : {}) });
         }
         if (m === 'POST' && action === 'status') {
           const body = await readJson(req);

@@ -216,7 +216,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
             "people": area((("귀인 글자(천을귀인)", gui), ("구설 주의(상관)", "상관" in gods), ("손재 주의(겁재)", geob),
                             ("관재 주의(편관과 충·형)", "편관" in gods and (c_day or c_mon or harm_day)), ("관재 주의(상관견관)", sg)),
                            base + 8 * gui - 4 * ("상관" in gods) - 5 * geob - 6 * ("편관" in gods and (c_day or c_mon or harm_day)) - 4 * sg),
-            "health": area((("부족한 기운 채움", fill), ("넘치는 기운 더함", more > 0), ("몸의 자리 충(일지 충)", c_day),
+            "health": area((("부족한 기운 채움", sum(e in good_el for e in els) > more), ("넘치는 기운 더함", more > sum(e in good_el for e in els)), ("몸의 자리 충(일지 충)", c_day),
                             ("생활 자리 충(월지 충)", c_mon)),
                            base + 4 * fill - 4 * more - 7 * c_day - 4 * c_mon),
             "move": area((("이동 기운(역마)", yeok), ("공부·시험 기운(인성)", ins), ("문창귀인 글자", mun),
@@ -293,11 +293,20 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     sj = samjae(an["pillars"][0]["branch"], TARGET_YEAR)
     roles = _roles(f)
     stem_el, branch_el = _gz_elements(year["ganzhi"])
+    # 제1조항: 2027년에 들어오는 두 기운의 역할은 맛보기 '2027년 운'(돕는 기운·부담이 되는 기운)과 같게 쓴다.
+    from ..taster import ny_sides, pillars_from_result
+    for el, side in ny_sides(pillars_from_result(result), result["person"].get("sex", "")).items():
+        if side == "help" and not roles[el].startswith(("용신", "희신")):
+            roles[el] = "희신(나를 돕는 반가운 기운)"
+        elif side == "hurt" and roles[el].startswith("용신"):
+            roles[el] = "용신(가장 필요한 기운이지만, 2027년에는 맞지 않는 방식으로 들어와 부담이 되는 쪽)"
+        elif side == "hurt":
+            roles[el] = "기신(2027년에 나에게 부담이 되는 기운)"
     rels = [{"kind": K.relation_kind(r["type"]), "type": r["type"], "level": r["level"],
              "with": _pillar_word(r["with"]),
              "meaning": K.RELATION.get(K.relation_kind(r["type"]), "")} for r in year["relations"]]
-    fit_good = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("용신", "희신")))
-    fit_bad = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("기신", "넘치는")))
+    fit_good = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("용신", "희신")) and "부담" not in roles[el])
+    fit_bad = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("기신", "넘치는")) or "부담" in roles[el])
     fit = "잘 맞는 편" if fit_good > fit_bad else "부담이 있는 편" if fit_bad > fit_good else "반반인 편"
     year_type = ("기회를 잡는 해" if year_score >= 68 else "차근차근 올라가는 해" if year_score >= 58
                  else "다지며 준비하는 해" if year_score >= 47 else "지키며 숨을 고르는 해")
@@ -435,7 +444,9 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간(나를 나타내는 글자)이 어떤 사람인지 쉽게 설명해 주세요. 2027년을 볼 때 어느 글자가 중요한지 한 문장으로 이어 주세요.", HALF)),
         P("ny_fate", "나의 2027년 운명", figure="kv", rows=[
             ["2027년의 기운", yrow], ["나에게 들어오는 십신", gods],
-            ["내 사주와의 관계", rel_txt], ["나에게 필요한 기운(용신)", f"{f['lucky']['element_name']}({f['lucky']['element']})"],
+            ["2027년 두 기운의 역할", f"{y['stem']['char']}({y['stem']['element_name']}): {y['stem']['role'].split('(')[1].rstrip(')')} · "
+                                      f"{y['branch']['char']}({y['branch']['element_name']}): {y['branch']['role'].split('(')[1].rstrip(')')}"],
+            ["내 사주와의 관계", rel_txt], ["나에게 가장 필요한 기운(용신)", f"{f['lucky']['element_name']}({f['lucky']['element']})"],
             ["삼재", sj_txt], ["대운", dw_txt],
         ], slot=S("ny_fate", "표를 바탕으로 2027년이 이 사람에게 어떤 해인지 처음 읽는 사람도 알게 소개해 주세요. 십신, 용신, 삼재, 대운이 무슨 뜻인지 괄호로 풀어 주세요.", HALF - 50)),
     ])
@@ -443,7 +454,7 @@ def build_outline(f: dict) -> list[dict]:
                  for v in a.values()]
     section("2", [
         P("ny_glance", "한눈에 보는 나의 2027년", figure="kv", opener=True, rows=[
-            ["한마디로", t["year_type"]], T.screen_row(t["screen_score"]),
+            ["한마디로", t["year_type"]], T.screen_row(t["screen_score"], t.get("seen", True)),
             ["강한 분야", ", ".join(t["strong_areas"])], ["약한 분야", ", ".join(t["weak_areas"])],
             ["가장 좋은 달", join(t["best_months"])], ["조심할 달", join(t["careful_months"], "크게 조심할 달은 없어요")],
             ["삼재", "아니에요" if not sj["is_samjae"] else sj["kind"]],

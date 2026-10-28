@@ -24,7 +24,7 @@ def check_texts(facts: dict, sections: list[dict], texts: dict, final_section: s
 
 def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                          html_out: str | Path | None = None, taster: dict | None = None, taster_view: dict | None = None,
-                        rebuy: dict | None = None) -> dict:
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """analyze_person() 결과로 평생사주 PDF를 만든다. 쪽수와 사용한 글을 돌려준다."""
     facts = build_facts(result, order)
     from .theme import reveal_fix
@@ -37,6 +37,7 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
         facts["taster_view"] = taster_view   # 책 맨 끝 '무료 분석 다시 보기' 쪽에 그대로 싣는다.
     if rebuy:
         facts["rebuy"] = rebuy   # 그 쪽의 재구매 10% 할인 코드(주문 서버가 만든 것)
+    facts["owned"], facts["bundled"] = list(owned), bundled   # 같은 주문에서 함께 산 상품(다시 권하지 않는다)
     sections = build_outline(facts)
     texts = (writer or DraftWriter()).write(facts, sections)
     issues = check_texts(facts, sections, texts, FINAL_SECTION)
@@ -49,7 +50,7 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
 
 def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                         html_out: str | Path | None = None, taster: dict | None = None, taster_view: dict | None = None,
-                        rebuy: dict | None = None) -> dict:
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """analyze_person() 결과로 연애사주 PDF(약 50쪽)를 만든다. 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다."""
     from . import romance as R
     from .outline import STATIC
@@ -62,6 +63,7 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
         facts["taster_view"] = taster_view
     if rebuy:
         facts["rebuy"] = rebuy
+    facts["owned"], facts["bundled"] = list(owned), bundled
     sections = R.build_outline(facts)
     writer = writer or DraftWriter()
     if isinstance(writer, ClaudeWriter):
@@ -99,7 +101,7 @@ def _merge_boundary(facts: dict) -> None:
 
 
 def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict | None = None,
-                    partner: dict | None = None) -> tuple:
+                    partner: dict | None = None, bundled: bool = False) -> tuple:
     """주제 사주의 재료(facts)와 목차(sections)를 만든다. 두 사람 상품은 partner(상대방 analyze_person 결과)가 필요하다."""
     import importlib
     if product not in THEME_PRODUCTS:
@@ -113,24 +115,26 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
         facts["partner"] = build_facts(partner, order)
         _merge_boundary(facts["partner"])
     facts["theme"] = M.build(facts, result, answers or {}, partner)
-    unity.require(product, result, facts)   # 제1조항: 화면과 다르면 여기서 멈춘다
+    unity.require(product, result, facts, partner)   # 제1조항: 화면과 다르면 여기서 멈춘다
+    facts["theme"]["data"]["seen"] = not bundled   # 묶음으로 산 상품은 결제 전 이야기 화면을 보지 않았다
     return M, facts, M.build_outline(facts)
 
 
 def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                         html_out: str | Path | None = None, answers: dict | None = None, partner: dict | None = None,
                         texts: dict | None = None, taster: dict | None = None, taster_view: dict | None = None,
-                        rebuy: dict | None = None) -> dict:
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """재회·깊은 궁합·재물·직업·사업·건강·2027 신년운세 PDF(50쪽 이상). 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다.
     texts를 주면 글을 새로 쓰지 않고 그 글로 만든다(미리 써 둔 글 확인용)."""
     from .outline import STATIC
-    M, facts, sections = prepare_product(product, result, order, answers, partner)
+    M, facts, sections = prepare_product(product, result, order, answers, partner, bundled)
     if taster:
         facts["taster"] = taster   # 고객이 무료 맛보기에서 본 내용(saju/taster.py). 리포트가 이와 어긋나지 않게 쓴다.
     if taster_view:
         facts["taster_view"] = taster_view   # 책 맨 끝 '무료 분석 다시 보기' 쪽에 그대로 싣는다.
     if rebuy:
         facts["rebuy"] = rebuy   # 그 쪽의 재구매 10% 할인 코드(주문 서버가 만든 것)
+    facts["owned"], facts["bundled"] = list(owned), bundled   # 같은 주문에서 함께 산 상품(다시 권하지 않는다)
     if texts is None:
         writer = writer or DraftWriter()
         if isinstance(writer, ClaudeWriter):

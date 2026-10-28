@@ -62,7 +62,7 @@ _CONCERN = {"첫 취업을 준비해요": "첫 취업", "이직을 고민해요"
 
 def _style(f: dict) -> tuple[str, str]:
     c = {g: T.count(f, g) for g in T.GODS}
-    if c["관성"] >= 2 and c["인성"] >= 1:
+    if c["관성"] >= 1 and c["인성"] >= 1:   # 맛보기·결제 전 화면의 '관인상생'(saju/taster.py ca_flow)과 같은 기준(제1조항)
         return "조직에서 인정받는 형", "직장과 책임(관성)을 배움과 자격(인성)이 받쳐 주는 구조(관인상생)라서, 체계 있는 조직에서 단계를 밟아 올라갈 때 힘이 나요."
     if c["식상"] >= 2:
         return "기술과 표현으로 승부하는 형", "재능과 표현(식상)이 강해서, 내 손과 머리로 만든 결과물이 평가받는 일에서 힘이 나요."
@@ -103,7 +103,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "month_pillar": {k: next(p for p in f["pillars"] if p["pillar"] == "월주").get(k) for k in ("ganzhi", "stem_ten_god", "branch_ten_god")},
         "yeokma": "역마살" in f["shinsal_names"],
         "fields": _FIELD[f["lucky"]["element"]], "roles": _ROLE[top_group], "top_group": top_group,
-        "org": "조직형(회사·공공기관)" if T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)",
+        "org": "조직형(회사·공공기관)" if (T.count(f, "관성") >= 1 and T.count(f, "인성") >= 1)
+               or T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)",
         "move_years": move_years, "best_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
     }
@@ -152,7 +153,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("c_glance", "한눈에 보는 나의 직업운", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["일하는 형", t["style"]], ["어울리는 역할", t["roles"]], ["어울리는 분야", t["fields"]],
             ["맞는 환경", t["org"]], ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["가까운 좋은 달", ", ".join(t["best_months"])],

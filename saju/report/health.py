@@ -67,7 +67,9 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         more = sum(e in excess for e in els)
         body = T.rel(x, "일주", T.CLASH)
         life = T.rel(x, "월주", T.CLASH)
-        signs = [s for s, on in (("부족한 기운 채움", fill), ("넘치는 기운 더함", more > 0), ("몸의 자리 충", body), ("생활 자리 충", life)) if on]
+        n_fill = sum(e in good for e in els)
+        # 한 칸에 '채움'과 '더함'을 함께 붙이지 않는다: 더 많은 쪽 하나만(같으면 둘 다 붙이지 않는다)
+        signs = [s for s, on in (("부족한 기운 채움", n_fill > more), ("넘치는 기운 더함", more > n_fill), ("몸의 자리 충", body), ("생활 자리 충", life)) if on]
         score = x["score"] + 4 * fill - 4 * more - 7 * body - 4 * life
         return {"t_score": T.clamp(score), "t_signs": signs}
 
@@ -129,7 +131,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("h_glance", "한눈에 보는 나의 건강운", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["모자란 기운", els(t["lacking"])],
             ["돌볼 영역", " / ".join(x["area"] for x in t["excess"] + t["lacking"]) or "고른 편이라 전체 리듬을 지켜요"],
             ["편안한 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["쉬어 갈 해", ", ".join(f"{y}년" for y in t["care_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],

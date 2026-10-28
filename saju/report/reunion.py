@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from . import theme as T
 from .outline import FULL, HALF, _slot
-from ..pair import compare
+from ..pair import compare, pair_score
 
 FINAL_SECTION = "12"
 
@@ -86,7 +86,8 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     data = {
         "screen_score": screen,
         "breakup": _STATUS.get(answers.get("breakup", ""), answers.get("breakup", "")),
-        "compare": cmp, "level": level, "approach": approach,
+        "compare": cmp, "pair_score": pair_score(T.fourpillars(result), T.fourpillars(partner)),   # 결제 전 화면의 '두 사람 궁합 점수'와 같다
+        "level": level, "approach": approach,
         "best_years": [y for y in T.best(years, 12, lambda y: y["year"])],
         "best_months": best_months, "careful_months": T.worst(months, 3, T.ym),
         "partner_now": {"year": o_now["year"], "ganzhi": o_now["ganzhi"], "score": o_now["score"],
@@ -138,7 +139,8 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("rn_glance", "한눈에 보는 우리의 재회", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
+            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['pair_score']}점 ({oname}님 사주와 함께 본 점수)"],
             ["재회 신호", t["level"]],
             ["연락하기 좋은 달", ", ".join(t["best_months"])],
             ["피할 달", ", ".join(t["careful_months"]) or "크게 부딪히는 달은 없어요"],
