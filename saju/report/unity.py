@@ -45,6 +45,11 @@ def problems(product: str, result: dict, facts: dict) -> list[str]:
             out.append(f"{name}: 간지가 다름({r['ganzhi']} / 화면 {c['ko']})")
         if bool(r.get("r_good")) != bool(c["good"]) or bool(r.get("r_bad")) != bool(c["bad"]):
             out.append(f"{name}: 좋은/조심 표시가 화면과 다름")
+        if product == "lifetime" and c["label"] == "2027":
+            ny = RV.ny_verdict(fp, sex)[1]
+            if r[score] != ny:
+                out.append(f"2027년: 무료 풀이 '2027년 운'은 {ny}점인데 리포트는 {r[score]}점")
+            continue
         if c["good"] and not c["bad"] and r[score] < 60:
             out.append(f"{name}: 화면은 좋은 표시인데 리포트 점수 {r[score]}점")
         if c["bad"] and not c["good"] and r[score] > 40:

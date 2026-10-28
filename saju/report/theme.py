@@ -77,15 +77,21 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     sex = result["person"].get("sex", "")
     conf = texts()["REVEAL"]["PRODUCTS"][product]
     marks = texts()["REVEAL"]["MARKS"]
-    _, rule_of = RV._marker(fourpillars(result), sex)
+    fp = fourpillars(result)
+    _, rule_of = RV._marker(fp, sex)
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
-        good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["good"] if rule_of(k)(p)]
-        bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["bad"] if rule_of(k)(p)]
+        label = str(r["year"]) if "month" not in r and "year" in r else ""
+        gk, bk = RV.year_marks(fp, sex, product, label, [RV._mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
+                               [RV._mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
         r["r_good"], r["r_bad"] = good, bad
         v = r[score]
-        v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
+        if product == "lifetime" and label == "2027":
+            v = RV.ny_verdict(fp, sex)[1]   # 무료 풀이에서 본 '2027년 운' 점수 그대로
+        else:
+            v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
         r[score] = v
         r[signs] = good + bad if replace else list(dict.fromkeys(good + bad + [x for x in r[signs]]))
 

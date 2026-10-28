@@ -20,7 +20,7 @@ function revealCompute(p,d,lib){
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
  const r=tst.reading(fp,v,texts),R=texts.REVEAL;
  const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id),parts=p.id==='lifetime'?null:tst.areaParts(fp,v,texts,p.id);
- return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill};
+ return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear()),fill:tst.fill,A:texts.AREAS};
 }
 function revealSpeech(p,text){return `<div class="rv-guide"><img src="${esc(MEDIA[p.id+'.cover'].image)}" alt="금월선녀" decoding="async"><div><strong>금월선녀</strong><p>${esc(text)}</p></div></div>`}
 function revealLocks(items){return `<div class="rv-locks">${items.map(t=>`<div>${icon('lock')}<span>${esc(t)}</span><i>리포트에서 공개</i></div>`).join('')}</div>`}
@@ -41,8 +41,8 @@ function rvScene1(p,v){const items=rvConfirmItems(v),ans=revealState.confirm,don
  ${items.map((it,n)=>`<div class="rv-card rv-confirm"><small>${esc(it.head)}</small><p>${esc(it.text)}</p><div class="rv-yesno" role="group"><button type="button" data-confirm="${n}" data-v="yes" class="${ans[n]==='yes'?'on':''}">맞아요</button><button type="button" data-confirm="${n}" data-v="no" class="${ans[n]==='no'?'on':''}">아니에요</button></div></div>`).join('')}
  ${done?`<p class="rv-result">${esc(v.fill(yes>=2?v.R.CONFIRM_MANY:v.R.CONFIRM_FEW,{name:v.name,n:String(yes)}))}</p>`:''}`}
 // 3. 내 점수: 이 상품의 운 점수와 근거(맛보기와 같은 글) + 다른 운 점수까지 모두 공개
-function rvScore(score){return score>=60?['good','좋은 운']:score>=45?['mid','보통인 운']:['bad','조심할 운']}
-function rvBars(v,skip){return `<div class="rv-bars">${Object.entries(v.r.scores).filter(([id])=>id!==skip).sort((a,b)=>b[1]-a[1]).map(([id,s])=>{const [k]=rvScore(s);return `<div class="rv-bar ${k}"><span>${esc(v.R.AREA_WORD[id])}</span><i><b style="width:${s}%"></b></i><em>${s}점</em></div>`}).join('')}</div>`}
+// 막대 색과 이름은 아래 카드·무료 풀이와 같게: 무료 풀이 '좋은 운 TOP3'는 초록, '조심할 운 TOP3'는 빨강, 나머지는 보통(제1조항).
+function rvBars(v,skip){const side=id=>v.r.good.some(a=>a.id===id)?'good':v.r.bad.some(a=>a.id===id)?'bad':'mid';return `<div class="rv-bars">${Object.entries(v.r.scores).filter(([id])=>id!==skip).sort((a,b)=>b[1]-a[1]).map(([id,s])=>{const k=side(id);return `<div class="rv-bar ${k}"><span>${esc(v.A[id]?.title||v.R.AREA_WORD[id])}</span><i><b style="width:${s}%"></b></i><em>${s}점</em></div>`}).join('')}</div>`}
 function rvScene2(p,v){const s=SALES[p.id];
  if(!v.area){const all=[...v.r.good.map(a=>[a,1]),...v.r.bad.map(a=>[a,-1])];
   return `${revealSpeech(p,`${v.name} 님 사주로 여덟 가지 운의 점수를 모두 계산했어요. 높은 운은 제대로 받아야 하고, 낮은 운은 지금 막아야 해요.`)}

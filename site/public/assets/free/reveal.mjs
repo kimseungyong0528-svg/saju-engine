@@ -4,6 +4,7 @@
 // 규칙을 바꾸면 saju/reveal.py 도 똑같이 바꾸고 site/tools/make_taster_fixture.py 를 다시 돌린다.
 
 import { analyze, branchRelation, branchTenGod, tenGod, ELEMENTS, STEMS, BRANCHES, STEMS_HANJA, BRANCHES_HANJA } from './engine.mjs';
+import { reading } from './taster.mjs';
 
 const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
@@ -53,6 +54,22 @@ const markKey = (key, sex) => key === 'love' ? (sex === 'female' ? 'love_f' : 'l
 
 // 상품 하나의 지도: 12년(지지 열두 개가 한 번씩 다 돈다)(신년운세는 2027년 열두 달)마다 좋은·조심할 표시.
 // 돌려주는 값: { unit:'year'|'month', cells:[{label, ko, hanja, good:[key], bad:[key]}], good:{key:[label]}, bad:{key:[label]}, weak }
+// 무료 풀이 '2027년 운'이 좋은 쪽인지 조심할 쪽인지(맛보기 TOP3에 든 쪽, 들지 않았으면 50점 이상이 좋은 쪽)와 점수.
+// 평생사주 12년 지도의 2027년 칸과 리포트의 2027년 점수가 이것을 따른다(saju/reveal.py ny_verdict 와 같다, 제1조항).
+export function nyVerdict(fp, sex, T) {
+  const r = reading(fp, { name: '', sex }, T), score = r.scores.newyear;
+  if (r.good.some(a => a.id === 'newyear')) return ['good', score];
+  if (r.bad.some(a => a.id === 'newyear')) return ['bad', score];
+  return [score >= 50 ? 'good' : 'bad', score];
+}
+
+// 평생사주의 2027년 칸: 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심').
+function yearMarks(fp, sex, product, T, label, good, bad) {
+  if (product !== 'lifetime' || label !== '2027') return [good, bad];
+  const [side] = nyVerdict(fp, sex, T);
+  return side === 'good' ? [good.length ? good : ['ny_good'], []] : [[], bad.length ? bad : ['ny_bad']];
+}
+
 export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR) {
   const conf = T.REVEAL.PRODUCTS[product];
   const { weak, ruleOf } = marker(fp, sex);
@@ -60,10 +77,10 @@ export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR) {
   const base = unit === 'month' ? MONTHS_2027 : Array.from({ length: 12 }, (_, i) => ({ ...yearPillar(startYear + i), label: String(startYear + i) }));
   const good = {}, bad = {};
   const cells = base.map(p => {
-    const cell = { label: p.label, ko: p.ko, hanja: p.hanja, good: [], bad: [] };
-    for (const [kind, list, into] of [['good', conf.good, good], ['bad', conf.bad, bad]]) {
-      for (const k of list) if (ruleOf(k)(p)) { const key = markKey(k, sex); cell[kind].push(key); (into[key] || (into[key] = [])).push(p.label); }
-    }
+    const cell = { label: p.label, ko: p.ko, hanja: p.hanja };
+    [cell.good, cell.bad] = yearMarks(fp, sex, product, T, p.label,
+      conf.good.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)), conf.bad.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)));
+    for (const [kind, into] of [['good', good], ['bad', bad]]) for (const key of cell[kind]) (into[key] || (into[key] = [])).push(p.label);
     return cell;
   });
   return { unit, cells, good, bad, weak };

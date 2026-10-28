@@ -197,13 +197,13 @@
   <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
   <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
 {%- elif k == "taster_recap" -%}
-  <p>{{ f.person.name }} 님이 {{ product.name }} 리포트를 확인하실 때 입력한 정보로, 다른 6가지 핵심운도 함께 분석해 드렸어요. 연애·인기, 결혼·궁합, 헤어진 인연, 돈 모으기, 직장·이직, 내 사업, 몸의 힘, 2027년 한 해 흐름을 모두 살핀 뒤, 그 가운데 {{ f.person.name }} 님 사주에서 가장 좋은 운 3개와 가장 조심해야 할 운 3개, 모두 6가지를 골랐어요.</p>
+  <p>{{ f.person.name }} 님이 {{ product.name }} 리포트를 확인하실 때 입력한 정보로, 여덟 가지 운(연애·인기, 결혼·궁합, 헤어진 인연, 돈 모으기, 직장·이직, 내 사업, 몸의 힘, 2027년 한 해 흐름)을 모두 살폈어요. 그 가운데 {{ f.person.name }} 님 사주에서 가장 좋은 운 3개와 가장 조심할 운 3개를 무료 풀이와 같은 점수 그대로 다시 짚어 드려요.</p>
   <p>이 책에서 다 담지 못한 운을 보너스로 미리 짚어 드려요. 운마다 그 운을 가장 깊게 풀어 주는 리포트도 함께 알려 드릴게요.</p>
   {% for group, label in [(recap.good, "좋은 운"), (recap.bad, "조심할 운")] %}
   <h3 class="recap-head {{ 'good' if label == '좋은 운' else 'bad' }}">{{ label }} TOP 3</h3>
   {% for a in group %}
   <div class="recap {{ a.kind }}">
-    <p class="recap-title"><span class="recap-rank">{{ label }} {{ a.rank }}위</span> {{ a.title }}</p>
+    <p class="recap-title"><span class="recap-rank">{{ label }} {{ a.rank }}위</span> {{ a.title }} {{ a.score }}점</p>
     <p>{{ a.text }}</p>
     <p class="recap-hook">{{ a.hook }}</p>
     {% if a.here %}<p class="recap-go">이 책에서 이 운을 가장 자세히 풀었어요.</p>{% else %}<p class="recap-go"><a href="{{ a.url }}">나의 {{ a.product_name }} 자세히 보기{% if f.rebuy %} (재구매 10% 할인){% endif %} →</a></p>{% endif %}

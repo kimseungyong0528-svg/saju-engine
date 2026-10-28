@@ -124,7 +124,7 @@ def taster_recap(view: dict, current: str, site: str | None = None, coupon: str 
     names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
     def item(kind: str, n: int, a: dict) -> dict:
         pid = a["product"]
-        return {"kind": kind, "rank": n, "title": a["title"], "text": a["text"], "hook": a["hook"], "product": pid,
+        return {"kind": kind, "rank": n, "title": a["title"], "score": a["score"], "text": a["text"], "hook": a["hook"], "product": pid,
                 "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current}
     return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],
             "bad": [item("bad", n, a) for n, a in enumerate(view["bad"], 1)]}
