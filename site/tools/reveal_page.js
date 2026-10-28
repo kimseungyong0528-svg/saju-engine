@@ -29,7 +29,7 @@ function rvScene0(p,v){const c=v.r.chart,me=c.items[0],gy=c.items[4];
  return `${revealSpeech(p,`${v.name} 님이 태어난 순간의 여덟 글자를 펼쳤어요. 성격도, 돈도, 사람도, 운이 들어오는 해도 모두 이 여덟 글자 안에 있어요.`)}
  <span class="eyebrow">STEP 1 · 내 사주 펼치기</span><h1>${esc(v.name)} 님의 사주팔자</h1>
  <div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div>
- ${v.approx?`<p class="rv-approx">시간을 대략으로 넣으셔서 태어난 시(時)는 비워 두고 풀었어요. 리포트는 넣어 주신 시간 범위로 시(時)까지 정해서 풀기 때문에, 이 화면과 조금 다를 수 있어요.</p>`:''}
+ ${v.approx?`<p class="rv-approx">시간을 대략으로 넣어서 리포트와 조금 다를 수 있어요.</p>`:''}
  <div class="rv-card"><strong>${esc(me.head)}</strong><p>${esc(me.text)}</p></div>
  ${gy?`<div class="rv-card"><strong>${esc(gy.head)}</strong><p>${esc(gy.text)}</p></div>`:''}
  <div class="rv-card"><strong>다섯 기운의 비율</strong><div class="tb-bars">${c.elements.map(e=>`<div class="tb-bar ${e.status}"><span>${esc(e.word)}</span><i><b style="width:${Math.min(100,e.pct*2)}%"></b></i><em>${e.pct}%</em></div>`).join('')}</div></div>`}
