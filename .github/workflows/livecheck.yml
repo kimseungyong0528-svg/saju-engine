@@ -1,0 +1,15 @@
+name: livecheck
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sleep 60
+          for i in 1 2 3 4 5 6 7 8; do
+            n=$(curl -s https://unmyeong-saju.com/assets/free/engine.mjs | grep -c "첫 번째 명식")
+            echo "try $i engine-new=$n"; [ "$n" -ge 1 ] && break; sleep 45
+          done
+          curl -s https://unmyeong-saju.com/ -o page.html
+          echo "approx-note=$(grep -c 'approx-note' page.html) rv-approx=$(grep -c 'rv-approx' page.html) popup-fixed=$(grep -c 'href="${link(p)}"' page.html) discount=$(grep -c '10% 추가' page.html)"
+          echo "defaultLon=$(curl -s https://unmyeong-saju.com/assets/free/saju-data.json | grep -o '"defaultLon":[0-9.]*')"
