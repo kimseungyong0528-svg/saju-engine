@@ -15,6 +15,8 @@ let revealLib=null,revealState={key:'',scene:0,confirm:{},view:null};
 async function revealLoad(){const lib=await tasterLoad();if(!revealLib)revealLib=await import('./assets/free/reveal.mjs');return {...lib,rv:revealLib}}
 const REVEAL_SCENES=5;
 function revealStartYear(){return Math.max(2027,new Date(Date.now()+9*3600e3).getUTCFullYear())}
+// 이야기 화면이 보여 준 사주의 열쇠: 내 정보(두 사람 상품은 상대방 정보까지)가 바뀌면 이야기를 처음부터 다시 보여 준다(제1조항).
+function revealKey(p,d){return p.id+'|'+JSON.stringify(d.self)+(['intimate','reunion'].includes(p.id)?'|'+JSON.stringify(d.partner||{}):'')}
 function revealCompute(p,d,lib){
  const {eng,tst,data,texts,rv}=lib,v=d.self,date=validateBirthDate(v);
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
@@ -112,7 +114,7 @@ const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는
 function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
- const key=p.id+'|'+JSON.stringify(d.self);
+ const key=revealKey(p,d);
  if(revealState.key!==key)revealState={key,scene:0,confirm:{},view:null};
  const paint=()=>{
   const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);

@@ -2,7 +2,7 @@
 import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
-  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName,
+  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
 } from './orders.mjs';
 import { ready } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
@@ -59,7 +59,16 @@ export function makeApi({ store, services, env, studioStore = store }) {
         // (카드 앱을 다녀오며 브라우저 저장값이 사라져도 결제가 승인되게).
         const order = await loadOrder(store, parts[1], action === 'confirm' && !bearer(req) ? undefined : bearer(req));
         const hasPdf = async () => Boolean(await store.getBytes(`pdf/${order.id}`));
-        if (m === 'GET' && !action) return json(publicView(order, await hasPdf()));
+        if (m === 'GET' && !action) {
+          // 묶음 주문: 함께 산 책마다 상태와 PDF 내려받기를 보여 준다(같은 접근 열쇠로 연다).
+          const view = publicView(order, await hasPdf());
+          if (order.children?.length) view.books = (await Promise.all(order.children.map(async id => {
+            const c = await store.get(`orders/${id}`);
+            return c && { orderId: c.id, productName: productName(c.productId), status: c.status, message: STATUS_MESSAGES[c.status] || '',
+              pdfAvailable: Boolean(await store.getBytes(`pdf/${c.id}`)), fileName: reportFileName(c) };
+          }))).filter(Boolean);
+          return json(view);
+        }
         if (m === 'GET' && action === 'pdf') {
           const pdf = await store.getBytes(`pdf/${order.id}`);
           if (!pdf) throw new ApiError(404, 'PDF_NOT_AVAILABLE');

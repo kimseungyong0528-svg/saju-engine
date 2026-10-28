@@ -177,7 +177,7 @@
     <div class="two-col"><div><span class="item-label">좋은 일</span><br>{{ mt.good|para }}</div><div><span class="item-label">주의할 일</span><br>{{ mt.careful|para }}</div></div>{% endif %}
   </div>{% endfor %}
 {%- elif k == "question" -%}
-  <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or "질문을 남기지 않으셨어요. 요즘 생활에 맞춰 가장 많이 궁금해하시는 내용으로 답해 드려요." }}</p></div>
+  <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or ("다른 리포트와 함께 사셔서 이 리포트의 질문은 따로 받지 않았어요. 이 운에서 가장 많이 궁금해하시는 내용으로 답해 드려요." if f.bundled else "질문을 남기지 않으셨어요. 요즘 생활에 맞춰 가장 많이 궁금해하시는 내용으로 답해 드려요.") }}</p></div>
 {%- elif k == "yongsin" -%}
   <div class="center"><span class="big-han" style="font-size: 54pt">{{ f.lucky.hanja }}</span><br><b>{{ f.lucky.element_name }}({{ f.lucky.element }}) 기운</b></div>
 {%- elif k == "lucky" -%}

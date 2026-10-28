@@ -148,6 +148,8 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "note.textContent=e.message==='COUPON_NOT_AVAILABLE'?",
               "note.textContent=e.message==='TEST_MODE_OWNER_ONLY'?'지금은 시험 운영 중이라 결제할 수 없어요. 곧 정식으로 문을 열어요.':e.message==='COUPON_NOT_AVAILABLE'?")
     s = _swap(s, '<div class="field"><label for="coupon">할인 쿠폰</label>', '<div class="field" hidden><label for="coupon">할인 쿠폰</label>')
+    s = _swap(s, "${b.dataset.consent==='privacy'?'개인정보 이용 안내':'입력 확인 안내'}", "${b.dataset.consent==='privacy'?'개인정보 이용 안내':'구매 조건 안내'}")
+    s = _swap(s, "smallHeader('입력 확인과 접수 안내',", "smallHeader('결제 안내',")
     s = _swap(s, '<input type="checkbox" name="payment" required>입력 확인 진행 동의</label>',
               '<input type="checkbox" name="payment" required>구매 조건 확인 동의</label>')
     s = _swap(s, '<button class="primary dark-primary" id="pay" type="submit" disabled>접수 가능 여부 확인</button><p class="fine-print">현재 실제 결제와 주문 생성은 진행되지 않아요. 입력 정보와 제공 가능한 분석 범위를 먼저 확인해요.</p>',
@@ -157,7 +159,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<p>현재는 접수 가능 여부만 확인하며, 실제 결제·사주 분석·이메일 발송은 진행되지 않습니다.</p><p>날짜가 불확실하거나 핵심 분석이 불가능하면 구매를 제한하고 필요한 정보를 안내합니다.</p>",
               "<p>사주 결과는 결제 후 개인별로 새로 작성하는 디지털 콘텐츠입니다. 결과 PDF를 이메일로 보낸 뒤에는 단순 변심으로 인한 청약철회가 제한됩니다(전자상거래법 제17조 제2항).</p><p>결과를 보내기 전에는 전액 환불할 수 있습니다. 이메일이 오지 않거나 결과에 오류가 있으면 다시 보내드리거나 환불해 드립니다.</p>")
     s = _swap(s, "<p>현재는 화면 확인용 미리보기입니다. 입력한 이름, 출생 정보, 질문과 이메일은 이 브라우저 세션에 보관됩니다. 접수 가능 여부 확인을 누르면 출생 정보와 상품 질문을 이 사이트의 접수 서버에서 검사합니다. 현재 검사 서버는 요청 본문을 저장하거나 외부 업체에 전달하지 않습니다.</p><p>정식 운영 전 수집 목적, 보관 기간, 처리 위탁과 운영자 정보를 별도로 확정해야 합니다.</p>",
-              "<p>사주 결과를 작성하고 이메일로 보내기 위해 이름, 성별, 생년월일과 양력·음력, 태어난 시간, 태어난 지역, 질문, 이메일을 받습니다.</p><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 자세한 내용은 개인정보 처리방침에서 확인할 수 있어요.</p>")
+              "<p>사주 결과를 작성하고 이메일로 보내기 위해 이름, 성별, 생년월일과 양력·음력, 태어난 시간, 태어난 지역, 질문, 이메일을 받습니다. 재회사주·깊은 궁합은 상대방(애인·배우자 등)의 같은 출생 정보도 받습니다.</p><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 자세한 내용은 개인정보 처리방침에서 확인할 수 있어요.</p>")
     s = _swap(s, '<p class="fine-print">결과는 자동 검증을 통과한 뒤 발행됩니다. 현재 전체 풀이·결제·PDF 발행은 준비 중이에요.</p>',
               '<p class="fine-print">결제 후 사주 결과를 작성하고 자동 검사를 거쳐 이메일로 보내드려요.</p>')
 
@@ -433,6 +435,14 @@ def add_input_helpers(s: str) -> str:
     return s
 
 
+def fix_flows(s: str) -> str:
+    """질문 보기 고치기(손님 테스트 2026-10-28). 접수 규칙(intake.mjs)에도 들어가야 하므로 write_intake_module 보다 먼저 부른다.
+    - 깊은 궁합 '알고 지낸 기간': 25년 함께한 부부도 고를 수 있게 3년 넘는 보기를 나눈다."""
+    s = _swap(s, "choice('duration','서로 알고 지낸 기간은 얼마나 되나요?',['3개월 미만','3~6개월','6개월~1년','1~3년','3년 이상'],true)",
+              "choice('duration','서로 알고 지낸 기간은 얼마나 되나요?',['3개월 미만','3~6개월','6개월~1년','1~3년','3~10년','10년 이상'],true)")
+    return s
+
+
 def write_intake_module(s: str) -> None:
     parts = []
     for a, b in INTAKE_PARTS:
@@ -524,6 +534,8 @@ EXTRAS_CSS = (
     ".bundle-partner{display:none;margin:2px 0 10px;padding:16px 14px;border:1px solid var(--x-line);border-radius:14px;background:#ffffff08}"
     ".bundle-x:has(input[value=reunion]:checked) .bundle-partner,.bundle-x:has(input[value=intimate]:checked) .bundle-partner{display:block}"
     ".bundle-partner .birth-reassurance{display:none}.bundle-partner-title{margin:0 0 4px;color:var(--x-gold);font-size:17px;font-weight:800}.bundle-partner-sub{margin:0 0 12px;color:var(--x-muted);font-size:14px;line-height:1.6;word-break:keep-all}"
+    ".bundle-more>summary{display:block;cursor:pointer;list-style:none}.bundle-more>summary::-webkit-details-marker{display:none}.bundle-more>summary .x-title,.bundle-more>summary .x-sub{display:block}.bundle-more>summary b{color:var(--x-gold)}.bundle-more[open]>summary b{display:none}"
+    ".bundle-rebuy{margin:0 0 16px;padding:14px 16px;border-radius:14px;background:#ffffff0d;color:var(--x-gold);font-size:15px;line-height:1.6;word-break:keep-all}"
     ".email-hint{margin:8px 0 0;color:#ffd38a;font-size:14px;line-height:1.6;word-break:keep-all}.email-hint b{color:#fff}.email-fix{margin-left:6px;padding:4px 10px;border:1px solid #ffd38a;border-radius:999px;background:none;color:#ffd38a;font-size:14px}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
     ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
@@ -656,6 +668,10 @@ def add_discounts(s: str) -> str:
     # 예전 체험용 쿠폰(UNMYEONG5000) 대신 서버가 확인하는 재구매 코드만 쓴다. 묶음 상품을 주문에 함께 보낸다.
     s = _swap(s, " if(Number(draft.discount||0)>0)throw Error('COUPON_NOT_AVAILABLE');\n",
               " draft={...draft,extras:EXTRA_DATA.bundle?(draft.extras||[]):[]};delete draft.discount;\n")
+    # 주문 상태 화면을 결제한 탭이 아니어도 7일 동안 다시 열 수 있게 접근 열쇠를 이 기기에도 남긴다(자주 묻는 질문 '7일 안에는 주문 화면에서 다시 받을 수 있어요').
+    s = _swap(s, "storage.setItem('unmyeong.order.'+body.orderId,JSON.stringify({accessToken:body.accessToken,amount:body.amount,productId}));",
+              "storage.setItem('unmyeong.order.'+body.orderId,JSON.stringify({accessToken:body.accessToken,amount:body.amount,productId}));"
+              "try{localStorage.setItem('unmyeong.order.'+body.orderId,JSON.stringify({accessToken:body.accessToken,amount:body.amount,productId,at:Date.now()}))}catch{}")
     s = _swap(s, "orderName:config.productNames?.[productId]??'운명서재 사주 결과',",
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
@@ -671,6 +687,17 @@ def add_reveal(s: str) -> str:
     s = _swap(s, "</head>", f"<style>{REVEAL_CSS}</style></head>")
     s = _swap(s, "function render(){", page + "function render(){")
     s = _swap(s, "if(s.type==='sales')return salesPage(p,i);", "if(s.type==='sales')return salesPage(p,i);if(s.type==='reveal')return revealPage(p,i);")
+    # 결제 화면에서 '내 정보 수정'·'상대방 정보 수정'을 눌렀다면, 고친 뒤 '다음'을 누르면 결제 화면으로 바로 돌아간다.
+    # 사주가 바뀌는 정보를 고쳤으면 이야기 화면만 다시 보여 준다(화면에서 본 사주와 리포트가 같아야 한다, 제1조항).
+    s = _swap(s, "function advance(p,index){save();go(pathFor(p,index+1))}",
+              "function advance(p,index){save();let back=null;try{back=sessionStorage.getItem('unmyeong.editBack');}catch{}"
+              "const st=FLOWS[p.id][index];if(back===p.id&&st&&(st.type==='info'||st.who==='partner')){try{sessionStorage.removeItem('unmyeong.editBack')}catch{}"
+              "const seen=typeof revealState!=='undefined'&&revealState.key===revealKey(p,draft(p.id));"
+              "const c=FLOWS[p.id].findIndex(x=>x.type===(seen?'checkout':'reveal'));if(c>=0)return go(pathFor(p,c))}go(pathFor(p,index+1))}")
+    s = _swap(s, '<a class="text-button" href="#/f/${p.id}/info">내 정보 수정</a>',
+              '<a class="text-button" href="#/f/${p.id}/info" onclick="try{sessionStorage.setItem(\'unmyeong.editBack\',\'${p.id}\')}catch{}">내 정보 수정</a>')
+    s = _swap(s, '<a class="text-button" href="#/f/${p.id}/partner">상대방 정보 수정</a>',
+              '<a class="text-button" href="#/f/${p.id}/partner" onclick="try{sessionStorage.setItem(\'unmyeong.editBack\',\'${p.id}\')}catch{}">상대방 정보 수정</a>')
     return s
 
 
@@ -734,6 +761,7 @@ def main() -> None:
     s = src.read_text(encoding="utf-8")
     s = extract_assets(s)
     s = add_newyear(s)
+    s = fix_flows(s)
     write_intake_module(s)
     s = patch_texts(s, b)
     s = add_taster(s)
