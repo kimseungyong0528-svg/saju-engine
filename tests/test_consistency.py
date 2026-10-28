@@ -24,7 +24,8 @@ def test_none_sentences_name_the_birth_chart():
     bad = []
     for path, s in _strings(TEXTS):
         for sent in re.split(r"(?<=다\.)\s*", s):
-            if re.search(STARS, sent) and "하나도 없" in sent and "태어날 때 받은 여덟 글자" not in sent:
+            none = ("하나도 없" in sent and re.search(STARS, sent)) or ("기운이 없습니다" in sent or "기운이 약합니다" in sent)
+            if none and "태어날 때 받은 여덟 글자" not in sent and "해의 기운" not in sent:
                 bad.append((path, sent))
     assert not bad, bad
 
@@ -35,4 +36,10 @@ def test_yearly_stars_come_from_outside():
     for key, mk in TEXTS["REVEAL"]["MARKS"].items():
         if re.search(STARS, mk["line"]) and re.search(r"(재성|관성|편재|식신)\(", mk["line"]) and "바깥에서" not in mk["line"]:
             bad.append((key, mk["line"]))
+    assert not bad, bad
+
+
+def test_good_base_texts_admit_yearly_trouble():
+    """'막는 기운이 없다'는 좋은 글도, 결제 전 지도에 늘 나오는 조심할 해(달)가 있다는 것을 함께 말한다."""
+    bad = [k for k, v in TEXTS["REASONS"].items() if (k.endswith("_base_good") or k == "ny_balance") and "다만" not in v]
     assert not bad, bad

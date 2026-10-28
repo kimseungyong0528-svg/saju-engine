@@ -60,11 +60,16 @@ function rvScene2(p,v){const s=SALES[p.id];
  const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
  const goodPart=pt.good?reasonPart(pt.good,'good'):yearsPart(v.map.good,'good');
  const badPart=pt.bad?reasonPart(pt.bad,'bad'):yearsPart(v.map.bad,'bad');
- // 점수가 높은 쪽이 위, 낮은 쪽이 아래(사장님 2026-10-28). 같으면 전체 점수로 정한다. 말풍선·제목도 위에 오는 쪽을 따른다.
+ // 점수가 높은 쪽이 위, 낮은 쪽이 아래(사장님 2026-10-28). 같으면 전체 점수로 정한다.
  const gs=pt.good?pt.good.score:sideScore(v.map.good,'good'),bs=pt.bad?pt.bad.score:sideScore(v.map.bad,'bad');
  const good=gs!==bs?gs>bs:pt.score>=50;
- return `${revealSpeech(p,good?(pt.good?`${word}부터 볼게요. 점수가 높아요. 그런데 높은 점수도 때를 모르면 절반밖에 받지 못해요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${month?'달':'해'}가 정해져 있어요. 그런데 그때를 모르면 그냥 지나가요.`):`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`)}
- <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${good?(pt.good?'타고난 그릇이 큽니다':`들어오는 ${month?'달':'해'}를 잡아야 합니다`):'지금 막아야 합니다'}</h1>
+ // 제목·말풍선은 무료 풀이에서 이 운을 좋은 운/조심할 운 어느 쪽으로 보여 줬는지(areaView sign)를 따른다(제1조항: 모순 금지).
+ const tone=v.area.sign>0,unitW=month?'달':'해';
+ const speech=tone?(pt.good?`${word}부터 볼게요. 점수가 높아요. 그런데 높은 점수도 때를 모르면 절반밖에 받지 못해요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW}가 정해져 있어요. 그런데 그때를 모르면 그냥 지나가요.`)
+  :(good?`${word}부터 볼게요. 좋은 점도 있지만, 그냥 두면 안 되는 점이 함께 있어요.`:`${word}부터 볼게요. 솔직하게 말씀드릴게요. 이 점수는 그냥 두면 안 되는 점수예요.`);
+ const head=tone?(pt.good?'타고난 그릇이 큽니다':`들어오는 ${unitW}를 잡아야 합니다`):'지금 막아야 합니다';
+ return `${revealSpeech(p,speech)}
+ <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
  ${good?`${goodPart}<p class="rv-bridge bad">하지만, 아직 방심하면 안 됩니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">하지만, 아직 실망하기에는 이릅니다.</p>${goodPart}`}
  ${revealLocks(s?.locks||[])}`}
 // 4. 지도: 기회의 해·조심할 해는 연도까지 공개, 몇 월인지와 무엇을 해야 하는지는 잠금
