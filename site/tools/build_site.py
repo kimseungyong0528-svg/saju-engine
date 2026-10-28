@@ -168,8 +168,8 @@ def patch_texts(s: str, b: dict) -> str:
               "['결과는 어떤 형태로 받나요?','입력한 이메일로 PDF 파일을 보내드려요. 결제 후 주문 상태 화면에서도 PDF를 내려받을 수 있어요.']")
     s = _swap(s, "['결과를 받기까지 얼마나 걸리나요?','현재는 미리보기 단계로 실제 분석이나 이메일 발송을 진행하지 않습니다. 정식 서비스의 소요 시간은 연결 후 안내할 예정이에요.']",
               "['결과를 받기까지 얼마나 걸리나요?','결제 후 보통 10분 안에, 늦어도 1일 안에 이메일로 도착해요. 30분이 지나도 오지 않으면 스팸함을 확인한 뒤 고객센터로 알려주세요.']")
-    s = _swap(s, "모르는 시간은 임의로 채우지 않으며, 실제 분석은 서비스 연결 후 제공됩니다.']",
-              "시간을 모르면 가능한 시간 전체를 비교하고, 시간에 따라 달라지는 부분은 결과에 따로 안내해요.']")
+    s = _swap(s, "'정확히 앎·대략 앎·모름 중 선택할 수 있어요. 대략 아는 경우 시간 범위를 받고, 시간별 차이를 나누어 다루도록 저장합니다. 모르는 시간은 임의로 채우지 않으며, 실제 분석은 서비스 연결 후 제공됩니다.']",
+              "'정확히 앎·대략 앎·모름 중 고를 수 있어요. 대략 알면 넣어 주신 범위의 시작 시각으로 풀어요. 모르면 태어난 시간의 기둥(시주)은 비워 두고 해·달·날의 여섯 글자로 풀어요. 무료 풀이, 결제 전 화면, 리포트 모두 같은 방법으로 풀어서 결과가 같아요.']")
     s = _swap(s, "['결과를 계속 보관할 수 있나요?','미리보기 주문은 현재 브라우저의 세션에만 저장됩니다. 정식 서비스에서는 온라인 열람과 PDF 다운로드를 별도로 제공할 예정이에요.']",
               "['결과를 계속 보관할 수 있나요?','이메일로 받은 PDF를 내려받아 보관해주세요. 개인정보 보호를 위해 출생 정보는 메일을 보내는 즉시 지우고, 결과 PDF는 7일 뒤 지워요. 7일 안에는 주문 화면에서 다시 받을 수 있어요.']")
 
@@ -338,6 +338,9 @@ TASTER_CSS = (
     ".reuse-me b{display:block;font-size:17px;color:#fff}.reuse-me small{display:block;margin-top:4px;font-size:14px;line-height:1.6;color:#bfb6a5}"
     ".taster-lifetime{display:block;margin:28px 0 6px;padding:26px 20px;min-height:190px;border-radius:14px;border:1px solid #d8bb7866;"
     "background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
+    ".taster-lifetime-sub{display:block;font-style:normal;color:#efe3c6;font-size:16px;line-height:1.6;margin:0 0 12px;max-width:62%;text-shadow:0 2px 8px #000}"
+    ".taster-all{margin:18px 0 4px}.taster-all p{font-size:16px;color:#d8bb78;font-weight:700;margin:0 0 10px}"
+    ".taster-all a{display:inline-block;margin:0 8px 10px 0;padding:10px 14px;border:1px solid #d8bb7866;border-radius:20px;color:#f3ead8;font-size:15px;text-decoration:none}"
     ".taster-lifetime strong{display:block;font-size:27px;line-height:1.4;margin:8px 0 12px;color:#fff;text-shadow:0 2px 10px #000}"
     ".taster-lifetime span:last-child{color:#d8bb78;font-size:19px;font-weight:700;text-decoration:underline;text-underline-offset:4px;text-shadow:0 2px 8px #000}"
 )
@@ -432,6 +435,17 @@ def add_input_helpers(s: str) -> str:
     s = _swap(s, "q('[data-place-reference]').hidden=!referenceEnabled;", "q('[data-place-reference]').hidden=true;")
     s = _swap(s, "enable('placeReferenceEra',referenceEnabled);", "enable('placeReferenceEra',false);")
     s = _swap(s, "+(place&&['known','region-only'].includes(place.status)?'<br>'+e(locationEra):'');", ";")
+    return s
+
+
+def fix_detail_copy(s: str) -> str:
+    """리포트 안내 화면의 그림 카드에 연애 상품 말이 섞이지 않게(손님 테스트 2026-10-28: 재물·직업·건강에도 'RELATIONSHIP NOTE', '지금의 마음')."""
+    s = _swap(s, "special='<div class=\"warning-card\"><span>RELATIONSHIP NOTE</span><h3>같은 장면을 반복하지 않도록</h3><p>관계를 돌아보는 질문과 실천할 행동을 리포트에 담았어요.</p>'",
+              "special='<div class=\"warning-card\"><span>CHECK NOTE</span><h3>같은 실수를 반복하지 않도록</h3><p>돌아볼 질문과 바로 해 볼 행동을 리포트에 담았어요.</p>'")
+    s = _swap(s, "['지나온 시간','지금의 마음','다음의 선택']", "['지나온 흐름','지금의 자리','다음의 선택']")
+    # 이름 뒤 '님'은 늘 한 칸 띄운다(리포트와 같게: "박지훈 님"). 이름이 없으면 '당신'만 쓴다.
+    s = s.replace("${esc(d.self.name||'당신')}님", "${d.self.name?esc(d.self.name)+' 님':'당신'}")
+    s = re.sub(r"\)\}님", ")} 님", s)
     return s
 
 
@@ -565,6 +579,7 @@ def extras_data() -> dict:
 
 
 REVEAL_CSS = (
+    ".rv-score-help{margin:0 0 14px;color:#cfc6b8;font-size:14px;line-height:1.6;word-break:keep-all}"
     ".reveal-flow .rv-body{padding-bottom:110px}.reveal-flow h1{font-size:28px;line-height:1.4;margin:8px 0 16px}"
     ".rv-dots{display:flex;gap:6px;justify-content:center;padding:4px 0 2px}.rv-dots i{width:26px;height:4px;border-radius:2px;background:#ffffff26}.rv-dots i.on{background:#d8bb78}"
     ".rv-guide{display:flex;gap:12px;align-items:flex-start;margin:6px 0 22px;padding:14px;border-radius:14px;border:1px solid #d8bb7859;background:#17130c}"
@@ -768,6 +783,7 @@ def main() -> None:
     s = add_input_helpers(s)
     s = add_trust(s)
     s = fix_checkout_flow(s)
+    s = fix_detail_copy(s)
     s = add_extras(s)
     s = add_reveal(s)
     s = extract_font(s)

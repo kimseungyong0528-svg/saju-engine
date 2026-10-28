@@ -124,7 +124,7 @@ def build_outline(f: dict) -> list[dict]:
         page("five_elements", "오행(나무·불·흙·쇠·물)이란", static="five_elements", figure="element_cycle"),
         page("stems_branches", "천간과 지지(띠)란", static="stems_branches", figure="stems_branches"),
         page("chart", "나의 사주표", figure="pillars",
-             slot=_slot("chart", f"{name}님의 사주팔자 여덟 글자를 소개하고, 일간이 {dm['stem']}({dm['element_name']})이라는 것과 그 뜻을 쉽게 설명해 주세요.", HALF)),
+             slot=_slot("chart", f"{name} 님의 사주팔자 여덟 글자를 소개하고, 일간이 {dm['stem']}({dm['element_name']})이라는 것과 그 뜻을 쉽게 설명해 주세요.", HALF)),
         page("chart_detail", "나의 사주 상세표", figure="pillars_detail",
              slot=_slot("chart_detail", "상세표의 각 줄(십신, 지장간, 12운성)이 무엇을 보여 주는지 이 사람의 실제 글자를 예로 들어 설명해 주세요.", HALF)),
     ])
@@ -336,7 +336,7 @@ def build_outline(f: dict) -> list[dict]:
         page("s15_habits", "운을 키우는 생활 습관", figure="habits",
              slot=_slot("s15_habits", "용신과 이 사주의 약한 점을 바탕으로 매일·매주·매달 실천할 습관 10가지를 체크리스트로 써 주세요. 한 줄에 한 가지, 바로 할 수 있는 행동으로 씁니다.", 520, "checklist")),
         page("s15_last", "마지막 조언", figure="summary_table",
-             slot=_slot("s15_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
+             slot=_slot("s15_last", f"{name} 님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
     ])
 
     # 다른 사주 안내 (사이트 순서) · 책의 마지막

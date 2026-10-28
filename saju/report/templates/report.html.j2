@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>{{ product.name }} · {{ f.person.name }}님</title>
+<title>{{ product.name }} · {{ f.person.name }} 님</title>
 <link rel="stylesheet" href="style.css">{% if product.header %}<style>@page { @top-left { content: "{{ product.header }}"; } }</style>{% endif %}
 </head>
 <body>
@@ -211,7 +211,7 @@
   {% if f.rebuy %}
   <div class="rebuy">
     <p class="rebuy-big">다음 리포트 10% 할인</p>
-    <p class="rebuy-lead">{{ f.person.name }} 님, 위 운마다 붙은 '나의 ○○사주 자세히 보기'를 누르면 그 리포트를 10% 싸게 받아 보실 수 있어요.</p>
+    <p class="rebuy-lead">{{ f.person.name }} 님, 위 운마다 붙은 '자세히 보기' 링크를 누르면 그 리포트를 10% 싸게 받아 보실 수 있어요.</p>
     <p>위의 운들은 {{ f.person.name }} 님에게 중요한 핵심 사주예요. 이 책을 구매해 주신 감사의 마음을 담아, 특별히 10% 할인된 가격에 안내 드려요.</p>
     <ul class="rebuy-how">
       <li>이 책 안의 링크로 들어가야만 할인돼요.</li>
@@ -266,7 +266,7 @@
   <td class="left">{{ m.love_signs|join(", ") or "—" }}</td><td>{{ m.love_score }}</td></tr>{% endfor %}</table>
 {%- elif k == "marriage_years" -%}
   <table class="compact"><tr><th>나이</th><th>해</th><th>대운</th><th class="left">인연 표시</th></tr>
-  {% for p in f.romance.periods if p.state != "지난" %}<tr{% if p.love_star or p.love_hap %} style="background: #e9dfc6"{% endif %}><th>{{ p.age_text }}</th><td>{{ p.years_text }}</td><td><span class="han">{{ p.hanja }}</span></td><td class="left">{{ p.love_signs|join(", ") or "—" }}</td></tr>{% endfor %}</table>
+  {% for p in f.romance.periods if p.state != "지난" and p.age_from <= 70 %}<tr{% if p.love_star or p.love_hap %} style="background: #e9dfc6"{% endif %}><th>{{ p.age_text }}</th><td>{{ p.years_text }}</td><td><span class="han">{{ p.hanja }}</span></td><td class="left">{{ p.love_signs|join(", ") or "—" }}</td></tr>{% endfor %}</table>
 {%- elif k == "love_summary" -%}
   {%- set r = f.romance -%}
   <table><tr><th style="width: 26%">나를 나타내는 글자</th><td class="left">{{ f.day_master.stem }}({{ f.day_master.hanja }}) · {{ f.day_master.image }}</td></tr>
@@ -290,6 +290,7 @@
   <tr><th>천간</th>{% for p in who.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="han">{{ p.stem_hanja }}</span> {{ p.stem_ten_god or "나" }}{% endif %}</td>{% endfor %}</tr>
   <tr><th>지지</th>{% for p in who.pillars|reverse %}<td>{% if p.unknown %}?{% else %}<span class="han">{{ p.branch_hanja }}</span> {{ p.branch_ten_god }}{% endif %}</td>{% endfor %}</tr></table>
   {% endfor %}
+  {% for who in [f, o] %}{% for u in who.uncertainties %}<p class="sub">※ {{ who.person.name }} 님: {{ u }}</p>{% endfor %}{% endfor %}
   {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
 {%- elif k == "glossary" -%}
   <dl class="glossary">{% for t, d in glossary_sorted %}<dt>{{ t }}</dt><dd>{{ d }}</dd>{% endfor %}</dl>

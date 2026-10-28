@@ -225,9 +225,9 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
     if p.time_accuracy == "approximate":   # 사이트 화면과 같은 시각으로 푼다(제1조항)
         uncertainties.append({"kind": "time", "message": f"출생 시간은 넣어 주신 범위의 시작 시각({p.time_range['start']})으로 풀었어요."})
     elif p.time_accuracy != "exact":
-        uncertainties.append({"kind": "time", "message": "출생 시간이 확정되지 않아 가능한 시간 전체를 비교했어요."})
+        uncertainties.append({"kind": "time", "message": "태어난 시간을 몰라 시주(태어난 시간의 기둥)는 ?로 비워 두고, 해·달·날의 여섯 글자로 풀었어요."})
     if not region or p.birth_place.get("status") != "known":
-        uncertainties.append({"kind": "place", "message": f"출생지를 {place_label} 범위로 두고 결과 차이를 비교했어요."})
+        uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요."})
 
     analyzed = []
     for v in variants:

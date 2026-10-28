@@ -133,14 +133,14 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="rn_how_to_read", opener=True),
         P("rn_saju", "사주와 오행 짧게 알기", static="rn_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자와 일간이 연애·이별에서 어떤 성향으로 나타나는지 쉽게 설명해 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자와 일간이 연애·이별에서 어떤 성향으로 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("rn_pair", "두 사람의 사주표", static="rn_pair", figure="pair_pillars",
           slot=S("rn_pair", f"두 사람의 일간({cmp['day_master']['me']}·{cmp['day_master']['other']})과 일지({cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']})를 짧게 소개해 주세요.", HALF - 220)),
     ])
     section("2", [
         P("rn_glance", "한눈에 보는 우리의 재회", figure="kv", opener=True, rows=[
             T.screen_row(t["screen_score"], t.get("seen", True)),
-            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['pair_score']}점 ({oname}님 사주와 함께 본 점수)"],
+            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['pair_score']}점 ({oname} 님 사주와 함께 본 점수)"],
             ["재회 신호", t["level"]],
             ["연락하기 좋은 달", ", ".join(t["best_months"])],
             ["피할 달", ", ".join(t["careful_months"]) or "크게 부딪히는 달은 없어요"],
@@ -179,7 +179,7 @@ def build_outline(f: dict) -> list[dict]:
             ["약한 기운", ", ".join(e["name"] for e in o["elements"] if e["status"] == "부족") or "고른 편"],
             ["사주의 틀", f"{o['strength']['label']} · {o['gyeokguk']['name']}"],
             ["나에게 그 사람은", f"{cmp['day_master']['other_as_my_ten_god']}의 기운"],
-        ], slot=S("rn5_open", f"{oname}님의 사주를 쉽게 소개하고, {name}님에게 그 사람이 어떤 기운인지(other_as_my_ten_god) 설명해 주세요.", HALF - 60)),
+        ], slot=S("rn5_open", f"{oname} 님의 사주를 쉽게 소개하고, {name} 님에게 그 사람이 어떤 기운인지(other_as_my_ten_god) 설명해 주세요.", HALF - 60)),
         P("rn5_person", "그 사람의 성격",
           slot=S("rn5_person", "그 사람의 일간·강한 기운·십신 구성으로 성격의 장점과 약점을 장면으로 써 주세요. 단정하지 않고 '~하기 쉬운 사람'으로 씁니다.")),
         P("rn5_love", "그 사람의 연애 방식",
@@ -271,7 +271,7 @@ def build_outline(f: dict) -> list[dict]:
         P("rn12_heart", "불안한 마음을 다루는 법", span=2,
           slot=S("rn12_heart", "재회를 기다리며 드는 걱정(연락이 안 오면, 새 사람이 생겼으면, 내가 잘못했으면)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("rn12_last", "마지막 조언",
-          slot=S("rn12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 결과와 상관없이 {name}님이 사랑받을 이유를 사주 근거로 말해 주고, 지금 할 수 있는 일에 집중하게 해 주세요.", FULL - 120)),
+          slot=S("rn12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 결과와 상관없이 {name} 님이 사랑받을 이유를 사주 근거로 말해 주고, 지금 할 수 있는 일에 집중하게 해 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

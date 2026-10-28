@@ -419,7 +419,7 @@ def build_outline(f: dict) -> list[dict]:
         title, subtitle = next((x, s) for n, x, s in SECTIONS if n == no)
         if no == focus_no:   # 고객이 고른 분야의 장에 한 쪽을 더한다
             pages.insert(len(pages) - 1 if len(pages) > 2 else len(pages), P(
-                f"ny{no}_focus", f"{t['focus']}을 가장 궁금해하신 {name}님께" if t["focus"] != "한 해 전체" else f"한 해 전체를 더 깊이 보기",
+                f"ny{no}_focus", f"{t['focus']}을 가장 궁금해하신 {name} 님께" if t["focus"] != "한 해 전체" else f"한 해 전체를 더 깊이 보기",
                 slot=S(f"ny{no}_focus", f"고객이 가장 궁금해한 분야는 '{t['focus']}'이에요. 이 분야의 2027년 흐름을 달 이름과 사주 근거로 한 번 더 깊게 쓰고, "
                                         "고객이 바로 할 일 세 가지를 순서대로 써 주세요.")))
         sections.append({"no": no, "title": title, "subtitle": subtitle, "pages": pages, "terms": []})
@@ -441,7 +441,7 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="ny_how_to_read", opener=True),
         P("ny_saju", "사주와 2027년 짧게 알기", static="ny_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간(나를 나타내는 글자)이 어떤 사람인지 쉽게 설명해 주세요. 2027년을 볼 때 어느 글자가 중요한지 한 문장으로 이어 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간(나를 나타내는 글자)이 어떤 사람인지 쉽게 설명해 주세요. 2027년을 볼 때 어느 글자가 중요한지 한 문장으로 이어 주세요.", HALF)),
         P("ny_fate", "나의 2027년 운명", figure="kv", rows=[
             ["2027년의 기운", yrow], ["나에게 들어오는 십신", gods],
             ["2027년 두 기운의 역할", f"{y['stem']['char']}({y['stem']['element_name']}): {y['stem']['role'].split('(')[1].rstrip(')')} · "
@@ -596,7 +596,7 @@ def build_outline(f: dict) -> list[dict]:
                       slot=S("ny12_q", f"고객 질문: \"{q}\". 2027년 세운과 달별 운을 근거로 솔직하고 구체적으로 답해 주세요. 언제(달 이름), 무엇을 하면 되는지 함께 씁니다.", FULL - 100)))
     last += [
         P("ny12_last", "마지막 조언",
-          slot=S("ny12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 새해를 앞두고 가지기 쉬운 걱정 한두 가지에 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'로 답하고, "
+          slot=S("ny12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 새해를 앞두고 가지기 쉬운 걱정 한두 가지에 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'로 답하고, "
                                  "2027년에 이 사주가 가진 힘을 근거로 말한 뒤 새해 첫 주에 할 한 가지를 짚어 주세요.", FULL - 20)),
     ]
     section("12", last)
@@ -617,6 +617,6 @@ def hook(f: dict) -> str:
     ds = STEMS.index(f["day_master"]["stem"])
     sg, bg = ten_god(ds, STEMS.index(gz[0])), branch_ten_god(ds, BRANCHES.index(gz[1]))
     sj = samjae(f["pillars"][0]["branch"], TARGET_YEAR)
-    return (f"2027년 정미년은 {name}님에게 {sg}({K.TEN_GOD[sg]['simple']}) 기운과 {bg}({K.TEN_GOD[bg]['simple']}) 기운이 들어오는 해예요. "
+    return (f"2027년 정미년은 {name} 님에게 {sg}({K.TEN_GOD[sg]['simple']}) 기운과 {bg}({K.TEN_GOD[bg]['simple']}) 기운이 들어오는 해예요. "
             + (f"{f['person']['zodiac']}띠라서 2027년은 {sj['kind']}예요. " if sj["is_samjae"] else f"{f['person']['zodiac']}띠는 2027년에 삼재가 아니에요. ")
             + "분야별 점수와 1월부터 12월까지 좋은 달, 조심할 달을 정리해 드려요.")

@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from . import knowledge as K
 from . import mulsang as M
@@ -253,6 +253,9 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     for i, m in enumerate(span):
         if m["starts"][:16] <= order_dt[:16]:
             start = i
+    # 지금 달이 보름도 안 남았으면(예: 10월 28일 주문) 다음 달부터 12개월을 보여 준다
+    if start + 12 < len(span) and datetime.fromisoformat(span[start + 1]["starts"][:16]) - datetime.fromisoformat(order_dt[:16]) < timedelta(days=15):
+        start += 1
     rate = luck_rater(an)
     months = [month_row(m, rate) for m in span[start:start + 12]]
 

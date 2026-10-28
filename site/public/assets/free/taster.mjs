@@ -163,7 +163,9 @@ const RULES = {
     if (vals.every(([, v]) => v >= 10 && v <= 30)) out.push(['he_balance', 16]);
     if (f.st >= 50 && f.st < 70) out.push(['he_stamina', 6]);
     const lack = vals.filter(([, v]) => v < 8).sort((a, b) => a[1] - b[1]);
-    if (lack.length) out.push(['he_lack', lack.length > 1 ? -12 : -8, { lack: lack[0][0], lackWord: T.ELEMENT_WORD[lack[0][0]], lackPct: lack[0][1], lackBody: T.ELEMENT_BODY[lack[0][0]] }]);
+    // 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). saju/taster.py 와 같은 식.
+    const gap = lack.length ? Math.round(8 - lack[0][1]) : 0;
+    if (lack.length) out.push(['he_lack', lack.length > 1 ? -(10 + gap) : -(6 + gap), { lack: lack[0][0], lackWord: T.ELEMENT_WORD[lack[0][0]], lackPct: lack[0][1], lackBody: T.ELEMENT_BODY[lack[0][0]] }]);
     const many = vals.filter(([, v]) => v >= 35).sort((a, b) => b[1] - a[1]);
     if (many.length) out.push(['he_excess', -8, { many: many[0][0], manyWord: T.ELEMENT_WORD[many[0][0]], manyPct: many[0][1], manyBody: T.ELEMENT_BODY[many[0][0]] }]);
     if (f.st <= 30) out.push(['he_weak', -8]);
@@ -243,4 +245,11 @@ export function areaParts(fp, person, T, id) {
     return { score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
   };
   return { id, score: Math.max(5, Math.min(95, 50 + reasons.reduce((a, x) => a + x[1], 0))), good: part(1), bad: part(-1) };
+}
+
+// 손님이 답한 지금 상황(연애 중·결혼·쉬는 중…)에 맞춰 그 운이 어떻게 나타나는지 한 줄(saju/taster.py situation_note 와 같다).
+export function situationNote(area, answers, T) {
+  const vals = new Set(Object.values(answers || {}).filter(Boolean).map(String));
+  for (const [key, opts] of Object.entries(T.SITUATION.groups)) if (opts.some(o => vals.has(o)) && T.SITUATION.notes[area]?.[key]) return T.SITUATION.notes[area][key];
+  return '';
 }

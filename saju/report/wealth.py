@@ -127,7 +127,7 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="w_how_to_read", opener=True),
         P("w_saju", "사주와 재물 짧게 알기", static="w_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간이 돈을 대하는 태도에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간이 돈을 대하는 태도에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("w_letters", "재물을 보는 글자", figure="kv", rows=[
             ["재성(재물)", f"{c['재성']}개 · 편재 {t['편재']} · 정재 {t['정재']}" + (f" · {', '.join(t['seats'])}" if t["seats"] else "")],
             ["식상(재능·표현)", f"{c['식상']}개"], ["비겁(나·동료)", f"{c['비겁']}개"],
@@ -140,13 +140,13 @@ def build_outline(f: dict) -> list[dict]:
             ["돈 버는 형", t["type"]], ["투자 성향", t["risk"]],
             ["재물운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
-            ["돈 쓰기 좋은 달", ", ".join(t["best_months"])], ["아낄 달", ", ".join(t["careful_months"]) or "—"],
-            ["큰돈이 드는 대운", ", ".join(p["age_text"] for p in t["big_periods"]) or "운에서 재성이 드는 해를 잡아요"],
+            ["돈 쓰기 좋은 달", ", ".join(t["best_months"])], ["아낄 달", ", ".join(t["careful_months"]) or "크게 아껴야 할 달은 없어요"],
+            ["큰돈이 들어오는 대운", ", ".join(p["age_text"] for p in t["big_periods"]) or "운에서 재성이 드는 해를 잡아요"],
         ], slot=S("w_glance", "표를 이어서 재물운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 120)),
     ])
     section("3", [
         P("w3_open", "타고난 재물 그릇", figure="opener", opener=True,
-          slot=S("w3_open", f"{name}님의 재물 그릇을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 540, "lead")),
+          slot=S("w3_open", f"{name} 님의 재물 그릇을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 540, "lead")),
         P("w3_size", "돈복의 크기를 정하는 것",
           slot=S("w3_size", "재성 개수, 신강·신약, 격국 성패를 근거로 이 사람이 다룰 수 있는 돈의 크기와 그 그릇을 키우는 방법을 써 주세요.")),
         P("w3_shape", "돈복의 모양",
@@ -198,7 +198,7 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("w7_now", "지금 대운의 글자(십신, 재물 표시, 점수)를 근거로 이 10년 동안의 돈의 흐름과 할 일을 써 주세요.")),
         P("w7_next", "다음 10년의 재물운",
           slot=S("w7_next", "다음 대운의 글자를 근거로 그 10년의 돈의 흐름을 미리 쓰고, 지금부터 준비할 것을 써 주세요.")),
-        P("w7_table", "큰돈이 드는 시기", figure="grid", grid=T.period_grid(T.near(f, th["periods"]), "재물 점수"),
+        P("w7_table", "큰돈이 들어오는 시기", figure="grid", grid=T.period_grid(T.near(f, th["periods"]), "재물 점수"),
           slot=S("w7_table", "표에서 재물 점수가 높은 대운을 골라 그때 무엇을 하면 좋은지 써 주세요.", HALF - 160)),
     ])
     section("8", [
@@ -243,7 +243,7 @@ def build_outline(f: dict) -> list[dict]:
         P("w12_worry", "돈 걱정에 대한 답", span=2,
           slot=S("w12_worry", "이 사람이 가지기 쉬운 돈 걱정(평생 이렇게 살까, 남들보다 늦었나, 큰돈을 잃으면, 노후가 걱정돼)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("w12_last", "마지막 조언",
-          slot=S("w12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 돈을 모을 수 있는 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
+          slot=S("w12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 돈을 모을 수 있는 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

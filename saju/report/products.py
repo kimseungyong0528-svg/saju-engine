@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from ..taster import ieyo
 import os
 
 SITE_URL = os.environ.get("SAJU_SITE_URL", "https://unmyeong-saju.com").rstrip("/")
@@ -68,28 +69,28 @@ def hooks(f: dict) -> dict[str, str]:
     lacking = [e["name"] for e in f["elements"] if e["status"] == "부족"]
     many = [e["name"] for e in f["elements"] if e["status"] == "많음"]
     return {
-        "lifetime": (f"{name}님의 일간은 {dm['stem']}({dm['element_name']})이고 사주의 틀은 {f['gyeokguk']['name']}이에요. "
-                     "성격, 일, 돈, 연애, 건강과 앞으로의 10년 운, 연도별·월별 운세까지 인생 전체를 한 권으로 풀어 드려요."),
-        "romance": ((f"{name}님 사주에는 배우자를 뜻하는 {spouse_group}이 {n_spouse}개 있어요. " if n_spouse
-                     else f"{name}님 타고난 사주에는 배우자를 뜻하는 {spouse_group}이 없어서, 인연은 운에서 들어오는 시기를 잡는 것이 중요해요. ")
-                    + (f"{', '.join(peach)}도 있어 이성에게 끌림을 주는 힘이 있어요. " if peach else "")
+        "lifetime": (f"{name} 님의 일간은 {dm['stem']}({dm['element_name']})이고 사주의 틀은 {ieyo(f['gyeokguk']['name'])}. "
+                     "성격, 일, 돈, 연애, 건강과 앞으로의 10년 운, 연도별·월별 운세까지 인생 전체를 15장, 100쪽이 넘는 한 권으로 풀어 드려요. 다른 리포트가 한 가지 주제를 깊게 본다면, 평생사주는 모든 주제를 함께 봐요."),
+        "romance": ((f"{name} 님 사주에는 배우자를 뜻하는 {spouse_group}이 {n_spouse}개 있어요. " if n_spouse
+                     else f"{name} 님 타고난 사주에는 배우자를 뜻하는 {spouse_group}이 없어서, 인연은 운에서 들어오는 시기를 잡는 것이 중요해요. ")
+                    + (f"{', '.join(peach)}도 있어 사람을 끌어당기는 힘이 있어요. " if peach else "")
                     + (f"{love_year}년에 인연의 기운이 들어와요. 어떤 사람이 언제, 어떻게 오는지 달 단위로 알려 드려요." if love_year
                        else "인연이 들어오는 시기와 만나는 방법을 달 단위로 알려 드려요.")),
-        "reunion": (f"헤어진 사람의 사주를 {name}님 사주와 나란히 놓고, 두 사람이 다시 이어질 수 있는지 봐요. "
+        "reunion": (f"헤어진 사람의 사주를 {name} 님 사주와 나란히 놓고, 두 사람이 다시 이어질 수 있는지 봐요. "
                     "연락하기 좋은 달과 피해야 할 달, 먼저 다가갈지 기다릴지까지 정리해 드려요."),
-        "intimate": (f"{name}님은 {dm['element_name']}의 기운을 타고났고, {f['lucky']['element_name']}의 기운이 필요해요. "
+        "intimate": (f"{name} 님은 {dm['element_name']}의 기운을 타고났고, {f['lucky']['element_name']}의 기운이 필요해요. "
                      "상대방이 그 기운을 채워 주는 사람인지, 어디서 부딪히는지 두 사람의 오행을 비교해 알려 드려요."),
-        "wealth": ((f"{name}님 사주에는 재물을 뜻하는 재성이 {_count(f, '재성')}개 있어요. " if _count(f, "재성")
-                    else f"{name}님 타고난 사주에는 재물을 뜻하는 재성이 없어서, 재물이 들어오는 해를 아는 것이 특히 중요해요. ")
+        "wealth": ((f"{name} 님 사주에는 재물을 뜻하는 재성이 {_count(f, '재성')}개 있어요. " if _count(f, "재성")
+                    else f"{name} 님 타고난 사주에는 재물을 뜻하는 재성이 없어서, 재물이 들어오는 해를 아는 것이 특히 중요해요. ")
                    + (f"{money_year}년에 재물의 기운이 들어와요. " if money_year else "")
                    + "돈이 들어오는 해와 새는 해, 나에게 맞는 돈 모으는 방법을 해마다 짚어 드려요."),
-        "career": (f"{name}님의 사주 틀은 {f['gyeokguk']['name']}이에요. "
+        "career": (f"{name} 님의 사주 틀은 {ieyo(f['gyeokguk']['name'])}. "
                    + (f"{career_year}년에 일의 흐름이 크게 움직여요. " if career_year else "")
                    + "맞는 직무와 이직·승진에 좋은 시기를 연도와 달까지 알려 드려요."),
         "business": (f"사업은 나 자신(비겁 {_count(f, '비겁')}개), 표현과 재능(식상 {_count(f, '식상')}개), 재물(재성 {_count(f, '재성')}개)의 균형으로 봐요. "
                      "혼자 할지 함께 할지, 언제 확장하고 언제 지켜야 할지 정리해 드려요."),
-        "health": ((f"{name}님은 {', '.join(many)} 기운이 강하고 " if many else f"{name}님은 ")
-                   + (f"{', '.join(lacking)} 기운이 약해요. " if lacking else "오행이 비교적 고른 편이에요. ")
+        "health": ((f"{name} 님은 {', '.join(many)} 기운이 강하고 " if many else f"{name} 님은 ")
+                   + (f"{', '.join(lacking)} 기운이 약해요. " if lacking else "다른 기운은 모자라지 않아요. " if many else "오행이 비교적 고른 편이에요. ")
                    + "이 균형에 맞는 생활 리듬, 잠과 휴식, 계절별 돌봄 습관을 한 주 실천표로 드려요."),
         "newyear": _newyear_hook(f),
     }
@@ -119,13 +120,15 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
     return items
 
 
-def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None, owned=()) -> dict:
+def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None, owned=(), answers=()) -> dict:
     """리포트 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' (2026-10-27 사장님 요청).
     무료 분석과 같은 계산(saju/taster.py)의 6가지를 다시 짚고, 운마다 그 운을 깊게 다룬 리포트로 잇는다."""
     names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
     def item(kind: str, n: int, a: dict) -> dict:
         pid = a["product"]
-        return {"kind": kind, "rank": n, "title": a["title"], "score": a["score"], "text": a["text"], "hook": a["hook"], "product": pid,
+        from ..taster import situation_note
+        note = situation_note(a["id"], answers)   # 결제 전 화면 카드와 같은 '지금 상황' 한 줄
+        return {"kind": kind, "rank": n, "title": a["title"], "score": a["score"], "text": a["text"] + (" " + note if note else ""), "hook": a["hook"], "product": pid,
                 "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current,
                 "owned": pid != current and pid in owned}   # 같은 주문에서 함께 받은 리포트
     return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],

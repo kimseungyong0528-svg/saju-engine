@@ -41,6 +41,13 @@ def _josa(word: str, pair: str) -> str:
     return str(word) + (with_b if batchim else without)
 
 
+def ieyo(word) -> str:
+    """'갑(甲)이에요' / '기(己)예요'처럼 받침에 맞춘 '이에요·예요'(괄호 안은 보지 않는다)."""
+    plain = re.sub(r"\(.*\)$", "", str(word))
+    ch = ord(plain[-1]) - 0xAC00
+    return str(word) + ("이에요" if 0 <= ch <= 11171 and ch % 28 != 0 else "예요")
+
+
 def _num(v) -> str:
     """자바스크립트와 같은 숫자 글자(4.0 → 4, 4.2 → 4.2)."""
     if isinstance(v, float) and v.is_integer():
@@ -281,7 +288,9 @@ def _health(f, T):
     lack = sorted([x for x in vals if x[1] < 8], key=lambda x: x[1])
     if lack:
         e, v = lack[0]
-        out.append(("he_lack", -12 if len(lack) > 1 else -8,
+        # 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). taster.mjs 와 같은 식.
+        gap = int(8 - v + 0.5)
+        out.append(("he_lack", -(10 + gap) if len(lack) > 1 else -(6 + gap),
                     {"lack": e, "lackWord": T["ELEMENT_WORD"][e], "lackPct": v, "lackBody": T["ELEMENT_BODY"][e]}))
     many = sorted([x for x in vals if x[1] >= 35], key=lambda x: -x[1])
     if many:
@@ -388,3 +397,13 @@ def area_parts(fp: FourPillars, name: str, sex: str, product: str) -> dict:
                 "text": fill(T["REASONS"][key], {"name": name, **values}),
                 "hook": fill(T["HOOKS"][key], {"name": name, **values})}
     return {"id": product, "score": max(5, min(95, 50 + sum(x[1] for x in reasons))), "good": part(1), "bad": part(-1)}
+
+
+def situation_note(area: str, answers) -> str:
+    """손님이 답한 지금 상황(연애 중·결혼·쉬는 중…)에 맞춰 그 운이 어떻게 나타나는지 한 줄. 결제 전 화면(taster.mjs situationNote)과 같다."""
+    S = texts()["SITUATION"]
+    vals = {str(a) for a in answers if a}
+    for key, opts in S["groups"].items():
+        if vals & set(opts) and key in S["notes"].get(area, {}):
+            return S["notes"][area][key]
+    return ""

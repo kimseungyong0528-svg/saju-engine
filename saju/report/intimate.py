@@ -41,7 +41,7 @@ STATIC = {
         "궁합에서는 두 사람의 일간(나를 나타내는 글자)끼리, 일지(배우자 자리)끼리의 관계와, 서로 모자란 기운을 채워 주는지를 가장 먼저 봐요.",
     ],
     "im_pair": [
-        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산한 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
+        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산해요. 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
     ],
 }
 
@@ -134,12 +134,12 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="im_how_to_read", opener=True),
         P("im_saju", "사주와 오행 짧게 알기", static="im_what_is_saju", figure="element_cycle"),
         P("chart", "두 사람의 사주표", figure="pair_pillars",
-          slot=S("chart", f"{name}님과 {oname}님의 일간({cmp['day_master']['me']}·{cmp['day_master']['other']})과 일지를 소개하고, 두 사람이 한눈에 어떤 조합인지 쉽게 설명해 주세요.", HALF - 120)),
+          slot=S("chart", f"{name} 님과 {oname} 님의 일간({cmp['day_master']['me']}·{cmp['day_master']['other']})과 일지를 소개하고, 두 사람이 한눈에 어떤 조합인지 쉽게 설명해 주세요.", HALF - 120)),
     ])
     section("2", [
         P("im_glance", "한눈에 보는 우리 궁합", static="im_pair", figure="kv", opener=True, rows=[
             T.screen_row(t["screen_score"], t.get("seen", True)),
-            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['score']}점 ({oname}님 사주와 함께 본 점수)"],
+            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['score']}점 ({oname} 님 사주와 함께 본 점수)"],
             ["일간끼리", f"{cmp['day_master']['me']}·{cmp['day_master']['other']} · {cmp['day_master']['element_relation']}"],
             ["배우자 자리끼리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} · {cmp['spouse_palace']['tone']}"],
             ["합 · 충", f"손잡는 관계 {cmp['cross_relations']['harmony']}개 · 부딪히는 관계 {cmp['cross_relations']['tension']}개"],
@@ -151,7 +151,7 @@ def build_outline(f: dict) -> list[dict]:
         P("im3_open", "그 사람에게 나는 어떤 기운일까", figure="kv", opener=True, rows=[
             ["그 사람에게 나는", f"{cmp['day_master']['me_as_other_ten_god']}의 기운"],
             ["나에게 그 사람은", f"{cmp['day_master']['other_as_my_ten_god']}의 기운"],
-        ], slot=S("im3_open", f"{oname}님에게 {name}님이 어떤 기운(me_as_other_ten_god)인지 한 문장으로 요약(lead)하고, 그 십신이 관계에서 어떤 느낌을 주는지 설명해 주세요.", 520, "lead")),
+        ], slot=S("im3_open", f"{oname} 님에게 {name} 님이 어떤 기운(me_as_other_ten_god)인지 한 문장으로 요약(lead)하고, 그 십신이 관계에서 어떤 느낌을 주는지 설명해 주세요.", 520, "lead")),
         P("im3_charm", "그 사람이 느끼는 나의 매력",
           slot=S("im3_charm", "그 사람 사주 쪽에서 본 나의 매력 포인트를 오행 보완과 십신 근거로 장면과 함께 써 주세요.")),
         P("im3_hurt", "그 사람이 서운해하기 쉬운 나의 모습",
@@ -165,7 +165,7 @@ def build_outline(f: dict) -> list[dict]:
             ["강한 기운", ", ".join(e["name"] for e in o["elements"] if e["status"] == "많음") or "고른 편"],
             ["약한 기운", ", ".join(e["name"] for e in o["elements"] if e["status"] == "부족") or "고른 편"],
             ["사주의 틀", f"{o['strength']['label']} · {o['gyeokguk']['name']}"],
-        ], slot=S("im4_open", f"{oname}님의 사주를 쉽게 소개해 주세요.", HALF - 40)),
+        ], slot=S("im4_open", f"{oname} 님의 사주를 쉽게 소개해 주세요.", HALF - 40)),
         P("im4_person", "그 사람의 성격",
           slot=S("im4_person", "그 사람의 일간·강한 기운·십신으로 성격의 장점과 약점을 장면으로 써 주세요.")),
         P("im4_heart", "그 사람의 속마음과 사랑 표현",
@@ -228,7 +228,7 @@ def build_outline(f: dict) -> list[dict]:
         P("im9_years", "앞으로 12년 궁합운", figure="grid", span=3, grid=T.year_grid(th["years"], t["best_years"], "관계 점수"),
           slot=S("im9_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(두 사람 각각의 표시 근거, 관계의 흐름, 함께 할 일).", FULL * 3 - 460)),
         P("im9_graph", "나이별 인연의 흐름", figure="theme_graph", note="대운(10년)마다 배우자 별과 그 사람과의 합이 들어오면 점수가 올라가요.",
-          slot=S("im9_graph", f"{name}님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
+          slot=S("im9_graph", f"{name} 님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
     ])
     mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "뚜렷한 시기 없음"
     section("10", [
@@ -263,7 +263,7 @@ def build_outline(f: dict) -> list[dict]:
         P("im12_worry", "두 사람의 걱정에 대한 답", span=2,
           slot=S("im12_worry", "이 관계에서 들기 쉬운 걱정(마음이 식으면, 크게 싸우면, 가족이 반대하면, 미래가 다르면)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("im12_last", "마지막 조언",
-          slot=S("im12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 두 사람이 함께일 때 가장 빛나는 점을 사주 근거로 말해 주세요.", FULL - 120)),
+          slot=S("im12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 두 사람이 함께일 때 가장 빛나는 점을 사주 근거로 말해 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

@@ -144,7 +144,7 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="c_how_to_read", opener=True),
         P("c_saju", "사주와 일 짧게 알기", static="c_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간이 일하는 태도에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간이 일하는 태도에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("c_letters", "일을 보는 글자", figure="kv", rows=[
             ["관성(직장·책임)", f"{c['관성']}개"], ["식상(기술·표현)", f"{c['식상']}개"], ["재성(성과·돈)", f"{c['재성']}개"],
             ["인성(공부·자격)", f"{c['인성']}개"], ["비겁(독립·경쟁)", f"{c['비겁']}개"],
@@ -161,7 +161,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("3", [
         P("c3_open", "나의 일하는 형", figure="opener", opener=True,
-          slot=S("c3_open", f"{name}님의 일하는 형을 '{t['style']}'로 한 문장 요약(lead)하고, 근거({t['style_text']})를 쉽게 풀어 주세요.", 570, "lead")),
+          slot=S("c3_open", f"{name} 님의 일하는 형을 '{t['style']}'로 한 문장 요약(lead)하고, 근거({t['style_text']})를 쉽게 풀어 주세요.", 570, "lead")),
         P("c3_team", "혼자 할까, 함께 할까",
           slot=S("c3_team", "비겁·관성·식상 구성으로 혼자 일할 때와 팀으로 일할 때 각각의 모습을 장면으로 쓰고, 이 사람에게 맞는 일 방식을 써 주세요.")),
         P("c3_lead", "앞에 설까, 뒤에서 받칠까",
@@ -262,7 +262,7 @@ def build_outline(f: dict) -> list[dict]:
         P("c12_worry", "일 걱정에 대한 답", span=2,
           slot=S("c12_worry", "이 사람이 가지기 쉬운 일 걱정(늦은 건 아닐까, 이 길이 맞을까, 또 실패하면, 나이가 많은데)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("c12_last", "마지막 조언",
-          slot=S("c12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 일에서 빛날 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
+          slot=S("c12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 일에서 빛날 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

@@ -128,6 +128,7 @@ def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: s
     texts를 주면 글을 새로 쓰지 않고 그 글로 만든다(미리 써 둔 글 확인용)."""
     from .outline import STATIC
     M, facts, sections = prepare_product(product, result, order, answers, partner, bundled)
+    facts["answers"] = dict(answers or {})   # 손님이 고른 답 그대로(보너스 쪽 '지금 상황' 한 줄에 쓴다)
     if taster:
         facts["taster"] = taster   # 고객이 무료 맛보기에서 본 내용(saju/taster.py). 리포트가 이와 어긋나지 않게 쓴다.
     if taster_view:
