@@ -47,7 +47,8 @@ function rvConfirmItems(v){const c=v.r.chart;return [c.items[1],c.items[2],{head
 function rvScene1(p,v){const items=rvConfirmItems(v),ans=revealState.confirm,done=items.every((_,n)=>ans[n]),yes=items.filter((_,n)=>ans[n]==='yes').length;
  return `${revealSpeech(p,`제가 사주로 본 ${v.name} 님은 이런 사람이에요. 맞는지 하나씩 눌러 주세요.`)}
  <span class="eyebrow">STEP 2 · 이거 맞죠?</span><h1>${esc(v.name)} 님,<br>이거 맞죠?</h1>
- ${items.map((it,n)=>`<div class="rv-card rv-confirm"><small>${esc(it.head)}</small><p>${esc(it.text)}</p><div class="rv-yesno" role="group"><button type="button" data-confirm="${n}" data-v="yes" class="${ans[n]==='yes'?'on':''}">맞아요</button><button type="button" data-confirm="${n}" data-v="no" class="${ans[n]==='no'?'on':''}">아니에요</button></div></div>`).join('')}
+ ${items.map((it,n)=>`<div class="rv-card rv-confirm"><small>${esc(it.head)}</small><p>${esc(it.text)}</p><div class="rv-yesno" role="group"><button type="button" data-confirm="${n}" data-v="yes" class="${ans[n]==='yes'?'on':''}">맞아요</button><button type="button" data-confirm="${n}" data-v="no" class="${ans[n]==='no'?'on':''}">아니에요</button></div>${ans[n]==='no'?`<p class="rv-no">그렇게 느끼실 수 있어요. 사주는 타고난 바탕이라, 자라온 환경과 지금까지의 노력에 따라 다르게 드러나기도 해요. 리포트에서 이 부분이 ${esc(v.name)} 님에게 어떻게 드러나는지 더 자세히 풀어 드릴게요.</p>`:''}</div>`).join('')}
+ <p class="rv-skip-note">눌러 보지 않아도 아래 버튼으로 다음 이야기로 넘어갈 수 있어요.</p>
  ${done?`<p class="rv-result">${esc(v.fill(yes>=2?v.R.CONFIRM_MANY:v.R.CONFIRM_FEW,{name:v.name,n:String(yes)}))}</p>`:''}`}
 // 3. 내 점수: 이 상품의 운 점수와 근거(맛보기와 같은 글) + 다른 운 점수까지 모두 공개
 // 막대 색과 이름은 아래 카드·무료 풀이와 같게: 무료 풀이 '좋은 운 TOP3'는 초록, '조심할 운 TOP3'는 빨강, 나머지는 보통(제1조항).
@@ -113,6 +114,8 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  </div></div>
  <p class="rv-close">${rest}개 장에 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
+window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
+let revealRepaint=null;
 function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
@@ -122,14 +125,17 @@ function revealPage(p,i){
   const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
   const body=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
   const cta=n===REVEAL_SCENES-1?`나머지 ${rest}장 받아 보기`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
-  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div><main id="main"><div class="flow-content rv-body">${body}</div></main>${bottom(p,i,cta)}</div>`;
+  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div><main id="main"><div class="flow-content rv-body"><button type="button" class="rv-edit" data-rv-edit>입력한 정보 고치기</button>${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
   document.activeElement?.blur?.();
   const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
-  if(n===1)next.disabled=!rvConfirmItems(v).every((_,k)=>revealState.confirm[k]);
-  next.onclick=()=>{if(n<REVEAL_SCENES-1){revealState.scene++;paint();window.scrollTo({top:0,behavior:'instant'})}else advance(p,i)};
-  back.onclick=e=>{if(n>0){e.preventDefault();revealState.scene--;paint();window.scrollTo({top:0,behavior:'instant'})}};
+  // 장면마다 브라우저 기록을 하나씩 남겨, 휴대폰 '뒤로'를 누르면 한 장면씩 돌아간다(질문 화면까지 한꺼번에 가지 않게).
+  next.onclick=()=>{if(n<REVEAL_SCENES-1){revealState.scene++;try{history.pushState({rvScene:revealState.scene},'')}catch{}paint();window.scrollTo({top:0,behavior:'instant'})}else advance(p,i)};
+  back.onclick=e=>{if(n>0){e.preventDefault();if(history.state&&history.state.rvScene===n)history.back();else{revealState.scene--;paint();window.scrollTo({top:0,behavior:'instant'})}}};
+  const skip=document.querySelector('[data-rv-skip]');if(skip)skip.onclick=()=>advance(p,i);
+  const edit=document.querySelector('[data-rv-edit]');if(edit)edit.onclick=()=>go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));
   document.querySelectorAll('[data-confirm]').forEach(b=>b.onclick=()=>{revealState.confirm[b.dataset.confirm]=b.dataset.v;const y=window.scrollY;paint();window.scrollTo({top:y,behavior:'instant'})});
  };
+ revealRepaint=paint;
  if(revealState.view)return paint();
  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}<main id="main"><div class="flow-content rv-body rv-loading">${revealSpeech(p,`${d.self.name} 님의 사주를 펼치고 있어요.`)}</div></main></div>`;
  revealLoad().then(lib=>{if(revealState.key!==key)return;revealState.view=revealCompute(p,d,lib);paint()})

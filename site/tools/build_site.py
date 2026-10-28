@@ -65,8 +65,33 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<div class=\"pillars\">${['생시','생일','생월','생년'].map(t=>`<div><small>${t}</small><b>${t==='생시'&&uncertain?'?':'—'}</b><b>${t==='생시'&&uncertain?'?':'—'}</b></div>`).join('')}</div>", "")
     s = _swap(s, "<p>사주 원국은 분석 서비스 연결 후 표시됩니다.</p>", "")
     # 제1조항: 시간을 '대략'으로 넣으면 결제 전 화면과 리포트가 조금 다를 수 있다는 것을 미리 알린다(사장님 2026-10-28)
+    # 대략 시간: 두 시간 단위(옛 시간 이름)로 한 번에 고르게 한다. 고르면 아래 시작·끝 칸이 저절로 채워진다.
     s = _swap(s, '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>',
-              '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>')
+              '<label class="birth-label" for="${who}-quick-range">두 시간 단위로 한 번에 고르기</label><select id="${who}-quick-range" data-quick-range>'
+              '<option value="">시간대를 골라 주세요</option>${QUICK_RANGES.map(([a,b,t])=>`<option value="${a}|${b}" ${range.start===a&&range.end===b?\'selected\':\'\'}>${t}</option>`).join(\'\')}</select>'
+              '<p class="birth-help">아니면 아래에서 시작과 끝을 직접 골라 주세요.</p>')
+    s = _swap(s, "function birthClockParts(time,draft={}){",
+              "const QUICK_RANGES=[['23:00','01:00','밤 11시~새벽 1시 (자시)'],['01:00','03:00','새벽 1시~3시 (축시)'],['03:00','05:00','새벽 3시~5시 (인시)'],['05:00','07:00','새벽 5시~아침 7시 (묘시)'],"
+              "['07:00','09:00','아침 7시~9시 (진시)'],['09:00','11:00','오전 9시~11시 (사시)'],['11:00','13:00','오전 11시~오후 1시 (오시)'],['13:00','15:00','오후 1시~3시 (미시)'],"
+              "['15:00','17:00','오후 3시~5시 (신시)'],['17:00','19:00','오후 5시~저녁 7시 (유시)'],['19:00','21:00','저녁 7시~9시 (술시)'],['21:00','23:00','밤 9시~11시 (해시)']];\n"
+              "document.addEventListener('change',ev=>{const sel=ev.target.closest&&ev.target.closest('[data-quick-range]');if(!sel||!sel.value)return;const form=sel.form;if(!form)return;"
+              "const [a,b]=sel.value.split('|');const set=(prefix,t)=>{const h=Number(t.slice(0,2));const per=form.querySelector(`input[name=\"${prefix}Period\"][value=\"${h<12?'am':'pm'}\"]`);if(per){per.checked=true;per.dispatchEvent(new Event('change',{bubbles:true}))}"
+              "for(const [n,v] of [['Hour',String(h%12).padStart(2,'0')],['Minute',t.slice(3)]]){const el=form.elements.namedItem(prefix+n);if(el){el.value=v;el.dispatchEvent(new Event('change',{bubbles:true}))}}};"
+              "set('timeStart',a);set('timeEnd',b);const nd=form.elements.namedItem('timeNextDay');if(nd){nd.checked=b<a;nd.dispatchEvent(new Event('change',{bubbles:true}))}});\n"
+              "function birthClockParts(time,draft={}){")
+    # 연도 고르기: 빈 칸('연도')을 1990년 바로 위에 두어, 목록을 열면 1990년 근처부터 보이게 한다(1960년대생도 조금만 내리면 된다).
+    s = _swap(s, "<option value=\"\">${title}</option>${options.map(n=>`<option value=\"${n}\" ${Number(parts[index])===n?'selected':''}>${index?birthPad(n):n}</option>`).join('')}",
+              "${index===0&&!Number(parts[0])?'':`<option value=\"\">${title}</option>`}${options.map(n=>`${index===0&&!Number(parts[0])&&n===1990?`<option value=\"\" selected>${title}</option>`:''}<option value=\"${n}\" ${Number(parts[index])===n?'selected':''}>${index?birthPad(n):n}</option>`).join('')}")
+    s = _swap(s, "<div class=\"birth-progress-top\"><span>나의 이야기 준비하기</span>",
+              "<div class=\"birth-progress-top\"><span>${/partner/i.test(who)?'상대방 정보 준비하기':'나의 이야기 준비하기'}</span>")
+    # 시: 0시를 '12시'로 보이게(오전 12시 = 자정, 오후 12시 = 낮 12시). 값은 그대로.
+    s = _swap(s, "${Array.from({length:12},(_,n)=>`<option value=\"${birthPad(n)}\" ${v.hour===birthPad(n)?'selected':''}>${birthPad(n)}</option>`).join('')}",
+              "${Array.from({length:12},(_,n)=>`<option value=\"${birthPad(n)}\" ${v.hour===birthPad(n)?'selected':''}>${n?birthPad(n):'12'}</option>`).join('')}")
+    s = _swap(s, "return (hour<12?'오전 ':'오후 ')+birthPad(hour%12)+'시 '+time.slice(3)+'분';",
+              "return (hour<12?'오전 ':'오후 ')+(hour%12?birthPad(hour%12):'12')+'시 '+time.slice(3)+'분';")
+    s = _swap(s, "accuracy==='unknown'?'하루 전체의 가능성을 비교해 제공할 수 있는 풀이를 확인해요. 확인이 필요한 경우 결제 전에 안내해요.':accuracy==='approximate'?'입력한 범위를 비교해, 공통 풀이와 시간에 따른 차이를 나누어 안내해요.'",
+              "accuracy==='unknown'?'태어난 시간의 기둥(시주)은 비워 두고 해·달·날의 여섯 글자로 풀어요.':accuracy==='approximate'?'넣어 주신 범위의 시작 시각으로 풀어요.'")
+    s = _swap(s, "draft.hour==='00'?(draft.period==='am'?' · 자정':' · 정오'):''", "draft.hour==='00'?(draft.period==='am'?' · 자정':' · 낮 12시'):''")
     s = _swap(s, "<p>개별 분석 결과는 정식 서비스 연결 후 제공됩니다.</p>", "<p>결제하면 이 이야기를 한 권의 PDF로 써서 이메일로 보내드려요.</p>")
     s = _swap(s, "'정식 리포트에는 분석의 근거와 해석을 함께 담도록 연결할 예정이에요.'", "'리포트에는 풀이마다 사주 근거와 해석을 함께 담아요.'")
     # 보관함: 실제 주문은 이메일로 받으므로, 체험 주문 찾기 대신 받는 방법과 문의 방법을 안내한다.
@@ -163,6 +188,14 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '<p class="fine-print">결과는 자동 검증을 통과한 뒤 발행됩니다. 현재 전체 풀이·결제·PDF 발행은 준비 중이에요.</p>',
               '<p class="fine-print">결제 후 사주 결과를 작성하고 자동 검사를 거쳐 이메일로 보내드려요.</p>')
 
+    # 안내 쪽(환불 안내 등)의 '뒤로'는 홈이 아니라 바로 앞 화면(결제 화면 등)으로 돌아간다. 사이트 안에서 옮겨 다닌 적이 없을 때만 홈으로.
+    s = _swap(s, "function smallHeader(title,back='/'){return `<header class=\"small-header\"><a class=\"icon-btn\" href=\"#${back}\" aria-label=\"뒤로\">",
+              "window.addEventListener('hashchange',()=>{window.__moves=(window.__moves||0)+1});\n"
+              "function smallHeader(title,back='/'){return `<header class=\"small-header\"><a class=\"icon-btn\" href=\"#${back}\" ${back==='/'?'onclick=\"if(window.__moves){history.back();return false}\"':''} aria-label=\"뒤로\">")
+    # 결제 화면 내 정보 요약: 시간 모름·대략을 어떻게 푸는지 한 줄(무료 풀이·결제 전 화면·리포트와 같은 방법)
+    s = _swap(s, "const time=accuracy==='unknown'?'출생 시간 미상':accuracy==='approximate'?'대략 '+birthReadableTime(value.timeRange?.start)+' ~ '+(value.timeRange?.endDayOffset===1?'다음 날 ':'')+birthReadableTime(value.timeRange?.end):birthReadableTime(value.time);",
+              "const time=accuracy==='unknown'?'태어난 시간 모름 · 시주는 비워 두고 해·달·날 여섯 글자로 풀어요':accuracy==='approximate'?'대략 '+birthReadableTime(value.timeRange?.start)+' ~ '+(value.timeRange?.endDayOffset===1?'다음 날 ':'')+birthReadableTime(value.timeRange?.end)+' · 시작 시각으로 풀어요':birthReadableTime(value.time);")
+    s = _swap(s, "const location=!place?'출생지 미입력':place.status==='unknown'?'출생지 미상':", "const location=!place?'출생지 미입력':place.status==='unknown'?'태어난 곳 모름 · 대한민국 대표 위치로 풀어요':")
     # 지역 이름: 고를 때와 같은 짧은 이름(광주·전남, 전라북도)으로 보여 주고, 광주 구는 '광주 동구'처럼 도시를 붙인다
     s = _swap(s, "[place.countryName,place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city]",
               "[place.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[place.regionName])||place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city]")
@@ -317,6 +350,13 @@ def add_newyear(s: str) -> str:
 
 
 TASTER_CSS = (
+    # 글씨는 14px 아래로 내려가지 않게(손님 테스트 2026-10-28). 버튼을 누를 때 '본문으로 이동'이 뜨지 않게.
+    ".rv-no{font-size:16px;line-height:1.65;color:#e9dcc6;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#ffffff0d}"
+    ".rv-skip-note{font-size:15px;color:#bfb3a2;margin:6px 0 0}.rv-edit{display:block;margin:0 0 10px auto;background:none;border:1px solid #ffffff33;border-radius:16px;color:#e9dcc6;font-size:14px;padding:6px 12px}"
+    ".skip:focus:not(:focus-visible){top:-100px}.entry-what{font-size:15px;line-height:1.6;color:#5a4a44;margin:6px 0 10px}"
+    ".bottom-nav a,.price-box>div,.price-box em,.light .price-box em,.birth-card-number,.birth-card-state,.birth-location-step .birth-label b,"
+    ".tc-col em,.x-eyebrow,.event-dday,.event-dday b,.entry-tag,.bundle-price s,.rv-locks i,.rv-cell small,.rv-cell span,.rv-legend{font-size:14px!important}"
+    ".rv-cell span{line-height:1.3;word-break:keep-all}"
     ".taster-banner{border:1px solid #d8bb7866}"
     ".taster-banner.palace-banner{background-image:linear-gradient(90deg,#000000e0 5%,#000000c8 62%,#000000b0),var(--palace-bg)}"
     ".taster-banner .eyebrow,.taster-banner p{text-shadow:0 1px 6px #000,0 0 3px #000}.taster-banner p{color:#f3ecdf;font-weight:500}"
@@ -456,6 +496,13 @@ def fix_detail_copy(s: str) -> str:
     # 이름 뒤 '님'은 늘 한 칸 띄운다(리포트와 같게: "박지훈 님"). 이름이 없으면 '당신'만 쓴다.
     s = s.replace("${esc(d.self.name||'당신')}님", "${d.self.name?esc(d.self.name)+' 님':'당신'}")
     s = re.sub(r"\)\}님", ")} 님", s)
+    # 리포트 안내 화면 줄이기(손님 테스트: 휴대폰 9화면, 같은 그림 반복, 목차가 결제 전 이야기 5장면과 겹침).
+    # 목차는 결제 전 이야기 마지막 장면에서 이미 보여 주므로 여기서는 뺀다. 연애 상품 말('관계의 방향', '나와 우리')도 상품마다 맞는 말로.
+    s = _swap(s, '<div class="sales-interlude"><span class="eyebrow">YOUR OWN STORY</span><p class="serif">이제, 당신의 이야기를<br>차례로 펼쳐볼게요.</p></div>', "")
+    s = _swap(s, "${salesPanel(p,4,'알고 나면,\\n다르게 바라볼 수 있도록','막연한 말보다 나를 돌아볼 수 있는 질문과 관계의 방향을 담으려 해요.')}", "")
+    s = _swap(s, "${salesPanel(p,5,s.ending,'나와 우리의 이야기를 이해하는 시간을 가져보세요.')}",
+              "${salesPanel(p,5,s.ending,`${d.self.name?esc(d.self.name)+' 님':'당신'}의 사주로 쓴 한 권의 리포트로 확인해 보세요.`)}")
+    s = _swap(s, "${v.timeAccuracy==='approximate'?'<p>입력 범위 전체를 비교하고, 공통 풀이와 시간별 차이를 구분해요.</p>':''}", "")
     return s
 
 
@@ -464,6 +511,11 @@ def fix_flows(s: str) -> str:
     - 깊은 궁합 '알고 지낸 기간': 25년 함께한 부부도 고를 수 있게 3년 넘는 보기를 나눈다."""
     s = _swap(s, "choice('duration','서로 알고 지낸 기간은 얼마나 되나요?',['3개월 미만','3~6개월','6개월~1년','1~3년','3년 이상'],true)",
               "choice('duration','서로 알고 지낸 기간은 얼마나 되나요?',['3개월 미만','3~6개월','6개월~1년','1~3년','3~10년','10년 이상'],true)")
+    # 질문 보기 더하기(손님 테스트): 연애사주 '짝사랑', 사업운 '부업'·'매출 감소'. 리포트 프로그램은 이 답을 이미 안다.
+    s = _swap(s, "['썸을 타고 있어요','연애 중이에요','지금은 솔로예요','최근에 헤어졌어요','오랫동안 혼자였어요']",
+              "['썸을 타고 있어요','연애 중이에요','혼자 좋아하고 있어요(짝사랑)','지금은 솔로예요','최근에 헤어졌어요','오랫동안 혼자였어요']")
+    s = _swap(s, "['창업을 준비하고 있어요','처음 사업을 시작했어요','사업을 운영하고 있어요','새로운 확장을 고민해요','방향을 다시 정리하고 싶어요']",
+              "['창업을 준비하고 있어요','처음 사업을 시작했어요','부업으로 하고 있어요','사업을 운영하고 있어요','매출이 줄어 고민이에요','새로운 확장을 고민해요','방향을 다시 정리하고 싶어요']")
     return s
 
 
@@ -502,7 +554,7 @@ def fix_checkout_flow(s: str) -> str:
 
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
-NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "출시 기념 할인 마감까지"}
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
 
@@ -644,7 +696,7 @@ def add_extras(s: str) -> str:
     s = _swap(s, "function render(){", f"const EXTRA_DATA={data};\n" + page + "function render(){")
     # 리포트 안내 페이지: 예전 짧은 목차 → 실제 리포트 목차(펼쳐보기) + 미리보기.
     s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
-              "${tocBlock(p)}")
+              "")   # 목차는 결제 전 이야기 마지막 장면(리포트 미리 보기)에서 이미 보여 준다(손님 테스트: 같은 목차가 두 번)
     # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
     # 첫 구매 묶음 할인은 결제 화면 맨 위(상품 그림 바로 아래)에 둔다(2026-10-27 사장님).
     s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)}<section class="checkout-birth-summary">')
@@ -671,7 +723,7 @@ def add_sales_pages(s: str) -> str:
         "ending:'내 돈의 흐름을\\n미리 확인하세요'};\n"
         "DETAIL_BLOCKS.wealth=[['bowl','타고난 재물 그릇을\\n먼저 확인해요','내 사주에 돈이 얼마나, 어떤 모양으로 들어오는지 알려드려요.',''],"
         "['leak','돈이 새는 곳과\\n막는 방법','나도 몰랐던 소비 습관과 돈이 빠지기 쉬운 시기를 짚어요.',''],"
-        "['years','큰돈이 오가는 해와\\n달마다 할 일','앞으로 5년과 12개월의 재물 흐름을 정리해요.','timeline']];\n"
+        "['years','큰돈이 오가는 해와\\n달마다 할 일','앞으로 12년과 12개월의 재물 흐름을 정리해요.','timeline']];\n"
         "SALES.career={opening:'나에게 맞는 일과\\n옮겨야 할 때',empathy:'지금 일이 맞는지\\n계속 고민되나요',"
         "empathyBody:'이직을 해야 할지, 버텨야 할지, 다른 일을 시작해도 될지 고민될 때. 내 사주로 맞는 일과 움직이기 좋은 시기를 정리해 드려요.',"
         "reveal:'내 사주로 계산한\\n나의 직업 흐름',locks:['나에게 맞는 일과 일하는 방식','이직하기 좋은 해와 피할 해','승진·면접·시험에 좋은 시기'],"
