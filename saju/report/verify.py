@@ -137,7 +137,7 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                 for m in re.finditer(r"((?:19|20|21)\d\d)\s*년", sent):
                     if int(m[1]) not in year_range:
                         issues.append({"slot": sid, "kind": "연도", "detail": f"계산 범위 밖의 {m[1]}년을 썼어요: {sent[:80]}"})
-    issues += shown_checks(f, texts, final_ids)
+    issues += shown_checks(f, texts, skip_repeat)   # skip_repeat = 마지막 장 칸들
     issues += newyear_checks(f, texts)
     issues += repeats(texts, skip_repeat)
     issues += crowded_terms(texts, skip_repeat)
