@@ -64,6 +64,9 @@ def patch_texts(s: str, b: dict) -> str:
     # 주문 화면에 남은 미리보기 문구를 실제 서비스 문구로 바꾼다(2026-10-12 전체 검수).
     s = _swap(s, "<div class=\"pillars\">${['생시','생일','생월','생년'].map(t=>`<div><small>${t}</small><b>${t==='생시'&&uncertain?'?':'—'}</b><b>${t==='생시'&&uncertain?'?':'—'}</b></div>`).join('')}</div>", "")
     s = _swap(s, "<p>사주 원국은 분석 서비스 연결 후 표시됩니다.</p>", "")
+    # 제1조항: 시간을 '대략'으로 넣으면 결제 전 화면과 리포트가 조금 다를 수 있다는 것을 미리 알린다(사장님 2026-10-28)
+    s = _swap(s, '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>',
+              '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>')
     s = _swap(s, "<p>개별 분석 결과는 정식 서비스 연결 후 제공됩니다.</p>", "<p>결제하면 이 이야기를 한 권의 PDF로 써서 이메일로 보내드려요.</p>")
     s = _swap(s, "'정식 리포트에는 분석의 근거와 해석을 함께 담도록 연결할 예정이에요.'", "'리포트에는 풀이마다 사주 근거와 해석을 함께 담아요.'")
     # 보관함: 실제 주문은 이메일로 받으므로, 체험 주문 찾기 대신 받는 방법과 문의 방법을 안내한다.
@@ -212,7 +215,7 @@ def patch_texts(s: str, b: dict) -> str:
 
 def legal_js(b: dict, contact: str) -> str:
     company = b.get("company") or "운명서재"
-    privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데 씁니다. 결제 화면에서 '할인·이벤트 소식 이메일 받기(선택)'에 동의하신 분께만 재구매 할인 코드와 친구 초대 링크를 이메일로 보냅니다. 동의하지 않아도 구매할 수 있고, 메일 끝의 링크로 언제든 수신을 거부할 수 있습니다. 그 밖의 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다. 첫 구매 묶음 할인을 확인하려고 이메일을 알아볼 수 없게 바꾼 값(해시)과 구매 여부를 보관하고, 할인 코드 사용 기록과 수신 거부 기록도 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
+    privacy = f"""<h2>1. 받는 정보</h2><p>이름, 성별, 생년월일과 양력·음력·윤달 여부, 태어난 시간(정확한 시각, 시간 범위 또는 모름), 태어난 지역, 상품별 질문과 답, 이메일을 받습니다. 두 사람 상품은 상대방의 같은 정보를 받습니다. 카드 정보는 토스페이먼츠가 직접 받고, {company}은(는) 카드 번호를 받지 않습니다.</p><h2>2. 쓰는 목적</h2><p>사주 결과를 계산하고 작성해 이메일로 보내는 데 씁니다. 그 밖의 광고나 다른 목적으로 쓰지 않습니다.</p><h2>3. 보관 기간</h2><p>출생 정보와 질문은 결과 메일을 보내는 즉시 지웁니다. 결과 PDF는 다시 보내기를 위해 7일 동안 보관한 뒤 지웁니다. 발송이 보류된 주문의 정보는 다시 만들 수 있게 7일 동안 보관한 뒤 지우고, 결제가 안 된 주문의 정보는 8일 안에 지웁니다. 주문번호, 결제 금액, 이메일 같은 거래 기록은 전자상거래법에 따라 5년 동안 보관합니다. 첫 구매 묶음 할인을 확인하려고 이메일을 알아볼 수 없게 바꾼 값(해시)과 구매 여부를 보관하고, 할인 코드 사용 기록도 보관합니다.</p><h2>4. 처리를 맡기는 곳</h2><p>토스페이먼츠(결제), Netlify(미국, 사이트와 주문 저장), GitHub(미국, 결과 작성 작업 실행), Anthropic(미국, 결과 글 작성), Resend(미국, 이메일 발송)에 필요한 정보만 맡깁니다. 해외 업체로는 주문을 처리하는 동안 암호화된 연결로 전송됩니다.</p><h2>5. 요청할 수 있는 것</h2><p>내 정보의 열람, 정정, 삭제, 처리 중지를 요청할 수 있습니다. 문의: {contact}</p>"""
     terms = """<h2>1. 서비스</h2><p>운명서재는 입력한 출생 정보로 사주를 계산하고, 개인별 결과를 PDF로 작성해 결제 후 1일 이내에 이메일로 보내드립니다.</p><h2>2. 콘텐츠의 성격</h2><p>사주 결과는 자기 이해와 오락을 위한 참고 자료입니다. 의료, 법률, 투자 같은 중요한 판단을 대신하지 않습니다.</p><h2>3. 입력 정보</h2><p>결과는 입력한 정보로 작성됩니다. 생년월일이나 시간이 틀리면 결과도 달라지므로 정확히 입력해주세요.</p><h2>4. 저작권</h2><p>결과 PDF는 구매한 분의 개인적인 이용을 위해 제공되며, 무단으로 다시 팔거나 배포할 수 없습니다.</p>"""
     refund = f"""<h2>서비스 제공 기간</h2><p>결과 PDF는 결제 후 1일 이내에 주문할 때 입력한 이메일로 보내드립니다. 보통 10분 안에 도착합니다. 배송 상품이 아닙니다.</p><h2>결과를 보내기 전</h2><p>결제 후 결과 이메일을 보내기 전에는 전액 환불해 드립니다.</p><h2>결과를 보낸 뒤</h2><p>결과는 결제 후 개인별로 작성하는 디지털 콘텐츠라서, 이메일로 보낸 뒤에는 단순 변심으로 인한 환불이 어렵습니다(전자상거래법 제17조 제2항).</p><h2>오류가 있을 때</h2><p>이메일이 오지 않거나, 입력한 정보와 다른 내용으로 작성되는 등 오류가 있으면 다시 보내드리거나 전액 환불해 드립니다.</p><h2>문의</h2><p>{contact}</p>"""
     return "type==='privacy'?`" + privacy + "`:type==='terms'?`" + terms + "`:`" + refund + "`"
@@ -510,7 +513,7 @@ EXTRAS_CSS = (
     ".entry-count span{font-size:15px;color:#8a3a2c;font-weight:600}.entry-count b{font-size:26px;color:#c8102e;font-weight:900;letter-spacing:.02em}"
     ".entry-go{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:linear-gradient(180deg,#e0313f,#b3141f);color:#fff;font-size:17px;font-weight:800;text-decoration:none;box-shadow:0 8px 20px #c8102e40}"
     ".entry-hide{min-height:44px;margin-top:4px;border:0;background:none;color:#8a7466;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}"
-    # 2단계 할인: 첫 구매 묶음 할인 고르기, 금액 안내, 광고 메일 동의
+    # 2단계 할인: 첫 구매 묶음 할인 고르기, 금액 안내
     ".bundle-x{margin:22px 0;padding:24px 18px 18px;border-radius:18px;border:1px solid var(--x-line);background:linear-gradient(180deg,#1a160f,var(--x-ink));text-align:left}"
     ".bundle-x .x-title{font-size:24px}.bundle-x .x-title em{font-style:normal;color:var(--x-gold-2)}.bundle-x .x-sub b{color:var(--x-text)}"
     ".bundle-list{display:flex;flex-direction:column;gap:8px}"
@@ -531,7 +534,6 @@ EXTRAS_CSS = (
     ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
     ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
     ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
-    ".mk-help{margin:2px 0 6px 30px;font-size:14px;line-height:1.55;color:var(--x-muted)}"
     "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.bundle-item{transition:none}}"
 )
 
@@ -645,26 +647,18 @@ def add_sales_pages(s: str) -> str:
 
 
 def add_discounts(s: str) -> str:
-    """사이트 추가 기능 2단계: 결제 화면의 첫 구매 묶음 할인·할인 코드·친구 초대·광고 메일 동의. 금액은 서버가 계산한다."""
-    s = _swap(s, '<div class="field" hidden><label for="coupon">할인 쿠폰</label><p class="field-help">이메일을 입력한 뒤 쿠폰을 적용해주세요.</p>',
-              '<div class="field"><label for="coupon">할인 코드 (선택)</label><p class="field-help">재구매·친구 초대로 받은 코드가 있으면 넣고 적용을 눌러주세요.</p>')
-    s = _swap(s, 'placeholder="쿠폰 코드"', 'placeholder="예) UNM-ABC123"')
+    """사이트 추가 기능 2단계: 결제 화면의 첫 구매 묶음 할인과 리포트 링크로 들어온 재구매 할인. 금액은 서버가 계산한다(할인 코드 칸·친구 초대·할인 메일은 2026-10-27 사장님 결정으로 뺌)."""
     s = _swap(s, '<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,d.discount||0)}</div>',
               '<h2 class="checkout-label">상품 금액 안내</h2><div id="checkout-price">${priceBox(p,0)}</div>')
-    s = _swap(s, '<button type="button" data-consent="payment">자세히</button></div></fieldset>',
-              '<button type="button" data-consent="payment">자세히</button></div><div><label class="check-line"><input type="checkbox" name="marketing">할인·이벤트 소식 이메일 받기 (선택)</label></div>'
-              '<p class="mk-help">동의하시면 재구매 10% 할인 코드와 친구 초대 링크를 메일로 보내드려요. 메일 끝의 링크로 언제든 수신 거부할 수 있어요.</p></fieldset>')
-    s = _swap(s, "form.elements.payment.checked=e.target.checked;update()}",
-              "form.elements.payment.checked=e.target.checked;if(form.elements.marketing){form.elements.marketing.checked=e.target.checked;d.marketing=e.target.checked}update()}")
     s = _swap(s, "update();if(d.discount)document.querySelector('#coupon-message').textContent=money(d.discount)+' 체험 할인이 적용되어 있어요.'}",
               "update();bindDiscounts(p,d)}")
-    # 예전 체험용 쿠폰(UNMYEONG5000) 대신 서버가 확인하는 코드만 쓴다. 친구 초대 코드와 묶음 상품을 주문에 함께 보낸다.
+    # 예전 체험용 쿠폰(UNMYEONG5000) 대신 서버가 확인하는 재구매 코드만 쓴다. 묶음 상품을 주문에 함께 보낸다.
     s = _swap(s, " if(Number(draft.discount||0)>0)throw Error('COUPON_NOT_AVAILABLE');\n",
-              " draft={...draft,ref:savedRef(),extras:EXTRA_DATA.bundle?(draft.extras||[]):[]};delete draft.discount;\n")
+              " draft={...draft,extras:EXTRA_DATA.bundle?(draft.extras||[]):[]};delete draft.discount;\n")
     s = _swap(s, "orderName:config.productNames?.[productId]??'운명서재 사주 결과',",
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
-              "e.message==='COUPON_INVALID'?'할인 코드를 쓸 수 없어요. 코드 칸을 비우고 다시 결제해주세요.'")
+              "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'")
     return s
 
 

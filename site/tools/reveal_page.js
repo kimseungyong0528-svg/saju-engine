@@ -29,6 +29,7 @@ function rvScene0(p,v){const c=v.r.chart,me=c.items[0],gy=c.items[4];
  return `${revealSpeech(p,`${v.name} 님이 태어난 순간의 여덟 글자를 펼쳤어요. 성격도, 돈도, 사람도, 운이 들어오는 해도 모두 이 여덟 글자 안에 있어요.`)}
  <span class="eyebrow">STEP 1 · 내 사주 펼치기</span><h1>${esc(v.name)} 님의 사주팔자</h1>
  <div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div>
+ 
  <div class="rv-card"><strong>${esc(me.head)}</strong><p>${esc(me.text)}</p></div>
  ${gy?`<div class="rv-card"><strong>${esc(gy.head)}</strong><p>${esc(gy.text)}</p></div>`:''}
  <div class="rv-card"><strong>다섯 기운의 비율</strong><div class="tb-bars">${c.elements.map(e=>`<div class="tb-bar ${e.status}"><span>${esc(e.word)}</span><i><b style="width:${Math.min(100,e.pct*2)}%"></b></i><em>${e.pct}%</em></div>`).join('')}</div></div>`}
@@ -79,9 +80,9 @@ function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=mon
  const card=(key,labels,kind)=>`<div class="rv-card rv-mark ${kind}"><div class="rv-mark-head"><span class="rv-tag ${kind}">${esc(M[key].tag)}</span><b>${esc(when(labels))}</b></div><p class="rv-mark-line">${esc(v.fill(M[key].line,vals))}</p><p>${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`;
  const goods=Object.entries(m.good),bads=Object.entries(m.bad);
  const first=goods.length===1?M[goods[0][0]].tag:'';
- return `${revealSpeech(p,`이제 가장 중요한 이야기예요. ${v.name} 님에게 운이 들어오는 ${unit}와 조심해야 할 ${unit}는 사주에 이미 정해져 있어요.`)}
+ return `${revealSpeech(p,`이제 가장 중요한 이야기예요. ${v.name} 님에게 운이 들어오는 ${month?'달과':'해와'} 조심해야 할 ${month?'달은':'해는'} 사주에 이미 정해져 있어요.`)}
  <span class="eyebrow">STEP 4 · ${month?'2027년 열두 달':'앞으로 12년'}</span><h1>${month?`${esc(v.name)} 님의<br>2027년 열두 달`:first?`${esc(v.name)} 님에게<br>${esc(first)}이 들어오는 해`:`앞으로 12년,<br>기회의 해와 조심할 해`}</h1>
- <div class="rv-grid">${m.cells.map(c=>`<div class="rv-cell${c.good.length?' good':''}${c.bad.length?' bad':''}"><b>${esc(month?c.label.replace('2028년 ',''):c.label)}</b><small>${esc(c.ko)}</small>${[...c.good.map(x=>`<span class="g">${esc(M[x].tag)}</span>`),...c.bad.map(x=>`<span class="r">${esc(M[x].tag)}</span>`)].join('')}</div>`).join('')}</div>
+ <div class="rv-grid">${m.cells.map(c=>`<div class="rv-cell${c.good.length?' good':''}${c.bad.length?' bad':''}"><b>${esc(c.label)}</b><small>${esc(c.ko)}</small>${[...c.good.map(x=>`<span class="g">${esc(M[x].tag)}</span>`),...c.bad.map(x=>`<span class="r">${esc(M[x].tag)}</span>`)].join('')}</div>`).join('')}</div>
  <div class="rv-legend"><span class="g">좋은 ${unit}</span><span class="r">조심할 ${unit}</span>${month?'<span>달은 절기 기준(매달 4~8일 무렵 시작)</span>':''}</div>
  ${goods.map(([k,l])=>card(k,l,'good')).join('')}${bads.map(([k,l])=>card(k,l,'bad')).join('')}
  ${revealLocks(month?['좋은 달에 시작해야 할 일과 그 방법','조심할 달에 미뤄야 할 일과 막는 방법','열두 달 각각의 돈·일·사람·건강 흐름']:['이 해의 몇 월에 들어오는지','그 해에 해야 할 일과 하지 말아야 할 일','조심할 해를 막는 구체적인 방법'])}`}

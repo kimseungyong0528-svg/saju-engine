@@ -37,8 +37,10 @@ def discount_percent(p: dict) -> int:
     return round((p["original"] - p["price"]) / p["original"] * 100)
 
 
-def product_url(pid: str, site: str | None = None) -> str:
-    return f"{(site or SITE_URL).rstrip('/')}/#/f/{pid}/intro"
+def product_url(pid: str, site: str | None = None, coupon: str | None = None) -> str:
+    """coupon이 있으면 재구매 할인 링크(?coupon=)로 만든다. 이 링크로 들어가야만 10% 할인된다(2026-10-27 사장님)."""
+    query = f"?coupon={coupon}" if coupon else ""
+    return f"{(site or SITE_URL).rstrip('/')}/{query}#/f/{pid}/intro"
 
 
 def _first_year(f: dict, gods: set[str]) -> int | None:
@@ -102,24 +104,27 @@ def _newyear_hook(f: dict) -> str:
 SITE_ORDER = ("newyear", "romance", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime")
 
 
-def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None) -> list[dict]:
+def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None,
+               coupon: str | None = None) -> list[dict]:
     """다른 상품 안내. 사이트 카테고리 순서(신년운세→연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
     first는 예전 호출과 맞추려고 받기만 한다(2026-10-12 사장님 요청으로 순서를 바꾸지 않음)."""
     h = hooks(f)
-    items = [{**p, "url": product_url(p["id"], site), "hook": h.get(p["id"], ""),
+    items = [{**p, "url": product_url(p["id"], site, coupon), "hook": h.get(p["id"], ""),
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
-              "discount": discount_percent(p)} for p in PRODUCTS if p["id"] != current]
+              "discount": discount_percent(p),
+              # 재구매 링크로 들어가면 서버(discounts.mjs)가 10%를 더 깎는다. 같은 계산(반올림)으로 보여 준다.
+              "rebuy_text": f"{round(p['price'] * 0.9):,}원" if coupon else None} for p in PRODUCTS if p["id"] != current]
     items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
 
 
-def taster_recap(view: dict, current: str, site: str | None = None) -> dict:
+def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None) -> dict:
     """리포트 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' (2026-10-27 사장님 요청).
     무료 분석과 같은 계산(saju/taster.py)의 6가지를 다시 짚고, 운마다 그 운을 깊게 다룬 리포트로 잇는다."""
     names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
     def item(kind: str, n: int, a: dict) -> dict:
         pid = a["product"]
         return {"kind": kind, "rank": n, "title": a["title"], "text": a["text"], "hook": a["hook"], "product": pid,
-                "product_name": names.get(pid, ""), "url": product_url(pid, site), "here": pid == current}
+                "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current}
     return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],
             "bad": [item("bad", n, a) for n, a in enumerate(view["bad"], 1)]}

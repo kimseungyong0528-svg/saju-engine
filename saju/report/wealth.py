@@ -19,7 +19,7 @@ SECTIONS = [
     ("5", "돈이 빠져나가는 곳", "나도 몰랐던 나의 소비 습관과 손실"),
     ("6", "내가 몰랐던 돈이 들어오는 방법", "투자와 부업, 나에게 맞는 돈 불리기"),
     ("7", "나이별 재물운", "10년마다 달라지는 돈의 흐름"),
-    ("8", "연도별 재물운", "앞으로 5년, 큰돈이 오가는 해"),
+    ("8", "연도별 재물운", "앞으로 12년, 큰돈이 오가는 해"),
     ("9", "월별 재물운", "앞으로 12개월, 돈을 쓸 달과 아낄 달"),
     ("10", "집과 노후", "집 장만, 가족과 돈, 말년의 재물"),
     ("11", "지금 내 상황에 맞는 돈 전략", "자주 묻는 질문"),
@@ -74,18 +74,22 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         return {"t_score": T.clamp(score), "t_signs": signs}
 
     years, months, periods = T.marked(f, mark)
+    T.reveal_fix(result, "wealth", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+    T.reveal_fix(result, "wealth", months)
     mtype, mtext = _money_type(f)
     # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
     ahead = [p for p in T.near(f, periods) if p["state"] != "지난"]
     big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
+    screen = T.screen_score(f, result, "wealth")
     data = {
+        "screen_score": screen,
         "occupation": answers.get("occupation", ""),
         "type": mtype, "type_text": mtext, "risk": _risk(f),
         "counts": {g: T.count(f, g) for g in T.GODS},
         "편재": T.god_count(f, "편재"), "정재": T.god_count(f, "정재"),
         "seats": T.seats(f, "재성"),
-        "best_years": (best := T.best(years, 2, lambda y: y["year"])),
-        "leak_years": [y["year"] for y in years if "나가는 돈 주의" in y["t_signs"] and y["year"] not in best][:2],
+        "best_years": (best := T.best(years, 12, lambda y: y["year"])),
+        "leak_years": T.bad_rows(years, 12, lambda y: y["year"]),   # 화면의 '돈이 샘'(겁재) 해
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "big_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]} for p in big[:3]],
     }
@@ -132,9 +136,10 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("w_glance", "한눈에 보는 나의 재물운", figure="kv", opener=True, rows=[
+            T.screen_row(t["screen_score"]),
             ["돈 버는 형", t["type"]], ["투자 성향", t["risk"]],
-            ["재물운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"])],
-            ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or "앞으로 5년 안에는 뚜렷하지 않아요"],
+            ["재물운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+            ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["돈 쓰기 좋은 달", ", ".join(t["best_months"])], ["아낄 달", ", ".join(t["careful_months"]) or "—"],
             ["큰돈이 드는 대운", ", ".join(p["age_text"] for p in t["big_periods"]) or "운에서 재성이 드는 해를 잡아요"],
         ], slot=S("w_glance", "표를 이어서 재물운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 120)),
@@ -197,12 +202,12 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("w7_table", "표에서 재물 점수가 높은 대운을 골라 그때 무엇을 하면 좋은지 써 주세요.", HALF - 160)),
     ])
     section("8", [
-        P("w8_years", "앞으로 5년 재물운", figure="grid", opener=True, span=2, grid=T.year_grid(th["years"], t["best_years"], "재물 점수"),
-          slot=S("w8_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 돈의 흐름, 할 일과 피할 일).", FULL * 2 - 460)),
+        P("w8_years", "앞으로 12년 재물운", figure="grid", opener=True, span=3, grid=T.year_grid(th["years"], t["best_years"], "재물 점수"),
+          slot=S("w8_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 돈의 흐름, 할 일과 피할 일).", FULL * 3 - 460)),
         P("w8_this", f"{f['order']['year']}년 재물운",
           slot=S("w8_this", "올해 세운의 재물 표시와 점수를 근거로 올해 남은 기간의 돈 관리법을 써 주세요.")),
         P("w8_big", "큰돈이 오가는 해 대비하기",
-          slot=S("w8_big", "앞으로 5년 가운데 큰돈이 들어오기 쉬운 해와 큰돈이 나가기 쉬운 해(계약, 이사, 보증)를 근거와 함께 쓰고 각각 준비할 것을 써 주세요.")),
+          slot=S("w8_big", "앞으로 12년 가운데 큰돈이 들어오기 쉬운 해와 큰돈이 나가기 쉬운 해(계약, 이사, 보증)를 근거와 함께 쓰고 각각 준비할 것을 써 주세요.")),
     ])
     section("9", [
         P("w9_months", "앞으로 12개월 월별 재물운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "재물 점수"),

@@ -72,15 +72,19 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         return {"t_score": T.clamp(score), "t_signs": signs}
 
     years, months, periods = T.marked(f, mark)
+    T.reveal_fix(result, "health", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+    T.reveal_fix(result, "health", months)
     month_branch = next(p for p in f["pillars"] if p["pillar"] == "월주")["branch"]
     season = _SEASON[month_branch]
     temp = {"겨울": "차가운 사주", "여름": "뜨거운 사주"}.get(season, "따뜻함과 서늘함 사이의 사주")
+    screen = T.screen_score(f, result, "health")
     data = {
+        "screen_score": screen,
         "rhythm": answers.get("rhythm", ""), "focus": answers.get("focus", ""),
         "body_type": f"{f['strength']['label']} · {temp}", "season": season, "temperature": temp,
         "excess": [{"el": e, **BODY[e]} for e in excess], "lacking": [{"el": e, **BODY[e]} for e in lacking],
-        "care_years": [y["year"] for y in sorted(years, key=lambda y: y["t_score"])[:2]],
-        "good_years": T.best(years, 2, lambda y: y["year"]),
+        "care_years": T.bad_rows(years, 12, lambda y: y["year"]),   # 화면의 '몸 조심' 해
+        "good_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "body_map": BODY,
     }
@@ -125,9 +129,10 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("h_glance", "한눈에 보는 나의 건강운", figure="kv", opener=True, rows=[
+            T.screen_row(t["screen_score"]),
             ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["모자란 기운", els(t["lacking"])],
             ["돌볼 영역", " / ".join(x["area"] for x in t["excess"] + t["lacking"]) or "고른 편이라 전체 리듬을 지켜요"],
-            ["편안한 해", ", ".join(f"{y}년" for y in t["good_years"])], ["쉬어 갈 해", ", ".join(f"{y}년" for y in t["care_years"])],
+            ["편안한 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["쉬어 갈 해", ", ".join(f"{y}년" for y in t["care_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["조심할 달", ", ".join(t["careful_months"]) or "—"],
         ], slot=S("h_glance", "표를 이어서 건강운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 160)),
     ])
@@ -202,8 +207,8 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("h9_next", "다음 대운의 글자를 근거로 그 10년의 생활 리듬을 미리 쓰고, 지금부터 들일 습관을 써 주세요.")),
     ])
     section("10", [
-        P("h10_years", "앞으로 5년 건강운", figure="grid", opener=True, span=2, grid=T.year_grid(th["years"], t["good_years"], "리듬 점수"),
-          slot=S("h10_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 생활 리듬, 돌볼 점).", FULL * 2 - 460)),
+        P("h10_years", "앞으로 12년 건강운", figure="grid", opener=True, span=3, grid=T.year_grid(th["years"], t["good_years"], "리듬 점수"),
+          slot=S("h10_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 생활 리듬, 돌볼 점).", FULL * 3 - 460)),
         P("h10_months", "앞으로 12개월 월별 건강운", figure="grid", span=2, grid=T.month_grid(th["months"], "리듬 점수"),
           note="표시: 그 달에 들어오는 기운이 내 오행 균형에 주는 영향이에요.",
           slot=S("h10_months", "표의 12개월 가운데 편안한 달과 쉬어 갈 달을 골라 달마다 생활 습관을 써 주세요.", FULL * 2 - 820)),

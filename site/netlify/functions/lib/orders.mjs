@@ -96,7 +96,6 @@ export async function createOrder(store, body, idempotencyKey, now = new Date(),
   const order = {
     id, productId: decision.payload.productId, amount: price.amount, base: price.base, email, status: 'awaiting_payment',
     ...(price.discount ? { discount: price.discount } : {}), ...(bundle.length ? { bundle } : {}),
-    marketing: body?.marketing === true,
     tokenHash: sha256(accessToken), payload: decision.payload, disclosures: decision.disclosures || [],
     createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'awaiting_payment', at: now.toISOString() }],
     resends: 0, ...(testOnly ? { testOnly: true } : {}),
@@ -163,7 +162,7 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
   const children = bundle.map(b => {
     const child = {
       id: randomUUID(), productId: b.productId, amount: 0, parentId: order.id, email: order.email, status: 'queued',
-      tokenHash: order.tokenHash, payload: b.payload, disclosures: b.disclosures || [], marketing: order.marketing,
+      tokenHash: order.tokenHash, payload: b.payload, disclosures: b.disclosures || [],
       createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'queued', at: now.toISOString() }], resends: 0,
     };
     order.children.push(child.id);
@@ -171,7 +170,7 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
   });
   await store.set(`orders/${order.id}`, order);
   for (const c of children) await store.set(`orders/${c.id}`, c);
-  await afterPaid(store, services, order, now).catch(e => console.error('afterPaid', e?.message));
+  await afterPaid(store, order, now).catch(e => console.error('afterPaid', e?.message));
   for (const o of [order, ...children]) {
     try { await services.startWorker(o.id); }
     catch (e) { setStatus(o, 'retry', now, 'worker dispatch failed'); await store.set(`orders/${o.id}`, o); }

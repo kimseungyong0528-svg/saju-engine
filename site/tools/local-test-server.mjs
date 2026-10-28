@@ -31,7 +31,10 @@ const services = {
   },
   notifyOwner: async (order, note) => console.log('[사장님 알림]', order.id, note),
 };
-const api = makeApi({ store: memoryStore(), services, env });
+const store = memoryStore();
+// 재구매 할인 링크 화면을 볼 때: DEMO_COUPON=UNM-XXXXXX 로 띄우면 그 코드를 쓸 수 있는 상태로 넣어 둔다.
+if (process.env.DEMO_COUPON) await store.set(`coupons/${process.env.DEMO_COUPON}`, { code: process.env.DEMO_COUPON, kind: 'rebuy', percent: 10, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30 * 864e5).toISOString() });
+const api = makeApi({ store, services, env });
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${port}`);

@@ -106,9 +106,13 @@ class Variant:
     utc_sample: datetime | None = None
 
 
-def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions) -> list[Variant]:
+def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions,
+          center: float | None = None) -> list[Variant]:
+    """가능한 명식을 모두 모은다. 맨 앞(대표 명식)은 첫 날짜·시작 시각·지역 대표 경도의 명식이다
+    (사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
     known_time = p.time_accuracy != "unknown"
     variants: dict[str, Variant] = {}
+    first: list[str] = []
 
     def visit(civil: datetime, basis: str, lon: float):
         ct = civil_to_utc(civil.date(), civil.time())
@@ -118,6 +122,8 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             if not known_time:
                 # 시간 미상: 일주는 입력한 날짜 기준(경도 보정으로 날짜를 옮기지 않음)
                 fp = FourPillars(fp.year, fp.month, day_pillar_for_date(civil.date()), None)
+            if not first and lon == center:
+                first.append(fp.key)
             v = variants.get(fp.key)
             if v is None:
                 v = variants[fp.key] = Variant(fp, civil, civil, utc_sample=u)
@@ -144,7 +150,7 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             for lon in lons:
                 visit(t, sd["basis"], lon)
             t += timedelta(minutes=1)
-    return sorted(variants.values(), key=lambda v: v.civil_from)
+    return sorted(variants.values(), key=lambda v: (v.pillars.key not in first, v.civil_from))
 
 
 def _boundary_warnings(p: Person, solar_dates, lon: float, options: PillarOptions, base: FourPillars) -> list[str]:
@@ -187,7 +193,7 @@ def analyze_pillars(fp: FourPillars, utc: datetime, sex: str, current_year: int)
         "relations": analysis.natal_relations(fp),
         "shinsal": analysis.shinsal(fp),
         "daewoon": luck.daewoon(fp, utc, sex),
-        "sewoon": luck.sewoon(fp, list(range(current_year - 1, current_year + 10))),
+        "sewoon": luck.sewoon(fp, list(range(current_year - 1, current_year + 14))),   # 결제 전 화면의 12년 지도(2027~)까지
         "wolwoon": luck.wolwoon(fp, current_year),
         # 주문한 달부터 12개월을 고를 수 있도록 앞뒤 해까지 36개월
         "wolwoon_span": [m for y in (current_year - 1, current_year, current_year + 1)
@@ -211,12 +217,14 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
 
     solar_dates = solar_birth_dates(p)
     region, lons, place_label = _place_range(p.birth_place)
-    variants = _scan(solar_dates, p, lons, options)
+    variants = _scan(solar_dates, p, lons, options, region.lon if region else KOREA.lon)
 
     uncertainties = []
     if len(solar_dates) > 1:
         uncertainties.append({"kind": "date", "message": "양력·음력 또는 윤달 여부가 확정되지 않아 가능한 날짜를 모두 계산했어요."})
-    if p.time_accuracy != "exact":
+    if p.time_accuracy == "approximate":   # 사이트 화면과 같은 시각으로 푼다(제1조항)
+        uncertainties.append({"kind": "time", "message": f"출생 시간은 넣어 주신 범위의 시작 시각({p.time_range['start']})으로 풀었어요."})
+    elif p.time_accuracy != "exact":
         uncertainties.append({"kind": "time", "message": "출생 시간이 확정되지 않아 가능한 시간 전체를 비교했어요."})
     if not region or p.birth_place.get("status") != "known":
         uncertainties.append({"kind": "place", "message": f"출생지를 {place_label} 범위로 두고 결과 차이를 비교했어요."})

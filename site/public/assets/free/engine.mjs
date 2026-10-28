@@ -209,12 +209,8 @@ export function chartFromPerson(data, person, solarDate) {
   const lon = (['known', 'region-only'].includes(place.status) && data.regions[place.regionChoice || place.regionCode]) || data.defaultLon;
   let time = null;
   if (person.timeAccuracy === 'exact' && person.time) time = person.time;
-  else if (person.timeAccuracy === 'approximate' && person.timeRange?.start && person.timeRange?.end) {
-    // 범위 앞뒤가 같은 시주면 그 시주로, 다르면 시간 미상으로 본다.
-    const at = t => { const [hh, mm] = t.split(':').map(Number); return computePillars(data, civilToUtc(data, y, m, d, hh, mm), lon, true).hour.ko; };
-    const endNext = person.timeRange.endDayOffset === 1;
-    if (!endNext && at(person.timeRange.start) === at(person.timeRange.end)) time = person.timeRange.start;
-  }
+  // 대략 시간은 범위의 시작 시각으로 본다(리포트 saju/chart.py 의 첫 번째 명식과 같은 시주, 제1조항).
+  else if (person.timeAccuracy === 'approximate' && person.timeRange?.start && person.timeRange?.end) time = person.timeRange.start;
   if (!time) {
     const fp = computePillars(data, civilToUtc(data, y, m, d, 12, 0), lon, false);
     return { ...fp, day: dayPillarForDate(y, m, d) };

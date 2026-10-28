@@ -26,22 +26,21 @@ function entryPopup(){
  const today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
  try{if(sessionStorage.getItem('unmyeong.entry')||localStorage.getItem('unmyeong.entryHide')===today)return;sessionStorage.setItem('unmyeong.entry','1')}catch{}
  const p=pById('newyear');
- const m=modal(`<div class="entry-pop"><div class="entry-art"><img src="assets/geumwol/newyear-poster.webp" alt="금월선녀의 2027 신년운세" width="720" height="1018"><span class="entry-tag">EVENT</span></div><div class="entry-body"><p class="entry-lead">내 사주로 보는 2027년 열두 달의 흐름을<br>한 권의 리포트로 받아 보세요.</p><div class="entry-count"><span>이벤트 마감까지</span><b>${d?'D-'+d:'오늘 마감'}</b></div><a class="entry-go" href="#${link(p)}">신년운세 보러 가기</a><button type="button" class="entry-hide" data-entry-hide>오늘 하루 보지 않기</button></div></div>`,'entry-modal','이벤트 안내');
+ const m=modal(`<div class="entry-pop"><div class="entry-art"><img src="assets/geumwol/newyear-poster.webp" alt="금월선녀의 2027 신년운세" width="720" height="1018"><span class="entry-tag">EVENT</span></div><div class="entry-body"><p class="entry-lead">내 사주로 보는 2027년 열두 달의 흐름을<br>한 권의 리포트로 받아 보세요.</p><div class="entry-count"><span>이벤트 마감까지</span><b>${d?'D-'+d:'오늘 마감'}</b></div><a class="entry-go" href="${link(p)}">신년운세 보러 가기</a><button type="button" class="entry-hide" data-entry-hide>오늘 하루 보지 않기</button></div></div>`,'entry-modal','이벤트 안내');
  m.querySelector('.entry-go').onclick=()=>closeModal();
  m.querySelector('[data-entry-hide]').onclick=()=>{try{localStorage.setItem('unmyeong.entryHide',today)}catch{}closeModal()};
 }
 
 // 2단계 할인 (2026-10-27 사장님 결정). 할인은 모두 10%이고 한 주문에 하나만(더하지 않음). 금액은 서버(/api/quote)가 계산한다.
-// 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.  12. 친구 초대(?ref=)  16. 재구매 코드(?coupon=)
+// 9·10. 첫 구매 묶음 할인: 처음 사는 분이 2개 이상 함께 사면 전부 10%.
+// 12. 재구매 할인: 리포트 끝의 링크(?coupon=)로 들어왔을 때만 된다. 할인 코드 칸은 없다(2026-10-27 사장님).
 const discounted=v=>Math.round(v*0.9);
 // 묶음 목록과 금액 안내의 상품 순서(2026-10-27 사장님). 재회·깊은궁합은 상대방 정보가 필요하다(아래 bundleBlock).
 const BUNDLE_IDS=['newyear','romance','intimate','reunion','wealth','career','business','health','lifetime'];
 const PAIR_IDS=['intimate','reunion'];
 const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+1||99);
-(()=>{try{const q=new URLSearchParams(location.search),ref=q.get('ref'),cp=q.get('coupon');
- if(ref)localStorage.setItem('unmyeong.ref',JSON.stringify({code:ref.slice(0,20),at:Date.now()}));
+(()=>{try{const cp=new URLSearchParams(location.search).get('coupon');
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
-function savedRef(){try{const r=JSON.parse(localStorage.getItem('unmyeong.ref'));return r&&Date.now()-r.at<30*864e5?r.code:''}catch{return ''}}
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
@@ -68,25 +67,21 @@ function quoteBox(p,q){
 }
 let quoteSeq=0;
 async function refreshQuote(p,d){
- const seq=++quoteSeq,box=document.querySelector('#checkout-price'),msg=document.querySelector('#coupon-message');if(!box)return;
- let q=null;try{const r=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,productId:p.id,email:d.email||'',extras:d.extras||[],coupon:d.coupon||'',ref:savedRef()}),signal:AbortSignal.timeout(15000)});if(r.ok)q=await r.json()}catch{}
+ const seq=++quoteSeq,box=document.querySelector('#checkout-price');if(!box)return;
+ let q=null;try{const r=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,productId:p.id,email:d.email||'',extras:d.extras||[],coupon:d.coupon||''}),signal:AbortSignal.timeout(15000)});if(r.ok)q=await r.json()}catch{}
  if(seq!==quoteSeq||!box.isConnected)return;
- if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){if(msg){msg.textContent='사용할 수 없는 코드예요. 이미 썼거나 기한이 지났을 수 있어요.';msg.classList.add('error')}d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
- if(q&&msg&&d.coupon&&q.discount?.code){msg.textContent=`${q.discount.label} ${q.discount.percent}%가 적용됐어요.`;msg.classList.remove('error')}
+ if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
  if(q)q.missing=(d.extras||[]).some(id=>!q.items.some(i=>i.id===id));
  box.innerHTML=quoteBox(p,q);
 }
 function bindDiscounts(p,d){
  const form=document.querySelector('#checkout-form');if(!form)return;
  if(!d.coupon&&savedCoupon())d.coupon=savedCoupon();
- const coupon=form.elements.coupon;if(coupon&&d.coupon)coupon.value=d.coupon;
  delete d.discount;
  document.querySelectorAll('.bundle-x input[name=extra]').forEach(b=>b.onchange=()=>{d.extras=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].map(x=>x.value);save();refreshQuote(p,d)});
  const pf=document.querySelector('[data-bundle-partner]');
  if(pf){let pt;bindPerson(pf,(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
- const mk=form.elements.marketing;if(mk){mk.checked=d.marketing===true;mk.onchange=()=>{d.marketing=mk.checked;save()}}
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600)});
- document.querySelector('#apply-coupon').onclick=()=>{d.coupon=coupon.value.trim().toUpperCase();save();refreshQuote(p,d)};
  refreshQuote(p,d);
 }

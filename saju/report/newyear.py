@@ -231,11 +231,13 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     year.update(marks(year))
     for m in months:
         m.update(marks(m))
+    T.reveal_fix(result, "newyear", months, replace=False)   # 제1조항: 결제 전 화면의 '돕는 달'·'조심할 달'과 같은 방향
 
     def avg(vals):
         return sum(vals) / len(vals)
 
-    year_score = T.clamp((year["t_score"] + avg([m["t_score"] for m in months])) / 2)
+    screen = T.screen_score(f, result, "newyear")   # 제1조항: 2027년 전체 점수는 결제 전 화면에서 본 점수 그대로
+    year_score = screen["score"]
     label = lambda m: m["label"]
     areas = {}
     for key, title in AREAS:
@@ -305,8 +307,6 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     lucky = f["lucky"]
     best = T.best(months, 3, label)
     careful = T.worst(months, 3, label, limit=45)
-    if not careful:
-        careful = [m["label"] for m in sorted(months, key=lambda m: m["t_score"])[:2]]
     health_body = [{"el": e, "name": K_NAME[e], **BODY[e]} for e in excess + [x for x in lacking if x not in excess]]
     health_basis = "넘치는 기운과 모자란 기운의 영역"
     if not health_body:   # 넘치거나 모자란 기운이 없으면 2027년에 크게 들어오는 기운(불·흙) 쪽을 본다
@@ -323,7 +323,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
                             "ten_god_simple": K.TEN_GOD[year["branch_ten_god"]]["simple"], "role": roles[branch_el]},
                  "twelve_stage": year["twelve_stage"], "relations": rels, "gyeok_effect": year["gyeok_effect"],
                  "flow_score": year["score"], "signs": year["t_signs"]},
-        "year_score": year_score, "year_type": year_type, "fit": fit,
+        "year_score": year_score, "screen_score": screen, "year_type": year_type, "fit": fit,
         "age_2027": TARGET_YEAR - birth.year, "age_text": f"{TARGET_YEAR}년 생일이 지나면 만 {TARGET_YEAR - birth.year}세",
         "zodiac": f["person"]["zodiac"], "samjae": sj, "daewoon": daewoon,
         "areas": {k: {kk: v[kk] for kk in ("name", "score", "year_signs", "best_months", "careful_months", "sign_months")} for k, v in areas.items()},
@@ -419,7 +419,7 @@ def build_outline(f: dict) -> list[dict]:
     short = lambda sg: sg.split("(")[0]
     yrow = f"{y['ganzhi']}({y['hanja']})년 · {y['animal']}띠 해"
     gods = f"{y['stem']['char']}: {y['stem']['ten_god']}({y['stem']['ten_god_simple']}) · {y['branch']['char']}: {y['branch']['ten_god']}({y['branch']['ten_god_simple']})"
-    rel_txt = ", ".join(f"{r['with']}{'과' if r['with'][-1] in '날달' else '와'} {r['kind']}" for r in y["relations"]) or "특별히 합치거나 부딪히는 글자가 없어요"
+    rel_txt = ", ".join(f"{r['with']}{'과' if (ord(r['with'][-1]) - 0xAC00) % 28 else '와'} {r['kind']}" for r in y["relations"]) or "특별히 합치거나 부딪히는 글자가 없어요"
     sj_txt = (f"{sj['kind']}예요 ({t['zodiac']}띠, {sj['years_branches']} 해가 삼재)" if sj["is_samjae"]
               else f"삼재가 아니에요 ({t['zodiac']}띠의 삼재는 {sj['years_branches']} 해)")
     dw_txt = dw["change_text"]
@@ -443,9 +443,9 @@ def build_outline(f: dict) -> list[dict]:
                  for v in a.values()]
     section("2", [
         P("ny_glance", "한눈에 보는 나의 2027년", figure="kv", opener=True, rows=[
-            ["한마디로", t["year_type"]], ["2027년 전체 점수", f"{t['year_score']}점"],
+            ["한마디로", t["year_type"]], T.screen_row(t["screen_score"]),
             ["강한 분야", ", ".join(t["strong_areas"])], ["약한 분야", ", ".join(t["weak_areas"])],
-            ["가장 좋은 달", join(t["best_months"])], ["조심할 달", join(t["careful_months"])],
+            ["가장 좋은 달", join(t["best_months"])], ["조심할 달", join(t["careful_months"], "크게 조심할 달은 없어요")],
             ["삼재", "아니에요" if not sj["is_samjae"] else sj["kind"]],
             ["대운", "2027년에 바뀌어요" if dw["changes_in_2027"] else "2027년에는 바뀌지 않아요"],
         ], slot=S("ny_glance", f"표를 이어서 2027년을 한 문장으로 요약하고('{t['year_type']}'), 그 까닭을 세운 글자와 점수로 짧게 설명해 주세요.", HALF - 80)),

@@ -265,8 +265,18 @@ def build_outline(f: dict) -> list[dict]:
 
     # 11. 연도별 (87~94쪽)
     spages = []
+    if f.get("sewoon_all") and "r_signs" in f["sewoon_all"][0]:
+        # 제1조항: 결제 전 화면에서 본 12년 지도(2027년부터)를 한 표로 먼저 싣는다
+        from .theme import screen_years
+        ys = screen_years(f)
+        g = page("sw_12", "앞으로 12년 한눈에", figure="grid", opener=True,
+                 slot=_slot("sw_12", "표에서 좋은 표시가 있는 해와 조심할 표시가 있는 해를 골라, 결제 전 화면에서 본 그대로 그 까닭을 짧게 정리해 주세요.", FULL - 520))
+        g["grid"] = {"head": ["해", "간지", "표시", "흐름"],
+                     "rows": [[str(s["year"]), f"{s['hanja']} {s['ganzhi']}", ", ".join(s["r_signs"]) or "—", f"{s['score']}점"] for s in ys],
+                     "hl": [i for i, s in enumerate(ys) if s["r_good"] and not s["r_bad"]], "left": [2]}
+        spages.append(g)
     for i, s in enumerate(f["sewoon"]):
-        spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0),
+        spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0 and not spages),
                            slot=_slot(f"sw_{s['year']}", f"{s['year']}년 {s['ganzhi']}({s['hanja']})년의 운세를 요약, 좋은 점, 주의할 점, 일, 돈, 연애, 좋은 달 순서로 써 주세요.",
                                       FULL * s["pages"] - (400 if i == 0 else 330) - _rel_len(s), "fortune")))
         spages[-1]["year"] = s["year"]

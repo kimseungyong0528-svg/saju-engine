@@ -12,8 +12,10 @@ export const FIRST_YEAR = 2027;
 
 const pillar = (stem, branch) => ({ stem, branch, ko: STEMS[stem] + BRANCHES[branch], hanja: STEMS_HANJA[stem] + BRANCHES_HANJA[branch] });
 const yearPillar = y => pillar(((y - 4) % 10 + 10) % 10, ((y - 4) % 12 + 12) % 12);
-// 2027년(정미년) 열두 달: 인월(2월, 입춘부터) ~ 축월(2028년 1월). 정(丁)년의 첫 달은 임인(壬寅).
-export const MONTHS_2027 = Array.from({ length: 12 }, (_, k) => ({ ...pillar((8 + k) % 10, (2 + k) % 12), label: k === 11 ? '2028년 1월' : `${k + 2}월` }));
+// 2027년 달력 1월~12월(리포트와 같은 열두 달). 1월은 2026년 병오년의 마지막 달 신축(辛丑, 소한부터),
+// 2월~12월은 정미년의 임인(壬寅, 입춘부터)~임자(壬子, 대설부터).
+export const MONTHS_2027 = [{ ...pillar(7, 1), label: '1월' },
+  ...Array.from({ length: 11 }, (_, k) => ({ ...pillar((8 + k) % 10, (2 + k) % 12), label: `${k + 2}월` }))];
 
 // 사주에서 가장 모자란 기운(무료 맛보기 '가장 모자란 기운'과 같은 것: 같으면 뒤 순서)
 function weakest(elements) {

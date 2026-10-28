@@ -35,7 +35,16 @@ def test_outline_12_chapters_and_50_pages(pid):
     t = facts["theme"]
     assert len(t["months"]) == 12
     if pid != "newyear":   # 신년운세는 2027년 한 해만 본다(tests/test_newyear.py)
-        assert len(t["years"]) == 5
+        # 제1조항: 연도 표는 결제 전 화면의 12년 지도와 같은 해, 같은 방향(좋은 표시 해는 60점 이상, 조심 표시만 있는 해는 40점 이하)
+        from saju import reveal as RV
+        m = RV.luck_map(RV.taster.pillars_from_result(_prep(pid)[0]), ME["sex"], pid, 2027)
+        assert [y["year"] for y in t["years"]] == [int(c["label"]) for c in m["cells"]]
+        for y, c in zip(t["years"], m["cells"]):
+            assert bool(y["r_good"]) == bool(c["good"]) and bool(y["r_bad"]) == bool(c["bad"])
+            if c["good"] and not c["bad"]:
+                assert y["t_score"] >= 60
+            if c["bad"] and not c["good"]:
+                assert y["t_score"] <= 40
     assert all(20 <= m["score"] <= 95 for m in t["months"])
     assert PRODUCT[pid]["cover"] is COVER[pid]
 

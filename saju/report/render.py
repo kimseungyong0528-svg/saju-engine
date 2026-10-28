@@ -201,6 +201,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
     env.filters["para"] = para
     env.filters["bullet"] = bullet
+    env.filters["ord"] = ord
     tpl = env.get_template("report.html.j2")
     svg = {"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
            "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])}
@@ -212,15 +213,15 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
                                              facts["daewoon"]["current_index"])
     recap = None
     if facts.get("taster_view"):
-        # 책 맨 끝 '더보기' 앞쪽에 무료 분석 6가지 다시 보기를 넣는다(목차 줄은 그대로).
-        recap = taster_recap(facts["taster_view"], product, site_url)
-        sections = [dict(sec, pages=[{"id": "recap", "title": "무료 분석에서 본 나의 좋은 운과 조심할 운", "figure": "taster_recap",
+        # 책 맨 끝 '더보기' 앞쪽에 보너스로 6가지 핵심운(좋은 운 3·조심할 운 3)을 넣는다(목차 줄은 그대로).
+        recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"))
+        sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 나의 6가지 핵심운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
                                       *[dict(pg, opener=False) for pg in sec["pages"]]])
                     if sec.get("no") == "더보기" else sec for sec in sections]
     return tpl.render(
         f=facts, sections=sections, recap=recap, texts=texts, static=static or STATIC, kb=_kb(),
-        more=cross_sell(facts, current=product, site=site_url, first=first), secmark={"더보기": "續"},
+        more=cross_sell(facts, current=product, site=site_url, first=first, coupon=(facts.get("rebuy") or {}).get("code")), secmark={"더보기": "續"},
         glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts), product=PRODUCT[product],
         svg=svg,
     )

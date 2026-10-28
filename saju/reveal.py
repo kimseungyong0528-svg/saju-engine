@@ -25,8 +25,8 @@ def _year_pillar(y: int) -> dict:
     return _pillar((y - 4) % 10, (y - 4) % 12)
 
 
-# 2027년(정미년) 열두 달: 인월(2월, 입춘부터) ~ 축월(2028년 1월).
-MONTHS_2027 = [{**_pillar((8 + k) % 10, (2 + k) % 12), "label": "2028년 1월" if k == 11 else f"{k + 2}월"} for k in range(12)]
+# 2027년 달력 1월~12월(신년운세 리포트와 같은 열두 달): 1월은 병오년의 마지막 달 신축(소한부터), 2월~12월은 임인~임자.
+MONTHS_2027 = [{**_pillar(7, 1), "label": "1월"}] + [{**_pillar((8 + k) % 10, (2 + k) % 12), "label": f"{k + 2}월"} for k in range(11)]
 
 
 def _weakest(elements: dict) -> str:
