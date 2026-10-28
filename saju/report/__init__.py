@@ -26,6 +26,9 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
                         rebuy: dict | None = None) -> dict:
     """analyze_person() 결과로 평생사주 PDF를 만든다. 쪽수와 사용한 글을 돌려준다."""
     facts = build_facts(result, order)
+    from .theme import reveal_fix
+    for rows in (facts["sewoon"], facts["sewoon_all"]):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+        reveal_fix(result, "lifetime", rows, score="score", signs="r_signs")
     if taster:
         facts["taster"] = taster   # 무료 맛보기에서 고객이 본 6개(saju/taster.py). 리포트에서 더 자세히 푼다.
     if taster_view:

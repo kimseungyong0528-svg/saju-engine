@@ -89,10 +89,14 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         return {"t_score": T.clamp(score), "t_signs": signs, "t_move": seat or move}
 
     years, months, periods = T.marked(f, mark)
+    T.reveal_fix(result, "career", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+    T.reveal_fix(result, "career", months)
     style, style_text = _style(f)
     top_group = max(("관성", "식상", "재성", "인성", "비겁"), key=lambda g: T.count(f, g))
-    move_years = [y["year"] for y in years if y["t_move"] and y["t_score"] >= 55][:2] or T.best(years, 2, lambda y: y["year"])
+    move_years = T.good_rows(years, 12, lambda y: y["year"])   # 화면의 '자리의 별' 해
+    screen = T.screen_score(f, result, "career")
     data = {
+        "screen_score": screen,
         "concern": _CONCERN.get(answers.get("concern", ""), answers.get("concern", "")),
         "style": style, "style_text": style_text,
         "counts": {g: T.count(f, g) for g in T.GODS},
@@ -100,7 +104,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "yeokma": "역마살" in f["shinsal_names"],
         "fields": _FIELD[f["lucky"]["element"]], "roles": _ROLE[top_group], "top_group": top_group,
         "org": "조직형(회사·공공기관)" if T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)",
-        "move_years": move_years, "best_years": T.best(years, 2, lambda y: y["year"]),
+        "move_years": move_years, "best_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
     }
     return {"label": "직업 재료", "data": data,
@@ -148,8 +152,9 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("2", [
         P("c_glance", "한눈에 보는 나의 직업운", figure="kv", opener=True, rows=[
+            T.screen_row(t["screen_score"]),
             ["일하는 형", t["style"]], ["어울리는 역할", t["roles"]], ["어울리는 분야", t["fields"]],
-            ["맞는 환경", t["org"]], ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"])],
+            ["맞는 환경", t["org"]], ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["가까운 좋은 달", ", ".join(t["best_months"])],
         ], slot=S("c_glance", "표를 이어서 직업운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 120)),
     ])
@@ -195,12 +200,12 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("7", [
         P("c7_open", "이직 신호 읽기", figure="kv", opener=True, rows=[
-            ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"])],
+            ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["일 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "일 자리 변동" in m["t_signs"]) or "없음"],
             ["이동 기운(역마)", "타고난 사주에 있어요" if t["yeokma"] else "운에서 들어올 때 움직임이 커져요"],
         ], slot=S("c7_open", "표를 근거로 이 사람에게 이직 신호가 언제 드는지 설명해 주세요.", HALF)),
-        P("c7_years", "앞으로 5년 직업운", figure="grid", span=2, grid=T.year_grid(th["years"], t["move_years"], "일의 흐름"),
-          slot=S("c7_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 일의 흐름, 이직·승진·공부 가운데 할 일).", FULL * 2 - 460)),
+        P("c7_years", "앞으로 12년 직업운", figure="grid", span=3, grid=T.year_grid(th["years"], t["move_years"], "일의 흐름"),
+          slot=S("c7_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 일의 흐름, 이직·승진·공부 가운데 할 일).", FULL * 3 - 460)),
         P("c7_months", "앞으로 12개월 월별 직업운", figure="grid", span=2, grid=T.month_grid(th["months"], "일의 흐름"),
           note="표시: 그 달에 들어오는 직장·기술·문서·이동의 기운이에요.",
           slot=S("c7_months", "표의 12개월 가운데 지원·면접·이직 제안에 좋은 달과 조심할 달을 골라 달마다 할 일을 써 주세요.", FULL * 2 - 820)),

@@ -107,11 +107,13 @@ def build_romance(f: dict, result: dict, order) -> dict:
     main_seat = (visible or seats or [None])[0]
 
     peach = {_PEACH[an["pillars"][0]["branch"]], _PEACH[day["branch"]]}
-    years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in f["sewoon"][:5]]
+    from .theme import bad_rows, blend_current_year, good_rows, near, reveal_fix, screen_years
+    years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in screen_years(f)]
     months = [dict(m, **_love_mark(m, gods, peach, m["relations"])) for m in f["months"]]
     periods = [dict(p, **_love_mark(p, gods, peach, p["relations"])) for p in f["daewoon"]["periods"]]
-    from .theme import blend_current_year, near
     blend_current_year(years, months, "love_score")   # 올해 점수에서 이미 지난 달의 몫을 덜어 낸다
+    for rows in (years, months):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+        reveal_fix(result, "romance", rows, score="love_score", signs="love_signs")
     marriage = [p for p in near(f, periods) if p["state"] != "지난" and (p["love_star"] or p["love_hap"])]
 
     natal_day = [r for r in f["relations"] if "일주" in r.get("between", [])]
@@ -128,9 +130,10 @@ def build_romance(f: dict, result: dict, order) -> dict:
         "peach": [s for s in f["shinsal_names"] if s in ("도화살", "홍염살")],
         "peach_branches": sorted(peach),
         "years": years, "months": months, "periods": periods,
-        "best_years": sorted(y["year"] for y in sorted(years, key=lambda y: -y["love_score"])[:2]),
-        "best_months": [f"{m['year']}년 {m['month']}월" for m in months if m in sorted(months, key=lambda m: -m["love_score"])[:3]],
-        "careful_months": [f"{m['year']}년 {m['month']}월" for m in months if m["love_clash"] or m["love_score"] <= 35][:3],
+        "best_years": good_rows(years, 12, lambda y: y["year"], "love_score"),   # 화면 12년 지도에 표시된 해만
+        "best_months": good_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월", "love_score")
+                       or [f"{m['year']}년 {m['month']}월" for m in months if m in sorted(months, key=lambda m: -m["love_score"])[:3]],
+        "careful_months": bad_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월", "love_score"),
         "marriage_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"],
                               "signs": p["love_signs"]} for p in marriage[:3]],
         "status": status, "experience": getattr(order, "experience", "") or "",
@@ -244,8 +247,8 @@ def build_outline(f: dict) -> list[dict]:
              slot=_slot("r7_now", "지금 대운(10년)의 글자가 배우자 별·배우자 자리·도화와 어떤 관계인지 근거로, 이 10년의 연애 흐름과 할 일을 써 주세요.")),
         page("r7_year", f"{f['order']['year']}년 연애운",
              slot=_slot("r7_year", f"{f['order']['year']}년 세운의 인연 표시와 인연 점수를 근거로 올해 연애운을 쓰고, 남은 달에 할 일을 써 주세요.")),
-        page("r7_5y", "앞으로 5년 연애운", figure="love_years5", span=2,
-             slot=_slot("r7_5y", "표의 5년을 한 해씩 문단으로 써 주세요(해마다 인연 표시 근거, 그해 연애 흐름, 할 일).", FULL * 2 - 420)),
+        page("r7_5y", "앞으로 12년 연애운", figure="love_years5", span=3,
+             slot=_slot("r7_5y", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(해마다 인연 표시 근거, 그해 연애 흐름, 할 일).", FULL * 3 - 420)),
         page("r7_12m", "앞으로 12개월 월별 연애운", figure="love_months", span=2,
              slot=_slot("r7_12m", "표의 12개월 가운데 인연 점수가 높은 달과 조심할 달을 골라, 달마다 무엇을 하면 좋은지 써 주세요.", FULL * 2 - 760)),
         page("r7_contact", "연락하기 좋은 시기, 조심할 때",

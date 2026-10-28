@@ -1,6 +1,6 @@
 """주제 사주(재회·깊은 궁합·재물·직업·사업·건강)가 같이 쓰는 도구.
 
-평생사주·연애사주 모듈은 이 파일을 쓰지 않는다(두 상품의 결과는 바꾸지 않는다).
+평생사주 모듈은 이 파일을 쓰지 않는다. 연애사주는 screen_years·reveal_fix만 같이 쓴다(제1조항).
 상품 모듈은 build(f, result, answers, partner) → f["theme"]를 만들고, 그 안에
 label(AI에게 보낼 재료 이름), digest(AI에게 보낼 값), periods(대운별 t_score, 그래프용)를 둔다.
 """
@@ -52,16 +52,61 @@ def marked(f: dict, fn) -> tuple[list[dict], list[dict], list[dict]]:
 
     주문한 해는 이미 지난 달이 있으므로, 해 점수와 남은 달 점수의 평균을 반씩 섞는다
     (해는 '좋은 해'인데 남은 달이 모두 낮게 나오는 어긋남을 막는다)."""
-    years = [dict(s, **fn(s)) for s in f["sewoon"][:5]]
+    years = [dict(s, **fn(s)) for s in screen_years(f)]
     months = [dict(m, **fn(m)) for m in f["months"]]
     periods = [dict(p, **fn(p)) for p in f["daewoon"]["periods"]]
     blend_current_year(years, months)
     return years, months, periods
 
 
+def screen_years(f: dict) -> list[dict]:
+    """결제 전 이야기 화면의 12년 지도와 같은 해(2027년 또는 주문한 해부터 12년). 제1조항: 화면과 리포트가 같은 해를 본다."""
+    from ..reveal import start_year
+    first = start_year(int(f["order"]["date"][:4]))
+    return [s for s in f["sewoon_all"] if s["year"] >= first][:12]
+
+
+def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_score", signs: str = "t_signs",
+               replace: bool = True) -> None:
+    """제1조항(모순 금지): 해·달마다 결제 전 이야기 화면과 같은 규칙(saju/reveal.py)의 좋은 표시·조심할 표시를 붙이고,
+    점수와 표시가 화면과 반대로 읽히지 않게 맞춘다.
+    좋은 표시만 있으면 60점 이상, 조심할 표시만 있으면 40점 이하, 둘 다 있으면 45~55점, 둘 다 없으면 41~59점.
+    replace=True면 표의 '표시' 칸을 화면에 나온 말(예: '돈의 별', '돈이 샘')로 바꾼다."""
+    from .. import reveal as RV
+    from ..taster import texts
+    sex = result["person"].get("sex", "")
+    conf = texts()["REVEAL"]["PRODUCTS"][product]
+    marks = texts()["REVEAL"]["MARKS"]
+    _, rule_of = RV._marker(fourpillars(result), sex)
+    for r in rows:
+        gz = r["ganzhi"]
+        p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
+        good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["good"] if rule_of(k)(p)]
+        bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["bad"] if rule_of(k)(p)]
+        r["r_good"], r["r_bad"] = good, bad
+        v = r[score]
+        v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
+        r[score] = v
+        r[signs] = good + bad if replace else list(dict.fromkeys(good + bad + [x for x in r[signs]]))
+
+
+def good_rows(rows: list[dict], n: int, label, score: str = "t_score") -> list:
+    """화면에서 좋은 표시가 붙은 해·달 가운데 점수 높은 n개(시간 순)."""
+    top = sorted([r for r in rows if r.get("r_good")], key=lambda r: -r[score])[:n]
+    return [label(r) for r in rows if r in top]
+
+
+def bad_rows(rows: list[dict], n: int, label, score: str = "t_score") -> list:
+    """화면에서 조심할 표시가 붙은 해·달 가운데 점수 낮은 n개(시간 순)."""
+    low = sorted([r for r in rows if r.get("r_bad")], key=lambda r: r[score])[:n]
+    return [label(r) for r in rows if r in low]
+
+
 def blend_current_year(years: list[dict], months: list[dict], key: str = "t_score") -> None:
     if not years:
         return
+    if months and years[0]["year"] != months[0]["year"]:
+        return   # 표의 첫 해가 주문한 해가 아니면(화면과 같은 2027년부터) 섞지 않는다
     rest = [m[key] for m in months if m["year"] == years[0]["year"]]
     if rest:
         years[0][key] = clamp((years[0][key] + sum(rest) / len(rest)) / 2)
@@ -76,11 +121,15 @@ def near(f: dict, periods: list[dict], span: int = 40, cap: int = 80) -> list[di
 
 def best(rows: list[dict], n: int, label) -> list[str]:
     """점수가 높은 n개를 원래 순서(시간 순)대로."""
+    if rows and "r_good" in rows[0]:
+        return good_rows(rows, n, label)   # 화면에서 좋은 표시가 있는 것만(없으면 빈 목록: 화면에 없는 '좋은 해'를 만들지 않는다)
     top = sorted(rows, key=lambda r: -r["t_score"])[:n]
     return [label(r) for r in rows if r in top]
 
 
 def worst(rows: list[dict], n: int, label, limit: int = 40) -> list[str]:
+    if rows and "r_bad" in rows[0]:
+        return bad_rows(rows, n, label)   # 화면과 같은 규칙이 붙어 있으면 화면에서 조심할 표시가 있는 것만
     low = [r for r in sorted(rows, key=lambda r: r["t_score"]) if r["t_score"] <= limit or "충" in " ".join(r["t_signs"])][:n]
     return [label(r) for r in rows if r in low]
 
@@ -192,3 +241,15 @@ def seats(f: dict, group: str) -> list[str]:
         if not any(g in gods for g in (p["stem_ten_god"], p["branch_ten_god"])) and any(h["ten_god"] in gods for h in p["hidden_stems"]):
             out.append(f"{p['label']} 숨은 글자")
     return out
+
+
+def screen_score(f: dict, result: dict, product: str) -> dict:
+    """결제 전 이야기 화면 '내 점수'에서 고객이 본 점수(전체·좋은 점·조심할 점). 리포트 첫 요약에 그대로 싣는다(제1조항)."""
+    from .. import reveal as RV
+    d = RV.digest(fourpillars(result), f["person"]["name"], result["person"].get("sex", ""), product,
+                  int(f["order"]["date"][:4]))["화면에서 본 점수"]
+    return {"score": d["전체 점수"], "good": d["좋은 점"]["점수"], "bad": d["조심할 점"]["점수"]}
+
+
+def screen_row(s: dict) -> list[str]:
+    return ["결제 전에 보신 점수", f"전체 {s['score']}점 · 좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점"]

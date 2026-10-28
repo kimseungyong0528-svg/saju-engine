@@ -40,14 +40,14 @@ def test_repeats_over_limit_only():
     assert V.repeats(texts, {"s3", "s4"}) == []
 
 
-def test_current_year_uses_remaining_months():
+def test_year_table_starts_where_screen_starts():
+    """제1조항: 연도 표는 결제 전 화면의 12년 지도와 같은 해(2027년부터)를 본다."""
+    from saju.reveal import start_year
     _, f, _ = _career()
-    years, months = f["theme"]["years"], f["theme"]["months"]
-    rest = [m["t_score"] for m in months if m["year"] == years[0]["year"]]
-    assert years[0]["rest_months"] == len(rest)
-    raw = T.marked({**f, "sewoon": f["sewoon"][:1], "months": []}, lambda x: {"t_score": x["score"], "t_signs": []})[0][0]["t_score"]
-    lo, hi = sorted((raw, sum(rest) / len(rest)))
-    assert lo - 1 <= years[0]["t_score"] <= hi + 1
+    years = f["theme"]["years"]
+    first = start_year(int(f["order"]["date"][:4]))
+    assert [y["year"] for y in years] == list(range(first, first + 12))
+    assert "rest_months" not in years[0] or years[0]["year"] == f["theme"]["months"][0]["year"]
 
 
 def test_far_periods_left_out():

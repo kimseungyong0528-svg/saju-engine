@@ -243,7 +243,8 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
                    relations_text=_relations_text(s["relations"]),
                    animal=K.BRANCH_ANIMAL[s["ganzhi"][1]],
                    pages=2 if i == 0 else 1)
-              for i, s in enumerate(x for x in an["sewoon"] if x["year"] >= order.order_date.year)][:6]
+              for i, s in enumerate(x for x in an["sewoon"] if x["year"] >= order.order_date.year)]
+    sewoon_all, sewoon = sewoon, sewoon[:6]   # sewoon_all: 결제 전 화면의 12년 지도와 같은 해까지(주제 상품 연도 표)
 
     # 월운: 주문한 날이 속한 달부터 12개월
     order_dt = datetime(order.order_date.year, order.order_date.month, order.order_date.day, 12).isoformat()
@@ -265,7 +266,9 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
                  for r in an["relations"]]
 
     sex_word = "남성" if result["person"]["sex"] == "male" else "여성"
-    time_text = result["input"]["time"] or "모름"
+    tr = result["input"].get("time_range") or {}
+    time_text = (result["input"]["time"] or
+                 (f"대략 {tr['start']}~{'다음 날 ' if tr.get('endDayOffset') else ''}{tr['end']}" if tr.get("start") else "모름"))
     return {
         "person": {
             "name": result["person"]["name"] or "고객",
@@ -303,6 +306,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "daewoon": {"direction": dw["direction"], "number": dw["start"]["number"],
                     "current_index": current_idx, "periods": periods},
         "sewoon": sewoon,
+        "sewoon_all": sewoon_all,
         "months": months,
         "version": result["version"],
         "options": result["options"],

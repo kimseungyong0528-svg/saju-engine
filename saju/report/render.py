@@ -201,6 +201,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
     env.filters["para"] = para
     env.filters["bullet"] = bullet
+    env.filters["ord"] = ord
     tpl = env.get_template("report.html.j2")
     svg = {"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
            "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])}
