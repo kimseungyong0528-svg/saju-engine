@@ -227,3 +227,18 @@ export function areaView(fp, person, T, id) {
   const [key, , vars = {}] = own[0] || [`${PREFIX[id]}_base_${sign > 0 ? 'good' : 'bad'}`];
   return { ...T.AREAS[id], id, score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }), sign, scores: r.scores, chart: r.chart, pillars: r.pillars };
 }
+
+// 상품 하나의 운을 좋은 점과 조심할 점으로 나눈다(결제 전 이야기 화면 '내 점수', 사장님 2026-10-28).
+// 좋은 점 점수 = 50 + 좋은 근거 점수 합, 조심할 점 점수 = 50 + 나쁜 근거 점수 합. 근거가 없는 쪽은 null.
+export function areaParts(fp, person, T, id) {
+  const name = (person.name || '').trim() || '고객';
+  const reasons = RULES[id](facts(fp, person.sex), T);
+  const part = sign => {
+    const own = reasons.filter(x => Math.sign(x[1]) === sign).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
+    if (!own.length) return null;
+    const [key, , vars = {}] = own[0];
+    const score = Math.max(5, Math.min(95, 50 + own.reduce((a, x) => a + x[1], 0)));
+    return { score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
+  };
+  return { id, score: Math.max(5, Math.min(95, 50 + reasons.reduce((a, x) => a + x[1], 0))), good: part(1), bad: part(-1) };
+}

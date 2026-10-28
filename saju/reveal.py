@@ -148,6 +148,13 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year: int) 
         f"조심할 {unit}": rows(m["bad"]),
     }
     if product != "lifetime":
-        v = taster.area_view(fp, name, sex, product)
-        out["화면에서 본 점수"] = {"운": v["title"], "점수": v["score"], "구분": "좋은 운" if v["sign"] > 0 else "조심할 운", "글": v["text"]}
+        pt = taster.area_parts(fp, name, sex, product)
+        title = taster.texts()["AREAS"][product]["title"]
+        out["화면에서 본 점수"] = {
+            "운": title, "전체 점수": pt["score"],
+            "좋은 점": {"점수": pt["good"]["score"], "글": pt["good"]["text"]} if pt["good"] else None,
+            "조심할 점": {"점수": pt["bad"]["score"], "글": pt["bad"]["text"]} if pt["bad"] else None,
+            "쓸 점": "화면은 이 운의 좋은 점과 조심할 점을 모두 짚었습니다. 리포트는 두 가지 모두를 더 깊게 풀고, "
+                    "좋은 점은 크게 받는 시기와 방법을, 조심할 점은 막는 시기와 방법을 씁니다.",
+        }
     return out

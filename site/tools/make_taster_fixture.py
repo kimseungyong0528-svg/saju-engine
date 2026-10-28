@@ -44,6 +44,7 @@ def main() -> None:
             # 결제 전 이야기 화면(reveal.mjs): 상품별 점수 글과 해·달 지도
             "areas": {a: {k: v for k, v in taster.area_view(taster.pillars_from_result(r), "하늘", person["sex"], a).items()
                           if k in ("id", "score", "reason", "text", "hook", "sign")} for a in taster.AREA_ORDER},
+            "parts": {a: taster.area_parts(taster.pillars_from_result(r), "하늘", person["sex"], a) for a in taster.AREA_ORDER},
             "maps": {pid: reveal.luck_map(taster.pillars_from_result(r), person["sex"], pid)
                      for pid in taster.texts()["REVEAL"]["PRODUCTS"]},
         })

@@ -569,6 +569,7 @@ REVEAL_CSS = (
     ".rv-score.good strong,.rv-score.good span{color:#6fcf97}.rv-score.good i b{background:#6fcf97}"
     ".rv-score.mid strong,.rv-score.mid span{color:#d8bb78}.rv-score.mid i b{background:#d8bb78}"
     ".rv-score.bad strong,.rv-score.bad span{color:#ff7b8f}.rv-score.bad i b{background:#ff7b8f}"
+    ".rv-bridge{font-size:19px;font-weight:800;line-height:1.55;margin:20px 0 10px;color:#fff}.rv-bridge.bad{color:#ff7b8f}.rv-bridge.good{color:#6fcf97}"
     ".rv-sub{font-size:20px;margin:26px 0 12px}.rv-bars{margin:0 0 16px}"
     ".rv-bar{display:grid;grid-template-columns:92px 1fr 48px;align-items:center;gap:8px;margin:0 0 9px;font-size:15px}"
     ".rv-bar i{height:10px;border-radius:5px;background:#2a2a2a;overflow:hidden}.rv-bar i b{display:block;height:100%;background:#d8bb78}"
