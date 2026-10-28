@@ -3,7 +3,7 @@
   base = "site"
   publish = "public"
   functions = "netlify/functions"
-  command = "echo 사이트는 미리 만들어 둠"
+  command = "npm test"   # 제1조항: 무료 분석·결제 전 화면이 리포트(파이썬)와 같은 답인지 검사하고, 틀리면 올리지 않는다
 
 [[headers]]
   for = "/*"

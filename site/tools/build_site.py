@@ -66,8 +66,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<p>사주 원국은 분석 서비스 연결 후 표시됩니다.</p>", "")
     # 제1조항: 시간을 '대략'으로 넣으면 결제 전 화면과 리포트가 조금 다를 수 있다는 것을 미리 알린다(사장님 2026-10-28)
     s = _swap(s, '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>',
-              '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>'
-              '<p class="birth-help approx-note">대략으로 넣으면 결과가 조금 다를 수 있어요.</p>')
+              '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>')
     s = _swap(s, "<p>개별 분석 결과는 정식 서비스 연결 후 제공됩니다.</p>", "<p>결제하면 이 이야기를 한 권의 PDF로 써서 이메일로 보내드려요.</p>")
     s = _swap(s, "'정식 리포트에는 분석의 근거와 해석을 함께 담도록 연결할 예정이에요.'", "'리포트에는 풀이마다 사주 근거와 해석을 함께 담아요.'")
     # 보관함: 실제 주문은 이메일로 받으므로, 체험 주문 찾기 대신 받는 방법과 문의 방법을 안내한다.
@@ -558,7 +557,6 @@ REVEAL_CSS = (
     ".rv-guide{display:flex;gap:12px;align-items:flex-start;margin:6px 0 22px;padding:14px;border-radius:14px;border:1px solid #d8bb7859;background:#17130c}"
     ".rv-guide img{width:54px;height:54px;flex:0 0 54px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:1px solid #d8bb78}"
     ".rv-guide strong{display:block;font-size:14px;color:#d8bb78;margin:0 0 3px}.rv-guide p{margin:0;font-size:17px;line-height:1.7;color:#f3ecdf}"
-    ".rv-approx{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#2a2216;border:1px solid #d8bb7855;color:#f3ecdf;font-size:15px;line-height:1.65}"
     ".rv-card{padding:16px;margin:0 0 12px;border-radius:14px;background:#151515;border:1px solid #ffffff17}"
     ".rv-card strong,.rv-card small{display:block;font-size:16px;font-weight:700;color:#d8bb78;margin:0 0 6px}"
     ".rv-card p{font-size:17px;line-height:1.8;margin:0 0 8px;color:#e5e5e5}.rv-card p:last-child{margin-bottom:0}"

@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from saju import astro
-from saju.regions import REGIONS
+from saju.regions import KOREA, REGIONS
 from saju.timeutil import SEOUL_TZ
 
 OUT = Path(__file__).resolve().parents[1] / "public" / "assets" / "free" / "saju-data.json"
@@ -54,7 +54,7 @@ def main() -> None:
         "jie": jie_table(),
         "tz": tz_table(),
         "regions": {code: r.lon for code, r in REGIONS.items()},
-        "defaultLon": REGIONS["1100000000"].lon,
+        "defaultLon": KOREA.lon,   # 출생지 모름: 파이썬 chart.py 대표 경도와 같게
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")

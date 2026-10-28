@@ -1,5 +1,5 @@
 """무료 맛보기 계산기(site/public/assets/free/engine.mjs)가 파이썬 엔진과 같은 답을 내는지
-비교할 정답표를 만든다 → site/tests/fixtures/taster-parity.json
+비교할 정답표를 만든다(정확 시간·모름 400건 + 대략 시간 100건) → site/tests/fixtures/taster-parity.json
 
 예) python site/tools/make_taster_fixture.py
 """
@@ -20,16 +20,25 @@ def main() -> None:
     rnd = random.Random(20261025)
     codes = [c for c in REGIONS if not c.startswith("legacy")]
     cases = []
-    while len(cases) < 400:
-        d = date(1940, 1, 1) + timedelta(days=rnd.randrange(365 * 86))
-        known = rnd.random() < 0.8
-        t = f"{rnd.randrange(24):02d}:{rnd.randrange(60):02d}" if known else None
-        code = rnd.choice(codes)
-        person = {"name": "하늘", "sex": rnd.choice(["male", "female"]), "birth": d.isoformat(), "calendar": "solar",
+    arnd = random.Random(20261028)   # 대략 시간 100건(앞의 400건은 그대로 둔다)
+    while len(cases) < 500:
+        approx = len(cases) >= 400
+        g = arnd if approx else rnd
+        d = date(1940, 1, 1) + timedelta(days=g.randrange(365 * 86))
+        known = approx or g.random() < 0.8
+        t = f"{g.randrange(24):02d}:{g.randrange(60):02d}" if known else None
+        code = g.choice(codes)
+        person = {"name": "하늘", "sex": g.choice(["male", "female"]), "birth": d.isoformat(), "calendar": "solar",
                   "timeAccuracy": "exact" if known else "unknown", "time": t,
                   "birthPlace": {"status": "known", "regionChoice": code}}
+        if approx:
+            # 대략 시간: 리포트는 범위 첫 명식(시작 시각)으로 풀고, 화면도 같은 시주를 써야 한다(제1조항)
+            h, mi = map(int, t.split(":"))
+            e = h * 60 + mi + g.randrange(30, 240)
+            person.update(timeAccuracy="approximate", time=None,
+                          timeRange={"start": t, "end": f"{e // 60 % 24:02d}:{e % 60:02d}", "endDayOffset": int(e >= 1440)})
         r = analyze_person(person)
-        if r["variant_count"] != 1:
+        if r["variant_count"] != 1 and not approx:
             continue
         an = r["variants"][0]["analysis"]
         cases.append({

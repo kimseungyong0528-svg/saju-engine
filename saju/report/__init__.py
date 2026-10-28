@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from . import unity
 from .facts import OrderInfo, build_facts
 from .outline import build_outline
 from .render import render_html, render_pdf
@@ -29,6 +30,7 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
     from .theme import reveal_fix
     for rows in (facts["sewoon"], facts["sewoon_all"]):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
         reveal_fix(result, "lifetime", rows, score="score", signs="r_signs")
+    unity.require("lifetime", result, facts)
     if taster:
         facts["taster"] = taster   # 무료 맛보기에서 고객이 본 6개(saju/taster.py). 리포트에서 더 자세히 푼다.
     if taster_view:
@@ -53,6 +55,7 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
     from .outline import STATIC
     facts = build_facts(result, order)
     facts["romance"] = R.build_romance(facts, result, order)
+    unity.require("romance", result, facts)
     if taster:
         facts["taster"] = taster
     if taster_view:
@@ -110,6 +113,7 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
         facts["partner"] = build_facts(partner, order)
         _merge_boundary(facts["partner"])
     facts["theme"] = M.build(facts, result, answers or {}, partner)
+    unity.require(product, result, facts)   # 제1조항: 화면과 다르면 여기서 멈춘다
     return M, facts, M.build_outline(facts)
 
 
