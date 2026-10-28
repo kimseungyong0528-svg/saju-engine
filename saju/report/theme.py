@@ -159,13 +159,13 @@ def digest_rows(years: list[dict], months: list[dict], periods: list[dict]) -> d
 def year_grid(years: list[dict], best_years: list[int], head: str = "점수") -> dict:
     return {"head": ["해", "간지", "표시", head],
             "rows": [[str(y["year"]), f"{y['hanja']} {y['ganzhi']}", ", ".join(y["t_signs"]) or "—", f"{y['t_score']}점"] for y in years],
-            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2]}
+            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2], "widths": ["13%", "20%", "47%", "20%"]}
 
 
 def month_grid(months: list[dict], head: str = "점수") -> dict:
     return {"head": ["달", "간지", "표시", head],
             "rows": [[f"{m['year']}.{m['month']}", m["hanja"], ", ".join(m["t_signs"]) or "—", str(m["t_score"])] for m in months],
-            "hl": [i for i, m in enumerate(months) if m["t_score"] >= 70], "left": [2]}
+            "hl": [i for i, m in enumerate(months) if m["t_score"] >= 70], "left": [2], "widths": ["16%", "14%", "50%", "20%"]}
 
 
 def period_grid(periods: list[dict], head: str = "점수") -> dict:

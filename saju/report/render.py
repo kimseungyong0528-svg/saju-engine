@@ -218,7 +218,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
                              [facts["order"].get("daily"), facts["order"].get("relationship"), *(facts.get("answers") or {}).values()])
         sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 무료 풀이의 좋은 운과 조심할 운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
-                                      *[dict(pg, opener=False, title="운명서재의 다른 리포트" if pg["title"] == sec["title"] else pg["title"]) for pg in sec["pages"]]])
+                                      *[dict(pg, opener=False, cont=True, title="운명서재의 다른 리포트" if pg["title"] == sec["title"] else pg["title"]) for pg in sec["pages"]]])
                     if sec.get("no") == "더보기" else sec for sec in sections]
     return tpl.render(
         f=facts, sections=sections, recap=recap, texts=texts, static=static or STATIC, kb=_kb(),

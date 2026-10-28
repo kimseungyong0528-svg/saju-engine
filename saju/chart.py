@@ -15,7 +15,7 @@ from korean_lunar_calendar import KoreanLunarCalendar
 from . import analysis, classics, luck
 from .constants import PILLAR_NAMES, STEMS, ELEMENTS, STEM_ELEMENT, ZODIAC_ANIMALS
 from .pillars import FourPillars, PillarOptions, compute_pillars, day_pillar_for_date
-from .regions import KOREA, Region, region_by_code
+from .regions import KOREA, PLAIN, Region, region_by_code
 from .timeutil import civil_to_utc
 
 CALCULATION_VERSION = "saju-engine/0.1.0"
@@ -92,8 +92,9 @@ def _place_range(place: dict) -> tuple[Region | None, list[float], str]:
     region = region_by_code(place.get("regionChoice") or place.get("regionCode"))
     if status in ("known", "region-only") and region:
         lons = sorted({region.lon_min, region.lon, region.lon_max})
-        return region, lons, region.name
-    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 미상)"
+        city = str(place.get("city") or "").strip() if status == "known" else ""
+        return region, lons, " ".join(x for x in (PLAIN.get(region.name, region.name), city[:30]) if x)
+    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 모름)"
 
 
 @dataclass
@@ -227,7 +228,8 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
     elif p.time_accuracy != "exact":
         uncertainties.append({"kind": "time", "message": "태어난 시간을 몰라 시주(태어난 시간의 기둥)는 ?로 비워 두고, 해·달·날의 여섯 글자로 풀었어요."})
     if not region or p.birth_place.get("status") != "known":
-        uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요."})
+        uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요." if region
+                              else "태어난 지역을 몰라 대한민국 대표 위치로 풀었어요."})
 
     analyzed = []
     for v in variants:

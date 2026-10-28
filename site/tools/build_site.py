@@ -163,6 +163,16 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, '<p class="fine-print">결과는 자동 검증을 통과한 뒤 발행됩니다. 현재 전체 풀이·결제·PDF 발행은 준비 중이에요.</p>',
               '<p class="fine-print">결제 후 사주 결과를 작성하고 자동 검사를 거쳐 이메일로 보내드려요.</p>')
 
+    # 지역 이름: 고를 때와 같은 짧은 이름(광주·전남, 전라북도)으로 보여 주고, 광주 구는 '광주 동구'처럼 도시를 붙인다
+    s = _swap(s, "[place.countryName,place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city]",
+              "[place.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[place.regionName])||place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city]")
+    s = _swap(s, "[value.birthPlace.countryName,value.birthPlace.regionName,value.birthPlace.city]",
+              "[value.birthPlace.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[value.birthPlace.regionName])||value.birthPlace.regionName,value.birthPlace.city]")
+    for code, gu in (("1221000000", "동구"), ("1224000000", "서구"), ("1227000000", "남구"), ("1230000000", "북구"), ("1233000000", "광산구")):
+        old = f'"id": "{code}",\n        "name": "{gu}"'
+        assert old in s, old
+        s = s.replace(old, f'"id": "{code}",\n        "name": "광주 {gu}"')
+
     # 자주 묻는 질문
     s = _swap(s, "['결과는 어떤 형태로 받나요?','정식 서비스 연결 후, 입력한 이메일로 결과 링크를 보내드리는 구조입니다. 현재 미리보기에서는 예시 리포트와 인쇄 화면을 확인할 수 있어요.']",
               "['결과는 어떤 형태로 받나요?','입력한 이메일로 PDF 파일을 보내드려요. 결제 후 주문 상태 화면에서도 PDF를 내려받을 수 있어요.']")

@@ -2429,23 +2429,23 @@ const KOREA_REGIONS = [
       },
       {
         "id": "1221000000",
-        "name": "동구"
+        "name": "광주 동구"
       },
       {
         "id": "1224000000",
-        "name": "서구"
+        "name": "광주 서구"
       },
       {
         "id": "1227000000",
-        "name": "남구"
+        "name": "광주 남구"
       },
       {
         "id": "1230000000",
-        "name": "북구"
+        "name": "광주 북구"
       },
       {
         "id": "1233000000",
-        "name": "광산구"
+        "name": "광주 광산구"
       },
       {
         "id": "1271000000",
@@ -3373,23 +3373,23 @@ const KOREA_REGIONS = [
     "districts": [
       {
         "id": "1221000000",
-        "name": "동구"
+        "name": "광주 동구"
       },
       {
         "id": "1224000000",
-        "name": "서구"
+        "name": "광주 서구"
       },
       {
         "id": "1227000000",
-        "name": "남구"
+        "name": "광주 남구"
       },
       {
         "id": "1230000000",
-        "name": "북구"
+        "name": "광주 북구"
       },
       {
         "id": "1233000000",
-        "name": "광산구"
+        "name": "광주 광산구"
       }
     ]
   },
@@ -3621,7 +3621,7 @@ function personValid(value={}){
 function personBirthSummary(value={}){
  const e=birthEscape,accuracy=birthPrecision(value),place=value.birthPlace;
  const time=accuracy==='unknown'?'출생 시간 미상':accuracy==='approximate'?'대략 '+birthReadableTime(value.timeRange?.start)+' ~ '+(value.timeRange?.endDayOffset===1?'다음 날 ':'')+birthReadableTime(value.timeRange?.end):birthReadableTime(value.time);
- const location=!place?'출생지 미입력':place.status==='unknown'?'출생지 미상':[place.countryName,place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city].filter(Boolean).join(' · ');
+ const location=!place?'출생지 미입력':place.status==='unknown'?'출생지 미상':[place.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[place.regionName])||place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city].filter(Boolean).join(' · ');
  const calendar=value.calendar==='unknown'?'양력·음력 미확인':value.calendar==='lunar'?'음력':'양력';
  const leap=value.calendar==='lunar'?(value.leap===true?' · 윤달':value.leap===false?' · 평달':' · 평달·윤달 미확인'):'';
  const date=validateBirthDate(value);
@@ -3752,7 +3752,7 @@ function bindPerson(form,callback){
   const timeError=birthRangeError(value),timeTouched=accuracy==='approximate'&&!!(value.timeRange?.start&&value.timeRange?.end);
   if(timeError&&accuracy!=='unknown')field(accuracy==='exact'?'timeMinute':'timeEndMinute').setCustomValidity(timeError);
   q('[data-time-error]').hidden=!timeError||!timeTouched;q('[data-time-error]').textContent=timeError;
-  q('[data-place-help]').textContent=placeUnknown?'대한민국 안에서 출생 지역 미상으로 저장해요. 분석 가능한 범위를 별도로 확인해요.':cityUnknown?(region?region.name+' · 시·군·구 미상으로 진행해요.':'국가만 알고 있는 것으로 진행해요.'):birthPlaceValid(value.birthPlace)?[value.birthPlace.countryName,value.birthPlace.regionName,value.birthPlace.city].filter(Boolean).join(' › '):korea?'시·도를 고르면 해당 지역의 시·군·구가 나와요.':country?'해외 도시는 주·지역도 함께 입력해주세요.':'';
+  q('[data-place-help]').textContent=placeUnknown?'대한민국 안에서 출생 지역 미상으로 저장해요. 분석 가능한 범위를 별도로 확인해요.':cityUnknown?(region?region.name+' · 시·군·구 미상으로 진행해요.':'국가만 알고 있는 것으로 진행해요.'):birthPlaceValid(value.birthPlace)?[value.birthPlace.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[value.birthPlace.regionName])||value.birthPlace.regionName,value.birthPlace.city].filter(Boolean).join(' › '):korea?'시·도를 고르면 해당 지역의 시·군·구가 나와요.':country?'해외 도시는 주·지역도 함께 입력해주세요.':'';
   q('[data-place-help]').hidden=!q('[data-place-help]').textContent;
   for(const name of ['name','city','countryName','legacyCity'])if(!field(name).disabled&&field(name).required&&field(name).value&&!field(name).value.trim())field(name).setCustomValidity('공백만 입력할 수 없어요.');
   const complete={basics:!!(value.name&&['male','female'].includes(value.sex)),date:date.valid,place:birthPlaceValid(value.birthPlace),time:!timeError};

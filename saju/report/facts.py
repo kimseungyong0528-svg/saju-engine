@@ -147,6 +147,17 @@ def month_row(m: dict, rate) -> dict:
             "short": f"{d.month}/{d.day}", "month": d.month, "year": d.year, **rate(m)}
 
 
+def _birth_text(inp: dict, solar: date) -> str:
+    """표지·사주표의 생일. 음력으로 넣은 손님은 넣은 음력 날짜와 바뀐 양력 날짜를 함께 보여 준다."""
+    sol = f"{solar.year}년 {solar.month}월 {solar.day}일"
+    y, m, d = (int(x) for x in inp["birth"].split("-"))
+    if inp.get("calendar") == "lunar":
+        return f"음력 {y}년 {m}월 {d}일{'(윤달)' if inp.get('leap') else ''} · 양력 {sol}"
+    if inp.get("calendar") == "unknown":
+        return f"{y}년 {m}월 {d}일(양력·음력 모름, 양력 {sol}로 풀었어요)"
+    return f"양력 {sol}"
+
+
 def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     """analyze_person() 결과 → 리포트 재료."""
     order = order or OrderInfo()
@@ -271,13 +282,13 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     sex_word = "남성" if result["person"]["sex"] == "male" else "여성"
     tr = result["input"].get("time_range") or {}
     time_text = (result["input"]["time"] or
-                 (f"대략 {tr['start']}~{'다음 날 ' if tr.get('endDayOffset') else ''}{tr['end']}" if tr.get("start") else "모름"))
+                 (f"대략 {tr['start']}~{'다음 날 ' if tr.get('endDayOffset') else ''}{tr['end']}" if tr.get("start") else "태어난 시간 모름"))
     return {
         "person": {
             "name": result["person"]["name"] or "고객",
             "sex": result["person"]["sex"], "sex_word": sex_word,
             "birth": birth.isoformat(),
-            "birth_text": f"{birth.year}년 {birth.month}월 {birth.day}일",
+            "birth_text": _birth_text(result["input"], birth),
             "calendar": result["input"]["calendar"],
             "time_text": time_text, "place": result["input"]["place"],
             "age": age, "zodiac": an["zodiac"],

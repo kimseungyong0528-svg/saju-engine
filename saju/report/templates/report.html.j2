@@ -302,7 +302,7 @@
   {% if f.variant_count > 1 %}<div class="box"><p>가능한 사주 후보: {{ f.variants|join(" / ") }}</p></div>{% endif %}
 {%- elif k == "method" -%}
   <table>
-  <tr><th style="width: 30%">입력한 출생 정보</th><td class="left">{{ P.birth_text }} ({{ "양력" if P.calendar == "solar" else "음력" if P.calendar == "lunar" else "양력·음력 미상" }}) {{ P.time_text }} · {{ P.place }} · {{ P.sex_word }}</td></tr>
+  <tr><th style="width: 30%">입력한 출생 정보</th><td class="left">{{ P.birth_text }} {{ P.time_text }} · {{ P.place }} · {{ P.sex_word }}</td></tr>
   <tr><th>출생 시각 보정</th><td class="left">{{ "평균태양시(출생지 경도로 보정)" if f.options.solar_time == "mean" else "진태양시" if f.options.solar_time == "apparent" else "보정 없음" }}. 한국 표준시 변경과 서머타임 시기를 반영했어요.</td></tr>
   <tr><th>해·달의 기준</th><td class="left">해는 입춘, 달은 절기가 드는 시각에 바뀌어요.</td></tr>
   <tr><th>자시 기준</th><td class="left">{{ "밤 11시부터 다음 날로 봐요." if f.options.zi_rule == "23" else "자정부터 다음 날로 봐요(야자시)." }}</td></tr>
@@ -404,8 +404,9 @@
 </section>
 
 {% for sec in sections %}
+  {% set body = sec.pages|rejectattr("figure", "equalto", "cover")|rejectattr("figure", "equalto", "toc")|first %}
   {% for pg in sec.pages if pg.figure != "cover" %}
-  <section class="page" id="{{ 'sec-' ~ sec.no if loop.first else pg.id }}" data-pid="{{ pg.id }}"><span class="customer">{{ f.person.name }} 님</span>
+  <section class="page{% if pg.cont %} cont{% endif %}" id="{{ 'sec-' ~ sec.no if body and pg.id == body.id else pg.id }}" data-pid="{{ pg.id }}"><span class="customer">{{ f.person.name }} 님</span>
     {% if pg.opener %}
     <div class="sec-head"><span class="sec-no">{{ secmark.get(sec.no, sec.no) }}</span>
       <div><div class="sec-title bookmark">{{ sec.title }}</div>{% if sec.subtitle %}<div class="sec-sub">{{ sec.subtitle }}</div>{% endif %}</div></div>
