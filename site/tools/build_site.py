@@ -548,6 +548,50 @@ def extras_data() -> dict:
     return {"toc": toc, "header": header, "event": NEWYEAR_EVENT, "bundle": True}
 
 
+REVEAL_CSS = (
+    ".reveal-flow .rv-body{padding-bottom:110px}.reveal-flow h1{font-size:28px;line-height:1.4;margin:8px 0 16px}"
+    ".rv-dots{display:flex;gap:6px;justify-content:center;padding:4px 0 2px}.rv-dots i{width:26px;height:4px;border-radius:2px;background:#ffffff26}.rv-dots i.on{background:#d8bb78}"
+    ".rv-guide{display:flex;gap:12px;align-items:flex-start;margin:6px 0 22px;padding:14px;border-radius:14px;border:1px solid #d8bb7859;background:#17130c}"
+    ".rv-guide img{width:54px;height:54px;flex:0 0 54px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:1px solid #d8bb78}"
+    ".rv-guide strong{display:block;font-size:14px;color:#d8bb78;margin:0 0 3px}.rv-guide p{margin:0;font-size:17px;line-height:1.7;color:#f3ecdf}"
+    ".rv-card{padding:16px;margin:0 0 12px;border-radius:14px;background:#151515;border:1px solid #ffffff17}"
+    ".rv-card strong,.rv-card small{display:block;font-size:16px;font-weight:700;color:#d8bb78;margin:0 0 6px}"
+    ".rv-card p{font-size:17px;line-height:1.8;margin:0 0 8px;color:#e5e5e5}.rv-card p:last-child{margin-bottom:0}"
+    ".rv-card.good{border-color:#6fcf9766}.rv-card.good small{color:#6fcf97}.rv-card.bad{border-color:#ee365666}.rv-card.bad small{color:#ff7b8f}"
+    ".rv-card p.rv-hook{font-weight:800;color:#fff;padding-top:8px;border-top:1px solid #ffffff1a;margin-top:10px}"
+    ".rv-confirm p{font-size:18px;color:#fff}.rv-yesno{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}"
+    ".rv-yesno button{padding:13px;border-radius:10px;border:1px solid #ffffff40;background:#1d1d1d;color:#fff;font-size:17px;font-weight:700}"
+    ".rv-yesno button.on[data-v=yes]{background:#d8bb78;border-color:#d8bb78;color:#1a1408}.rv-yesno button.on[data-v=no]{background:#3a3a3a}"
+    ".rv-result{margin:16px 0 0;padding:16px;border-radius:14px;background:#d8bb781f;border:1px solid #d8bb78;font-size:18px;line-height:1.7;font-weight:700;color:#fff}"
+    ".rv-score-label{display:block;font-size:16px;font-weight:700;color:#cfc6b4;margin:0 0 4px}.rv-score{margin:0 0 14px}.rv-score strong{display:block;font-size:64px;line-height:1;font-weight:900}.rv-score strong small{font-size:24px;margin-left:2px}"
+    ".rv-score span{display:block;margin:6px 0 10px;font-size:18px;font-weight:700}.rv-score i{display:block;height:12px;border-radius:6px;background:#2a2a2a;overflow:hidden}.rv-score i b{display:block;height:100%}"
+    ".rv-score.good strong,.rv-score.good span{color:#6fcf97}.rv-score.good i b{background:#6fcf97}"
+    ".rv-score.mid strong,.rv-score.mid span{color:#d8bb78}.rv-score.mid i b{background:#d8bb78}"
+    ".rv-score.bad strong,.rv-score.bad span{color:#ff7b8f}.rv-score.bad i b{background:#ff7b8f}"
+    ".rv-bridge{font-size:19px;font-weight:800;line-height:1.55;margin:26px 0 14px;color:#fff}.rv-bridge.bad{color:#ff7b8f}.rv-bridge.good{color:#6fcf97}"
+    ".rv-sub{font-size:20px;margin:26px 0 12px}.rv-bars{margin:0 0 16px}"
+    ".rv-bar{display:grid;grid-template-columns:92px 1fr 48px;align-items:center;gap:8px;margin:0 0 9px;font-size:15px}"
+    ".rv-bar i{height:10px;border-radius:5px;background:#2a2a2a;overflow:hidden}.rv-bar i b{display:block;height:100%;background:#d8bb78}"
+    ".rv-bar.good i b{background:#6fcf97}.rv-bar.bad i b{background:#ff7b8f}.rv-bar em{font-style:normal;color:#cfc6b4;text-align:right}"
+    ".rv-locks{margin:16px 0;border-top:1px solid #ffffff1a}.rv-locks div{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid #ffffff1a;font-size:16px;color:#e5e5e5}"
+    ".rv-locks .icon{width:18px;height:18px;color:#d8bb78;flex:0 0 18px}.rv-locks span{flex:1}.rv-locks i{font-style:normal;font-size:13px;color:#d8bb78}"
+    ".rv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 10px}"
+    ".rv-cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 2px;min-height:78px;border-radius:10px;background:#1b1b1b;border:1px solid #ffffff14}"
+    ".rv-cell b{font-size:15px;color:#e5e5e5}.rv-cell small{font-size:12px;color:#8f8f8f}.rv-cell span{font-size:11px;font-weight:700;padding:1px 6px;border-radius:7px;margin-top:2px;white-space:nowrap}"
+    ".rv-cell span.g{background:#6fcf97;color:#0b1f14}.rv-cell span.r{background:#ee3656;color:#fff}"
+    ".rv-cell.good{border-color:#6fcf97;background:#10241a}.rv-cell.bad{border-color:#ee3656}.rv-cell.good.bad{background:linear-gradient(135deg,#10241a 50%,#2a1015 50%)}"
+    ".rv-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#a3a3a3;margin:0 0 16px}.rv-legend .g::before,.rv-legend .r::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;background:#6fcf97}.rv-legend .r::before{background:#ee3656}"
+    ".rv-mark-head{display:flex;align-items:flex-start;gap:10px;margin:0 0 8px}.rv-mark-head b{font-size:18px;line-height:1.45;color:#fff;word-break:keep-all}"
+    ".rv-tag{flex:0 0 auto;white-space:nowrap;font-size:14px;font-weight:800;padding:3px 10px;border-radius:9px}.rv-tag.good{background:#6fcf97;color:#0b1f14}.rv-tag.bad{background:#ee3656;color:#fff}"
+    ".rv-card p.rv-mark-line{font-weight:700;color:#6fcf97}.rv-mark.bad p.rv-mark-line{color:#ff7b8f}.rv-mark.good{border-color:#6fcf9766}"
+    ".rv-page{margin:4px 0 16px}.rv-ch{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-top:1px solid #3a2e2233}"
+    ".rv-ch b{display:block;font-size:17px;margin:2px 0 4px}.rv-ch p{font-size:15px;line-height:1.75;margin:0 0 6px;color:#2a2018}"
+    ".rv-ch .icon{width:16px;height:16px;flex:0 0 16px;margin-top:6px;color:#9e2f22;margin-left:auto}"
+    ".rv-ch.open{background:#fffaf0;margin:0 -8px;padding:12px 8px;border-radius:6px}.rv-blur{filter:blur(4px);user-select:none}"
+    ".rv-close{font-size:17px;line-height:1.75;color:#f3ecdf;text-align:center;margin:8px 0 0}"
+)
+
+
 def add_extras(s: str) -> str:
     """사이트 추가 기능 1단계 (2026-10-27 사장님 선택 12개 중 화면만 바뀌는 것).
     리포트 목차, 신년 이벤트 남은 날짜와 첫 화면 팝업."""
@@ -612,6 +656,15 @@ def add_discounts(s: str) -> str:
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
               "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'")
+    return s
+
+
+def add_reveal(s: str) -> str:
+    """결제 전 이야기 화면(2026-10-28 사장님): 정보 입력 뒤 금월선녀가 내 사주·점수·12년 지도·리포트 1장을 보여 주고 결제로 잇는다."""
+    page = (SITE / "tools" / "reveal_page.js").read_text(encoding="utf-8")
+    s = _swap(s, "</head>", f"<style>{REVEAL_CSS}</style></head>")
+    s = _swap(s, "function render(){", page + "function render(){")
+    s = _swap(s, "if(s.type==='sales')return salesPage(p,i);", "if(s.type==='sales')return salesPage(p,i);if(s.type==='reveal')return revealPage(p,i);")
     return s
 
 
@@ -682,6 +735,7 @@ def main() -> None:
     s = add_trust(s)
     s = fix_checkout_flow(s)
     s = add_extras(s)
+    s = add_reveal(s)
     s = extract_font(s)
     s = fix_story_face(s)
     s = optimize_images(s)

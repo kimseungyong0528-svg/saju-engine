@@ -214,3 +214,31 @@ export function reading(fp, person, T) {
     scores: Object.fromEntries(areas.map(a => [a.id, a.score])),
   };
 }
+
+// 상품 하나의 운(결제 전 이야기 화면의 '내 점수'): 점수와, 맛보기와 같은 쪽(좋은 운/조심할 운)의 근거 글.
+// 맛보기 TOP3 안에 있으면 맛보기와 같은 글, 가운데 운은 점수가 50 이상이면 좋은 쪽, 아니면 조심할 쪽.
+export function areaView(fp, person, T, id) {
+  const r = reading(fp, person, T);
+  const hit = [...r.good, ...r.bad].find(a => a.id === id);
+  if (hit) return { ...hit, sign: r.good.includes(hit) ? 1 : -1, scores: r.scores, chart: r.chart, pillars: r.pillars };
+  const name = (person.name || '').trim() || '고객';
+  const score = r.scores[id], sign = score >= 50 ? 1 : -1;
+  const own = RULES[id](facts(fp, person.sex), T).filter(x => Math.sign(x[1]) === sign).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
+  const [key, , vars = {}] = own[0] || [`${PREFIX[id]}_base_${sign > 0 ? 'good' : 'bad'}`];
+  return { ...T.AREAS[id], id, score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }), sign, scores: r.scores, chart: r.chart, pillars: r.pillars };
+}
+
+// 상품 하나의 운을 좋은 점과 조심할 점으로 나눈다(결제 전 이야기 화면 '내 점수', 사장님 2026-10-28).
+// 좋은 점 점수 = 50 + 좋은 근거 점수 합, 조심할 점 점수 = 50 + 나쁜 근거 점수 합. 근거가 없는 쪽은 null.
+export function areaParts(fp, person, T, id) {
+  const name = (person.name || '').trim() || '고객';
+  const reasons = RULES[id](facts(fp, person.sex), T);
+  const part = sign => {
+    const own = reasons.filter(x => Math.sign(x[1]) === sign).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
+    if (!own.length) return null;
+    const [key, , vars = {}] = own[0];
+    const score = Math.max(5, Math.min(95, 50 + own.reduce((a, x) => a + x[1], 0)));
+    return { score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
+  };
+  return { id, score: Math.max(5, Math.min(95, 50 + reasons.reduce((a, x) => a + x[1], 0))), good: part(1), bad: part(-1) };
+}

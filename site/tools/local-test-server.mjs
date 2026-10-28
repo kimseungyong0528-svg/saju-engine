@@ -13,7 +13,7 @@ const site = path.resolve(here, '..'), repo = path.resolve(site, '..');
 const port = Number(process.argv[2] || 8787);
 const outDir = process.env.OUT_DIR || path.join(site, '.local-mail');
 const env = { TOSS_CLIENT_KEY: 'test_ck_local', TOSS_SECRET_KEY: 'test_sk_local', GH_DISPATCH_TOKEN: 'local', WORKER_SECRET: 'local-secret', RESEND_API_KEY: 'local' };
-const TYPES = { '.html': 'text/html; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.js': 'text/javascript', '.css': 'text/css' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.css': 'text/css' };
 
 const services = {
   tossConfirm: async a => { console.log('[가짜 토스] 결제 승인', a.orderId, a.amount); return { ok: true }; },

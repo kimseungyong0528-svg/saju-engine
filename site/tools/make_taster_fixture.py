@@ -10,7 +10,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from saju.chart import analyze_person
-from saju import taster
+from saju import reveal, taster
 from saju.regions import REGIONS
 
 OUT = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "taster-parity.json"
@@ -41,6 +41,12 @@ def main() -> None:
             "gyeokguk": an["gyeokguk"]["name"],
             "shinsal": sorted(f"{s['name']}|{s['pillar']}" for s in an["shinsal"]),
             "reading": taster.reading(taster.pillars_from_result(r), "하늘", person["sex"]),
+            # 결제 전 이야기 화면(reveal.mjs): 상품별 점수 글과 해·달 지도
+            "areas": {a: {k: v for k, v in taster.area_view(taster.pillars_from_result(r), "하늘", person["sex"], a).items()
+                          if k in ("id", "score", "reason", "text", "hook", "sign")} for a in taster.AREA_ORDER},
+            "parts": {a: taster.area_parts(taster.pillars_from_result(r), "하늘", person["sex"], a) for a in taster.AREA_ORDER},
+            "maps": {pid: reveal.luck_map(taster.pillars_from_result(r), person["sex"], pid)
+                     for pid in taster.texts()["REVEAL"]["PRODUCTS"]},
         })
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(cases, ensure_ascii=False, indent=0), encoding="utf-8")
