@@ -14,7 +14,9 @@ const OUT = process.env.OUT || 'shots';
   await shot('1-checkout');
   await page.fill('#email', 'test@example.com'); await page.check('#all-consent'); await page.waitForTimeout(500);
   await page.click('#pay'); await page.waitForTimeout(5000);
-  await shot('2-after-check');
+  await shot('2-after-check', false);
+  await page.waitForTimeout(3000); await shot('2b-toss-full');
+  for (const f of page.frames()) { try { console.log('TEXT', f.url().slice(0, 80), (await f.locator('body').innerText()).replace(/\s+/g, ' ').slice(0, 1500)); } catch (e) {} }
   const start = page.locator('[data-start-payment]');
   console.log('start buttons', await start.count());
   if (await start.count()) {
