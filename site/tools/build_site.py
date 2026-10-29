@@ -353,7 +353,7 @@ TASTER_CSS = (
     # 글씨는 14px 아래로 내려가지 않게(손님 테스트 2026-10-28). 버튼을 누를 때 '본문으로 이동'이 뜨지 않게.
     ".rv-no{font-size:16px;line-height:1.65;color:#e9dcc6;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#ffffff0d}"
     ".rv-skip-note{font-size:15px;color:#bfb3a2;margin:6px 0 0}.rv-edit{display:block;margin:0 0 10px auto;background:none;border:1px solid #ffffff33;border-radius:16px;color:#e9dcc6;font-size:14px;padding:6px 12px}"
-    ".skip:focus:not(:focus-visible){top:-100px}.entry-what{font-size:15px;line-height:1.6;color:#5a4a44;margin:6px 0 10px}"
+    ".skip:focus:not(:focus-visible){top:-100px}"
     ".bottom-nav a,.price-box>div,.price-box em,.light .price-box em,.birth-card-number,.birth-card-state,.birth-location-step .birth-label b,"
     ".tc-col em,.x-eyebrow,.event-dday,.event-dday b,.entry-tag,.bundle-price s,.rv-locks i,.rv-cell small,.rv-cell span,.rv-legend{font-size:14px!important}"
     ".rv-cell span{line-height:1.3;word-break:keep-all}"
@@ -388,9 +388,6 @@ TASTER_CSS = (
     ".reuse-me b{display:block;font-size:17px;color:#fff}.reuse-me small{display:block;margin-top:4px;font-size:14px;line-height:1.6;color:#bfb6a5}"
     ".taster-lifetime{display:block;margin:28px 0 6px;padding:26px 20px;min-height:190px;border-radius:14px;border:1px solid #d8bb7866;"
     "background:linear-gradient(90deg,#0d0a06 0%,#0d0a06 34%,#0d0a06b0 60%,#0d0a0610 100%),url(assets/geumwol/lifetime-room.jpg) right 22% / 66% auto no-repeat,#0d0a06}"
-    ".taster-lifetime-sub{display:block;font-style:normal;color:#efe3c6;font-size:16px;line-height:1.6;margin:0 0 12px;max-width:62%;text-shadow:0 2px 8px #000}"
-    ".taster-all{margin:18px 0 4px}.taster-all p{font-size:16px;color:#d8bb78;font-weight:700;margin:0 0 10px}"
-    ".taster-all a{display:inline-block;margin:0 8px 10px 0;padding:10px 14px;border:1px solid #d8bb7866;border-radius:20px;color:#f3ead8;font-size:15px;text-decoration:none}"
     ".taster-lifetime strong{display:block;font-size:27px;line-height:1.4;margin:8px 0 12px;color:#fff;text-shadow:0 2px 10px #000}"
     ".taster-lifetime span:last-child{color:#d8bb78;font-size:19px;font-weight:700;text-decoration:underline;text-underline-offset:4px;text-shadow:0 2px 8px #000}"
 )
@@ -554,7 +551,7 @@ def fix_checkout_flow(s: str) -> str:
 
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
-NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "출시 기념 할인 마감까지"}
+NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
 
