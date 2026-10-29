@@ -1,0 +1,14 @@
+name: livecheck
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sleep 60
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            curl -s https://unmyeong-saju.com/ -o page.html
+            n=$(grep -c '두 시간 단위로 한 번에 고르기' page.html)
+            echo "try $i quick-range=$n"; [ "$n" -ge 1 ] && break; sleep 45
+          done
+          echo "gwangju-gu=$(grep -c '광주 동구' page.html) rv-edit=$(grep -c 'data-rv-edit' page.html) taster-all=$(grep -c 'taster-all' page.html) entry-what=$(grep -c 'entry-what' page.html) none-png=$(curl -s -o /dev/null -w '%{http_code}' https://unmyeong-saju.com/assets/geumwol/none.png)"
