@@ -351,8 +351,8 @@ def add_newyear(s: str) -> str:
 
 TASTER_CSS = (
     # 글씨는 14px 아래로 내려가지 않게(손님 테스트 2026-10-28). 버튼을 누를 때 '본문으로 이동'이 뜨지 않게.
-    ".rv-price{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:16px 0 4px;padding:14px;border:1px solid #d8bb7866;border-radius:12px;background:#ffffff0a;font-size:16px;color:#e9dcc6}"
-    ".rv-price s{color:#9a9083;font-size:15px}.rv-price em{font-style:normal;color:#e3b96a;font-weight:700}.rv-price strong{font-size:22px;color:#fff}"
+    ".rv-price{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:4px 10px;margin:16px 0 4px;padding:14px;border:1px solid #d8bb7866;border-radius:12px;background:#ffffff0a;font-size:16px;color:#e9dcc6}"
+    ".rv-price span{width:100%;text-align:center;font-size:16px}.rv-price s,.rv-price em,.rv-price strong{white-space:nowrap}.rv-price s{color:#9a9083;font-size:15px}.rv-price em{font-style:normal;color:#e3b96a;font-weight:700}.rv-price strong{font-size:22px;color:#fff}"
     ".rv-price-note{text-align:center;font-size:15px;color:#bfb3a2;margin:4px 0 0}"
     ".rv-no{font-size:16px;line-height:1.65;color:#e9dcc6;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#ffffff0d}"
     ".rv-skip-note{font-size:15px;color:#bfb3a2;margin:6px 0 0}.rv-edit{display:block;margin:0 0 10px auto;background:none;border:1px solid #ffffff33;border-radius:16px;color:#e9dcc6;font-size:14px;padding:6px 12px}"
