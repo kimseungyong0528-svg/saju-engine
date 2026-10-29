@@ -112,7 +112,9 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  ${toc[0]?`<div class="rv-ch open"><span class="tp-no">${esc(String(toc[0][0]))}</span><div><b>${esc(toc[0][1])}</b><p>${esc(c.items[0].text)}</p>${c.items[4]?`<p>${esc(c.items[4].text)}</p>`:''}<p>${esc(c.items[3].text.replace(/^.*?점수입니다\.\s*/,''))}</p></div></div>`:''}
  ${toc.slice(1).map(t=>`<div class="rv-ch"><span class="tp-no">${esc(String(t[0]))}</span><div><b>${esc(t[1])}</b><p class="rv-blur" aria-hidden="true">${esc(t[2]||`${v.name} 님 사주로 풀어 드리는 이 장의 내용`)}</p></div>${icon('lock')}</div>`).join('')}
  </div></div>
- <p class="rv-close">${rest}개 장에 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>`}
+ <p class="rv-close">2장부터 ${toc.length}장까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>
+ <div class="rv-price"><span>리포트 한 권</span><s>${money(p.original)}</s><em>${discountPercent(p)}%</em><strong>${money(p.price)}</strong></div>
+ ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;
@@ -124,7 +126,7 @@ function revealPage(p,i){
  const paint=()=>{
   const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
   const body=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
-  const cta=n===REVEAL_SCENES-1?`나머지 ${rest}장 받아 보기`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
+  const cta=n===REVEAL_SCENES-1?`내 리포트 한 권 ${money(p.price)}에 받기`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
   app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div><main id="main"><div class="flow-content rv-body"><button type="button" class="rv-edit" data-rv-edit>입력한 정보 고치기</button>${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
   document.activeElement?.blur?.();
   const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
