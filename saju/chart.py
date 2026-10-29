@@ -15,7 +15,7 @@ from korean_lunar_calendar import KoreanLunarCalendar
 from . import analysis, classics, luck
 from .constants import PILLAR_NAMES, STEMS, ELEMENTS, STEM_ELEMENT, ZODIAC_ANIMALS
 from .pillars import FourPillars, PillarOptions, compute_pillars, day_pillar_for_date
-from .regions import KOREA, Region, region_by_code
+from .regions import KOREA, PLAIN, Region, region_by_code
 from .timeutil import civil_to_utc
 
 CALCULATION_VERSION = "saju-engine/0.1.0"
@@ -92,8 +92,9 @@ def _place_range(place: dict) -> tuple[Region | None, list[float], str]:
     region = region_by_code(place.get("regionChoice") or place.get("regionCode"))
     if status in ("known", "region-only") and region:
         lons = sorted({region.lon_min, region.lon, region.lon_max})
-        return region, lons, region.name
-    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 미상)"
+        city = str(place.get("city") or "").strip() if status == "known" else ""
+        return region, lons, " ".join(x for x in (PLAIN.get(region.name, region.name), city[:30]) if x)
+    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 모름)"
 
 
 @dataclass
@@ -109,7 +110,7 @@ class Variant:
 def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions,
           center: float | None = None) -> list[Variant]:
     """가능한 명식을 모두 모은다. 맨 앞(대표 명식)은 첫 날짜·시작 시각·지역 대표 경도의 명식이다
-    (사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
+    (시간 모름은 낮 12시. 사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
     known_time = p.time_accuracy != "unknown"
     variants: dict[str, Variant] = {}
     first: list[str] = []
@@ -122,8 +123,8 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             if not known_time:
                 # 시간 미상: 일주는 입력한 날짜 기준(경도 보정으로 날짜를 옮기지 않음)
                 fp = FourPillars(fp.year, fp.month, day_pillar_for_date(civil.date()), None)
-            if not first and lon == center:
-                first.append(fp.key)
+            if not first and lon == center and (known_time or civil.time() == time(12, 0)):
+                first.append(fp.key)   # 시간 모름은 사이트처럼 낮 12시 명식을 대표로
             v = variants.get(fp.key)
             if v is None:
                 v = variants[fp.key] = Variant(fp, civil, civil, utc_sample=u)
@@ -225,9 +226,10 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
     if p.time_accuracy == "approximate":   # 사이트 화면과 같은 시각으로 푼다(제1조항)
         uncertainties.append({"kind": "time", "message": f"출생 시간은 넣어 주신 범위의 시작 시각({p.time_range['start']})으로 풀었어요."})
     elif p.time_accuracy != "exact":
-        uncertainties.append({"kind": "time", "message": "출생 시간이 확정되지 않아 가능한 시간 전체를 비교했어요."})
+        uncertainties.append({"kind": "time", "message": "태어난 시간을 몰라 시주(태어난 시간의 기둥)는 ?로 비워 두고, 해·달·날의 여섯 글자로 풀었어요."})
     if not region or p.birth_place.get("status") != "known":
-        uncertainties.append({"kind": "place", "message": f"출생지를 {place_label} 범위로 두고 결과 차이를 비교했어요."})
+        uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요." if region
+                              else "태어난 지역을 몰라 대한민국 대표 위치로 풀었어요."})
 
     analyzed = []
     for v in variants:

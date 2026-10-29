@@ -10,7 +10,7 @@ function tasterChart(r){const c=r.chart;
 function tasterPage(){
  document.title='무료 사주 맛보기 · '+BRAND.name;
  const r=tasterState.result;
- if(!r){layout('무료 사주 맛보기',`<div class="flow-content birth-info-page taster-form" data-birth-tone="lifetime"><span class="eyebrow">FREE SAJU</span><h1>내 사주에서<br>좋은 운 3개, 조심할 운 3개</h1><p class="muted">생년월일과 태어난 시간을 넣으면, 연애·결혼·돈·직장·사업·건강·2027년 가운데 가장 좋은 운 3개와 가장 조심할 운 3개를 바로 보여드려요. 무료입니다.</p><form id="taster-form" novalidate>${reuseBox(tasterState.person,'reuse-me')}${personFields('taster',tasterState.person)}<button class="primary taster-submit" id="taster-submit" type="submit" disabled>무료로 내 운 보기</button></form><p class="local-note">입력한 정보는 이 화면에서만 계산하고 서버에 보내지 않아요.</p></div>`);
+ if(!r){layout('무료 사주 맛보기',`<div class="flow-content birth-info-page taster-form" data-birth-tone="lifetime"><span class="eyebrow">FREE SAJU</span><h1>내 사주에서<br>좋은 운 3개, 조심할 운 3개</h1><p class="muted">생년월일과 태어난 시간을 넣으면, 연애·결혼·헤어진 인연·돈·직장·사업·건강·2027년, 여덟 가지 운 가운데 가장 좋은 운 3개와 가장 조심할 운 3개를 바로 보여드려요. 무료입니다.</p><form id="taster-form" novalidate>${reuseBox(tasterState.person,'reuse-me')}${personFields('taster',tasterState.person)}<button class="primary taster-submit" id="taster-submit" type="submit" disabled>무료로 내 운 보기</button></form><p class="local-note">입력한 정보는 이 화면에서만 계산하고 서버에 보내지 않아요.</p></div>`);
   const f=document.querySelector('#taster-form'),btn=document.querySelector('#taster-submit');
   bindPerson(f,(v,valid)=>{tasterState.person=v;btn.disabled=!valid});
   bindReuse('reuse-me',v=>{tasterState.person=v});

@@ -33,8 +33,14 @@ function setup() {
 test('첫 구매 묶음: 2개 이상이면 전부 10%, 결제 뒤 책마다 따로 만든다', async () => {
   const t = setup();
   const q = await (await t.call('POST', '/api/quote', { ...draft, productId: 'lifetime', extras: ['wealth', 'lifetime', 'reunion', 'health'], extraAnswers: { wealth: { occupation: '직장에 다니고 있어요' } } })).json();
-  assert.deepEqual(q.items.map(i => i.id), ['lifetime', 'wealth']);   // 주 상품·상대방 필요한 상품·질문 답이 없는 상품은 빠진다
-  assert.equal(q.base, 49800 + 29800); assert.equal(q.discount.kind, 'bundle'); assert.equal(q.amount, Math.round(79600 * 0.9));
+  // 체크한 상품은 금액에 바로 담고(주 상품 중복은 뺀다), 답이 없는 상품은 incomplete 로 알려 준다
+  assert.deepEqual(q.items.map(i => i.id), ['lifetime', 'wealth', 'reunion', 'health']);
+  assert.deepEqual(q.incomplete, ['reunion', 'health']); assert.ok(q.notes.includes('EXTRA_ANSWERS'));
+  // 답이 빈 묶음 상품이 있으면 결제를 받지 않는다(말없이 빠지지 않게)
+  const no = await t.call('POST', '/api/orders', { ...draft, productId: 'lifetime', extras: ['wealth', 'health'], extraAnswers: W }, { 'Idempotency-Key': 'k-incomplete-1' });
+  assert.equal(no.status, 400); assert.equal((await no.json()).code, 'BUNDLE_INCOMPLETE');
+  const q1 = await (await t.call('POST', '/api/quote', { ...draft, productId: 'lifetime', extras: ['wealth'], extraAnswers: W })).json();
+  assert.equal(q1.base, 49800 + 29800); assert.equal(q1.discount.kind, 'bundle'); assert.equal(q1.amount, Math.round(79600 * 0.9));
   const b = await t.buy({ extras: ['wealth'], extraAnswers: W, discount: 99999 });
   assert.equal(b.amount, 71640);
   const o = await t.store.get(`orders/${b.orderId}`);
@@ -57,6 +63,9 @@ test('재구매 링크: 리포트에 실리고, 기한·횟수 제한 없이 10%
   const o = await t.store.get(`orders/${b.orderId}`);
   const j1 = await t.job(o.id), j2 = await t.job(o.children[0]);
   assert.match(j1.rebuy.code, /^UNM-[A-Z2-9]{6}$/); assert.equal(j2.rebuy.code, j1.rebuy.code);
+  // 같은 주문에서 함께 산 상품을 리포트가 안다(다시 권하지 않고, 묶음 상품은 '결제 전에 보신'이라고 쓰지 않는다)
+  assert.deepEqual(j1.together, ['lifetime', 'wealth']); assert.deepEqual(j2.together, ['lifetime', 'wealth']);
+  assert.equal(j1.parentId, undefined); assert.equal(j2.parentId, o.id); assert.equal(j2.paidAt, o.paidAt);
   assert.equal(j1.rebuy.url, `https://unmyeong-saju.com/?coupon=${j1.rebuy.code}`);
   assert.equal((await t.job(o.id)).rebuy.code, j1.rebuy.code);   // 다시 물어도 같은 코드
   // 코드는 묶음보다 먼저, 금액은 10%

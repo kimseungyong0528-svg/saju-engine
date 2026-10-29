@@ -67,7 +67,9 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         more = sum(e in excess for e in els)
         body = T.rel(x, "일주", T.CLASH)
         life = T.rel(x, "월주", T.CLASH)
-        signs = [s for s, on in (("부족한 기운 채움", fill), ("넘치는 기운 더함", more > 0), ("몸의 자리 충", body), ("생활 자리 충", life)) if on]
+        n_fill = sum(e in good for e in els)
+        # 한 칸에 '채움'과 '더함'을 함께 붙이지 않는다: 더 많은 쪽 하나만(같으면 둘 다 붙이지 않는다)
+        signs = [s for s, on in (("부족한 기운 채움", n_fill > more), ("넘치는 기운 더함", more > n_fill), ("몸의 자리 충", body), ("생활 자리 충", life)) if on]
         score = x["score"] + 4 * fill - 4 * more - 7 * body - 4 * life
         return {"t_score": T.clamp(score), "t_signs": signs}
 
@@ -123,22 +125,22 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="h_how_to_read", opener=True),
         P("h_saju", "사주와 오행 짧게 알기", static="h_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간이 몸과 마음을 쓰는 방식에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간이 몸과 마음을 쓰는 방식에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("h_bar", "나의 오행 균형", figure="elements_bar",
           slot=S("h_bar", "오행 막대에서 넘치는 기운과 모자란 기운을 짚고, 생활에서 어떤 모습으로 나타나기 쉬운지 써 주세요.", HALF - 40)),
     ])
     section("2", [
         P("h_glance", "한눈에 보는 나의 건강운", figure="kv", opener=True, rows=[
-            T.screen_row(t["screen_score"]),
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["모자란 기운", els(t["lacking"])],
             ["돌볼 영역", " / ".join(x["area"] for x in t["excess"] + t["lacking"]) or "고른 편이라 전체 리듬을 지켜요"],
             ["편안한 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["쉬어 갈 해", ", ".join(f"{y}년" for y in t["care_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
-            ["조심할 달", ", ".join(t["careful_months"]) or "—"],
+            ["조심할 달", ", ".join(t["careful_months"]) or "크게 조심할 달은 없어요"],
         ], slot=S("h_glance", "표를 이어서 건강운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 160)),
     ])
     section("3", [
         P("h3_open", "나의 체질 한 줄 요약", figure="opener", opener=True,
-          slot=S("h3_open", f"{name}님의 체질을 '{t['body_type']}'를 바탕으로 한 문장 요약(lead)하고 근거를 쉽게 설명해 주세요.", 640, "lead")),
+          slot=S("h3_open", f"{name} 님의 체질을 '{t['body_type']}'를 바탕으로 한 문장 요약(lead)하고 근거를 쉽게 설명해 주세요.", 640, "lead")),
         P("h3_strong", "넘치는 기운이 만드는 습관",
           slot=S("h3_strong", "넘치는 오행이 생활에서 만드는 습관(과로, 열, 긴장 등)을 장면으로 쓰고 덜어 내는 방법을 붙여 주세요.")),
         P("h3_weak", "모자란 기운이 보내는 신호",
@@ -235,7 +237,7 @@ def build_outline(f: dict) -> list[dict]:
         P("h12_worry", "몸과 마음 걱정에 대한 답", span=2,
           slot=S("h12_worry", "이 사람이 가지기 쉬운 걱정(늘 피곤해, 잠을 못 자, 나이 들수록 걱정돼, 나를 돌볼 시간이 없어)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("h12_last", "마지막 조언",
-          slot=S("h12_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 이 사주의 회복하는 힘을 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
+          slot=S("h12_last", f"{name} 님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 이 사주의 회복하는 힘을 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

@@ -70,6 +70,29 @@ def _mark_key(key: str, sex: str) -> str:
     return ("love_f" if sex == "female" else "love_m") if key == "love" else key
 
 
+def ny_verdict(fp: FourPillars, sex: str) -> tuple[str, int]:
+    """무료 풀이 '2027년 운'이 좋은 쪽인지 조심할 쪽인지와 그 점수. 맛보기 TOP3에 든 쪽을 따르고, 들지 않았으면 50점 이상이 좋은 쪽.
+    평생사주 12년 지도의 2027년 칸과 리포트의 2027년 점수가 이것을 그대로 따른다(제1조항: 한 고객에게 2027년이 좋다·나쁘다를 엇갈리게 말하지 않는다)."""
+    r = taster.reading(fp, "", sex)
+    score = r["scores"]["newyear"]
+    if any(a["id"] == "newyear" for a in r["good"]):
+        return "good", score
+    if any(a["id"] == "newyear" for a in r["bad"]):
+        return "bad", score
+    return ("good" if score >= 50 else "bad"), score
+
+
+def year_marks(fp: FourPillars, sex: str, product: str, label: str, good: list[str], bad: list[str]) -> tuple[list[str], list[str]]:
+    """한 칸에 붙일 표시. 평생사주의 2027년 칸은 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심' 표시).
+    신년운세의 한 달에는 좋은 표시와 조심할 표시를 함께 붙이지 않는다."""
+    if product == "newyear" and good and bad:   # 한 달에 '돕는 달'과 '조심할 달'을 함께 붙이지 않는다: 부딪힘(충)이 있으면 조심할 달
+        return [], bad
+    if product != "lifetime" or label != "2027":
+        return good, bad
+    side, _ = ny_verdict(fp, sex)
+    return (good or ["ny_good"], []) if side == "good" else ([], bad or ["ny_bad"])
+
+
 def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YEAR) -> dict:
     """사이트 reveal.mjs luckMap 과 같은 지도."""
     conf = taster.texts()["REVEAL"]["PRODUCTS"][product]
@@ -80,13 +103,13 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
     bad: dict[str, list[str]] = {}
     cells = []
     for p in base:
-        cell = {"label": p["label"], "ko": p["ko"], "hanja": p["hanja"], "good": [], "bad": []}
-        for kind, keys, into in (("good", conf["good"], good), ("bad", conf["bad"], bad)):
-            for k in keys:
-                if rule_of(k)(p):
-                    key = _mark_key(k, sex)
-                    cell[kind].append(key)
-                    into.setdefault(key, []).append(p["label"])
+        cell = {"label": p["label"], "ko": p["ko"], "hanja": p["hanja"]}
+        cell["good"], cell["bad"] = year_marks(fp, sex, product, p["label"],
+                                               [_mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
+                                               [_mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        for kind, into in (("good", good), ("bad", bad)):
+            for key in cell[kind]:
+                into.setdefault(key, []).append(p["label"])
         cells.append(cell)
     return {"unit": unit, "cells": cells, "good": good, "bad": bad, "weak": weak}
 
@@ -99,6 +122,9 @@ def months_of(year: int) -> list[dict]:
 
 def months_in_year(fp: FourPillars, sex: str, key: str, year: int) -> list[str]:
     """화면에 보인 해 안에서 같은 규칙의 기운이 실제로 들어오는 달(절기 기준). 리포트가 '몇 월'을 이 계산으로 쓴다."""
+    if key.startswith("ny_"):   # 2027년 좋은 흐름·조심: 신년운세 열두 달 지도에서 같은 쪽 표시가 붙은 달
+        m = luck_map(fp, sex, "newyear")
+        return [c["label"] for c in m["cells"] if c["good" if key == "ny_good" else "bad"]] if year == 2027 else []
     _, rule_of = _marker(fp, sex)
     base = "love" if key.startswith("love") else key
     return [mp["label"] for mp in months_of(year) if rule_of(base)(mp)]

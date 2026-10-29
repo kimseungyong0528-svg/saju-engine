@@ -77,15 +77,21 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     sex = result["person"].get("sex", "")
     conf = texts()["REVEAL"]["PRODUCTS"][product]
     marks = texts()["REVEAL"]["MARKS"]
-    _, rule_of = RV._marker(fourpillars(result), sex)
+    fp = fourpillars(result)
+    _, rule_of = RV._marker(fp, sex)
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
-        good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["good"] if rule_of(k)(p)]
-        bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["bad"] if rule_of(k)(p)]
+        label = str(r["year"]) if "month" not in r and "year" in r else ""
+        gk, bk = RV.year_marks(fp, sex, product, label, [RV._mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
+                               [RV._mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
         r["r_good"], r["r_bad"] = good, bad
         v = r[score]
-        v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
+        if product == "lifetime" and label == "2027":
+            v = RV.ny_verdict(fp, sex)[1]   # 무료 풀이에서 본 '2027년 운' 점수 그대로
+        else:
+            v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
         r[score] = v
         r[signs] = good + bad if replace else list(dict.fromkeys(good + bad + [x for x in r[signs]]))
 
@@ -153,13 +159,13 @@ def digest_rows(years: list[dict], months: list[dict], periods: list[dict]) -> d
 def year_grid(years: list[dict], best_years: list[int], head: str = "점수") -> dict:
     return {"head": ["해", "간지", "표시", head],
             "rows": [[str(y["year"]), f"{y['hanja']} {y['ganzhi']}", ", ".join(y["t_signs"]) or "—", f"{y['t_score']}점"] for y in years],
-            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2]}
+            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2], "widths": ["13%", "20%", "47%", "20%"]}
 
 
 def month_grid(months: list[dict], head: str = "점수") -> dict:
     return {"head": ["달", "간지", "표시", head],
             "rows": [[f"{m['year']}.{m['month']}", m["hanja"], ", ".join(m["t_signs"]) or "—", str(m["t_score"])] for m in months],
-            "hl": [i for i, m in enumerate(months) if m["t_score"] >= 70], "left": [2]}
+            "hl": [i for i, m in enumerate(months) if m["t_score"] >= 70], "left": [2], "widths": ["16%", "14%", "50%", "20%"]}
 
 
 def period_grid(periods: list[dict], head: str = "점수") -> dict:
@@ -251,5 +257,6 @@ def screen_score(f: dict, result: dict, product: str) -> dict:
     return {"score": d["전체 점수"], "good": d["좋은 점"]["점수"], "bad": d["조심할 점"]["점수"]}
 
 
-def screen_row(s: dict) -> list[str]:
-    return ["결제 전에 보신 점수", f"전체 {s['score']}점 · 좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점"]
+def screen_row(s: dict, seen: bool = True) -> list[str]:
+    """첫 요약의 점수 줄. 묶음으로 산 상품은 결제 전 화면을 보지 않았으므로 '결제 전에 보신'이라고 쓰지 않는다."""
+    return ["결제 전에 보신 점수" if seen else "이 운의 점수", f"전체 {s['score']}점 · 좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점"]

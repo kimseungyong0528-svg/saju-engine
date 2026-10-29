@@ -83,9 +83,11 @@ const RULES = {
     }
     if (f.names.has('홍염살')) out.push(['ro_hongyeom', 8]);
     const star = T.STAR[f.sex === 'female' ? 'female' : 'male'];
-    const n = f.groups[f.sex === 'female' ? '관성' : '재성'];
+    const sg = f.sex === 'female' ? '관성' : '재성', n = f.groups[sg];
+    // 재물운 '재다신약'·직업운 '관성이 강한데 받칠 힘이 약함'과 같은 사주에 '딱 맞게'라고 쓰지 않는다(제1조항).
+    const heavy = f.pct(sg) >= 30 && f.st <= 45;
     if (n === 0) out.push(['ro_nostar', -14, star]);
-    else if (n <= 2) out.push(['ro_star', 8, { ...star, count: n }]);
+    else if (n <= 2 && !heavy) out.push(['ro_star', 8, { ...star, count: n }]);
     else if (n >= 4) out.push(['ro_manystar', -10, { ...star, count: n }]);
     if (f.groups.식상 >= 1) out.push(['ro_express', 4]); else out.push(['ro_shy', -7]);
     if (f.dayRel.has('충')) out.push(['ro_dayclash', -10]);
@@ -161,7 +163,9 @@ const RULES = {
     if (vals.every(([, v]) => v >= 10 && v <= 30)) out.push(['he_balance', 16]);
     if (f.st >= 50 && f.st < 70) out.push(['he_stamina', 6]);
     const lack = vals.filter(([, v]) => v < 8).sort((a, b) => a[1] - b[1]);
-    if (lack.length) out.push(['he_lack', lack.length > 1 ? -12 : -8, { lack: lack[0][0], lackWord: T.ELEMENT_WORD[lack[0][0]], lackPct: lack[0][1], lackBody: T.ELEMENT_BODY[lack[0][0]] }]);
+    // 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). saju/taster.py 와 같은 식.
+    const gap = lack.length ? Math.round(8 - lack[0][1]) : 0;
+    if (lack.length) out.push(['he_lack', lack.length > 1 ? -(10 + gap) : -(6 + gap), { lack: lack[0][0], lackWord: T.ELEMENT_WORD[lack[0][0]], lackPct: lack[0][1], lackBody: T.ELEMENT_BODY[lack[0][0]] }]);
     const many = vals.filter(([, v]) => v >= 35).sort((a, b) => b[1] - a[1]);
     if (many.length) out.push(['he_excess', -8, { many: many[0][0], manyWord: T.ELEMENT_WORD[many[0][0]], manyPct: many[0][1], manyBody: T.ELEMENT_BODY[many[0][0]] }]);
     if (f.st <= 30) out.push(['he_weak', -8]);
@@ -182,7 +186,7 @@ function chartDetail(f, T, name) {
   const items = [
     { head: `나를 뜻하는 글자 · ${STEM_HANJA[f.ds]} ${dm}`, text: `태어난 날의 위 글자가 나 자신입니다. ${name} 님은 ${T.DAY_MASTER[f.ds]}` },
     { head: `가장 센 기운 · ${top.word} ${top.pct}%`, text: T.ELEMENT_STRONG[top.el] },
-    { head: `가장 ${low.status === 'lack' ? '모자란' : '적은'} 기운 · ${low.word} ${low.pct}%`, text: T.ELEMENT_WEAK[low.el] },
+    { head: `가장 모자란 기운 · ${low.word} ${low.pct}%`, text: T.ELEMENT_WEAK[low.el] },
     { head: `나를 받쳐 주는 힘 · 100점 중 ${Math.round(f.st)}점`, text: `${T.STRENGTH_PLAIN} ${fill(T.STRENGTH_LINE[f.stLabel], { name })}` },
   ];
   if (T.GYEOK_MEANING[gy]) items.push({ head: `타고난 큰 방향 · ${gy}`, text: T.GYEOK_MEANING[gy] });
@@ -241,4 +245,11 @@ export function areaParts(fp, person, T, id) {
     return { score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
   };
   return { id, score: Math.max(5, Math.min(95, 50 + reasons.reduce((a, x) => a + x[1], 0))), good: part(1), bad: part(-1) };
+}
+
+// 손님이 답한 지금 상황(연애 중·결혼·쉬는 중…)에 맞춰 그 운이 어떻게 나타나는지 한 줄(saju/taster.py situation_note 와 같다).
+export function situationNote(area, answers, T) {
+  const vals = new Set(Object.values(answers || {}).filter(Boolean).map(String));
+  for (const [key, opts] of Object.entries(T.SITUATION.groups)) if (opts.some(o => vals.has(o)) && T.SITUATION.notes[area]?.[key]) return T.SITUATION.notes[area][key];
+  return '';
 }

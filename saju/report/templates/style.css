@@ -26,6 +26,7 @@ b, strong { font-weight: 700; }
 
 .page { break-before: page; }
 .page.cont { break-before: auto; }
+.page h2, .recap-head, .recap-title { break-after: avoid; }
 
 /* 장 머리 */
 .sec-head { display: flex; align-items: flex-end; gap: 5mm; border-bottom: 2pt solid #3a2e22; padding-bottom: 3mm; margin-bottom: 6mm; }
@@ -49,6 +50,7 @@ h3 { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-weight: 400; fo
 .note-title { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 17pt; }
 
 table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; }
+tr { break-inside: avoid; }
 th, td { border: 1pt solid #8a7550; padding: 2mm 2.5mm; text-align: center; vertical-align: middle; font-size: 14pt; line-height: 1.45; }
 th { background: #e9dfc6; font-weight: 700; }
 td.left, th.left { text-align: left; }

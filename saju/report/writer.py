@@ -17,6 +17,7 @@ DraftWriter: API 없이 기초 지식으로 초안을 만든다(도안 확인, �
 
 from __future__ import annotations
 
+from ..taster import _josa, ieyo
 import json
 import os
 import re
@@ -35,7 +36,7 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 - 사주를 처음 보는 일반인이 재미와 취미로 읽습니다.
 
 [문체]
-- 해요체로 씁니다. 고객은 "{name}님"이라고 부릅니다.
+- 해요체로 씁니다. 고객은 "{name} 님"처럼 이름과 '님' 사이를 한 칸 띄어 부릅니다.
 - 비유, 시적인 표현, 멋 부린 카피를 쓰지 않습니다. 핵심을 쉬운 말로 바로 말합니다.
   (예외: '고전 판단'의 물상 그림은 적힌 그대로 쓰고, 바로 뒤에 생활에서 무슨 뜻인지 풀어 씁니다.)
 - 문장은 짧게 씁니다. 한 문단은 2~4문장입니다.
@@ -43,7 +44,7 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 
 [문장: 처음 읽는 사람도 한 번에 알아듣게]
 - 모든 문장에 누가(주어), 무엇을(목적어), 어떻게 하는지가 분명히 드러나게 씁니다. 앞 문장에서 알 수 있어도 빼지 않습니다.
-  나쁜 예: "손실이 나면 되찾으려고 더 넣기 쉬워요." 좋은 예: "{name}님은 투자에서 돈을 잃으면, 잃은 돈을 되찾으려고 돈을 더 넣기 쉬워요."
+  나쁜 예: "손실이 나면 되찾으려고 더 넣기 쉬워요." 좋은 예: "{name} 님은 투자에서 돈을 잃으면, 잃은 돈을 되찾으려고 돈을 더 넣기 쉬워요."
 - 한 문장에는 한 가지 내용만 씁니다. 한 문장은 60자 안팎으로, 길어지면 두 문장으로 나눕니다.
 - 사주 용어 풀이는 지어낸 표현이나 비유로 쓰지 않습니다. 그 기운이 생활에서 무엇인지 쉬운 말로 씁니다.
   나쁜 예: 겁재(내 몫을 다투는 기운). 좋은 예: 겁재(나와 비슷한 사람과 경쟁하는 기운이에요. 친구나 동료 때문에 돈이 나가기 쉬운 것을 뜻해요).
@@ -84,7 +85,7 @@ STYLE_RULES = """당신은 사주 리포트 '평생사주'의 본문을 쓰는 �
 [내용의 깊이: 30만원짜리 대면 상담을 받은 느낌으로]
 - 문단은 '사주 근거 → 생활 속 구체적인 장면 → 바로 해 볼 수 있는 방법' 순서로 씁니다.
 - 근거는 한 글자로 끝내지 않고 이어서 씁니다: 어떤 기운이 몇 개 있고 → 그래서 이 사람이 어떤 순간에 어떻게 행동하며 → 그 일이 어느 해·어느 달에 드러나는지. 이 연결은 위 [용어 풀이]처럼 쉬운 말로 씁니다.
-- 누구에게나 맞는 말 대신, 이 사람 사주에만 있는 글자·개수·관계를 근거로 댑니다. "다른 사람이라면 ~하겠지만 {name}님은 ~해서"처럼 이 사람만의 차이를 보여 줍니다.
+- 누구에게나 맞는 말 대신, 이 사람 사주에만 있는 글자·개수·관계를 근거로 댑니다. "다른 사람이라면 ~하겠지만 {name} 님은 ~해서"처럼 이 사람만의 차이를 보여 줍니다.
 - 때를 말할 때는 '사주 계산 결과'에 있는 연도·달·나이를 그대로 짚습니다. "언젠가", "때가 되면" 대신 "OOOO년 O월(OO 절기부터)"처럼 계산 결과에 있는 해와 달을 그대로 넣어 씁니다.
 - 장면은 이 사람의 나이, 성별, '요즘 일상', 질문에 맞춰 구체적으로 씁니다. 예: 회의에서 의견이 갈릴 때, 첫 데이트에서, 월급날, 이직 제안을 받았을 때.
 - 방법은 오늘부터 할 수 있는 행동으로, 언제·무엇을·얼마나를 넣어 씁니다. 예: "한 달 예산을 세 칸으로 나누기", "용신 색 소품을 책상 오른쪽에 두기", "계약서는 서명 전에 믿을 만한 사람에게 한 번 보여 주기".
@@ -407,14 +408,14 @@ class DraftWriter:
         many = [e for e in f["elements"] if e["status"] == "많음"]
         few = [e for e in f["elements"] if e["status"] == "부족"]
         base = [
-            f"{name}님의 일간(나를 나타내는 글자)은 {dm['stem']}({dm['hanja']})이에요. {dm['image']}의 기운으로, {dm['basic']}",
-            f"사주 전체로 보면 {', '.join(e['name'] for e in many) or '특별히 넘치는 기운 없이'} 기운이 강하고 "
-            f"{', '.join(e['name'] for e in few) or '모자란 기운'}이 약해요. {f['strength']['text']}",
-            f"태어난 달을 기준으로 한 사주의 틀(격국)은 {f['gyeokguk']['name']}이에요. {f['gyeokguk']['text']}",
+            f"{name} 님의 일간(나를 나타내는 글자)은 {ieyo(dm['stem'] + '(' + dm['hanja'] + ')')}. {dm['image']}의 기운으로, {dm['basic']}",
+            "사주 전체로 보면 " + (f"{', '.join(e['name'] for e in many)} 기운이 강하고 " if many else "크게 넘치는 기운은 없고 ")
+            + (f"{_josa(', '.join(e['name'] for e in few), '이')} 약해요. " if few else "크게 모자란 기운도 없어요. ") + f['strength']['text'],
+            f"태어난 달을 기준으로 한 사주의 틀(격국)은 {ieyo(f['gyeokguk']['name'])}. {f['gyeokguk']['text']}",
         ]
         if f.get("classics"):
             c = f["classics"]
-            base.append(f"자평진전으로 보면 {c['gyeok']}은 {c['verdict']}이에요. {c['verdict_text']}")
+            base.append(f"자평진전으로 보면 {_josa(c['gyeok'], '은')} {ieyo(c['verdict'])}. {c['verdict_text']}")
             if c["image"]:
                 base.append(f"물상으로 보면 '{c['image']['title']}'의 모습이에요. {c['image']['text']}")
         if fmt == "lead":
@@ -442,12 +443,7 @@ class DraftWriter:
                                 "careful": "합충 관계가 있어 일정과 말을 한 번 더 확인하세요." if m["relations_text"] else "큰 부딪힘이 없는 달이에요."}
                                for m in f["months"][a:b]]}
         if fmt == "plan":
-            rows = []
-            for sw in f["sewoon"]:
-                good = sw["score"] >= 60
-                rows.append({"when": f"{sw['year']}년", "do": "미뤄 둔 일을 시작하고 사람을 많이 만나세요." if good else "하던 일을 다지고 건강을 챙기세요.",
-                             "avoid": "무리한 확장" if good else "큰 계약과 보증"})
-            return {"notes": ["해마다 할 일과 피할 일을 정리했어요."], "rows": rows}
+            return self._plan(f, s)
         if fmt == "qa":
             return {"items": [{"q": "올해 큰 결정을 해도 될까요?", "a": f"흐름 점수와 대운을 보면 서두르기보다 준비를 먼저 하는 것이 좋아요. {f['lucky']['element_name']} 기운이 들어오는 해에 움직이세요."},
                               {"q": "돈이 모이지 않아 걱정이에요.", "a": "재물이 들어오는 해를 표시해 두고, 그 전까지는 지출을 세 칸으로 나눠 관리하세요."}]}
@@ -459,6 +455,37 @@ class DraftWriter:
                     f"도움 되는 기운: {f['lucky']['element_name']} · 색 {f['lucky']['color']}"]
         n = max(1, round(s["chars"] / 200))
         return (base * 3)[:n]
+
+    @staticmethod
+    def _plan(f: dict, s: dict) -> dict:
+        """시기별 계획 초안. 칸이 요구한 시기(해, 달, 요일)를 따르고, 점수에 따라 할 일을 달리 쓴다."""
+        ask = s.get("guide", "")
+        if "요일" in ask:
+            days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+            acts = ["20분 걷기", "물 여섯 잔 마시기", "스트레칭 10분", "일찍 잠들기", "채소 반찬 하나 더", "햇볕 30분 쬐기", "한 주 돌아보기"]
+            return {"notes": ["하루 한 가지씩 할 일과 피할 일을 정리했어요."],
+                    "rows": [{"when": d, "do": a, "avoid": "늦은 야식" if i % 2 else "오래 앉아 있기"} for i, (d, a) in enumerate(zip(days, acts))]}
+        if "개월" in ask or "1년" in ask or "월(" in ask or "달" in ask:
+            n = 3 if "3월" in ask else 6 if "6개월" in ask else 12
+            rows = []
+            for m in f["months"][:n]:
+                sc = m.get("t_score", m.get("score", 50))
+                when = m.get("label") or f"{m['year']}년 {m['month']}월"
+                if sc >= 65:
+                    do, avoid = "미뤄 둔 일을 시작하고 사람을 만나세요.", "한 번에 너무 많이 벌이기"
+                elif sc >= 50:
+                    do, avoid = "하던 일을 꾸준히 이어 가세요.", "갑작스러운 방향 바꾸기"
+                else:
+                    do, avoid = "쉬는 날을 먼저 정하고 일정을 줄이세요.", "큰 계약과 보증"
+                rows.append({"when": when, "do": do, "avoid": avoid})
+            return {"notes": ["달마다 할 일과 피할 일을 정리했어요."], "rows": rows}
+        rows = []
+        for sw in f["sewoon"]:
+            sc = sw["score"]
+            rows.append({"when": f"{sw['year']}년",
+                         "do": "미뤄 둔 일을 시작하고 사람을 많이 만나세요." if sc >= 65 else "하던 일을 꾸준히 이어 가세요." if sc >= 50 else "하던 일을 다지고 건강을 챙기세요.",
+                         "avoid": "무리한 확장" if sc >= 65 else "갑작스러운 방향 바꾸기" if sc >= 50 else "큰 계약과 보증"})
+        return {"notes": ["해마다 할 일과 피할 일을 정리했어요."], "rows": rows}
 
     @staticmethod
     def _fortune_target(f: dict, sid: str) -> dict:
