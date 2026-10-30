@@ -70,8 +70,8 @@ const RULES = {
     if (rel.includes('형')) out.push(['ny_punish', -8, { dayBranch }]);
     if (rel.includes('원진')) out.push(['ny_wonjin', -7]);
     const mb = f.fp.month.branch;
-    if ([11, 0, 1].includes(mb)) out.push(['ny_warm', 8]);
-    if ([5, 6, 7].includes(mb)) out.push(['ny_hot', -7]);
+    if ([11, 0, 1].includes(mb) && !bad.includes('화')) out.push(['ny_warm', 8]);
+    if ([5, 6, 7].includes(mb) && !good.includes('화')) out.push(['ny_hot', -7]);
     return out;
   },
   romance(f, T) {

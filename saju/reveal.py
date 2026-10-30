@@ -93,12 +93,12 @@ def ny_verdict(fp: FourPillars, sex: str) -> tuple[str, int]:
 
 
 def year_marks(fp: FourPillars, sex: str, product: str, label: str, good: list[str], bad: list[str]) -> tuple[list[str], list[str]]:
-    """한 칸에 붙일 표시. 평생사주의 2027년 칸은 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심' 표시).
-    신년운세의 한 달에는 좋은 표시와 조심할 표시를 함께 붙이지 않는다."""
-    if product == "newyear" and good and bad:   # 한 달에 '돕는 달'과 '조심할 달'을 함께 붙이지 않는다: 부딪힘(충)이 있으면 조심할 달
-        return [], bad
-    if product != "lifetime" or label != "2027":
-        return good, bad
+    """한 칸에 붙일 표시. 12년 지도(모든 상품)의 2027년 칸은 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심' 표시).
+    사장님(2026-10-30): 무료 맛보기와 상품 지도가 2027년을 반대로 말하지 않게 지도를 맛보기 쪽에 맞춘다.
+    한 칸(해·달)에는 좋은 표시와 조심할 표시를 함께 붙이지 않는다(조심할 표시가 남는다)."""
+    if label != "2027":
+        # 한 칸에 좋은 표시와 조심할 표시를 함께 붙이지 않는다(모든 상품, 2026-10-30): 조심할 표시가 있으면 조심할 칸
+        return ([], bad) if good and bad else (good, bad)
     side, _ = ny_verdict(fp, sex)
     return (good or ["ny_good"], []) if side == "good" else ([], bad or ["ny_bad"])
 
