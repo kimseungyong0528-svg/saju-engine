@@ -89,10 +89,10 @@ export function nyVerdict(fp, sex, T) {
   return [score >= 50 ? 'good' : 'bad', score];
 }
 
-// 평생사주의 2027년 칸: 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심').
+// 12년 지도(모든 상품)의 2027년 칸: 무료 풀이 '2027년 운'과 같은 쪽 표시만 남긴다(없으면 '2027년 좋은 흐름'·'2027년 조심').
 function yearMarks(fp, sex, product, T, label, good, bad) {
-  if (product === 'newyear' && good.length && bad.length) return [[], bad];   // 한 달에 '돕는 달'과 '조심할 달'을 함께 붙이지 않는다
-  if (product !== 'lifetime' || label !== '2027') return [good, bad];
+  // 한 칸에 좋은 표시와 조심할 표시를 함께 붙이지 않는다(모든 상품): 조심할 표시가 있으면 조심할 칸
+  if (label !== '2027') return good.length && bad.length ? [[], bad] : [good, bad];
   const [side] = nyVerdict(fp, sex, T);
   return side === 'good' ? [good.length ? good : ['ny_good'], []] : [[], bad.length ? bad : ['ny_bad']];
 }

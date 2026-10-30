@@ -368,6 +368,7 @@ TASTER_CSS = (
     ".skip:focus:not(:focus-visible){top:-100px}"
     ".gift-pick{margin:0 0 14px;padding:14px;border:1px solid #d8bb7866;border-radius:14px;background:#ffffff08}.gift-pick p{margin:0 0 10px;font-size:16px;font-weight:700;color:#f3ead8}"
     ".gift-pick small{display:block;margin-top:10px;font-size:14px;line-height:1.6;color:#d8bb78}.gift-note{font-size:14px;line-height:1.6;color:#d8bb78;margin:8px 0 0}"
+    ".bundle-name,.qb-items span{word-break:keep-all}.qb-items s{opacity:.6;margin-right:4px}"
     ".taster-all{margin:18px 0 4px}.taster-all p{font-size:16px;color:#d8bb78;font-weight:700;margin:0 0 10px}"
     ".taster-all a{display:inline-block;margin:0 8px 10px 0;padding:10px 14px;border:1px solid #d8bb7866;border-radius:20px;color:#f3ead8;font-size:15px;text-decoration:none}"
     ".bottom-nav a,.price-box>div,.price-box em,.light .price-box em,.birth-card-number,.birth-card-state,.birth-location-step .birth-label b,"
@@ -493,6 +494,14 @@ def add_input_helpers(s: str) -> str:
     s = _swap(s, "personSummary(d.self,'나의 정보')",
               "personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 정보 (선물)':'나의 정보')"
               "+(isGift(p.id)?'<p class=\"gift-note\">선물 주문이에요. 결과 PDF는 아래에 적는 이메일로 보내드리니, 받아서 전해 주세요.</p>':'')")
+    # 화면이 기록용으로 남긴 값(재회사주 첫 달 revealStart 등)은 고객 답이 아니므로 꼬리표로 보이지 않는다(손님 테스트 2차: '2026-11' 꼬리표)
+    s = _swap(s, "${Object.values(d.answers).length?`<div class=\"answer-tags\">${Object.values(d.answers).map(",
+              "${Object.entries(d.answers).filter(([k])=>!k.startsWith('reveal')).length?`<div class=\"answer-tags\">${Object.entries(d.answers).filter(([k])=>!k.startsWith('reveal')).map(([,v])=>v).map(")
+    # 선물이면 질문·리포트 안내·결제 화면의 '나' 말투를 받는 분 기준으로(손님 테스트 2차, 2026-10-30)
+    s = _swap(s, "<p class=\"muted\">${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>",
+              "<p class=\"muted\">${isGift(p.id)?'선물 받을 분의 입장에서 골라 주세요. ':''}${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>")
+    s = _swap(s, "${personSummary(d.self,'나의 이야기')}", "${personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 이야기 (선물)':'나의 이야기')}")
+    s = _swap(s, "<p>나만을 위한 한 권의 기록</p>", "<p>${isGift(p.id)?esc(d.self.name||'받는 분')+' 님을 위한 한 권의 기록':'나만을 위한 한 권의 기록'}</p>")
     s = _swap(s, '<h1>${s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>',
               '<h1>${s.who===\'self\'&&isGift(p.id)?\'선물 받을 분의<br>이야기를 알려주세요\':s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>')
     s = _swap(s, "KOREA_REGIONS.filter(r=>!r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}"
@@ -635,9 +644,9 @@ EXTRAS_CSS = (
     ".email-hint{margin:8px 0 0;color:#ffd38a;font-size:14px;line-height:1.6;word-break:keep-all}.email-hint b{color:#fff}.email-fix{margin-left:6px;padding:4px 10px;border:1px solid #ffd38a;border-radius:999px;background:none;color:#ffd38a;font-size:14px}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
     ".bundle-ask select{width:100%;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--x-line);background:#16130e;color:var(--x-text);font-size:16px}"
-    ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text)}"
+    ".bundle-name{flex:1;font-size:16px;font-weight:700;color:var(--x-text);white-space:nowrap}"
     # 가격: 위에 원래 값(가운데 줄), 아래에 빨간 10% + 할인된 값(2026-10-27 사장님)
-    ".bundle-price{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35}.bundle-price s{font-size:13px;color:var(--x-muted)}"
+    ".bundle-price{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35}.bundle-price s{font-size:13px;font-weight:400;color:#8a8478;opacity:.75;text-decoration:line-through}"
     ".bundle-price span{font-size:16px;font-weight:800;color:var(--x-text);white-space:nowrap}.bundle-price em,.qb-final em{font-style:normal;color:#ff4d5a;font-weight:800;margin-right:6px}"
     ".price-box .qb-final{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3}.price-box .qb-final s{font-size:15px;color:var(--x-muted);font-weight:500}"
     ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
@@ -718,7 +727,7 @@ def add_extras(s: str) -> str:
     s = _swap(s, "<section class=\"chapters\"><span class=\"eyebrow\">CONTENTS</span><h2 class=\"serif\">리포트의 목차</h2>${s.chapters.map((c,n)=>`<article class=\"chapter\"><span>${String(n+1).padStart(2,'0')}</span><h3>${c}</h3><p>${chapterLine(n)}</p></article>`).join('')}</section>",
               "")   # 목차는 결제 전 이야기 마지막 장면(리포트 미리 보기)에서 이미 보여 준다(손님 테스트: 같은 목차가 두 번)
     # 재물운·직업운은 리포트 안내 페이지 없이 바로 결제 화면으로 가므로, 목차·미리보기를 결제 화면 위쪽에 둔다.
-    # 첫 구매 묶음 할인은 결제 화면 맨 위(상품 그림 바로 아래)에 둔다(2026-10-27 사장님).
+    # 첫 구매 묶음 할인은 여기서 그린 뒤 extras.js 가 이메일 칸 아래로 옮긴다(2026-10-30 사장님).
     s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)}<section class="checkout-birth-summary">')
     # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
     s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
@@ -773,7 +782,7 @@ def add_discounts(s: str) -> str:
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
               "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'"
-              ":e.message==='BUNDLE_INCOMPLETE'?'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.'"
+              ":e.message==='BUNDLE_INCOMPLETE'?(typeof showBundleGap==='function'&&showBundleGap(),'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.')"
               ":e.message==='EMAIL_REQUIRED'?'이메일 주소를 다시 확인해 주세요. 끝(.com, .net)까지 넣어야 해요. 예: name@naver.com'")
     return s
 

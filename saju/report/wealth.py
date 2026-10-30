@@ -48,7 +48,7 @@ def _money_type(f: dict) -> tuple[str, str]:
     if jae >= 3 and weak:
         return "체력이 먼저인 형", "재물 글자는 많지만 나를 돕는 힘이 약해서(재다신약), 돈을 쫓기보다 몸과 실력을 먼저 키울 때 돈이 남아요."
     if jae == 0:
-        return "운에서 들어오는 돈형", "타고난 사주에 재성이 없어서, 재물이 들어오는 해와 대운을 잡는 것이 가장 중요해요."
+        return "운에서 들어오는 돈형", "태어날 때 받은 여덟 글자 안에는 재성이 없어서, 재성이 바깥에서 들어오는 해와 대운을 잡는 것이 가장 중요해요."
     if sik >= 2:
         return "재능이 돈이 되는 형", "재능과 표현(식상)이 재물(재성)을 낳는 구조(식상생재)라서, 잘하는 일을 키울수록 돈이 따라와요."
     if T.god_count(f, "편재") > T.god_count(f, "정재"):
@@ -79,6 +79,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     mtype, mtext = _money_type(f)
     # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
     ahead = [p for p in T.near(f, periods) if p["state"] != "지난"]
+    # '나가는 돈 주의' 대운이나 점수가 낮은 대운은 '큰돈이 들어오는 대운'에 넣지 않는다(같은 책 대운 표와 모순 금지)
+    ahead = [p for p in ahead if p["t_score"] >= 55 and "나가는 돈 주의" not in p["t_signs"]]
     big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
     screen = T.screen_score(f, result, "wealth")
     data = {
@@ -129,7 +131,9 @@ def build_outline(f: dict) -> list[dict]:
         P("chart", "나의 사주표", figure="pillars",
           slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간이 돈을 대하는 태도에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("w_letters", "재물을 보는 글자", figure="kv", rows=[
-            ["재성(재물)", f"{c['재성']}개 · 편재 {t['편재']} · 정재 {t['정재']}" + (f" · {', '.join(t['seats'])}" if t["seats"] else "")],
+            ["재성(재물)", f"{c['재성']}개 · 편재 {t['편재']} · 정재 {t['정재']}"
+             + (f" · {', '.join(x for x in t['seats'] if '숨은 글자' not in x)}" if any('숨은 글자' not in x for x in t["seats"]) else "")
+             + (f" (개수에 넣지 않은 숨은 글자: {', '.join(x for x in t['seats'] if '숨은 글자' in x)})" if any('숨은 글자' in x for x in t["seats"]) else "")],
             ["식상(재능·표현)", f"{c['식상']}개"], ["비겁(나·동료)", f"{c['비겁']}개"],
             ["인성(문서·집)", f"{c['인성']}개"], ["신강·신약", f"{f['strength']['label']} ({f['strength']['score']:.0f}점)"],
         ], slot=S("w_letters", "표의 글자가 각각 돈과 어떤 관계인지, 이 사주에서는 어떻게 있는지 설명해 주세요.", HALF - 40)),

@@ -81,8 +81,11 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     periods = [dict(p, **my_mark(p)) for p in f["daewoon"]["periods"]]
 
     def marriage(fx: dict, group: str) -> list[dict]:
+        # 지금 나이부터 20년 안에 시작하고, 끝나기까지 1년 넘게 남은 대운만(91~100세 같은 시기를 말하지 않는다)
+        age = fx["person"].get("age") or 0
         return [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]}
-                for p in fx["daewoon"]["periods"] if p["state"] != "지난" and (T.has(p, group) or T.rel(p, "일주", T.HAP))][:3]
+                for p in fx["daewoon"]["periods"] if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + 20, 60)
+                and (T.has(p, group) or T.rel(p, "일주", T.HAP))][:3]
 
     screen = T.screen_score(f, result, "intimate")
     data = {
@@ -144,7 +147,7 @@ def build_outline(f: dict) -> list[dict]:
             ["배우자 자리끼리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} · {cmp['spouse_palace']['tone']}"],
             ["합 · 충", f"손잡는 관계 {cmp['cross_relations']['harmony']}개 · 부딪히는 관계 {cmp['cross_relations']['tension']}개"],
             ["관계가 깊어지는 달", ", ".join(t["best_months"])],
-            ["두 사람에게 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+            ["내 배우자 자리에 좋은 해 (결제 전 12년 지도)", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
         ], slot=S("im_glance", "표를 이어서 두 사람 궁합의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 200)),
     ])
     section("3", [
@@ -230,18 +233,20 @@ def build_outline(f: dict) -> list[dict]:
         P("im9_graph", "나이별 인연의 흐름", figure="theme_graph", note="대운(10년)마다 배우자 별과 그 사람과의 합이 들어오면 점수가 올라가요.",
           slot=S("im9_graph", f"{name} 님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
     ])
-    mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "뚜렷한 시기 없음"
+    mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "앞으로 20년 안에는 뚜렷한 시기 없음"
+    wed = t["status"] == "부부"   # 이미 결혼한 두 사람에게 '결혼까지 갈 수 있을까'를 묻지 않는다
+    W = "두 사람은 이미 부부입니다. " if wed else ""
     section("10", [
-        P("im10_open", "두 사람의 결혼 인연 시기", figure="kv", opener=True, rows=[
+        P("im10_open", "부부 사이가 깊어지는 시기" if wed else "두 사람의 결혼 인연 시기", figure="kv", opener=True, rows=[
             [name, mm(t["marriage_me"])], [oname, mm(t["marriage_partner"])],
-            ["두 사람에게 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
-        ], slot=S("im10_open", "표를 근거로 두 사람의 결혼 인연이 겹치는 시기를 설명해 주세요.", HALF)),
-        P("im10_can", "결혼까지 갈 수 있을까",
-          slot=S("im10_can", "배우자 자리 관계, 궁합 점수, 결혼 인연 시기를 근거로 결혼까지 이어지는 조건과 걸림돌을 솔직하게 써 주세요.")),
-        P("im10_couple", "결혼하면 어떤 부부가 될까",
-          slot=S("im10_couple", "두 사람이 함께 살 때의 모습(집안일, 돈, 대화, 쉬는 날)을 장면으로 쓰고, 부딪히는 지점의 보완법을 붙여 주세요.")),
-        P("im10_check", "결혼 전에 함께 확인할 것",
-          slot=S("im10_check", "이 조합에서 결혼 전에 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요.", FULL, "checklist")),
+            ["내 배우자 자리에 좋은 해 (결제 전 12년 지도)", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+        ], slot=S("im10_open", W + ("표를 근거로 두 사람 사이가 깊어지는 시기와 그때 함께 할 일을 설명해 주세요." if wed else "표를 근거로 두 사람의 결혼 인연이 겹치는 시기를 설명해 주세요."), HALF)),
+        P("im10_can", "부부 사이를 더 단단하게 하려면" if wed else "결혼까지 갈 수 있을까",
+          slot=S("im10_can", W + ("배우자 자리 관계와 궁합 점수를 근거로 부부 사이를 단단하게 하는 조건과 걸림돌을 솔직하게 써 주세요." if wed else "배우자 자리 관계, 궁합 점수, 결혼 인연 시기를 근거로 결혼까지 이어지는 조건과 걸림돌을 솔직하게 써 주세요."))),
+        P("im10_couple", "지금 우리는 어떤 부부일까" if wed else "결혼하면 어떤 부부가 될까",
+          slot=S("im10_couple", W + "두 사람이 함께 살 때의 모습(집안일, 돈, 대화, 쉬는 날)을 장면으로 쓰고, 부딪히는 지점의 보완법을 붙여 주세요.")),
+        P("im10_check", "부부가 함께 확인할 것" if wed else "결혼 전에 함께 확인할 것",
+          slot=S("im10_check", W + ("이 조합의 부부가 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요." if wed else "이 조합에서 결혼 전에 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요."), FULL, "checklist")),
     ])
     q = f["order"]["question"]
     section("11", [

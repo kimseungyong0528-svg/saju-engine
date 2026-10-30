@@ -61,17 +61,26 @@ function bundleBlock(p,d){
  // 재구매 링크로 온 손님: 재구매 할인 10%가 붙고 묶음 할인과는 겹치지 않는다(한 주문에 할인 하나). 첫 구매 상자 대신 한 줄로 알려 준다.
  if(d.coupon||savedCoupon())return `<p class="bundle-rebuy">재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.</p>`;
  // 목록은 접어 두고(결제 화면이 길어지지 않게), 이미 고른 상품이 있으면 펼친다.
- return `<section class="bundle-x"><details class="bundle-more"${on.size?' open':''}><summary><span class="x-eyebrow">FIRST ORDER</span><span class="x-title">함께 사면 전부 <em>10%</em> 할인</span><span class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 전부 10% 할인돼요. 리포트는 한 권씩 따로 보내드려요. <b>눌러서 고르기</b></span></summary><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><span>${money(x.price)}</span><span>함께 사면 <em>10%</em> ${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`}).join('')}</div></details></section>`;
+ return `<section class="bundle-x"><details class="bundle-more"${on.size?' open':''}><summary><span class="x-eyebrow">FIRST ORDER</span><span class="x-title">함께 사면 전부 <em>10%</em> 할인</span><span class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 전부 10% 할인돼요. 리포트는 한 권씩 따로 보내드려요. <b>눌러서 고르기</b></span></summary><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em> ${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`}).join('')}</div></details></section>`;
 }
 const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워 주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
  if(!q)return priceBox(p,0);
  // 내가 고른 상품이 맨 위, 함께 산 상품은 그 아래(사이트 순서)
  const all=q.items.map(it=>PRODUCTS.find(x=>x.id===it.id)||{...it,original:it.price}),items=[all[0],...all.slice(1).sort(byOrder)],orig=items.reduce((a,x)=>a+x.original,0);
- const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${money(x.price)}</span></div>`).join('')}</div>`:'';
+ const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${x.original>x.price?`<s>${money(x.original)}</s> `:''}${money(x.price)}</span></div>`).join('')}</div>`:'';
  const dc=q.discount?`<div class="qb-disc"><span>${esc(q.discount.label)} <em>${q.discount.percent}%</em></span><strong>−${money(q.discount.amount)}</strong></div>`:'';
- const notes=[...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${QUOTE_NOTES[n]}</p>`).join('');
+ // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
+ const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
+ const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워 주시면 금액에 담겨요.`:QUOTE_NOTES[n]}</p>`).join('');
  return `<div class="price-box">${list}<div><span>정가</span><s>${money(orig)}</s></div><div><span>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
+}
+// 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
+function showBundleGap(){
+ const det=document.querySelector('.bundle-more');if(det)det.open=true;
+ const rows=[...document.querySelectorAll('.bundle-row')].filter(r=>r.querySelector('input[name=extra]:checked'));
+ const el=rows.map(r=>r.querySelector('select[data-extra-q]:not([data-ok])')).find(x=>x&&!x.value)||document.querySelector('[data-bundle-partner] input:invalid, [data-bundle-partner] select:invalid')||rows[0];
+ if(el){el.scrollIntoView({block:'center',behavior:'smooth'});try{el.focus({preventScroll:true})}catch{}}
 }
 let quoteSeq=0;
 async function refreshQuote(p,d){
@@ -84,6 +93,8 @@ async function refreshQuote(p,d){
 }
 function bindDiscounts(p,d){
  const form=document.querySelector('#checkout-form');if(!form)return;
+ // 묶음 할인은 이메일 칸 아래, 금액 안내 바로 위에서 고른다(2026-10-30 사장님). 상대방 정보 칸은 따로 된 form이라 화면을 그린 뒤 옮긴다.
+ const ph=form.querySelector(':scope>h2.checkout-label');document.querySelectorAll('.bundle-x,.bundle-rebuy').forEach(b=>{if(ph)form.insertBefore(b,ph)});
  if(!d.coupon&&savedCoupon())d.coupon=savedCoupon();
  delete d.discount;
  // 상대방 입력칸은 체크한 재회사주·깊은 궁합 바로 밑에 연다(손님 테스트: 깊은 궁합을 골랐는데 재회사주 밑에 열림).
@@ -95,6 +106,10 @@ function bindDiscounts(p,d){
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600);emailHintShow(form)});
  emailHintShow(form);
+ // 환불 안내·약관을 보고 돌아와도 동의 체크가 풀리지 않게(손님 테스트 2차)
+ const CK='unmyeong.consent.'+p.id,boxes=['privacy','payment'].map(n=>form.elements[n]).filter(Boolean);
+ try{if(sessionStorage.getItem(CK)==='1'&&boxes.length){boxes.forEach(b=>{b.checked=true});const all=document.querySelector('#all-consent');if(all)all.checked=true;boxes[0].dispatchEvent(new Event('change',{bubbles:true}))}}catch{}
+ form.addEventListener('change',()=>{try{sessionStorage.setItem(CK,boxes.length&&boxes.every(b=>b.checked)?'1':'0')}catch{}});
  refreshQuote(p,d);
 }
 

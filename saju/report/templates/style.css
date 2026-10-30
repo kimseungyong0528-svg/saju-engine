@@ -118,7 +118,7 @@ td.left, th.left { text-align: left; }
 .cover .eight th, .cover .eight td { border: .6pt solid #d8bb78; color: #e9dfc6; background: none; padding: .5mm 0; }
 .cover .eight th { font-size: 14pt; font-weight: 400; color: #d8bb78; }
 .cover .eight .gz td { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 30pt; line-height: 1.25; }
-.cover .who { position: absolute; left: 25mm; width: 176mm; top: 243mm; font-size: 14pt; line-height: 1.45; }
+.cover .who { position: absolute; left: 25mm; width: 160mm; top: 238mm; font-size: 14pt; line-height: 1.45; word-break: keep-all; }
 .cover .who b { display: block; font-family: "Song Myung", "Noto Serif CJK KR", serif; font-weight: 400; font-size: 26pt; color: #f6ecd8; margin-bottom: .5mm; }
 .cover .brand { position: absolute; left: 25mm; width: 176mm; top: 288.5mm; font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 14pt; color: #d8bb78; letter-spacing: .5mm; }
 

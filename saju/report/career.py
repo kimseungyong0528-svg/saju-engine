@@ -56,6 +56,13 @@ _ROLE = {
     "비겁": "독립 전문직, 현장 리더, 스포츠·체력 쓰는 일, 프리랜서",
 }
 
+def _role(top_group: str, org: str) -> str:
+    """'맞는 환경'과 '어울리는 역할'이 한 표 안에서 엇갈리지 않게(조직형인데 프리랜서를 권하지 않는다)."""
+    if top_group == "비겁" and org.startswith("조직형"):
+        return "현장 리더, 팀을 이끄는 실무 책임자, 기술·체력을 쓰는 전문 직무"
+    return _ROLE[top_group]
+
+
 _CONCERN = {"첫 취업을 준비해요": "첫 취업", "이직을 고민해요": "이직", "다시 일을 시작하고 싶어요": "재취업",
             "창업을 생각해요": "창업", "지금 일이 맞는지 궁금해요": "적성 확인"}
 
@@ -93,6 +100,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     T.reveal_fix(result, "career", months)
     style, style_text = _style(f)
     top_group = max(("관성", "식상", "재성", "인성", "비겁"), key=lambda g: T.count(f, g))
+    org = "조직형(회사·공공기관)" if (T.count(f, "관성") >= 1 and T.count(f, "인성") >= 1) \
+        or T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)"
     move_years = T.good_rows(years, 12, lambda y: y["year"])   # 화면의 '자리의 별' 해
     screen = T.screen_score(f, result, "career")
     data = {
@@ -102,9 +111,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "counts": {g: T.count(f, g) for g in T.GODS},
         "month_pillar": {k: next(p for p in f["pillars"] if p["pillar"] == "월주").get(k) for k in ("ganzhi", "stem_ten_god", "branch_ten_god")},
         "yeokma": "역마살" in f["shinsal_names"],
-        "fields": _FIELD[f["lucky"]["element"]], "roles": _ROLE[top_group], "top_group": top_group,
-        "org": "조직형(회사·공공기관)" if (T.count(f, "관성") >= 1 and T.count(f, "인성") >= 1)
-               or T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)",
+        "fields": _FIELD[f["lucky"]["element"]], "roles": _role(top_group, org), "top_group": top_group, "org": org,
         "move_years": move_years, "best_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
     }
@@ -203,7 +210,7 @@ def build_outline(f: dict) -> list[dict]:
         P("c7_open", "이직 신호 읽기", figure="kv", opener=True, rows=[
             ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["일 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "일 자리 변동" in m["t_signs"]) or "없음"],
-            ["이동 기운(역마)", "타고난 사주에 있어요" if t["yeokma"] else "운에서 들어올 때 움직임이 커져요"],
+            ["이동 기운(역마)", "태어날 때 받은 여덟 글자 안에 있어요" if t["yeokma"] else "태어날 때 받은 여덟 글자 안에는 없고, 바깥에서 들어오는 해에 움직임이 커져요"],
         ], slot=S("c7_open", "표를 근거로 이 사람에게 이직 신호가 언제 드는지 설명해 주세요.", HALF)),
         P("c7_years", "앞으로 12년 직업운", figure="grid", span=3, grid=T.year_grid(th["years"], t["move_years"], "일의 흐름"),
           slot=S("c7_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 일의 흐름, 이직·승진·공부 가운데 할 일).", FULL * 3 - 460)),

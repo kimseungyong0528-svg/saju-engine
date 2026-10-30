@@ -137,9 +137,10 @@ def _newyear(f, T):
     if "원진" in rel:
         out.append(("ny_wonjin", -7, {}))
     mb = f["fp"].month.branch
-    if mb in (11, 0, 1):
+    # 불(丁)이 부담인 사람에게 '불이 사주를 녹인다'고 하지 않고, 불이 돕는 사람에게 '불이 더 덥게 한다'고 하지 않는다(제1조항).
+    if mb in (11, 0, 1) and "화" not in bad:
         out.append(("ny_warm", 8, {}))
-    if mb in (5, 6, 7):
+    if mb in (5, 6, 7) and "화" not in good:
         out.append(("ny_hot", -7, {}))
     return out
 

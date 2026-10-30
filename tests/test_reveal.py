@@ -19,7 +19,7 @@ def test_month_pillars_follow_year_stem():
 
 def test_digest_gives_computed_months_for_every_shown_year():
     d = reveal.digest(_fp(), "김민준", "male", "wealth", 2026)
-    assert d["리포트에 나와야 하는 해·달"] == ["2034년", "2035년", "2029년", "2031년"]
+    assert d["리포트에 나와야 하는 해·달"] == ["2034년", "2035년", "2027년", "2029년", "2031년"]   # 2027년은 무료 풀이 '2027년 운' 방향(조심)
     good = d["좋은 해"][0]
     months = good["그 해 안에서 같은 기운이 들어오는 달(절기 기준, 매달 4~8일 무렵 시작)"]
     assert set(months) == {"2034년", "2035년"} and all(months.values())

@@ -154,7 +154,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     male = f["person"]["sex"] == "male"
     strong = f["strength"]["label"] not in ("신약", "극신약")
     n_gwan, n_jae = T.count(f, "관성"), T.count(f, "재성")
-    spouse = "재성" if male else "관성"
+    spouse = "정재" if male else "정관"   # 연애사주 화면의 '배우자 별'과 같은 별(제1조항)
     hits = _hits(f, an)
     excess = [e["el"] for e in f["elements"] if e["status"] == "많음"]
     lacking = [e["el"] for e in f["elements"] if e["status"] == "부족"]
@@ -204,15 +204,15 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
             "work": area((("직장·승진 기운(관성)", gwan), ("문서·합격 기운(인성)", ins), ("실력 발휘(식상)", sik),
                           ("윗사람과 부딪힘(상관견관)", sg), ("일 자리 변동(월지 충)", c_mon), ("이동 기운(역마)", yeok)),
                          base + 8 * gwan + 5 * ins + 4 * sik - 6 * sg - 3 * c_mon),
-            "money": area((("재물 별(재성)", jae), ("재능이 돈으로(식상)", sik), ("나가는 돈 주의(비겁·겁재)", leak),
+            "money": area((("돈의 별(재성)", jae), ("재능이 돈으로(식상)", sik), ("나가는 돈 주의(비겁·겁재)", leak),
                            ("돈의 자리 변동(월지 충)", c_mon)),
                           base + 10 * jae + (5 if strong else 2) * sik - 7 * leak - 4 * c_mon),
             "biz": area((("재능이 돈으로 이어짐(식상생재)", sik and (jae or n_jae > 0)), ("새 일 기운(식상)", sik),
                          ("계약·문서 기운(인성)", ins), ("동업·경쟁 주의(겁재)", geob), ("자리 변동(충)", c_day or c_mon)),
                         base + 5 * sik + 5 * (sik and (jae or n_jae > 0)) + 6 * ins - 6 * geob - 3 * (c_day or c_mon)),
-            "love": area(((f"배우자 별({spouse})", g(spouse)), ("도화 글자", peach), ("배우자 자리 합(일지 합)", h_day),
+            "love": area(((f"배우자 별({spouse})", spouse in gods), ("도화 글자", peach), ("배우자 자리 합(일지 합)", h_day),
                           ("배우자 자리 충(일지 충)", c_day), ("배우자 자리 마찰(형·파·해·원진)", harm_day)),
-                         base + 9 * g(spouse) + 6 * peach + 6 * h_day - 7 * c_day - 3 * harm_day),
+                         base + 9 * (spouse in gods) + 6 * peach + 6 * h_day - 7 * c_day - 3 * harm_day),
             "people": area((("귀인 글자(천을귀인)", gui), ("구설 주의(상관)", "상관" in gods), ("손재 주의(겁재)", geob),
                             ("관재 주의(편관과 충·형)", "편관" in gods and (c_day or c_mon or harm_day)), ("관재 주의(상관견관)", sg)),
                            base + 8 * gui - 4 * ("상관" in gods) - 5 * geob - 6 * ("편관" in gods and (c_day or c_mon or harm_day)) - 4 * sg),
@@ -232,6 +232,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     for m in months:
         m.update(marks(m))
     T.reveal_fix(result, "newyear", months, replace=False)   # 제1조항: 결제 전 화면의 '돕는 달'·'조심할 달'과 같은 방향
+    _align_areas(result, months)   # 제1조항: 함께 산 재물운·직업운·사업운·연애사주·건강운의 달 표시와 같은 방향
 
     def avg(vals):
         return sum(vals) / len(vals)
@@ -607,6 +608,29 @@ def build_outline(f: dict) -> list[dict]:
 def cross_sell_order(f: dict) -> list[str]:
     focus = f["theme"]["data"]["focus"]
     return {"일과 직장": ["career"], "돈과 재물": ["wealth"], "연애와 결혼": ["romance"], "건강": ["health"]}.get(focus, ["lifetime"])
+
+
+# 신년운세의 분야가 따로 파는 상품과 겹치면, 그 상품 화면·리포트와 같은 규칙(saju/reveal.py)으로 달마다 표시와 점수 방향을 맞춘다.
+AREA_PRODUCT = {"work": "career", "money": "wealth", "biz": "business", "love": "romance", "health": "health"}
+
+
+def _align_areas(result: dict, months: list[dict]) -> None:
+    from .. import reveal as RV
+    from ..taster import texts
+    sex = result["person"].get("sex", "")
+    fp = T.fourpillars(result)
+    _, rule_of = RV._marker(fp, sex)
+    conf, marks = texts()["REVEAL"]["PRODUCTS"], texts()["REVEAL"]["MARKS"]
+    for m in months:
+        p = {"stem": STEMS.index(m["ganzhi"][0]), "branch": BRANCHES.index(m["ganzhi"][1])}
+        for key, pid in AREA_PRODUCT.items():
+            ar = m["areas"][key]
+            good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["good"] if rule_of(k)(p)]
+            bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["bad"] if rule_of(k)(p)]
+            good = [] if bad else good   # 한 달에 좋은 표시와 조심할 표시를 함께 붙이지 않는다(saju/reveal.py year_marks 와 같다)
+            v = ar["score"]
+            ar["score"] = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
+            ar["signs"] = list(dict.fromkeys(good + bad + ar["signs"]))
 
 
 def hook(f: dict) -> str:
