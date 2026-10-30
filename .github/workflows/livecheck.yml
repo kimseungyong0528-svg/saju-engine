@@ -1,0 +1,14 @@
+name: livecheck
+on: push
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for i in $(seq 1 40); do
+            h=$(curl -s "https://unmyeong-saju.com/?v=$RANDOM")
+            r=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?v=$RANDOM")
+            if echo "$h" | grep -q "showBundleGap" && echo "$h" | grep -q "checkout-label');document.querySelectorAll('.bundle-x" && echo "$r" | grep -q "label !== '2027'"; then echo "LIVE OK"; exit 0; fi
+            sleep 15
+          done
+          echo "NOT LIVE"; exit 1
