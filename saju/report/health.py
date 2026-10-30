@@ -59,6 +59,13 @@ _SEASON = {"해": "겨울", "자": "겨울", "축": "겨울", "인": "봄", "묘
 def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     excess = [e["el"] for e in f["elements"] if e["status"] == "많음"]
     lacking = [e["el"] for e in f["elements"] if e["status"] == "부족"]
+    # 제1조항: 결제 전 화면 '이거 맞죠?'의 '가장 모자란 기운'이 표에서 빠지지 않게 한다(같은 계산 saju/reveal.py)
+    from .. import analysis as A
+    from .. import reveal as RV
+    weakest = RV._weakest(A.element_strength(T.fourpillars(result)))
+    if weakest not in lacking:
+        lacking = [weakest] + [e for e in lacking if e not in excess]
+    excess = [e for e in excess if e != weakest]
     good = {f["lucky"]["element"], *lacking}
 
     def mark(x: dict) -> dict:
@@ -132,7 +139,7 @@ def build_outline(f: dict) -> list[dict]:
     section("2", [
         P("h_glance", "한눈에 보는 나의 건강운", figure="kv", opener=True, rows=[
             T.screen_row(t["screen_score"], t.get("seen", True)),
-            ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["모자란 기운", els(t["lacking"])],
+            ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["가장 모자란 기운" if len(t["lacking"]) == 1 else "모자란 기운", els(t["lacking"])],
             ["돌볼 영역", " / ".join(x["area"] for x in t["excess"] + t["lacking"]) or "고른 편이라 전체 리듬을 지켜요"],
             ["기운 채움 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["몸 조심할 해", ", ".join(f"{y}년" for y in t["care_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["조심할 달", ", ".join(t["careful_months"]) or "크게 조심할 달은 없어요"],

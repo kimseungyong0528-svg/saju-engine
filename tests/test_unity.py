@@ -77,3 +77,40 @@ def test_reunion_report_uses_the_month_the_customer_saw():
         months = f["theme"]["months"]
         assert len(months) == 24 and (months[0]["year"], months[0]["month"]) == (2026, 11)
         assert f["theme"]["data"]["most_months"] == [f"{m['year']}년 {m['month']}월" for m in months if "가장 좋은 달" in m["r_good"]]
+
+
+def test_2027_cell_follows_free_taster_and_no_cell_is_both_ways():
+    """손님 테스트 2차(사장님 2026-10-30): 모든 상품의 12년 지도 2027년 칸은 무료 맛보기 '2027년 운'과 같은 쪽이고,
+    한 칸에 좋은 표시와 조심할 표시가 함께 붙지 않는다."""
+    from saju import reveal as RV
+    for me in PEOPLE[:60]:
+        fp, sex = taster_fp(me), me["person"]["sex"]
+        side = RV.ny_verdict(fp, sex)[0]
+        for pid in ("lifetime", "romance", "intimate", "wealth", "career", "business", "health", "newyear", "reunion"):
+            for c in RV.luck_map(fp, sex, pid)["cells"]:
+                assert not (c["good"] and c["bad"]), (pid, c)
+                if c["label"] == "2027":
+                    assert (side == "good") == bool(c["good"]) and (side == "bad") == bool(c["bad"]), (pid, side, c)
+
+
+def test_cross_sell_lines_use_screen_years_and_wording():
+    """PDF 끝 '다른 리포트' 소개 문장의 해는 그 상품 결제 전 지도의 좋은 해, '없다'는 '태어날 때 받은 여덟 글자 안에는'으로."""
+    import re
+    from saju import reveal as RV
+    from saju.report.products import hooks
+    for me in PEOPLE[:30]:
+        f = build_facts(me, ORDER)
+        h = hooks(f)
+        fp, sex = taster_fp(me), me["person"]["sex"]
+        for pid in ("romance", "wealth", "career", "business"):
+            m = re.search(r"(\d{4})년은", h[pid])
+            if m:
+                cell = next(c for c in RV.luck_map(fp, sex, pid)["cells"] if c["label"] == m.group(1))
+                assert cell["good"], (pid, h[pid])
+        for text in h.values():
+            assert "타고난 사주에는" not in text and "정재이" not in text
+
+
+def taster_fp(me):
+    from saju import taster
+    return taster.pillars_from_result(me)

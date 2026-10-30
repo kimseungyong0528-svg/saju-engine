@@ -106,7 +106,7 @@ def build_romance(f: dict, result: dict, order) -> dict:
     visible = [s for s in seats if any(not w.startswith("숨은") for w in s["where"])]
     main_seat = (visible or seats or [None])[0]
 
-    peach = {_PEACH[an["pillars"][0]["branch"]], _PEACH[day["branch"]]}
+    peach = {_PEACH[day["branch"]]}   # 결제 전 지도의 '도화'와 같은 글자(일지 기준, saju/reveal.py PEACH_OF)
     from .theme import bad_rows, blend_current_year, good_rows, near, reveal_fix, screen_years
     years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in screen_years(f)]
     months = [dict(m, **_love_mark(m, gods, peach, m["relations"])) for m in f["months"]]
@@ -115,7 +115,10 @@ def build_romance(f: dict, result: dict, order) -> dict:
     for rows in (years, months):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
         reveal_fix(result, "romance", rows, score="love_score", signs="love_signs")
     # 결혼 인연 대운: 지금 대운과 앞으로의 대운 가운데 55세 안에 시작하는 것만(23세에게 61~80세를 말하지 않게)
-    marriage = [p for p in near(f, periods) if p["state"] != "지난" and p["age_from"] <= 55 and (p["love_star"] or p["love_hap"])]
+    # 지금 나이부터 20년 안에 시작하고 끝나기까지 1년 넘게 남은 대운만(26세에게 54~63세를, 29세에게 곧 끝나는 21~30세를 말하지 않게)
+    age = f["person"].get("age") or 0
+    marriage = [p for p in near(f, periods) if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + 20, 55)
+                and (p["love_star"] or p["love_hap"])]
 
     natal_day = [r for r in f["relations"] if "일주" in r.get("between", [])]
     status = STATUS_TEXT.get(order.relationship, order.relationship)

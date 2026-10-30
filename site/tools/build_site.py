@@ -368,6 +368,7 @@ TASTER_CSS = (
     ".skip:focus:not(:focus-visible){top:-100px}"
     ".gift-pick{margin:0 0 14px;padding:14px;border:1px solid #d8bb7866;border-radius:14px;background:#ffffff08}.gift-pick p{margin:0 0 10px;font-size:16px;font-weight:700;color:#f3ead8}"
     ".gift-pick small{display:block;margin-top:10px;font-size:14px;line-height:1.6;color:#d8bb78}.gift-note{font-size:14px;line-height:1.6;color:#d8bb78;margin:8px 0 0}"
+    ".bundle-name,.qb-items span{word-break:keep-all}.qb-items s{opacity:.6;margin-right:4px}"
     ".taster-all{margin:18px 0 4px}.taster-all p{font-size:16px;color:#d8bb78;font-weight:700;margin:0 0 10px}"
     ".taster-all a{display:inline-block;margin:0 8px 10px 0;padding:10px 14px;border:1px solid #d8bb7866;border-radius:20px;color:#f3ead8;font-size:15px;text-decoration:none}"
     ".bottom-nav a,.price-box>div,.price-box em,.light .price-box em,.birth-card-number,.birth-card-state,.birth-location-step .birth-label b,"
@@ -493,6 +494,14 @@ def add_input_helpers(s: str) -> str:
     s = _swap(s, "personSummary(d.self,'나의 정보')",
               "personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 정보 (선물)':'나의 정보')"
               "+(isGift(p.id)?'<p class=\"gift-note\">선물 주문이에요. 결과 PDF는 아래에 적는 이메일로 보내드리니, 받아서 전해 주세요.</p>':'')")
+    # 화면이 기록용으로 남긴 값(재회사주 첫 달 revealStart 등)은 고객 답이 아니므로 꼬리표로 보이지 않는다(손님 테스트 2차: '2026-11' 꼬리표)
+    s = _swap(s, "${Object.values(d.answers).length?`<div class=\"answer-tags\">${Object.values(d.answers).map(",
+              "${Object.entries(d.answers).filter(([k])=>!k.startsWith('reveal')).length?`<div class=\"answer-tags\">${Object.entries(d.answers).filter(([k])=>!k.startsWith('reveal')).map(([,v])=>v).map(")
+    # 선물이면 질문·리포트 안내·결제 화면의 '나' 말투를 받는 분 기준으로(손님 테스트 2차, 2026-10-30)
+    s = _swap(s, "<p class=\"muted\">${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>",
+              "<p class=\"muted\">${isGift(p.id)?'선물 받을 분의 입장에서 골라 주세요. ':''}${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>")
+    s = _swap(s, "${personSummary(d.self,'나의 이야기')}", "${personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 이야기 (선물)':'나의 이야기')}")
+    s = _swap(s, "<p>나만을 위한 한 권의 기록</p>", "<p>${isGift(p.id)?esc(d.self.name||'받는 분')+' 님을 위한 한 권의 기록':'나만을 위한 한 권의 기록'}</p>")
     s = _swap(s, '<h1>${s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>',
               '<h1>${s.who===\'self\'&&isGift(p.id)?\'선물 받을 분의<br>이야기를 알려주세요\':s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>')
     s = _swap(s, "KOREA_REGIONS.filter(r=>!r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}"
@@ -773,7 +782,7 @@ def add_discounts(s: str) -> str:
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
               "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'"
-              ":e.message==='BUNDLE_INCOMPLETE'?'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.'"
+              ":e.message==='BUNDLE_INCOMPLETE'?(typeof showBundleGap==='function'&&showBundleGap(),'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.')"
               ":e.message==='EMAIL_REQUIRED'?'이메일 주소를 다시 확인해 주세요. 끝(.com, .net)까지 넣어야 해요. 예: name@naver.com'")
     return s
 

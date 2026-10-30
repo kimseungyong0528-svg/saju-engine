@@ -232,8 +232,8 @@
 {%- elif k == "love_letters" -%}
   {%- set r = f.romance -%}
   <table class="compact"><tr><th style="width: 27%">배우자 자리<br>(일지)</th><td class="left"><span class="mid-han">{{ r.day_branch.hanja }}</span> {{ r.day_branch.branch }} · {{ r.day_branch.ten_god }} · {{ r.day_branch.animal }}</td></tr>
-  <tr><th>배우자 별<br>({{ r.spouse_group }})</th><td class="left">{% if r.spouse_seats %}{% for s in r.spouse_seats %}{{ s.label }} {{ s.where|join(", ") }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}타고난 사주에는 없어요. 운에서 들어올 때 인연이 와요.{% endif %}</td></tr>
-  <tr><th>도화·홍염</th><td class="left">{{ r.peach|join(", ") if r.peach else "타고난 사주에는 없어요" }} · 도화가 드는 글자: {{ r.peach_branches|join(", ") }}</td></tr></table>
+  <tr><th>배우자 별<br>({{ r.spouse_group }})</th><td class="left">{% if r.spouse_seats %}{% for s in r.spouse_seats %}{{ s.label }} {{ s.where|join(", ") }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}태어날 때 받은 여덟 글자 안에는 없어요. 바깥에서 들어오는 해에 인연이 와요.{% endif %}</td></tr>
+  <tr><th>도화·홍염</th><td class="left">{{ r.peach|join(", ") if r.peach else "태어날 때 받은 여덟 글자 안에는 없어요" }} · 도화가 드는 글자: {{ r.peach_branches|join(", ") }}</td></tr></table>
 {%- elif k == "love_glance" -%}
   {%- set r = f.romance -%}
   <table class="compact"><tr><th style="width: 27%">인연이 오는 해</th><td class="left"><b>{% if r.best_years %}{{ r.best_years|join("년, ") }}년{% else %}앞으로 12년 안에는 뚜렷하지 않아요{% endif %}</b></td></tr>
@@ -397,7 +397,8 @@
 
   <div class="who">
     <b class="customer-name">{{ P.name }} 님</b>
-    <div>{{ P.birth_text }} {{ P.time_text }} · {{ P.place }}</div>
+    <div>{{ P.birth_text }} {{ P.time_text }}</div>
+    <div>{{ P.place }}</div>
     <div>{{ P.sex_word }} · {{ P.zodiac }}띠{% if f.partner %} · 함께 보는 사람 {{ f.partner.person.name }} 님{% endif %}</div>
   </div>
   <div class="brand">運命書齋 · 운명서재 · 금월선녀</div>

@@ -39,8 +39,8 @@ function revealLocks(items){return `<div class="rv-locks">${items.map(t=>`<div>$
 // 1. 내 사주 펼치기: 사주팔자 네 기둥, 나를 뜻하는 글자, 타고난 큰 방향, 다섯 기운
 // 타고난 큰 방향(격국) 설명은 돈·일과 이어지는 말이라, 돈·일·평생을 보는 상품에서만 보여 준다(손님 테스트: 건강운인데 '월급처럼 들어오는 돈').
 function rvScene0(p,v){const c=v.r.chart,me=c.items[0],gy=['lifetime','wealth','career','business'].includes(p.id)?c.items[4]:null;
- return `${revealSpeech(p,`${v.name} 님이 태어난 순간의 여덟 글자를 펼쳤어요. 성격도, 돈도, 사람도, 운이 들어오는 해도 모두 이 여덟 글자 안에 있어요.`)}
- <span class="eyebrow">STEP 1 · 내 사주 펼치기</span><h1>${esc(v.name)} 님의 사주팔자</h1>
+ return `${revealSpeech(p,`${v.name} 님이 태어난 순간의 여덟 글자를 펼쳤어요. 성격도, 돈도, 사람도 이 여덟 글자에서 읽고, 해마다 바깥에서 들어오는 운이 이 여덟 글자와 어떻게 만나는지도 함께 볼게요.`)}
+ <span class="eyebrow">STEP 1 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 사주 펼치기</span><h1>${esc(v.name)} 님의 사주팔자</h1>
  <div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div>
  ${v.boundary.length?`<div class="rv-card rv-boundary">${v.boundary.map(l=>`<p>${esc(l)}</p>`).join('')}</div>`:''}
  <div class="rv-card"><strong>${esc(me.head)}</strong><p>${esc(me.text)}</p></div>
@@ -60,7 +60,7 @@ function rvBars(v,skip){const side=id=>v.r.good.some(a=>a.id===id)?'good':v.r.ba
 function rvScene2(p,v){const s=SALES[p.id];
  if(!v.area){const all=[...v.r.good.map(a=>[a,1]),...v.r.bad.map(a=>[a,-1])];
   return `${revealSpeech(p,`${v.name} 님 사주로 여덟 가지 운의 점수를 모두 계산했어요. 높은 운은 크게 받고, 낮은 운은 미리 대비하면 돼요.`)}
-  <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의<br>여덟 가지 운 점수</h1>${rvBars(v)}
+  <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의<br>여덟 가지 운 점수</h1>${rvBars(v)}
   ${all.map(([a,sg])=>`<div class="rv-card ${sg>0?'good':'bad'}"><small>${sg>0?'가장 좋은 운':'가장 조심할 운'} · ${esc(a.title)} ${a.score}점</small><p>${esc(a.text)}${v.note(a.id)?' '+esc(v.note(a.id)):''}</p><p class="rv-hook">${esc(v.fill(sg>0?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:v.R.AREA_WORD[a.id]}))}</p></div>`).slice(0,4).join('')}
   ${revealLocks(s?.locks||[])}`}
  const pt=v.parts,word=v.R.AREA_WORD[p.id];
@@ -91,7 +91,7 @@ function rvScene2(p,v){const s=SALES[p.id];
   return big(q.score>=60?'good':'bad',q.score,`${v.name} 님과 ${q.name} 님 사주를 함께 본 점수`).replace(`${esc(word)}의 ${q.score>=60?'좋은 점':'조심할 점'}`,'두 사람 궁합 점수')+`<div class="rv-card ${q.score>=60?'good':'bad'}"><p>${esc(palace)}${fill?' '+esc(fill):''}</p><p class="rv-hook">두 사람이 언제 가까워지고 언제 부딪히는지는 리포트에 달 이름까지 담았습니다.</p></div>`})():'';
  const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW}가 있습니다`):'미리 알면 대비할 수 있습니다';
  return `${revealSpeech(p,speech)}
- <span class="eyebrow">STEP 3 · 내 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
+ <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
  <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` 무료 풀이에서 본 ${esc(word)} 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
  ${pairCard}
  ${good?`${goodPart}<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`}
@@ -127,7 +127,8 @@ function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
  const key=revealKey(p,d);
- if(revealState.key!==key)revealState={key,scene:0,confirm:{},view:null};
+ // 새로고침해도 보던 장면에서 이어 본다(장면마다 남긴 브라우저 기록을 다시 읽는다, 손님 테스트 2차)
+ if(revealState.key!==key){const h=history.state&&typeof history.state.rvScene==='number'?history.state.rvScene:0;revealState={key,scene:Math.min(Math.max(h,0),REVEAL_SCENES-1),confirm:{},view:null}}
  const paint=()=>{
   const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
   const body=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);

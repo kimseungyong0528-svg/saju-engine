@@ -68,10 +68,19 @@ function quoteBox(p,q){
  if(!q)return priceBox(p,0);
  // 내가 고른 상품이 맨 위, 함께 산 상품은 그 아래(사이트 순서)
  const all=q.items.map(it=>PRODUCTS.find(x=>x.id===it.id)||{...it,original:it.price}),items=[all[0],...all.slice(1).sort(byOrder)],orig=items.reduce((a,x)=>a+x.original,0);
- const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${money(x.price)}</span></div>`).join('')}</div>`:'';
+ const list=items.length>1?`<div class="qb-items">${items.map(x=>`<div><span>${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span>${x.original>x.price?`<s>${money(x.original)}</s> `:''}${money(x.price)}</span></div>`).join('')}</div>`:'';
  const dc=q.discount?`<div class="qb-disc"><span>${esc(q.discount.label)} <em>${q.discount.percent}%</em></span><strong>−${money(q.discount.amount)}</strong></div>`:'';
- const notes=[...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${QUOTE_NOTES[n]}</p>`).join('');
+ // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
+ const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
+ const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워 주시면 금액에 담겨요.`:QUOTE_NOTES[n]}</p>`).join('');
  return `<div class="price-box">${list}<div><span>정가</span><s>${money(orig)}</s></div><div><span>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
+}
+// 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
+function showBundleGap(){
+ const det=document.querySelector('.bundle-more');if(det)det.open=true;
+ const rows=[...document.querySelectorAll('.bundle-row')].filter(r=>r.querySelector('input[name=extra]:checked'));
+ const el=rows.map(r=>r.querySelector('select[data-extra-q]:not([data-ok])')).find(x=>x&&!x.value)||document.querySelector('[data-bundle-partner] input:invalid, [data-bundle-partner] select:invalid')||rows[0];
+ if(el){el.scrollIntoView({block:'center',behavior:'smooth'});try{el.focus({preventScroll:true})}catch{}}
 }
 let quoteSeq=0;
 async function refreshQuote(p,d){
@@ -95,6 +104,10 @@ function bindDiscounts(p,d){
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600);emailHintShow(form)});
  emailHintShow(form);
+ // 환불 안내·약관을 보고 돌아와도 동의 체크가 풀리지 않게(손님 테스트 2차)
+ const CK='unmyeong.consent.'+p.id,boxes=['privacy','payment'].map(n=>form.elements[n]).filter(Boolean);
+ try{if(sessionStorage.getItem(CK)==='1'&&boxes.length){boxes.forEach(b=>{b.checked=true});const all=document.querySelector('#all-consent');if(all)all.checked=true;boxes[0].dispatchEvent(new Event('change',{bubbles:true}))}}catch{}
+ form.addEventListener('change',()=>{try{sessionStorage.setItem(CK,boxes.length&&boxes.every(b=>b.checked)?'1':'0')}catch{}});
  refreshQuote(p,d);
 }
 
