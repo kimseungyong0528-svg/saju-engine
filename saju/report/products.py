@@ -59,9 +59,10 @@ def hooks(f: dict) -> dict[str, str]:
     """상품마다 이 사람 사주에 맞춘 한두 문장(계산값만 사용)."""
     name = f["person"]["name"]
     male = f["person"]["sex"] == "male"
-    spouse_group, spouse_gods = ("재성", {"편재", "정재"}) if male else ("관성", {"편관", "정관"})
+    spouse_group = "재성" if male else "관성"
     n_spouse = _count(f, spouse_group)
-    love_year = _first_year(f, spouse_gods)
+    spouse_star = "정재" if male else "정관"
+    love_year = _first_year(f, {spouse_star})   # 연애사주 화면의 '배우자 별'과 같은 규칙
     money_year = _first_year(f, {"편재", "정재"})
     career_year = _first_year(f, {"편관", "정관", "식신", "상관"})
     dm = f["day_master"]
@@ -74,7 +75,7 @@ def hooks(f: dict) -> dict[str, str]:
         "romance": ((f"{name} 님 사주에는 배우자를 뜻하는 {spouse_group}이 {n_spouse}개 있어요. " if n_spouse
                      else f"{name} 님 타고난 사주에는 배우자를 뜻하는 {spouse_group}이 없어서, 인연은 운에서 들어오는 시기를 잡는 것이 중요해요. ")
                     + (f"{', '.join(peach)}도 있어 사람을 끌어당기는 힘이 있어요. " if peach else "")
-                    + (f"{love_year}년에 인연의 기운이 들어와요. 어떤 사람이 언제, 어떻게 오는지 달 단위로 알려 드려요." if love_year
+                    + (f"{love_year}년에 배우자 별인 {spouse_star}이 바깥에서 들어와요. 어떤 사람이 언제, 어떻게 오는지 달 단위로 알려 드려요." if love_year
                        else "인연이 들어오는 시기와 만나는 방법을 달 단위로 알려 드려요.")),
         "reunion": (f"헤어진 사람의 사주를 {name} 님 사주와 나란히 놓고, 두 사람이 다시 이어질 수 있는지 봐요. "
                     "연락하기 좋은 달과 피해야 할 달, 먼저 다가갈지 기다릴지까지 정리해 드려요."),

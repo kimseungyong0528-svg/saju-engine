@@ -60,8 +60,7 @@ function marker(fp, sex) {
     boss: p => has(p, ['상관']),
     bigmoney: p => has(p, ['편재']),
     make: p => has(p, ['식신']),
-    love: p => group(p, [sex === 'female' ? '관성' : '재성']),
-    // 연애사주(사장님 2026-10-30): '인연의 별' 하나로 묶지 않고 배우자 별·도화·합을 따로 짚는다
+    // 연애사주·평생사주(사장님 2026-10-30): '인연의 별' 하나로 묶지 않고 배우자 별·도화·합을 따로 짚는다
     spouse: p => has(p, [sex === 'female' ? '정관' : '정재']),
     peach: p => p.branch === PEACH_OF[db],
     // 재회사주: 배우자 자리와 육합하는 달이 가장 좋은 달, 반합하는 달이 다시 이어지기 쉬운 달
@@ -73,11 +72,11 @@ function marker(fp, sex) {
     // 2027년 달: 지지(그 달 생활에 크게 작용)가 나를 돕는 기운이면 좋은 달. 힘이 가운데면 모자란 기운이 오는 달.
     help: p => helpful ? helpful.includes(GROUP_OF[branchTenGod(ds, p.branch)]) : BRANCH_EL[p.branch] === weak,
   };
-  const ruleOf = key => RULE[key] || RULE[key.startsWith('clash') ? 'clash' : key.startsWith('hap') ? 'hap' : key.startsWith('love') ? 'love' : key.startsWith('spouse') ? 'spouse' : key];
+  const ruleOf = key => RULE[key] || RULE[key.startsWith('clash') ? 'clash' : key.startsWith('hap') ? 'hap' : key.startsWith('spouse') ? 'spouse' : key];
   return { weak: ELEMENTS[weak], ruleOf };
 }
 
-const markKey = (key, sex) => key === 'love' || key === 'spouse' ? key + (sex === 'female' ? '_f' : '_m') : key;
+const markKey = (key, sex) => key === 'spouse' ? key + (sex === 'female' ? '_f' : '_m') : key;
 
 // 상품 하나의 지도: 12년(지지 열두 개가 한 번씩 다 돈다)(신년운세는 2027년 열두 달)마다 좋은·조심할 표시.
 // 돌려주는 값: { unit:'year'|'month', cells:[{label, ko, hanja, good:[key], bad:[key]}], good:{key:[label]}, bad:{key:[label]}, weak }

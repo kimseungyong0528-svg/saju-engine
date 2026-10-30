@@ -54,8 +54,7 @@ def _marker(fp: FourPillars, sex: str):
         "boss": lambda p: has(p, ["상관"]),
         "bigmoney": lambda p: has(p, ["편재"]),
         "make": lambda p: has(p, ["식신"]),
-        "love": lambda p: group(p, ["관성" if sex == "female" else "재성"]),
-        # 연애사주(사장님 2026-10-30): '인연의 별' 하나로 묶지 않고 배우자 별·도화·합을 따로 짚는다
+        # 연애사주·평생사주(사장님 2026-10-30): '인연의 별' 하나로 묶지 않고 배우자 별·도화·합을 따로 짚는다
         "spouse": lambda p: has(p, ["정관" if sex == "female" else "정재"]),
         "peach": lambda p: p["branch"] == PEACH_OF[db],
         # 재회사주: 배우자 자리와 육합하는 달이 가장 좋은 달, 반합하는 달이 다시 이어지기 쉬운 달
@@ -70,7 +69,7 @@ def _marker(fp: FourPillars, sex: str):
     def rule_of(key: str):
         if key in rule:
             return rule[key]
-        for prefix in ("clash", "hap", "love", "spouse"):
+        for prefix in ("clash", "hap", "spouse"):
             if key.startswith(prefix):
                 return rule[prefix]
         return rule[key]
@@ -78,7 +77,7 @@ def _marker(fp: FourPillars, sex: str):
 
 
 def _mark_key(key: str, sex: str) -> str:
-    return key + ("_f" if sex == "female" else "_m") if key in ("love", "spouse") else key
+    return key + ("_f" if sex == "female" else "_m") if key == "spouse" else key
 
 
 def ny_verdict(fp: FourPillars, sex: str) -> tuple[str, int]:
@@ -173,7 +172,7 @@ def months_in_year(fp: FourPillars, sex: str, key: str, year: int) -> list[str]:
         m = luck_map(fp, sex, "newyear")
         return [c["label"] for c in m["cells"] if c["good" if key == "ny_good" else "bad"]] if year == 2027 else []
     _, rule_of = _marker(fp, sex)
-    base = key[:-2] if key.endswith(("_m", "_f")) and key[:-2] in ("love", "spouse") else key
+    base = key[:-2] if key.endswith(("_m", "_f")) and key[:-2] == "spouse" else key
     return [mp["label"] for mp in months_of(year) if rule_of(base)(mp)]
 
 
