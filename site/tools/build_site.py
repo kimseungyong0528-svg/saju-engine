@@ -650,6 +650,8 @@ EXTRAS_CSS = (
     ".bundle-price span{font-size:16px;font-weight:800;color:var(--x-text);white-space:nowrap}.bundle-price em,.qb-final em{font-style:normal;color:#ff4d5a;font-weight:800;margin-right:6px}"
     ".price-box .qb-final{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3}.price-box .qb-final s{font-size:15px;color:var(--x-muted);font-weight:500}"
     ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
+    ".qb-no{font-style:normal;margin-right:6px;color:var(--x-gold)}.price-box .qb-disc{padding:10px 12px;margin:6px -12px;border-radius:10px;background:#ff4d5a14;border:1px dashed #ff4d5a66}.price-box .qb-disc em{color:#ff4d5a!important}"
+    ".price-box .qb-disc small{display:block;margin-top:2px;font-size:14px;font-weight:500;color:var(--x-muted)}.price-box .qb-disc.wait strong{color:var(--x-muted)}.price-box .qb-final small{font-size:14px;color:var(--x-muted);margin-top:4px}.price-box .qb-final small b{color:#ff4d5a}"
     ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
     ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
     "@media (prefers-reduced-motion:reduce){.x-cta,.x-more svg,.bundle-item{transition:none}}"
@@ -710,6 +712,8 @@ REVEAL_CSS = (
     ".rv-ch b{display:block;font-size:17px;margin:2px 0 4px}.rv-ch p{font-size:15px;line-height:1.75;margin:0 0 6px;color:#2a2018}"
     ".rv-ch .icon{width:16px;height:16px;flex:0 0 16px;margin-top:6px;color:#9e2f22;margin-left:auto}"
     ".rv-ch.open{background:#fffaf0;margin:0 -8px;padding:12px 8px;border-radius:6px}.rv-blur{filter:blur(4px);user-select:none}"
+    ".rv-fade{position:relative;filter:blur(2px);user-select:none;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}"
+    ".rv-more{margin:4px 0 0!important;padding:10px 12px;border-radius:6px;background:#9e2f2214;color:#7a2418!important;font-weight:700;word-break:keep-all}.rv-blur-more{opacity:.8}"
     ".rv-close{font-size:17px;line-height:1.75;color:#f3ecdf;text-align:center;margin:8px 0 0}"
 )
 
