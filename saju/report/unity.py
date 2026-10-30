@@ -32,7 +32,7 @@ def problems(product: str, result: dict, facts: dict, partner: dict | None = Non
     out = []
     fp = taster.pillars_from_result(result)
     sex = result["person"].get("sex", "")
-    m = RV.screen_map(fp, sex, product, facts["order"]["date"])
+    m = RV.screen_map(fp, sex, product, facts["order"]["date"], facts["order"].get("reveal_start", ""))
     rows, score = _rows(product, facts)
     cells = m["cells"]
     if len(rows) != len(cells):
@@ -56,7 +56,7 @@ def problems(product: str, result: dict, facts: dict, partner: dict | None = Non
         if c["bad"] and not c["good"] and r[score] > 40:
             out.append(f"{name}: 화면은 조심 표시인데 리포트 점수 {r[score]}점")
     if product not in ("lifetime", "romance"):
-        seen = RV.digest(fp, facts["person"]["name"], sex, product, facts["order"]["date"])["화면에서 본 점수"]
+        seen = RV.digest(fp, facts["person"]["name"], sex, product, facts["order"]["date"], facts["order"].get("reveal_start", ""))["화면에서 본 점수"]
         want = {"score": seen["전체 점수"], "good": seen["좋은 점"]["점수"], "bad": seen["조심할 점"]["점수"]}
         if facts["theme"]["data"].get("screen_score") != want:
             out.append(f"화면 점수 {want}와 리포트 점수 {facts['theme']['data'].get('screen_score')}가 다름")

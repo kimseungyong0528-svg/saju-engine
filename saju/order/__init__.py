@@ -30,6 +30,7 @@ def order_date(paid_at: str | None) -> datetime:
 def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, dict]:
     """사이트 답(질문 단계 id → 선택지)을 프로그램 칸으로 옮긴다. 주제 상품은 답을 그대로 넘긴다."""
     answers = dict(payload.get("answers") or {})
+    reveal_start = str(answers.pop("revealStart", "") or "")[:7]   # 재회사주 화면의 첫 달(제1조항)
     question = str(payload.get("question") or "")[:1000]
     d = when.date()
     if product == "lifetime":
@@ -38,7 +39,7 @@ def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, 
         return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", "")), {}
     if product == "newyear" and not question:   # 신년운세는 질문을 answers.question으로 받는다(선택)
         question = str(answers.get("question") or "")[:1000]
-    return OrderInfo(d, question), answers
+    return OrderInfo(d, question, reveal_start=reveal_start), answers
 
 
 def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
@@ -62,7 +63,8 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
                                 "'화면에서 보신', '결제 전에 보신' 같은 말을 쓰지 않습니다.")
     else:
         seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
-                                                    me["person"].get("sex", ""), product, when.date().isoformat() if hasattr(when, "date") else when)
+                                                    me["person"].get("sex", ""), product, when.date().isoformat() if hasattr(when, "date") else when,
+                                                    str((payload.get("answers") or {}).get("revealStart") or "")[:7])
     # 같은 주문에서 함께 산 상품은 책 끝에서 다시 권하지 않는다.
     extra = {"rebuy": job.get("rebuy"), "owned": [p for p in job.get("together") or [] if p != product], "bundled": bundled}
     if product == "lifetime":

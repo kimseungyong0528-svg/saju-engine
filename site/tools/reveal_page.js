@@ -17,6 +17,8 @@ const REVEAL_SCENES=5;
 function revealStartYear(){return Math.max(2027,new Date(Date.now()+9*3600e3).getUTCFullYear())}
 // 재회사주 24개월 지도의 첫 달(한국 날짜로 15일까지면 이번 달, 16일부터 다음 달). saju/reveal.py start_month 와 같다.
 function revealStartMonth(rv){const t=new Date(Date.now()+9*3600e3);return rv.startMonth(t.getUTCFullYear(),t.getUTCMonth()+1,t.getUTCDate())}
+// 재회사주: 손님이 화면에서 본 첫 달을 주문에 함께 보내, 리포트가 정확히 같은 24개월을 쓰게 한다(제1조항, 사장님 2026-10-30).
+function revealShownStart(p,d,rv){const sm=revealStartMonth(rv);if(p.id==='reunion'){d.answers=d.answers||{};d.answers.revealStart=`${sm[0]}-${String(sm[1]).padStart(2,'0')}`;try{save()}catch{}}return sm}
 // 이야기 화면이 보여 준 사주의 열쇠: 내 정보(두 사람 상품은 상대방 정보까지)가 바뀌면 이야기를 처음부터 다시 보여 준다(제1조항).
 function revealKey(p,d){return p.id+'|'+JSON.stringify(d.self)+(['intimate','reunion'].includes(p.id)?'|'+JSON.stringify(d.partner||{}):'')}
 function revealCompute(p,d,lib){
@@ -24,7 +26,7 @@ function revealCompute(p,d,lib){
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
  const r=tst.reading(fp,v,texts),R=texts.REVEAL;
  const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id),parts=p.id==='lifetime'?null:tst.areaParts(fp,v,texts,p.id);
- return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear(),revealStartMonth(rv)),fill:tst.fill,A:texts.AREAS,pair:revealPair(p,d,lib,fp),boundary:rv.boundaryLines(data,v,v.calendar==='lunar'?date.solarDate:v.birth),note:id=>tst.situationNote(id,d.answers,texts)};
+ return {name:r.name,r,R,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear(),revealShownStart(p,d,rv)),fill:tst.fill,A:texts.AREAS,pair:revealPair(p,d,lib,fp),boundary:rv.boundaryLines(data,v,v.calendar==='lunar'?date.solarDate:v.birth),note:id=>tst.situationNote(id,d.answers,texts)};
 }
 // 깊은 궁합·재회사주: 그 사람 사주와 함께 본 '두 사람 궁합 점수'(saju/pair.py pair_score 와 같은 계산, 리포트에 같은 점수가 나온다).
 function revealPair(p,d,lib,fp){
@@ -106,7 +108,7 @@ function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=mon
  <div class="rv-grid">${m.cells.map(c=>{const ym=re&&c.label.match(/^(\d{4})년 (\d+)월$/);return `<div class="rv-cell${c.good.length?' good':''}${c.bad.length?' bad':''}"><b>${esc(ym?ym[2]+'월':c.label)}</b><small>${esc(ym?ym[1]+' '+c.ko:c.ko)}</small>${[...c.good.map(x=>`<span class="g">${esc(M[x].tag)}</span>`),...c.bad.map(x=>`<span class="r">${esc(M[x].tag)}</span>`)].join('')}</div>`}).join('')}</div>
  <div class="rv-legend"><span class="g">${re?'좋은 달':month?'돕는 달':'좋은 해'}</span><span class="r">조심할 ${unit}</span>${month?'<span>달은 절기 기준(매달 4~8일 무렵 시작)</span>':''}</div>
  ${goods.map(([k,l])=>card(k,l,'good')).join('')}${bads.map(([k,l])=>card(k,l,'bad')).join('')}
- ${revealLocks(re?['가장 좋은 달의 며칠 무렵에 연락하면 좋은지','그 달에 보낼 첫 말과 피해야 할 말','엇갈리는 달에 연락을 멈추고 기다리는 방법']:month?['좋은 달에 시작해야 할 일과 그 방법','조심할 달에 미뤄야 할 일과 막는 방법','열두 달 각각의 돈·일·사람·건강 흐름']:['이 해의 몇 월에 들어오는지','그 해에 해야 할 일과 하지 말아야 할 일','조심할 해를 막는 구체적인 방법'])}`}
+ ${revealLocks(re?['가장 좋은 달의 며칠 무렵, 어떤 상황에 연락하면 좋은지','문자·전화·SNS 가운데 나에게 맞는 연락 수단과 첫마디','엇갈리는 달에 피할 말과 다시 연락해도 되는 달']:month?['좋은 달에 시작해야 할 일과 그 방법','조심할 달에 미뤄야 할 일과 막는 방법','열두 달 각각의 돈·일·사람·건강 흐름']:['이 해의 몇 월에 들어오는지','그 해에 해야 할 일과 하지 말아야 할 일','조심할 해를 막는 구체적인 방법'])}`}
 // 5. 리포트 1장 미리 보기: 실제 리포트 목차. 1장은 지금까지 본 내 사주로 열고, 2장부터는 제목만 보이고 내용은 가린다.
 function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.max(0,toc.length-1);
  return `${revealSpeech(p,`여기까지가 제가 미리 보여 드릴 수 있는 내용이에요. 몇 월에, 무엇을, 어떻게 해야 하는지는 ${v.name} 님 리포트에 모두 적어 드릴게요.`)}

@@ -119,13 +119,19 @@ def reunion_months(start: tuple[int, int]) -> list[dict]:
     return out
 
 
-def start_month(when) -> tuple[int, int]:
+def start_month(when, shown: str = "") -> tuple[int, int]:
     """재회사주 지도의 첫 달: 주문(화면을 본) 날이 15일까지면 그 달, 16일부터는 다음 달. 사이트 reveal_page.js 와 같다.
+    shown('2026-11'): 손님이 결제 전 화면에서 실제로 본 첫 달(주문에 함께 온다). 주문한 달 앞뒤 한 달 안이면 그 달을 그대로 쓴다
+    (15일 밤에 화면을 보고 16일에 결제해도 화면과 리포트가 같은 24개월을 본다 — 제1조항).
     해만 주어지면 그 해(2027년보다 이르면 2027년) 1월."""
     if isinstance(when, int):
         return (start_year(when), 1)
     s = when if isinstance(when, str) else when.isoformat()
     y, m, d = int(s[:4]), int(s[5:7]), int(s[8:10])
+    if isinstance(shown, str) and len(shown) == 7 and shown[4] == "-" and shown[:4].isdigit() and shown[5:].isdigit():
+        sy, sm = int(shown[:4]), int(shown[5:])
+        if 1 <= sm <= 12 and abs((sy * 12 + sm) - (y * 12 + m)) <= 1:
+            return (sy, sm)
     return (y, m) if d <= 15 else ((y + 1, 1) if m == 12 else (y, m + 1))
 
 
@@ -171,14 +177,14 @@ def months_in_year(fp: FourPillars, sex: str, key: str, year: int) -> list[str]:
     return [mp["label"] for mp in months_of(year) if rule_of(base)(mp)]
 
 
-def screen_map(fp: FourPillars, sex: str, product: str, when) -> dict:
-    """주문한 날(또는 해)에 고객이 결제 전 화면에서 본 지도."""
-    return luck_map(fp, sex, product, start_year(_year_of(when)), start_month(when))
+def screen_map(fp: FourPillars, sex: str, product: str, when, shown: str = "") -> dict:
+    """주문한 날(또는 해)에 고객이 결제 전 화면에서 본 지도. shown: 재회사주 화면의 첫 달(주문에 함께 온 값)."""
+    return luck_map(fp, sex, product, start_year(_year_of(when)), start_month(when, shown))
 
 
-def shown_labels(fp: FourPillars, sex: str, product: str, order_year) -> list[str]:
+def shown_labels(fp: FourPillars, sex: str, product: str, order_year, shown: str = "") -> list[str]:
     """화면에 보인 해·달 이름(리포트에 빠짐없이 나와야 하는 것). 해는 '2034년', 달은 '4월'(재회사주는 '2027년 4월')처럼."""
-    m = screen_map(fp, sex, product, order_year)
+    m = screen_map(fp, sex, product, order_year, shown)
     labels = [lb for d in (m["good"], m["bad"]) for lbs in d.values() for lb in lbs]
     return list(dict.fromkeys(lb if m["unit"] == "month" else f"{lb}년" for lb in labels))
 
@@ -193,11 +199,11 @@ def start_year(order_year: int) -> int:
     return max(FIRST_YEAR, order_year)
 
 
-def digest(fp: FourPillars, name: str, sex: str, product: str, order_year) -> dict:
+def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown: str = "") -> dict:
     """리포트 글쓰기에 넘길 '결제 전 이야기 화면에서 본 내용'."""
     T = taster.texts()["REVEAL"]
     name = (name or "").strip() or "고객"
-    m = screen_map(fp, sex, product, order_year)
+    m = screen_map(fp, sex, product, order_year, shown)
     unit = "달" if m["unit"] == "month" else "해"
     unit_obj = "달을" if m["unit"] == "month" else "해를"
 
@@ -221,7 +227,7 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year) -> di
                   + ("'몇 월'은 아래 '그 해 안에서 같은 기운이 들어오는 달'에 계산된 달만 씁니다. 다른 달을 지어내지 않습니다. "
                      if m["unit"] == "year" else "")
                   + f"화면에 나온 {unit_obj} 하나도 빠뜨리지 않고 '{m['cells'][3]['label'] if m['unit'] == 'month' else '2034년'}'처럼 이름을 그대로 적습니다."),
-        "리포트에 나와야 하는 해·달": shown_labels(fp, sex, product, order_year),
+        "리포트에 나와야 하는 해·달": shown_labels(fp, sex, product, order_year, shown),
         f"좋은 {unit}": rows(m["good"]),
         f"조심할 {unit}": rows(m["bad"]),
     }

@@ -24,6 +24,7 @@ class OrderInfo:
     daily: str = ""             # 요즘 일상: 직장/사업/프리랜서/공부/휴식
     relationship: str = ""      # 연애·결혼 상태(사이트에 항목이 생기면 받는다): 솔로/연애 중/결혼/이혼·사별
     experience: str = ""        # 연애사주: 연애 경험 횟수(사이트 선택지 그대로)
+    reveal_start: str = ""      # 재회사주: 손님이 결제 전 화면에서 본 24개월 지도의 첫 달('2026-11')
 
 
 def _age_on(birth: date, on: date) -> int:
@@ -271,7 +272,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     months = [month_row(m, rate) for m in span[start:start + 12]]
     # 재회사주 결제 전 화면의 24개월 지도와 같은 달(saju/reveal.py start_month: 15일까지면 그 달, 16일부터 다음 달)
     from ..reveal import REUNION_MONTHS, start_month
-    sy, sm = start_month(order.order_date)
+    sy, sm = start_month(order.order_date, order.reveal_start)
     rows = [month_row(m, rate) for m in span]
     first = next((i for i, r in enumerate(rows) if (r["year"], r["month"]) == (sy, sm)), None)
     screen_months = rows[first:first + REUNION_MONTHS] if first is not None else []
@@ -299,7 +300,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
             "time_text": time_text, "place": result["input"]["place"],
             "age": age, "zodiac": an["zodiac"],
         },
-        "order": {"date": order.order_date.isoformat(), "year": order.order_date.year,
+        "order": {"date": order.order_date.isoformat(), "reveal_start": order.reveal_start, "year": order.order_date.year,
                   "question": order.question.strip(), "daily": order.daily,
                   "relationship": order.relationship},
         "uncertainties": [u["message"] for u in result["uncertainties"]] + result["warnings"],

@@ -31,3 +31,16 @@ def test_shown_years_missing_from_report_are_sent_back_to_final_chapter():
     issues = shown_checks({"taster": seen}, texts, {"z9"})
     assert len(issues) == 1 and issues[0]["slot"] == "z9" and "2029년" in issues[0]["detail"] and "2034년" not in issues[0]["detail"]
     assert shown_checks({"taster": seen}, {**texts, "z9": "2029년에는 돈을 지킵니다."}, {"z9"}) == []
+
+
+def test_reunion_start_month_follows_what_the_customer_saw():
+    """재회사주: 15일 밤에 화면을 보고 16일에 결제해도 리포트는 화면과 같은 첫 달을 쓴다(제1조항)."""
+    assert reveal.start_month("2026-11-15") == (2026, 11)
+    assert reveal.start_month("2026-11-16") == (2026, 12)
+    assert reveal.start_month("2026-11-16", "2026-11") == (2026, 11)
+    assert reveal.start_month("2026-12-20", "2027-01") == (2027, 1)
+    assert reveal.start_month("2026-11-16", "2025-01") == (2026, 12)   # 엉뚱한 값은 쓰지 않는다
+    assert reveal.start_month("2026-11-16", "abc") == (2026, 12)
+    m = reveal.screen_map(_fp(), "male", "reunion", "2026-11-16", "2026-11")
+    assert len(m["cells"]) == 24 and m["cells"][0]["label"] == "2026년 11월" and m["cells"][-1]["label"] == "2028년 10월"
+    assert m["good"].get("best_re") and len(m["good"]["best_re"]) == 2   # 배우자 자리와 육합하는 달은 해마다 한 번
