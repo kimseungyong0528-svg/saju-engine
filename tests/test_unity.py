@@ -67,3 +67,13 @@ def test_guard_stops_a_report_that_differs_from_screen():
     f["theme"]["data"]["screen_score"]["score"] += 1
     with pytest.raises(unity.UnityError):
         unity.require("wealth", me, f)
+
+
+def test_reunion_report_uses_the_month_the_customer_saw():
+    """재회사주: 15일에 화면을 보고 16일에 결제해도 리포트의 24개월은 화면에서 본 첫 달부터(사장님 2026-10-30)."""
+    order = OrderInfo(date(2026, 11, 16), "", reveal_start="2026-11")
+    for i, me in enumerate(PEOPLE[:20]):
+        _, f, _ = prepare_product("reunion", me, order, {}, PEOPLE[-1 - i])   # 어긋나면 UnityError
+        months = f["theme"]["months"]
+        assert len(months) == 24 and (months[0]["year"], months[0]["month"]) == (2026, 11)
+        assert f["theme"]["data"]["most_months"] == [f"{m['year']}년 {m['month']}월" for m in months if "가장 좋은 달" in m["r_good"]]

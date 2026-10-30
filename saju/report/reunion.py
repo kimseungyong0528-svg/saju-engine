@@ -68,14 +68,19 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
         score = x["score"] + 8 * star + 8 * my_hap + 10 * their_hap + 8 * stem_hap - 8 * clash - 6 * their_clash
         return {"t_score": T.clamp(score), "t_signs": signs, "t_contact": their_hap or stem_hap or my_hap}
 
-    years, months, periods = T.marked(f, mark)
-    T.reveal_fix(result, "reunion", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
-    T.reveal_fix(result, "reunion", months)
+    years, _, periods = T.marked(f, mark)
+    # 사장님 2026-10-30: 재회는 몇 달 안의 결과로, 길어야 2~3년. 결제 전 화면도 리포트도 앞으로 24개월 달마다 보고, 해는 3년만.
+    years = years[:3]
+    months = [dict(m, **mark(m)) for m in f["screen_months"]]
+    T.reveal_fix(result, "reunion", months)   # 제1조항: 결제 전 화면의 24개월 지도와 같은 표시·방향
     harmony, tension = cmp["cross_relations"]["harmony"], cmp["cross_relations"]["tension"]
-    strong = sum(1 for m in months if m["t_score"] >= 70)
+    strong = sum(1 for m in months[:12] if m["t_score"] >= 70)
     level_pts = (harmony - tension) + 2 * strong + (2 if cmp["spouse_palace"]["tone"] == "조화" else -2 if cmp["spouse_palace"]["tone"] == "긴장" else 0)
     level = "강한 편" if level_pts >= 4 else "보통" if level_pts >= 0 else "약한 편"
-    best_months = T.best(months, 3, T.ym)
+    # 화면에서 '가장 좋은 달'(배우자 자리와 육합)로 본 달을 먼저, 남은 자리는 '다시 이어짐' 달 가운데 점수 높은 달
+    top = [T.ym(m) for m in months if "가장 좋은 달" in m["r_good"]]
+    more = [x for x in T.best(months, 3, T.ym) if x not in top]
+    best_months = [T.ym(m) for m in months if T.ym(m) in (top + more)[:max(3, len(top))]]
     first_best = next(i for i, m in enumerate(months) if T.ym(m) in best_months)
     approach = "먼저 다가가기" if T.count(f, "식상") >= 1 and first_best <= 3 else "기다리며 준비하기"
     o_now = o["sewoon"][0]
@@ -88,7 +93,8 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
         "breakup": _STATUS.get(answers.get("breakup", ""), answers.get("breakup", "")),
         "compare": cmp, "pair_score": pair_score(T.fourpillars(result), T.fourpillars(partner)),   # 결제 전 화면의 '두 사람 궁합 점수'와 같다
         "level": level, "approach": approach,
-        "best_years": [y for y in T.best(years, 12, lambda y: y["year"])],
+        "most_months": top,
+        "best_years": [y for y in T.best(years, 1, lambda y: y["year"])],
         "best_months": best_months, "careful_months": T.worst(months, 3, T.ym),
         "partner_now": {"year": o_now["year"], "ganzhi": o_now["ganzhi"], "score": o_now["score"],
                         "인연 별이 드는 해": T.has(o_now, o_group)},
@@ -142,10 +148,10 @@ def build_outline(f: dict) -> list[dict]:
             T.screen_row(t["screen_score"], t.get("seen", True)),
             ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['pair_score']}점 ({oname} 님 사주와 함께 본 점수)"],
             ["재회 신호", t["level"]],
+            ["다시 이어지기 가장 좋은 달", ", ".join(t["most_months"]) or "앞으로 24개월 안에는 뚜렷하지 않아요"],
             ["연락하기 좋은 달", ", ".join(t["best_months"])],
             ["피할 달", ", ".join(t["careful_months"]) or "크게 부딪히는 달은 없어요"],
             ["나에게 맞는 방법", t["approach"]],
-            ["재회운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
             ["두 사람 배우자 자리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} ({cmp['spouse_palace']['tone']})"],
         ], slot=S("rn_glance", "표의 재회 신호, 좋은 달, 나에게 맞는 방법을 이어서 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 60)),
     ])
@@ -204,7 +210,7 @@ def build_outline(f: dict) -> list[dict]:
     section("7", [
         P("rn7_open", "재회 신호 읽기", figure="kv", opener=True, rows=[
             ["재회 신호", t["level"]],
-            ["좋은 달 수", f"앞으로 12개월 가운데 재회 점수 70점 이상 {sum(1 for m in th['months'] if m['t_score'] >= 70)}달"],
+            ["좋은 달 수", f"앞으로 24개월 가운데 재회 점수 70점 이상 {sum(1 for m in th['months'] if m['t_score'] >= 70)}달"],
             ["그 사람과 합이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "그 사람 일지와 합" in m["t_signs"] or "그 사람 일간과 합" in m["t_signs"]) or "없음"],
         ], slot=S("rn7_open", "재회 신호가 왜 이 정도인지 근거를 들어 솔직하게 설명해 주세요.", HALF)),
         P("rn7_chance", "재회가 가능한 이유와 어려운 이유",
@@ -215,9 +221,11 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("rn7_open_heart", "그 사람 일지·일간과 합이 드는 달과 그 사람의 올해 운을 근거로 대화가 부드러워지기 쉬운 때를 쓰고, 그때 할 일을 써 주세요.")),
     ])
     section("8", [
-        P("rn8_months", "앞으로 12개월 월별 재회운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "재회 점수"),
-          note="표시: 운의 글자가 두 사람의 배우자 자리·일간과 맺는 관계예요.",
-          slot=S("rn8_months", "표의 12개월 가운데 점수가 높은 달과 낮은 달을 골라 달마다 무엇을 하면 좋은지 써 주세요.", FULL * 2 - 820)),
+        P("rn8_months", "앞으로 24개월 월별 재회운", figure="grid", opener=True, span=3, grid=T.month_grid(th["months"], "재회 점수"),
+          note="표시: 결제 전에 보신 '가장 좋은 달'·'다시 이어짐'·'엇갈림'과 같은 달이에요.",
+          slot=S("rn8_months", "결제 전 화면에서 고객이 본 '가장 좋은 달'·'다시 이어짐'·'엇갈림' 달을 표의 이름 그대로 하나도 빠짐없이 짚어 주세요. "
+                     "좋은 달마다 며칠 무렵부터인지, 어떤 연락 수단(문자·전화·SNS·직접 만남)이 맞는지, 보낼 첫마디 예시, 어떤 타이밍과 상황(요일·시간대·그 사람의 상황)에 연락하는지를 쓰고, "
+                     "엇갈림 달마다 피할 말, 멈출 연락 수단, 다시 연락해도 되는 다음 달을 써 주세요.", FULL * 3 - 1640)),
         P("rn8_when", "연락하기 좋은 시기, 피할 때",
           slot=S("rn8_when", "좋은 달과 피할 달을 근거와 함께 다시 정리하고, 하루 중 연락하기 좋은 상황(바쁜 때를 피하는 법 등)도 써 주세요.")),
         P("rn8_first", "첫 연락은 이렇게",
@@ -229,7 +237,7 @@ def build_outline(f: dict) -> list[dict]:
     ])
     section("9", [
         P("rn9_open", "나에게 맞는 선택", figure="kv", opener=True, rows=[
-            ["나에게 맞는 방법", t["approach"]], ["가까운 좋은 달", t["best_months"][0]],
+            ["나에게 맞는 방법", t["approach"]], ["가까운 좋은 달", (t["most_months"] or t["best_months"])[0]],
             ["표현의 힘(식상)", f"{T.count(f, '식상')}개"], ["기다리는 힘(인성)", f"{T.count(f, '인성')}개"],
         ], slot=S("rn9_open", "표를 근거로 왜 이 방법이 나에게 맞는지 설명해 주세요.", HALF)),
         P("rn9_go", "다가간다면 이렇게",
@@ -237,13 +245,13 @@ def build_outline(f: dict) -> list[dict]:
         P("rn9_wait", "기다린다면 이렇게",
           slot=S("rn9_wait", "기다릴 때 하면 좋은 일과 하지 말아야 할 일을 쓰고, 기다리는 동안 마음을 다스리는 방법을 써 주세요.")),
         P("rn9_how_long", "얼마나 기다리면 될까",
-          slot=S("rn9_how_long", "좋은 달과 재회운이 좋은 해를 근거로 기다리는 기간의 기준을 쓰고, 그때까지 다시 확인할 신호를 써 주세요.")),
+          slot=S("rn9_how_long", "앞으로 24개월의 '가장 좋은 달'과 좋은 달을 근거로 기다리는 기간의 기준(몇 달)을 쓰고, 그때까지 다시 확인할 신호를 써 주세요.")),
         P("rn9_stop", "놓아야 할 때의 신호",
           slot=S("rn9_stop", "재회보다 나를 지키는 선택이 맞는 신호(행동으로 보이는 것)와 그때 마음을 정리하는 방법을 겁주지 않고 써 주세요.")),
     ])
     section("10", [
-        P("rn10_years", "앞으로 12년 재회운", figure="grid", opener=True, span=3, grid=T.year_grid(th["years"], t["best_years"], "재회 점수"),
-          slot=S("rn10_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 두 사람 관계의 흐름, 할 일).", FULL * 3 - 460)),
+        P("rn10_years", "앞으로 3년 재회운", figure="grid", opener=True, span=2, grid=T.year_grid(th["years"], t["best_years"], "재회 점수"),
+          slot=S("rn10_years", "표의 3년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 두 사람 관계의 흐름, 할 일). 먼 해의 재회를 약속하지 않습니다.", FULL * 2 - 460)),
         P("rn10_graph", "나이별 인연 흐름", figure="theme_graph", note="대운(10년)마다 두 사람의 인연 글자가 들어오면 점수가 올라가요.",
           slot=S("rn10_graph", "그래프에서 인연이 강하게 들어오는 대운과 조용한 대운을 나이로 짚어 주세요.", HALF - 40)),
         P("rn10_after", "다시 만나면 오래 갈까",

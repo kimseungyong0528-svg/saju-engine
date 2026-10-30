@@ -196,8 +196,8 @@ def analyze_pillars(fp: FourPillars, utc: datetime, sex: str, current_year: int)
         "daewoon": luck.daewoon(fp, utc, sex),
         "sewoon": luck.sewoon(fp, list(range(current_year - 1, current_year + 14))),   # 결제 전 화면의 12년 지도(2027~)까지
         "wolwoon": luck.wolwoon(fp, current_year),
-        # 주문한 달부터 12개월을 고를 수 있도록 앞뒤 해까지 36개월
-        "wolwoon_span": [m for y in (current_year - 1, current_year, current_year + 1)
+        # 주문한 달부터 12개월(재회사주 결제 전 화면은 24개월)을 고를 수 있도록 앞 해부터 48개월
+        "wolwoon_span": [m for y in (current_year - 1, current_year, current_year + 1, current_year + 2)
                          for m in luck.wolwoon(fp, y)],
     }
     if fp.hour is None:

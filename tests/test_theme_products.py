@@ -33,8 +33,14 @@ def test_outline_12_chapters_and_50_pages(pid):
     ids = [p["id"] for p in all_pages(secs)]
     assert len(ids) == len(set(ids))
     t = facts["theme"]
-    assert len(t["months"]) == 12
-    if pid != "newyear":   # 신년운세는 2027년 한 해만 본다(tests/test_newyear.py)
+    assert len(t["months"]) == (24 if pid == "reunion" else 12)
+    if pid == "reunion":   # 재회사주는 앞으로 24개월 달마다 본다(사장님 2026-10-30): 화면 지도와 같은 달, 같은 방향
+        from saju import reveal as RV
+        m = RV.screen_map(RV.taster.pillars_from_result(_prep(pid)[0]), ME["sex"], pid, facts["order"]["date"])
+        assert [(r["ganzhi"], f"{r['year']}년 {r['month']}월") for r in t["months"]] == [(c["ko"], c["label"]) for c in m["cells"]]
+        for r, c in zip(t["months"], m["cells"]):
+            assert bool(r["r_good"]) == bool(c["good"]) and bool(r["r_bad"]) == bool(c["bad"])
+    elif pid != "newyear":   # 신년운세는 2027년 한 해만 본다(tests/test_newyear.py)
         # 제1조항: 연도 표는 결제 전 화면의 12년 지도와 같은 해, 같은 방향(좋은 표시 해는 60점 이상, 조심 표시만 있는 해는 40점 이하)
         from saju import reveal as RV
         m = RV.luck_map(RV.taster.pillars_from_result(_prep(pid)[0]), ME["sex"], pid, 2027)

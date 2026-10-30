@@ -83,7 +83,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<option value=\"\">${title}</option>${options.map(n=>`<option value=\"${n}\" ${Number(parts[index])===n?'selected':''}>${index?birthPad(n):n}</option>`).join('')}",
               "${index===0&&!Number(parts[0])?'':`<option value=\"\">${title}</option>`}${options.map(n=>`${index===0&&!Number(parts[0])&&n===1990?`<option value=\"\" selected>${title}</option>`:''}<option value=\"${n}\" ${Number(parts[index])===n?'selected':''}>${index?birthPad(n):n}</option>`).join('')}")
     s = _swap(s, "<div class=\"birth-progress-top\"><span>나의 이야기 준비하기</span>",
-              "<div class=\"birth-progress-top\"><span>${/partner/i.test(who)?'상대방 정보 준비하기':'나의 이야기 준비하기'}</span>")
+              "<div class=\"birth-progress-top\"><span>${/partner/i.test(who)?'상대방 정보 준비하기':isGift()?'받는 분 이야기 준비하기':'나의 이야기 준비하기'}</span>")
     # 시: 0시를 '12시'로 보이게(오전 12시 = 자정, 오후 12시 = 낮 12시). 값은 그대로.
     s = _swap(s, "${Array.from({length:12},(_,n)=>`<option value=\"${birthPad(n)}\" ${v.hour===birthPad(n)?'selected':''}>${birthPad(n)}</option>`).join('')}",
               "${Array.from({length:12},(_,n)=>`<option value=\"${birthPad(n)}\" ${v.hour===birthPad(n)?'selected':''}>${n?birthPad(n):'12'}</option>`).join('')}")
@@ -119,7 +119,7 @@ def patch_texts(s: str, b: dict) -> str:
               ".shell.checkout .checkout-content { padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important; }")
     # 첫 화면 섹션 제목·설명 (사장님 문구, 2026-10-13). 평생사주는 건강운과 같은 '인생 총운' 줄로 옮김.
     s = _swap(s, "<h2>오리지널 사주</h2><p>연애, 궁합, 재회부터 나의 평생운까지</p></div>${cards(['romance','intimate','reunion','lifetime'])}",
-              "<h2>오리지널 연애 사주</h2><p>나의 연애, 궁합, 재회까지 운명적인 사랑 이야기</p></div>${cards(['romance','intimate','reunion'])}")
+              "<h2>오리지널 연애 사주</h2><p>나의 연애, 재회, 궁합까지 운명적인 사랑 이야기</p></div>${cards(['romance','reunion','intimate'])}")
     s = _swap(s, "<h2>나의 금전운</h2><p>재물, 직업·이직, 사업의 이야기를 차례로</p>",
               "<h2>나의 금전운</h2><p>재물, 직업·이직, 사업가의 이야기를 차례로</p>")
     s = _swap(s, "<h2>몸과 마음을 돌보는 시간</h2><p>나의 생활 리듬을 돌아보는 건강운</p></div>${cards(['health'])}",
@@ -318,7 +318,16 @@ def add_newyear(s: str) -> str:
     s = _swap(s, 'const CATEGORIES=["전체","연애","재회","금전","건강","인생총운"];', 'const CATEGORIES=["전체","연애","재회","금전","건강","운세/평생운"];')
     s = _swap(s, '"guide": "금월선녀",\n    "category": "인생총운",', '"guide": "금월선녀",\n    "category": "운세/평생운",')
     s = _swap(s, "'인생 총운':'인생총운',", "'인생 총운':'운세/평생운','인생총운':'운세/평생운',")
-    s = _swap(s, "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id)", "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id).sort((a,b)=>(b==='newyear')-(a==='newyear'))")
+    s = _swap(s, "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id)", "PRODUCTS.filter(p=>p.category===cat).map(p=>p.id).sort((a,b)=>catRank(a)-catRank(b))")
+    # 상단 카테고리: 연애와 재회를 '연애/재회' 하나로 합치고, 그 안은 연애 → 재회 → 궁합 순서(사장님 2026-10-30)
+    s = _swap(s, 'const CATEGORIES=["전체","연애","재회","금전","건강","운세/평생운"];',
+              'const CATEGORIES=["전체","연애/재회","금전","건강","운세/평생운"];'
+              "const CAT_ORDER=['newyear','lifetime','romance','reunion','intimate'];const catRank=id=>{const i=CAT_ORDER.indexOf(id);return i<0?99:i};")
+    assert s.count('"category": "연애",') == 2 and s.count('"category": "재회",') == 1
+    s = s.replace('"category": "연애",', '"category": "연애/재회",').replace('"category": "재회",', '"category": "연애/재회",')
+    s = _swap(s, "'궁합':'연애',", "'궁합':'연애/재회','연애':'연애/재회','재회':'연애/재회',")
+    s = _swap(s, "PRODUCTS.filter(p=>p.category===c).map(p=>`<a href=\"${link(p)}\">${p.name}</a>`)",
+              "PRODUCTS.filter(p=>p.category===c).sort((a,b)=>catRank(a.id)-catRank(b.id)).map(p=>`<a href=\"${link(p)}\">${p.name}</a>`)")
     # 첫 화면 큰 배너: 신년운세 한 장, 위에 EVENT 딱지. 넘기는 점은 뺀다.
     s = _swap(s, "['lifetime','wealth','reunion','intimate'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.cover','hero-card',`<div class=\"hero-copy\"><span class=\"eyebrow\">${p.guide} · ORIGINAL SAJU</span>",
               "['newyear'].map(id=>{const p=pById(id);return `<a class=\"hero-card\" href=\"${link(p)}\">${art(p,p.id+'.hero','hero-card',`<div class=\"hero-copy\"><span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>")
@@ -357,6 +366,10 @@ TASTER_CSS = (
     ".rv-no{font-size:16px;line-height:1.65;color:#e9dcc6;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#ffffff0d}"
     ".rv-skip-note{font-size:15px;color:#bfb3a2;margin:6px 0 0}.rv-edit{display:block;margin:0 0 10px auto;background:none;border:1px solid #ffffff33;border-radius:16px;color:#e9dcc6;font-size:14px;padding:6px 12px}"
     ".skip:focus:not(:focus-visible){top:-100px}"
+    ".gift-pick{margin:0 0 14px;padding:14px;border:1px solid #d8bb7866;border-radius:14px;background:#ffffff08}.gift-pick p{margin:0 0 10px;font-size:16px;font-weight:700;color:#f3ead8}"
+    ".gift-pick small{display:block;margin-top:10px;font-size:14px;line-height:1.6;color:#d8bb78}.gift-note{font-size:14px;line-height:1.6;color:#d8bb78;margin:8px 0 0}"
+    ".taster-all{margin:18px 0 4px}.taster-all p{font-size:16px;color:#d8bb78;font-weight:700;margin:0 0 10px}"
+    ".taster-all a{display:inline-block;margin:0 8px 10px 0;padding:10px 14px;border:1px solid #d8bb7866;border-radius:20px;color:#f3ead8;font-size:15px;text-decoration:none}"
     ".bottom-nav a,.price-box>div,.price-box em,.light .price-box em,.birth-card-number,.birth-card-state,.birth-location-step .birth-label b,"
     ".tc-col em,.x-eyebrow,.event-dday,.event-dday b,.entry-tag,.bundle-price s,.rv-locks i,.rv-cell small,.rv-cell span,.rv-legend{font-size:14px!important}"
     ".rv-cell span{line-height:1.3;word-break:keep-all}"
@@ -472,10 +485,16 @@ def add_input_helpers(s: str) -> str:
     page = (SITE / "tools" / "reuse_me.js").read_text(encoding="utf-8")
     s = _swap(s, "function render(){", page + "function render(){")
     s = _swap(s, '<form id="person-form" novalidate>${personFields(s.who,d[s.who])}',
-              '<form id="person-form" novalidate>${s.who===\'self\'?reuseBox(d.self,\'reuse-me\'):\'\'}${personFields(s.who,d[s.who])}')
+              '${s.who===\'self\'?giftBox(p.id):\'\'}<form id="person-form" novalidate>${s.who===\'self\'&&!isGift(p.id)?reuseBox(d.self,\'reuse-me\'):\'\'}${personFields(s.who,d[s.who])}')
     s = _swap(s, "(v,valid)=>{d[s.who]=v;next.disabled=!valid;save()});",
-              "(v,valid)=>{d[s.who]=v;next.disabled=!valid;if(valid&&s.who==='self')rememberMe(v);save()});"
-              "if(s.type==='info'&&s.who==='self')bindReuse('reuse-me',v=>{d.self=v;save()});")
+              "(v,valid)=>{d[s.who]=v;next.disabled=!valid;if(valid&&s.who==='self'&&!isGift(p.id))rememberMe(v);save()});"
+              "if(s.type==='info'&&s.who==='self'){bindReuse('reuse-me',v=>{d.self=v;save()});bindGift(p.id,d,save)}")
+    # 선물이면 제목·결제 화면 문구를 받는 분 기준으로
+    s = _swap(s, "personSummary(d.self,'나의 정보')",
+              "personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 정보 (선물)':'나의 정보')"
+              "+(isGift(p.id)?'<p class=\"gift-note\">선물 주문이에요. 결과 PDF는 아래에 적는 이메일로 보내드리니, 받아서 전해 주세요.</p>':'')")
+    s = _swap(s, '<h1>${s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>',
+              '<h1>${s.who===\'self\'&&isGift(p.id)?\'선물 받을 분의<br>이야기를 알려주세요\':s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>')
     s = _swap(s, "KOREA_REGIONS.filter(r=>!r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}"
                  "<optgroup label=\"예전 지역명으로 찾기\">${KOREA_REGIONS.filter(r=>r.legacy).map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(r.label)}</option>`).join('')}</optgroup>",
               "plainRegions().map(r=>`<option value=\"${r.id}\" ${region?.id===r.id?'selected':''}>${e(REGION_PLAIN[r.name])}</option>`).join('')}")
@@ -554,7 +573,8 @@ def fix_checkout_flow(s: str) -> str:
 
 
 # 신년운세 이벤트 기간(한국 날짜, 사장님 2026-10-27: 3월 말까지, 추가 할인 없이 남은 날짜만). 기간 밖에는 저절로 사라진다.
-NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-03-31", "label": "이벤트 마감까지"}
+# 신년운세는 2월 28일까지만 판다(사장님 2026-10-30: '사주 한정 풀이', 3월부터는 신년운세 안 함)
+NEWYEAR_EVENT = {"start": "2026-10-27", "end": "2027-02-28", "label": "한정 풀이 마감까지"}
 REPORT_MODULES = {"lifetime": "outline", "romance": "romance", "reunion": "reunion", "intimate": "intimate", "wealth": "wealth",
                   "career": "career", "business": "business", "health": "health", "newyear": "newyear"}
 
@@ -592,7 +612,7 @@ EXTRAS_CSS = (
     ".entry-art{position:relative;height:min(112vw,420px,56vh);overflow:hidden;background:#f6d9c4}.entry-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 0}"
     ".entry-art:after{content:'';position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(180deg,#fff8ef00,#fff8efcc 60%,#fff8ef)}"
     ".entry-body{position:relative;margin-top:-34px}"
-    ".entry-tag{position:absolute;left:14px;bottom:44px;z-index:1;padding:4px 12px;border-radius:999px;background:#c8102e;color:#fff;font-size:13px;font-weight:800;letter-spacing:.14em}"
+    ".entry-tag{position:absolute;left:14px;bottom:44px;z-index:1;padding:4px 12px;border-radius:999px;background:#c8102e;color:#fff;font-size:13px;font-weight:800;letter-spacing:.04em}"
     ".entry-body{padding:18px 22px 14px;text-align:center}"
     ".entry-modal .entry-lead{font-size:16px;line-height:1.6;color:#4a3426!important;margin:0 0 14px;word-break:keep-all}"
     ".entry-count{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;border-radius:14px;background:#fde8e3;border:1px solid #f09c9c;margin-bottom:14px}"
@@ -702,7 +722,7 @@ def add_extras(s: str) -> str:
     s = _swap(s, '<section class="checkout-birth-summary">', '${bundleBlock(p,d)}${SALES[p.id]?\'\':tocBlock(p)}<section class="checkout-birth-summary">')
     # 2026-10-27 사장님: 신년 큰 배너의 '금월선녀 · 2027 NEW YEAR' 줄은 빼고, EVENT·D-day 두 표시를 제목 바로 위로.
     s = _swap(s, '<span class=\"event-tag\">EVENT</span><span class=\"eyebrow\">${p.guide} · 2027 NEW YEAR</span>',
-              '<span class=\"hero-tags\"><span class=\"event-tag\">EVENT</span>${eventBadge()}</span>')
+              '<span class=\"hero-tags\"><span class=\"event-tag\">한정 풀이</span>${eventBadge()}</span>')
     s = _swap(s, "${footer()}</div>`;bindHome();}", "${footer()}</div>`;bindHome();entryPopup();}")
     return add_sales_pages(add_discounts(s))
 
@@ -772,7 +792,7 @@ def add_reveal(s: str) -> str:
               "const seen=typeof revealState!=='undefined'&&revealState.key===revealKey(p,draft(p.id));"
               "const c=FLOWS[p.id].findIndex(x=>x.type===(seen?'checkout':'reveal'));if(c>=0)return go(pathFor(p,c))}go(pathFor(p,index+1))}")
     s = _swap(s, '<a class="text-button" href="#/f/${p.id}/info">내 정보 수정</a>',
-              '<a class="text-button" href="#/f/${p.id}/info" onclick="try{sessionStorage.setItem(\'unmyeong.editBack\',\'${p.id}\')}catch{}">내 정보 수정</a>')
+              '<a class="text-button" href="#/f/${p.id}/info" onclick="try{sessionStorage.setItem(\'unmyeong.editBack\',\'${p.id}\')}catch{}">${isGift(p.id)?\'받는 분 정보 수정\':\'내 정보 수정\'}</a>')
     s = _swap(s, '<a class="text-button" href="#/f/${p.id}/partner">상대방 정보 수정</a>',
               '<a class="text-button" href="#/f/${p.id}/partner" onclick="try{sessionStorage.setItem(\'unmyeong.editBack\',\'${p.id}\')}catch{}">상대방 정보 수정</a>')
     return s
