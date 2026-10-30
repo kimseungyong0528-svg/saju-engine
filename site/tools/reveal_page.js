@@ -92,7 +92,7 @@ function rvScene2(p,v){const s=SALES[p.id];
  const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW}가 있습니다`):'미리 알면 대비할 수 있습니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
- <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` 무료 풀이에서 본 ${esc(word)} 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
+ <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` ${esc(word)} 전체 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
  ${pairCard}
  ${good?`${goodPart}<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`}
  ${revealLocks(s?.locks||[])}`}

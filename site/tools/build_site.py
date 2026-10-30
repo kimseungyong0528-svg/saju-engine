@@ -639,7 +639,7 @@ EXTRAS_CSS = (
     ".bundle-partner{display:none;margin:2px 0 10px;padding:16px 14px;border:1px solid var(--x-line);border-radius:14px;background:#ffffff08}"
     ".bundle-x:has(input[value=reunion]:checked) .bundle-partner,.bundle-x:has(input[value=intimate]:checked) .bundle-partner{display:block}"
     ".bundle-partner .birth-reassurance{display:none}.bundle-partner-title{margin:0 0 4px;color:var(--x-gold);font-size:17px;font-weight:800}.bundle-partner-sub{margin:0 0 12px;color:var(--x-muted);font-size:14px;line-height:1.6;word-break:keep-all}"
-    ".bundle-more>summary{display:block;cursor:pointer;list-style:none}.bundle-more>summary::-webkit-details-marker{display:none}.bundle-more>summary .x-title,.bundle-more>summary .x-sub{display:block}.bundle-more>summary b{color:var(--x-gold)}.bundle-more[open]>summary b{display:none}"
+    ".bundle-more>summary{display:block;cursor:pointer;list-style:none}.bundle-more>summary::-webkit-details-marker{display:none}.bundle-more>summary .x-title,.bundle-more>summary .x-sub{display:block}.bundle-more>summary b{color:var(--x-gold)}.bundle-open{display:block;margin-top:12px;font-size:19px;font-weight:800;text-decoration:underline;text-underline-offset:5px}.bundle-more[open]>summary b{display:none}"
     ".bundle-rebuy{margin:0 0 16px;padding:14px 16px;border-radius:14px;background:#ffffff0d;color:var(--x-gold);font-size:15px;line-height:1.6;word-break:keep-all}"
     ".email-hint{margin:8px 0 0;color:#ffd38a;font-size:14px;line-height:1.6;word-break:keep-all}.email-hint b{color:#fff}.email-fix{margin-left:6px;padding:4px 10px;border:1px solid #ffd38a;border-radius:999px;background:none;color:#ffd38a;font-size:14px}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
@@ -811,6 +811,23 @@ def add_reveal(s: str) -> str:
     return s
 
 
+def trim_sales_page(s: str) -> str:
+    """리포트 안내 화면 줄이기 2차."""
+    # 2026-10-30 사장님: 리포트 안내 화면의 장 소개(그림 장면 3개, 잠긴 질문 목록, PRIVATE READING)는 모든 상품에서 뺀다.
+    # 자주 묻는 질문은 예전 목차가 있던 자리(마지막 그림 장면 바로 앞)로 옮긴다.
+    i = s.find("function salesPage(")
+    j = s.find("\nfunction", i + 10)
+    body = s[i:j]
+    faq = "<section class=\"faq\"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>"
+    a = body.find("${detailBlocks(p)}")
+    b = body.find("${salesPanel(p,5")
+    assert body.count(faq) == 1 and 0 < a < b, "리포트 안내 화면 모양이 바뀌었어요"
+    body = body.replace(faq, "")
+    body = body[:a] + faq + body[b:]
+    s = s[:i] + body + s[j:]
+    return s
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -880,6 +897,7 @@ def main() -> None:
     s = fix_checkout_flow(s)
     s = fix_detail_copy(s)
     s = add_extras(s)
+    s = trim_sales_page(s)
     s = add_reveal(s)
     s = extract_font(s)
     s = fix_story_face(s)
