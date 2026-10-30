@@ -1,0 +1,15 @@
+name: livecheck
+on: push
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for i in $(seq 1 40); do
+            c=$(curl -s "https://unmyeong-saju.com/?v=$RANDOM")
+            t=$(curl -s "https://unmyeong-saju.com/assets/free/texts.json?v=$RANDOM")
+            r=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?v=$RANDOM")
+            if echo "$c" | grep -q "revealShownStart" && echo "$c" | grep -q "2027-02-28" && echo "$c" | grep -q "giftBox" && echo "$t" | grep -q "best_re" && echo "$r" | grep -q "reunionMonths"; then echo "LIVE OK"; exit 0; fi
+            sleep 15
+          done
+          echo "NOT LIVE"; exit 1
