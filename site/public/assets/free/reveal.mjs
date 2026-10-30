@@ -10,6 +10,9 @@ const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
 const GROUP_OF = { 비견: '비겁', 겁재: '비겁', 식신: '식상', 상관: '식상', 편재: '재성', 정재: '재성', 편관: '관성', 정관: '관성', 편인: '인성', 정인: '인성' };
 export const FIRST_YEAR = 2027;
+export const REUNION_MONTHS = 24;   // 재회사주 지도: 앞으로 24개월(사장님 2026-10-30: 몇 달 안, 길어야 2~3년)
+// 태어난 날 지지의 삼합 무리마다 정해진 도화(桃花) 글자: 인오술→묘, 신자진→유, 사유축→오, 해묘미→자
+const PEACH_OF = { 2: 3, 6: 3, 10: 3, 8: 9, 0: 9, 4: 9, 5: 6, 9: 6, 1: 6, 11: 0, 3: 0, 7: 0 };
 
 const pillar = (stem, branch) => ({ stem, branch, ko: STEMS[stem] + BRANCHES[branch], hanja: STEMS_HANJA[stem] + BRANCHES_HANJA[branch] });
 const yearPillar = y => pillar(((y - 4) % 10 + 10) % 10, ((y - 4) % 12 + 12) % 12);
@@ -17,6 +20,24 @@ const yearPillar = y => pillar(((y - 4) % 10 + 10) % 10, ((y - 4) % 12 + 12) % 1
 // 2월~12월은 정미년의 임인(壬寅, 입춘부터)~임자(壬子, 대설부터).
 export const MONTHS_2027 = [{ ...pillar(7, 1), label: '1월' },
   ...Array.from({ length: 11 }, (_, k) => ({ ...pillar((8 + k) % 10, (2 + k) % 12), label: `${k + 2}월` }))];
+
+// 달력 year년 month월에 시작하는 달(절기 기준)의 간지. 1월은 앞 해의 마지막 달(축월). saju/reveal.py month_pillar_of 와 같다.
+function monthPillarOf(year, month) {
+  const y = month === 1 ? year - 1 : year, k = month === 1 ? 11 : month - 2;
+  const first = ((((y - 4) % 10 + 10) % 10) % 5 * 2 + 2) % 10;
+  return pillar((first + k) % 10, (2 + k) % 12);
+}
+// 재회사주 지도: start [해, 달]부터 24개월. 이름은 '2027년 3월'처럼.
+export function reunionMonths([y, m]) {
+  const out = [];
+  for (let i = 0; i < REUNION_MONTHS; i++) {
+    out.push({ ...monthPillarOf(y, m), label: `${y}년 ${m}월` });
+    [y, m] = m === 12 ? [y + 1, 1] : [y, m + 1];
+  }
+  return out;
+}
+// 재회사주 지도의 첫 달: 오늘이 15일까지면 이번 달, 16일부터는 다음 달(saju/reveal.py start_month 와 같다).
+export function startMonth(y, m, d) { return d <= 15 ? [y, m] : m === 12 ? [y + 1, 1] : [y, m + 1]; }
 
 // 사주에서 가장 모자란 기운(무료 맛보기 '가장 모자란 기운'과 같은 것: 같으면 뒤 순서)
 function weakest(elements) {
@@ -40,17 +61,23 @@ function marker(fp, sex) {
     bigmoney: p => has(p, ['편재']),
     make: p => has(p, ['식신']),
     love: p => group(p, [sex === 'female' ? '관성' : '재성']),
+    // 연애사주(사장님 2026-10-30): '인연의 별' 하나로 묶지 않고 배우자 별·도화·합을 따로 짚는다
+    spouse: p => has(p, [sex === 'female' ? '정관' : '정재']),
+    peach: p => p.branch === PEACH_OF[db],
+    // 재회사주: 배우자 자리와 육합하는 달이 가장 좋은 달, 반합하는 달이 다시 이어지기 쉬운 달
+    best_re: p => rel(p).includes('육합'),
+    hap_re: p => rel(p).includes('반합') && !rel(p).includes('육합'),
     hap: p => rel(p).some(r => r === '육합' || r === '반합'),
     clash: p => rel(p).includes('충'),
     fill: p => STEM_EL[p.stem] === weak || BRANCH_EL[p.branch] === weak,
     // 2027년 달: 지지(그 달 생활에 크게 작용)가 나를 돕는 기운이면 좋은 달. 힘이 가운데면 모자란 기운이 오는 달.
     help: p => helpful ? helpful.includes(GROUP_OF[branchTenGod(ds, p.branch)]) : BRANCH_EL[p.branch] === weak,
   };
-  const ruleOf = key => RULE[key.startsWith('clash') ? 'clash' : key.startsWith('hap') ? 'hap' : key.startsWith('love') ? 'love' : key];
+  const ruleOf = key => RULE[key] || RULE[key.startsWith('clash') ? 'clash' : key.startsWith('hap') ? 'hap' : key.startsWith('love') ? 'love' : key.startsWith('spouse') ? 'spouse' : key];
   return { weak: ELEMENTS[weak], ruleOf };
 }
 
-const markKey = (key, sex) => key === 'love' ? (sex === 'female' ? 'love_f' : 'love_m') : key;
+const markKey = (key, sex) => key === 'love' || key === 'spouse' ? key + (sex === 'female' ? '_f' : '_m') : key;
 
 // 상품 하나의 지도: 12년(지지 열두 개가 한 번씩 다 돈다)(신년운세는 2027년 열두 달)마다 좋은·조심할 표시.
 // 돌려주는 값: { unit:'year'|'month', cells:[{label, ko, hanja, good:[key], bad:[key]}], good:{key:[label]}, bad:{key:[label]}, weak }
@@ -71,11 +98,11 @@ function yearMarks(fp, sex, product, T, label, good, bad) {
   return side === 'good' ? [good.length ? good : ['ny_good'], []] : [[], bad.length ? bad : ['ny_bad']];
 }
 
-export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR) {
+export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR, start = null) {
   const conf = T.REVEAL.PRODUCTS[product];
   const { weak, ruleOf } = marker(fp, sex);
-  const unit = product === 'newyear' ? 'month' : 'year';
-  const base = unit === 'month' ? MONTHS_2027 : Array.from({ length: 12 }, (_, i) => ({ ...yearPillar(startYear + i), label: String(startYear + i) }));
+  const unit = product === 'newyear' || product === 'reunion' ? 'month' : 'year';
+  const base = unit === 'month' ? (product === 'reunion' ? reunionMonths(start || [startYear, 1]) : MONTHS_2027) : Array.from({ length: 12 }, (_, i) => ({ ...yearPillar(startYear + i), label: String(startYear + i) }));
   const good = {}, bad = {};
   const cells = base.map(p => {
     const cell = { label: p.label, ko: p.ko, hanja: p.hanja };

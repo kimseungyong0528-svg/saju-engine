@@ -269,6 +269,12 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         start += 1
     rate = luck_rater(an)
     months = [month_row(m, rate) for m in span[start:start + 12]]
+    # 재회사주 결제 전 화면의 24개월 지도와 같은 달(saju/reveal.py start_month: 15일까지면 그 달, 16일부터 다음 달)
+    from ..reveal import REUNION_MONTHS, start_month
+    sy, sm = start_month(order.order_date)
+    rows = [month_row(m, rate) for m in span]
+    first = next((i for i, r in enumerate(rows) if (r["year"], r["month"]) == (sy, sm)), None)
+    screen_months = rows[first:first + REUNION_MONTHS] if first is not None else []
 
     shinsal = [{**s, "label": PILLAR_LABEL[s["pillar"]], "text": K.SHINSAL.get(s["name"], "")} for s in an["shinsal"]]
     seen_names = []
@@ -322,6 +328,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "sewoon": sewoon,
         "sewoon_all": sewoon_all,
         "months": months,
+        "screen_months": screen_months,
         "version": result["version"],
         "options": result["options"],
     }

@@ -62,7 +62,7 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
                                 "'화면에서 보신', '결제 전에 보신' 같은 말을 쓰지 않습니다.")
     else:
         seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
-                                                    me["person"].get("sex", ""), product, when.year)
+                                                    me["person"].get("sex", ""), product, when.date().isoformat() if hasattr(when, "date") else when)
     # 같은 주문에서 함께 산 상품은 책 끝에서 다시 권하지 않는다.
     extra = {"rebuy": job.get("rebuy"), "owned": [p for p in job.get("together") or [] if p != product], "bundled": bundled}
     if product == "lifetime":

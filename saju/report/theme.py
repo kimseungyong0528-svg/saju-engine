@@ -253,7 +253,7 @@ def screen_score(f: dict, result: dict, product: str) -> dict:
     """결제 전 이야기 화면 '내 점수'에서 고객이 본 점수(전체·좋은 점·조심할 점). 리포트 첫 요약에 그대로 싣는다(제1조항)."""
     from .. import reveal as RV
     d = RV.digest(fourpillars(result), f["person"]["name"], result["person"].get("sex", ""), product,
-                  int(f["order"]["date"][:4]))["화면에서 본 점수"]
+                  f["order"]["date"])["화면에서 본 점수"]
     return {"score": d["전체 점수"], "good": d["좋은 점"]["점수"], "bad": d["조심할 점"]["점수"]}
 
 
