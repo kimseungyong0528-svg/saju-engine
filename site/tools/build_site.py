@@ -812,20 +812,12 @@ def add_reveal(s: str) -> str:
 
 
 def trim_sales_page(s: str) -> str:
-    """리포트 안내 화면 줄이기 2차."""
-    # 2026-10-30 사장님: 리포트 안내 화면의 장 소개(그림 장면 3개, 잠긴 질문 목록, PRIVATE READING)는 모든 상품에서 뺀다.
-    # 자주 묻는 질문은 예전 목차가 있던 자리(마지막 그림 장면 바로 앞)로 옮긴다.
+    """2026-10-30 사장님: 리포트 안내 화면을 모든 상품에서 없앤다. 결제 전 이야기 STEP 5에서 바로 결제 화면으로 간다.
+    자주 묻는 질문은 STEP 5 미리 보기 아래로 옮겼다(reveal_page.js rvScene4)."""
     i = s.find("function salesPage(")
     j = s.find("\nfunction", i + 10)
-    body = s[i:j]
-    faq = "<section class=\"faq\"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>"
-    a = body.find("${detailBlocks(p)}")
-    b = body.find("${salesPanel(p,5")
-    assert body.count(faq) == 1 and 0 < a < b, "리포트 안내 화면 모양이 바뀌었어요"
-    body = body.replace(faq, "")
-    body = body[:a] + faq + body[b:]
-    s = s[:i] + body + s[j:]
-    return s
+    assert i > 0 and "if(!s)return checkoutPage(p,i);" in s[i:j], "리포트 안내 화면 모양이 바뀌었어요"
+    return s[:i] + "function salesPage(p,i){return checkoutPage(p,i)}" + s[j:]
 
 
 def extract_font(s: str) -> str:

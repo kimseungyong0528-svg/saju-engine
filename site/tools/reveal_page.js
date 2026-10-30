@@ -121,7 +121,8 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  </div></div>
  <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>
  <div class="rv-price"><span>${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님의':'나의'} ${esc(p.short)} 전체 풀이</span><s>${money(p.original)}</s><em>${discountPercent(p)}%</em><strong>${money(p.price)}</strong></div>
- ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}`}
+ ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}
+ <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;
