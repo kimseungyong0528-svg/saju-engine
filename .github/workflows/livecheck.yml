@@ -1,0 +1,14 @@
+name: livecheck
+on: push
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for i in $(seq 1 40); do
+            t=$(curl -s "https://unmyeong-saju.com/assets/free/texts.json?v=$RANDOM")
+            r=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?v=$RANDOM")
+            if ! echo "$t" | grep -q "love_m" && echo "$t" | grep -q "hap_ro" && ! echo "$r" | grep -q "love:"; then echo "LIVE OK"; exit 0; fi
+            sleep 15
+          done
+          echo "NOT LIVE"; exit 1
