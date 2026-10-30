@@ -92,7 +92,7 @@ function rvScene2(p,v){const s=SALES[p.id];
  const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW}가 있습니다`):'미리 알면 대비할 수 있습니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
- <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` 무료 풀이에서 본 ${esc(word)} 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
+ <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` ${esc(word)} 전체 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
  ${pairCard}
  ${good?`${goodPart}<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`}
  ${revealLocks(s?.locks||[])}`}
@@ -121,7 +121,8 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  </div></div>
  <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>
  <div class="rv-price"><span>${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님의':'나의'} ${esc(p.short)} 전체 풀이</span><s>${money(p.original)}</s><em>${discountPercent(p)}%</em><strong>${money(p.price)}</strong></div>
- ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}`}
+ ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}
+ <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;

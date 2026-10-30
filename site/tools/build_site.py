@@ -639,7 +639,7 @@ EXTRAS_CSS = (
     ".bundle-partner{display:none;margin:2px 0 10px;padding:16px 14px;border:1px solid var(--x-line);border-radius:14px;background:#ffffff08}"
     ".bundle-x:has(input[value=reunion]:checked) .bundle-partner,.bundle-x:has(input[value=intimate]:checked) .bundle-partner{display:block}"
     ".bundle-partner .birth-reassurance{display:none}.bundle-partner-title{margin:0 0 4px;color:var(--x-gold);font-size:17px;font-weight:800}.bundle-partner-sub{margin:0 0 12px;color:var(--x-muted);font-size:14px;line-height:1.6;word-break:keep-all}"
-    ".bundle-more>summary{display:block;cursor:pointer;list-style:none}.bundle-more>summary::-webkit-details-marker{display:none}.bundle-more>summary .x-title,.bundle-more>summary .x-sub{display:block}.bundle-more>summary b{color:var(--x-gold)}.bundle-more[open]>summary b{display:none}"
+    ".bundle-more>summary{display:block;cursor:pointer;list-style:none}.bundle-more>summary::-webkit-details-marker{display:none}.bundle-more>summary .x-title,.bundle-more>summary .x-sub{display:block}.bundle-more>summary b{color:var(--x-gold)}.bundle-open{display:block;margin-top:12px;font-size:19px;font-weight:800;text-decoration:underline;text-underline-offset:5px}.bundle-more[open]>summary b{display:none}"
     ".bundle-rebuy{margin:0 0 16px;padding:14px 16px;border-radius:14px;background:#ffffff0d;color:var(--x-gold);font-size:15px;line-height:1.6;word-break:keep-all}"
     ".email-hint{margin:8px 0 0;color:#ffd38a;font-size:14px;line-height:1.6;word-break:keep-all}.email-hint b{color:#fff}.email-fix{margin-left:6px;padding:4px 10px;border:1px solid #ffd38a;border-radius:999px;background:none;color:#ffd38a;font-size:14px}"
     ".bundle-ask{display:block;margin:4px 0 10px}.bundle-ask span{display:block;font-size:14px;color:var(--x-muted);margin-bottom:6px}"
@@ -811,6 +811,15 @@ def add_reveal(s: str) -> str:
     return s
 
 
+def trim_sales_page(s: str) -> str:
+    """2026-10-30 사장님: 리포트 안내 화면을 모든 상품에서 없앤다. 결제 전 이야기 STEP 5에서 바로 결제 화면으로 간다.
+    자주 묻는 질문은 STEP 5 미리 보기 아래로 옮겼다(reveal_page.js rvScene4)."""
+    i = s.find("function salesPage(")
+    j = s.find("\nfunction", i + 10)
+    assert i > 0 and "if(!s)return checkoutPage(p,i);" in s[i:j], "리포트 안내 화면 모양이 바뀌었어요"
+    return s[:i] + "function salesPage(p,i){return checkoutPage(p,i)}" + s[j:]
+
+
 def extract_font(s: str) -> str:
     """HTML 안에 글자로 박힌 2.7MB 글꼴을 따로 떼어 첫 화면이 빨리 뜨게 한다(2026-10-27)."""
     m = re.search(r"url\('data:font/woff2;base64,([A-Za-z0-9+/=]+)'\)", s)
@@ -880,6 +889,7 @@ def main() -> None:
     s = fix_checkout_flow(s)
     s = fix_detail_copy(s)
     s = add_extras(s)
+    s = trim_sales_page(s)
     s = add_reveal(s)
     s = extract_font(s)
     s = fix_story_face(s)
