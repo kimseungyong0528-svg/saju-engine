@@ -6,9 +6,9 @@ jobs:
     steps:
       - run: |
           for i in $(seq 1 40); do
-            a=$(curl -s "https://unmyeong-saju.com/?t=$i" | grep -c "받는 분의 ")
-            b=$(curl -s "https://unmyeong-saju.com/order-status.html?t=$i" | grep -c "처음 고른 책도")
-            c=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?t=$i" | grep -c "nyBad")
+            a=$(curl -s "https://unmyeong-saju.com/?t=$i" | grep -c "받는 분의 " || true)
+            b=$(curl -s "https://unmyeong-saju.com/order-status.html?t=$i" | grep -c "처음 고른 책도" || true)
+            c=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?t=$i" | grep -c "nyBad" || true)
             echo "try $i index=$a status=$b reveal=$c"
             if [ "$a" -ge 1 ] && [ "$b" -ge 1 ] && [ "$c" -ge 1 ]; then echo LIVE_OK; exit 0; fi
             sleep 30
