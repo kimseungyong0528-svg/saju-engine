@@ -1,0 +1,22 @@
+name: 시험 - 인스타 레퍼런스 받기
+on:
+  workflow_dispatch:
+  push:
+    paths: [".github/workflows/lab-ig.yml", "lab/igtest.py"]
+    branches: [claude/project-thread-7uafe7]
+permissions:
+  contents: write
+jobs:
+  ig:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: python lab/igtest.py
+      - name: 결과 올리기
+        run: |
+          cd refs && git init -q -b refs-ig && git add -A
+          git -c user.name=bot -c user.email=bot@x commit -qm "ig $(date -u +%F)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-ig
