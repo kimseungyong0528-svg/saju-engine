@@ -30,12 +30,21 @@ for u in IG_ACCTS:
 for name, ch in YT.items():
     rows = []
     for tab in ("shorts", "videos"):
-        p = subprocess.run(["yt-dlp", "--flat-playlist", "-J", "--playlist-end", "400", f"{ch}/{tab}"], capture_output=True, text=True)
+        p = subprocess.run(["yt-dlp", "--flat-playlist", "-J", "--extractor-args", "youtube:lang=ko", "--playlist-end", "400", f"{ch}/{tab}"], capture_output=True, text=True)
         if p.returncode:
             res["errors"].append(f"YT {name} {tab}: {p.stderr[-200:]}"); continue
         for e in json.loads(p.stdout).get("entries") or []:
             rows.append({"id": e.get("id"), "title": e.get("title"), "views": e.get("view_count"), "tab": tab,
                          "url": f"https://www.youtube.com/{'shorts/' if tab == 'shorts' else 'watch?v='}{e.get('id')}"})
+    # 조회수 상위는 좋아요·댓글 수까지 받는다
+    for tab in ("shorts", "videos"):
+        for r in sorted([r for r in rows if r["tab"] == tab], key=lambda r: r["views"] or 0, reverse=True)[:15]:
+            p = subprocess.run(["yt-dlp", "-j", "--skip-download", "--extractor-args", "youtube:lang=ko", r["url"]],
+                               capture_output=True, text=True)
+            if p.returncode == 0:
+                j = json.loads(p.stdout)
+                r.update(likes=j.get("like_count"), comments=j.get("comment_count"), title=j.get("title") or r["title"],
+                         date=j.get("upload_date"), dur=j.get("duration"))
     res["youtube"][name] = rows
     print(f"YT {name}: {len(rows)}개")
 # 인기 순 상위 썸네일 받기 (주소가 곧 만료되므로)
