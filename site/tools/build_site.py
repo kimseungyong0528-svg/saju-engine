@@ -201,10 +201,7 @@ def patch_texts(s: str, b: dict) -> str:
               "[place.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[place.regionName])||place.regionName,['country-only','region-only'].includes(place.status)?'도시 미상':place.city]")
     s = _swap(s, "[value.birthPlace.countryName,value.birthPlace.regionName,value.birthPlace.city]",
               "[value.birthPlace.countryName,(typeof REGION_PLAIN!=='undefined'&&REGION_PLAIN[value.birthPlace.regionName])||value.birthPlace.regionName,value.birthPlace.city]")
-    for code, gu in (("1221000000", "동구"), ("1224000000", "서구"), ("1227000000", "남구"), ("1230000000", "북구"), ("1233000000", "광산구")):
-        old = f'"id": "{code}",\n        "name": "{gu}"'
-        assert old in s, old
-        s = s.replace(old, f'"id": "{code}",\n        "name": "광주 {gu}"')
+    s = _gwangju_gu(s)
 
     # 자주 묻는 질문
     s = _swap(s, "['결과는 어떤 형태로 받나요?','정식 서비스 연결 후, 입력한 이메일로 결과 링크를 보내드리는 구조입니다. 현재 미리보기에서는 예시 리포트와 인쇄 화면을 확인할 수 있어요.']",
@@ -547,13 +544,24 @@ def fix_flows(s: str) -> str:
     return s
 
 
+def _gwangju_gu(s: str) -> str:
+    """광주 구 이름에 도시를 붙인다('광주 북구'). 사이트와 서버 접수 검사(intake.mjs)가 같은 이름을 써야 한다
+    (2026-10-31 손님 테스트: 서버만 '북구'로 남아 광주 출생 손님이 결제하지 못했다)."""
+    for code, gu in (("1221000000", "동구"), ("1224000000", "서구"), ("1227000000", "남구"), ("1230000000", "북구"), ("1233000000", "광산구")):
+        old = f'"id": "{code}",\n        "name": "{gu}"'
+        assert old in s, old
+        s = s.replace(old, f'"id": "{code}",\n        "name": "광주 {gu}"')
+    return s
+
+
 def write_intake_module(s: str) -> None:
     parts = []
     for a, b in INTAKE_PARTS:
         i = s.index(a)
         parts.append(s[i:s.index(b, i)])
+    code = _gwangju_gu("\n".join(parts))
     code = ("// 자동 생성: site/tools/build_site.py 가 사이트 코드에서 그대로 복사함. 직접 고치지 말 것.\n"
-            + "\n".join(parts)
+            + code
             + "\nexport {INTAKE_POLICY_VERSION,PRODUCTS,FLOWS,intakePayload,evaluateIntake,personValid,birthPrecision};\n")
     LIB.mkdir(parents=True, exist_ok=True)
     (LIB / "intake.mjs").write_text(code, encoding="utf-8")
