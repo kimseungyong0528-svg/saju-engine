@@ -131,3 +131,20 @@ def test_meta_run_posts_only_approved_and_unposted(monkeypatch):
     assert meta.run("오전", "2026-11-02") == 0
     posted = [json.loads(b)["id"] for m_, p, b in calls if p.endswith("/posted")]
     assert posted == ["a"]
+
+
+def test_sns_rules_fixed():
+    """사장님이 못 박은 SNS 게시 규칙 (2026-10-31). 지우거나 바꾸면 이 검사가 빨간불이 된다."""
+    import datetime as dt
+    from saju.marketing import rules
+    from saju.marketing.__main__ import AM, PM
+    r = rules.load()
+    am, pm = rules.slot("아침"), rules.slot("저녁")
+    assert (am["time"], pm["time"]) == (AM, PM) == ("07:30", "18:00")
+    assert {f["key"] for f in am["formats"]} >= {"solo", "forceteller", "sinbi", "tier"}
+    assert [f["key"] for f in pm["formats"]] == ["threads-capture"]
+    assert "salgusaju" in pm["formats"][0]["ref"] and "taebaek_saju" in pm["formats"][0]["ref"]
+    assert any("엔진 계산" in t for t in r["always"]) and any("승인" in t for t in r["always"])
+    days = [dt.date(2026, 11, 1) + dt.timedelta(days=i) for i in range(60)]
+    fmts = [rules.morning_format(d) for d in days]
+    assert all(a != b for a, b in zip(fmts, fmts[1:]))

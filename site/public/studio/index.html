@@ -95,6 +95,11 @@ details.tx summary .pre { color: var(--ink2); overflow: hidden; text-overflow: e
 details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-family: inherit; font-size: 14.5px; line-height: 1.65; border-top: 1px dashed var(--line); max-height: 360px; overflow: auto; }
 .copy { flex: none; border: 1px solid var(--line); background: var(--paper); border-radius: 7px; padding: 3px 9px; font-size: 13px; cursor: pointer; }
 .copy.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+#rules { margin: 12px 14px 0; background: var(--paper); border: 2px solid #a8262b; border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--ink2); }
+#rules summary { font-weight: 700; color: #a8262b; cursor: pointer; }
+#rules h4 { margin: 10px 0 4px; font-size: 15px; color: inherit; }
+#rules ul { margin: 4px 0 6px; padding-left: 18px; }
+#rules li { margin: 2px 0; }
 .tip { margin: 0 14px 0 18px; font-size: 13px; color: var(--ink2); background: var(--paper); border-radius: 8px; padding: 7px 10px; }
 .post-foot { margin-top: auto; display: flex; gap: 8px; padding: 12px 14px 14px 18px; flex-wrap: wrap; }
 .toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px 6px 8px; background: #fff; font-size: 14px; }
@@ -177,6 +182,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
       <button data-tab="check">검사</button>
     </nav>
   </header>
+  <details id="rules" open><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -190,6 +196,16 @@ const CH = {
   'instagram-cards': { name: '인스타 카드뉴스', color: 'var(--ig)', icon: '▦', auto: true },
   'threads': { name: '스레드', color: 'var(--th)', icon: '@', auto: true, tip: '1/2가 먼저 올라가고, 나머지는 그 글에 답글로 이어서 올라가요.' },
 };
+fetch('/studio/rules.json').then(r => r.json()).then(R => {
+  const b = document.getElementById('rulesBody'); b.textContent = '';
+  for (const s of R.slots) {
+    b.append(el('h4', {}, `${s.slot} ${s.time} · ${s.what}`));
+    b.append(el('ul', {}, s.formats.map(f => el('li', {}, `${f.name} (${f.ref})`))));
+    b.append(el('p', { class: 'tip' }, s.rotate));
+  }
+  b.append(el('h4', {}, '늘 지킬 것'));
+  b.append(el('ul', {}, R.always.map(t => el('li', {}, t))));
+}).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });
 const AUTO_TIP = '승인하면 정해진 시각에 자동으로 올라가요. 토스 정식 결제 전에는 사이트 주소 줄은 빼고 올라가요.';
 const isDone = it => CH[it.channel]?.auto ? Boolean(S.data.posted?.[it.id]?.ok) : Boolean(S.data.done[it.id]);
 const S = { weeks: [], week: null, data: null, tab: 'today', day: null };
