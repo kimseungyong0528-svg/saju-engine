@@ -60,7 +60,9 @@ for u, a in res["instagram"].items():
             except Exception as e:  # noqa
                 res["errors"].append(f"img {m['id']}: {e}")
 for name, rows in res["youtube"].items():
-    for r in sorted(rows, key=lambda r: r["views"] or 0, reverse=True)[:12]:
+    pick = sorted([r for r in rows if r["tab"] == "shorts"], key=lambda r: r["views"] or 0, reverse=True)[:30]
+    pick += sorted([r for r in rows if r["tab"] == "videos"], key=lambda r: r["views"] or 0, reverse=True)[:12]
+    for r in pick:
         try:
             (OUT / "img" / f"yt_{r['id']}.jpg").write_bytes(urllib.request.urlopen(f"https://i.ytimg.com/vi/{r['id']}/hqdefault.jpg", timeout=30).read())
         except Exception as e:  # noqa
