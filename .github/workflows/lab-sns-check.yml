@@ -1,0 +1,43 @@
+# 임시: SNS 열쇠가 작동하는지 읽기만 해서 확인한다 (아무것도 올리지 않음). 끝나면 지운다
+name: 시험 - SNS 열쇠 확인
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/project-thread-7uafe7]
+    paths: [.github/workflows/lab-sns-check.yml]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+      THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+    steps:
+      - name: 열쇠 확인
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse
+          def get(url, tok):
+              try:
+                  with urllib.request.urlopen(url + ("&" if "?" in url else "?") + "access_token=" + urllib.parse.quote(tok), timeout=30) as r:
+                      d = json.loads(r.read())
+                  return "OK " + json.dumps({k: v for k, v in d.items() if k in ("id", "user_id", "username", "name")}, ensure_ascii=False)
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode()[:300]
+                  return f"실패 {e.code}: {body}"
+              except Exception as e:
+                  return f"실패: {e}"
+          ig = os.environ.get("IG_ACCESS_TOKEN", "")
+          print("IG 열쇠 길이:", len(ig), "앞 4글자:", ig[:4])
+          if ig:
+              print("IG (graph.instagram.com):", get("https://graph.instagram.com/v23.0/me?fields=user_id,username", ig))
+              print("IG (graph.facebook.com):", get("https://graph.facebook.com/v23.0/17841476113870391?fields=id,username", ig))
+          fb = os.environ.get("FB_PAGE_TOKEN", "")
+          if fb:
+              print("FB page:", get("https://graph.facebook.com/v23.0/me?fields=id,name", fb))
+          th = os.environ.get("THREADS_TOKEN", "")
+          if th:
+              print("Threads:", get("https://graph.threads.net/v1.0/me?fields=id,username", th))
+          PY
