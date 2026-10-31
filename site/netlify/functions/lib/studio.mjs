@@ -16,6 +16,11 @@ const json = (body, status = 200, headers = {}) => new Response(JSON.stringify(b
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers },
 });
 
+// 메타(인스타·페북·스레드)가 영상·사진을 가져갈 때 쓰는 서명된 주소. 로그인 없이 열리지만 서명이 맞아야 한다.
+export function pubSig(env, week, path) {
+  return createHmac('sha256', env.WORKER_SECRET || '').update(`pub:${week}/${path}`).digest('hex');
+}
+
 function sign(env, exp) {
   return createHmac('sha256', `${env.STUDIO_PASSWORD}|${env.WORKER_SECRET}`).update(`studio:${exp}`).digest('hex');
 }
@@ -75,14 +80,42 @@ export function makeStudio({ store, services, env }) {
       if (!sameSecret(req.headers.get('x-worker-secret') || '', env.WORKER_SECRET || '')) throw new ApiError(403, 'FORBIDDEN');
       if (m === 'GET' && parts[2] === 'used') {
         const keys = [];
-        for (const w of (await index(store)).slice(0, 8)) {
+        // 하루치 묶음도 한 줄이라 넉넉히 3주치를 본다
+        for (const w of (await index(store)).slice(0, 21)) {
           const man = await store.get(`manifest/${w.week}`);
           if (man?.used) keys.push(...man.used);
         }
         return json({ keys: [...new Set(keys)] });
       }
+      // 오늘 올릴 게시물: 그날이 들어 있는 가장 최근 묶음 + 승인·올림 표시
+      if (m === 'GET' && parts[2] === 'today') {
+        const date = checkWeek(url.searchParams.get('date'));
+        for (const w of (await index(store)).filter(w => w.status === 'ready' && w.week <= date).slice(0, 10)) {
+          const man = await store.get(`manifest/${w.week}`);
+          const day = man?.days?.find(d => d.date === date);
+          if (day) return json({ week: w.week, items: day.items, approved: (await store.get(`approved/${w.week}`)) || {}, posted: (await store.get(`posted/${w.week}`)) || {} });
+        }
+        return json({ week: null, items: [] });
+      }
+      if (parts[2] === 'meta' && parts[3] === 'threads-token') {
+        if (m === 'GET') return json((await store.get('meta/threads-token')) || {});
+        if (m === 'POST') {
+          const b = await body(req);
+          if (typeof b.token !== 'string' || b.token.length < 20) throw new ApiError(400, 'BAD_TOKEN');
+          await store.set('meta/threads-token', { token: b.token, refreshedAt: String(b.refreshedAt || new Date().toISOString()) });
+          return json({ ok: true });
+        }
+      }
       const week = checkWeek(parts[2]);
       const action = parts[3];
+      if (m === 'POST' && action === 'posted') {
+        const b = await body(req);
+        if (typeof b.id !== 'string' || b.id.length > 80) throw new ApiError(400, 'BAD_ID');
+        const posted = (await store.get(`posted/${week}`)) || {};
+        posted[b.id] = { ok: Boolean(b.ok), url: String(b.url || '').slice(0, 300), error: String(b.error || '').slice(0, 300), at: new Date().toISOString() };
+        await store.set(`posted/${week}`, posted);
+        return json({ ok: true });
+      }
       if (m === 'POST' && action === 'status') {
         const b = await body(req);
         return json(await setWeek(store, week, { status: String(b.status || ''), note: String(b.note || '').slice(0, 200) }));
@@ -102,6 +135,16 @@ export function makeStudio({ store, services, env }) {
         return json(await setWeek(store, week, { status: 'ready', note: '', posts, problems: (man.problems || []).length }));
       }
       throw new ApiError(404, 'NOT_FOUND');
+    }
+
+    // ── 메타가 가져가는 영상·사진 (서명 확인, 로그인 없음) ──
+    if (parts[1] === 'pub' && parts[2] && m === 'GET') {
+      const week = checkWeek(parts[2]);
+      const path = checkPath(url.searchParams.get('path'));
+      if (!env.WORKER_SECRET || !sameSecret(url.searchParams.get('sig') || '', pubSig(env, week, path))) throw new ApiError(403, 'FORBIDDEN');
+      const bytes = await store.getBytes(`files/${week}/${path}`);
+      if (!bytes) throw new ApiError(404, 'NO_FILE');
+      return new Response(bytes, { headers: { 'Content-Type': TYPES[path.split('.').pop().toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'private, max-age=3600' } });
     }
 
     // ── 로그인 ──
@@ -126,7 +169,8 @@ export function makeStudio({ store, services, env }) {
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;
-      return json({ week: row, manifest: await store.get(`manifest/${week}`), done: (await store.get(`done/${week}`)) || {} });
+      return json({ week: row, manifest: await store.get(`manifest/${week}`), done: (await store.get(`done/${week}`)) || {},
+        approved: (await store.get(`approved/${week}`)) || {}, posted: (await store.get(`posted/${week}`)) || {} });
     }
     if (parts[1] === 'file' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
@@ -149,13 +193,26 @@ export function makeStudio({ store, services, env }) {
       await store.set(`done/${week}`, done);
       return json({ done });
     }
+    if (route === 'studio/approve' && m === 'POST') {
+      const b = await body(req);
+      const week = checkWeek(b.week);
+      const ids = Array.isArray(b.ids) ? b.ids : [b.id];
+      if (!ids.length || ids.length > 40 || ids.some(id => typeof id !== 'string' || id.length > 80)) throw new ApiError(400, 'BAD_ID');
+      const approved = (await store.get(`approved/${week}`)) || {};
+      for (const id of ids) { if (b.approved) approved[id] = new Date().toISOString(); else delete approved[id]; }
+      await store.set(`approved/${week}`, approved);
+      return json({ approved });
+    }
     if (route === 'studio/generate' && m === 'POST') {
       const b = await body(req);
       const week = checkWeek(b.start);
+      const days = b.days === 1 ? 1 : 7;
       const row = (await index(store)).find(w => w.week === week);
       if (row && ['requested', 'running'].includes(row.status)
         && Date.now() - Date.parse(row.updatedAt) < 60 * 60 * 1000) throw new ApiError(409, 'ALREADY_RUNNING');
-      await services.startStudio(week);
+      await services.startStudio(week, days);
+      // 다시 만들면 예전 승인은 지운다 (새 게시물을 보고 다시 승인)
+      await store.delete(`approved/${week}`);
       return json(await setWeek(store, week, { status: 'requested', note: '만들기를 시작했어요' }));
     }
     throw new ApiError(404, 'NOT_FOUND');
@@ -171,6 +228,8 @@ export async function eraseOldWeeks(store, now = Date.now()) {
     for (const k of await store.list(`files/${w.week}/`)) await store.delete(k);
     await store.delete(`manifest/${w.week}`);
     await store.delete(`done/${w.week}`);
+    await store.delete(`approved/${w.week}`);
+    await store.delete(`posted/${w.week}`);
   }
   if (gone.length) await store.set('weeks', keep);
   return gone.length;

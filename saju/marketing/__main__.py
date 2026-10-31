@@ -22,12 +22,14 @@ from pathlib import Path
 from . import cards, trends as tr
 from .checks import check_post, check_rank
 from .ranking import rank_posts, youtube_rank
-from .content import (daangn, ddi_posts, instagram_cards, instagram_reel, summary_post, threads, topic_posts,
-                      youtube)
+from .content import (daangn, ddi_posts, facebook_reel, instagram_cards, instagram_reel, summary_post, threads,
+                      topic_posts, youtube)
 
 WEEKDAYS = "월화수목금토일"
-AM, PM = "08:00", "20:00"
-CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "instagram-cards": "인스타 카드뉴스",
+# 출근길·퇴근길 (사장님 2026-10-31). 인스타·페북·스레드는 승인한 것만 이 시각에 자동으로 올라간다(meta.py).
+AM, PM = "07:30", "18:00"
+CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "facebook-reel": "페이스북 릴스",
+                 "instagram-cards": "인스타 카드뉴스",
                  "threads": "스레드", "daangn": "당근 소식"}
 
 
@@ -48,6 +50,21 @@ def _thumb(video: Path, at: float, out: Path) -> None:
     import subprocess
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{at:.2f}", "-i", str(video), "-frames:v", "1", str(out)],
                    check=True)
+
+
+def _jpgs(pngs: list[Path]) -> list[Path]:
+    """인스타 API는 사진을 JPEG만 받는다. 카드 PNG를 JPEG로 바꾼다 (ffmpeg 이 없으면 PNG 그대로)."""
+    import shutil as sh
+    import subprocess
+    if not sh.which("ffmpeg"):
+        return pngs
+    out = []
+    for p in pngs:
+        j = p.with_suffix(".jpg")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(p), "-q:v", "2", str(j)], check=True)
+        p.unlink()
+        out.append(j)
+    return out
 
 
 def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used: set[str] | None = None,
@@ -96,6 +113,11 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
                                        "material": p.key, "title": p.reel_hook, "score": score,
                                        "video": vid if video else "", "thumb": thumb,
                                        "texts": packs["instagram-reel"]})
+                packs["facebook-reel"] = facebook_reel(p)
+                entry["items"].append({"id": f"{base}-fbreel", "channel": "facebook-reel", "time": time, "slot": slot,
+                                       "material": p.key, "title": p.title, "score": score,
+                                       "video": vid if video else "", "thumb": thumb,
+                                       "texts": packs["facebook-reel"]})
             else:
                 # 유튜브 쇼츠: 띠 순위형 (엔진이 매긴 순위)
                 rp = ranks[d]
@@ -117,7 +139,7 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
             if slot == "저녁":
                 # 인스타 카드뉴스 (페북은 인스타에서 같이 공유)
                 packs["instagram-cards"] = instagram_cards(p)
-                imgs = cards.render_pngs(p, "feed", week / "인스타" / f"{base}_카드_{p.key}", "카드")
+                imgs = _jpgs(cards.render_pngs(p, "feed", week / "인스타" / f"{base}_카드_{p.key}", "카드"))
                 entry["items"].append({"id": f"{base}-cards", "channel": "instagram-cards", "time": time, "slot": slot,
                                        "material": p.key, "title": p.hook, "score": score,
                                        "images": [str(i.relative_to(week)) for i in imgs],

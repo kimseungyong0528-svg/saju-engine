@@ -32,11 +32,11 @@ export function realServices(env, fetcher = fetch) {
   }
 
   // 관리 사이트의 "만들기" 버튼: 깃허브에서 SNS 게시물 만들기 작업을 시작한다.
-  async function startStudio(start) {
+  async function startStudio(start, days = 7) {
     const r = await fetcher(`https://api.github.com/repos/${env.GITHUB_REPO || 'kimseungyong0528-svg/saju-engine'}/dispatches`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'unmyeong-studio', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event_type: 'studio', client_payload: { start } }),
+      body: JSON.stringify({ event_type: 'studio', client_payload: { start, days } }),
     });
     if (r.status !== 204) throw Error(`dispatch ${r.status}`);
   }
