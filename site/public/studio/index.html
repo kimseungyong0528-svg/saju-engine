@@ -101,6 +101,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
 #rules h4 { margin: 10px 0 4px; font-size: 15px; color: inherit; }
 #rules ul { margin: 4px 0 6px; padding-left: 18px; }
 #rules li { margin: 2px 0; }
+#rules a { color: #a8262b; text-decoration: underline; }
 .tip { margin: 0 14px 0 18px; font-size: 13px; color: var(--ink2); background: var(--paper); border-radius: 8px; padding: 7px 10px; }
 .post-foot { margin-top: auto; display: flex; gap: 8px; padding: 12px 14px 14px 18px; flex-wrap: wrap; }
 .toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px 6px 8px; background: #fff; font-size: 14px; }
@@ -206,6 +207,11 @@ fetch('/studio/rules.json').then(r => r.json()).then(R => {
   }
   b.append(el('h4', {}, '늘 지킬 것'));
   b.append(el('ul', {}, R.always.map(t => el('li', {}, t))));
+  for (const g of R.refs || []) {
+    b.append(el('h4', {}, `참고 계정 · ${g.group}`));
+    b.append(el('ul', {}, g.items.map(it => el('li', {},
+      el('a', { href: it.url, target: '_blank', rel: 'noopener' }, it.name), ` · ${it.stat} · ${it.why}`))));
+  }
 }).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });
 const AUTO_TIP = '승인하면 정해진 시각에 자동으로 올라가요. 토스 정식 결제 전에는 사이트 주소 줄은 빼고 올라가요.';
 const isDone = it => CH[it.channel]?.auto ? Boolean(S.data.posted?.[it.id]?.ok) : Boolean(S.data.done[it.id]);
