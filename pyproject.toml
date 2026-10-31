@@ -10,7 +10,8 @@ dependencies = [
 
 [project.optional-dependencies]
 report = ["jinja2>=3.1", "weasyprint>=62", "anthropic>=0.40"]
-dev = ["pytest>=8", "sxtwl>=2.0", "jinja2>=3.1", "weasyprint>=62", "anthropic>=0.40"]
+video = ["numpy>=1.26", "playwright>=1.47", "supertonic>=1.3"]
+dev = ["pytest>=8", "numpy>=1.26", "sxtwl>=2.0", "jinja2>=3.1", "weasyprint>=62", "anthropic>=0.40"]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -21,6 +22,7 @@ include = ["saju*"]
 
 [tool.setuptools.package-data]
 "saju.report" = ["templates/*", "fonts/*"]
+"saju.marketing" = ["data/*", "fonts/*", "video/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

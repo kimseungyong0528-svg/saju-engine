@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Gowun;src:url(FONTS/GowunBatang-Bold.ttf);font-weight:700}
+@font-face{font-family:Han;src:url(MFONTS/BlackHanSans.ttf)}
+@font-face{font-family:Song;src:url(FONTS/SongMyung-Regular.ttf)}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#090604;font-family:Gowun,serif;font-weight:700;color:#fff}
+#bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#5a3a0c 0%,#1a0f05 45%,#070403 80%)}
+.bk{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,214,120,.9),rgba(255,180,60,.25) 55%,rgba(255,170,40,0) 70%)}
+.sp{position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;box-shadow:0 0 18px 6px rgba(255,230,160,.9)}
+#coins{position:absolute;left:0;right:0;bottom:0;height:330px;background:radial-gradient(ellipse at 50% 120%,rgba(255,190,70,.75),rgba(255,160,40,.25) 45%,rgba(0,0,0,0) 70%)}
+.coin{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8,#f2c14e 35%,#b07a16 75%,#7a5009);box-shadow:inset 0 0 0 6px rgba(255,236,170,.5),0 8px 18px rgba(0,0,0,.5)}
+#title{position:absolute;top:120px;left:0;right:0;text-align:center}
+.t1{font-family:Han;font-weight:400;font-size:104px;font-weight:700;color:#ff8a7a;-webkit-text-stroke:3px #5a0d0d;text-shadow:0 0 30px rgba(255,120,90,.5)}
+.t2{font-family:Han;font-weight:400;font-size:118px;font-weight:700;color:#fff;-webkit-text-stroke:3px #3a2a10;margin-top:6px}
+.t3{font-family:Han;font-weight:400;font-size:112px;font-weight:700;color:#8fd3ff;-webkit-text-stroke:3px #0d2a44;margin-top:6px}
+#list{position:absolute;top:600px;left:80px;right:40px}
+.row{font-family:Han;font-weight:400;height:80px;display:flex;align-items:center;font-size:66px;font-weight:700;white-space:nowrap;text-shadow:0 4px 12px rgba(0,0,0,.9)}
+.row .rk{color:#ff8a7a;-webkit-text-stroke:2px #4a0b0b}
+.row .yr{color:#fff;margin-left:14px}
+.row.top .rk{color:#ffd76a;-webkit-text-stroke:2px #5a3a05}
+.row.top{font-size:72px}
+#foot{position:absolute;bottom:70px;left:0;right:0;text-align:center;font-size:46px;font-weight:700;text-shadow:0 4px 12px #000}
+#foot small{display:block;font-size:34px;color:#f2d9a2;margin-top:10px}
+#crown{position:absolute;left:50%;top:700px;width:860px;margin-left:-430px;text-align:center;opacity:0}
+#crown .c1{font-size:60px;color:#ffd76a}
+#crown .c2{font-family:Han;font-weight:400;font-size:170px;font-weight:700;color:#fff;-webkit-text-stroke:4px #6a4208;text-shadow:0 0 50px rgba(255,200,90,.8)}
+#crown .c3{font-size:52px;color:#fff;margin-top:20px;line-height:1.5}
+#cap{position:absolute;left:60px;right:60px;bottom:230px;text-align:center;font-size:50px;font-weight:700;line-height:1.35;text-shadow:0 4px 16px #000;word-break:keep-all}
+#hook{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(7,4,3,.82)}
+#hookt{font-family:Han;font-size:190px;line-height:1.15;color:#fff;-webkit-text-stroke:5px #5a0d0d;text-shadow:0 0 50px rgba(255,170,80,.7)}
+#hookt em{font-style:normal;color:#ffd76a}
+#flash{position:absolute;inset:0;background:#fff1c8;opacity:0;z-index:35;pointer-events:none}
+</style></head><body>
+<div id="bg"></div><div id="fx"></div><div id="coins"></div>
+<div id="title"><div class="t1"></div><div class="t2"></div><div class="t3"></div></div>
+<div id="list"></div>
+<div id="crown"><div class="c1"></div><div class="c2"></div><div class="c3"></div></div>
+<div id="cap"></div>
+<div id="foot"></div>
+<div id="flash"></div><div id="hook"><div id="hookt"></div></div>
+<script>
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), ease=x=>1-Math.pow(1-clamp(x),3), $=s=>document.querySelector(s);
+const fx=$('#fx'), R=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
+const bks=[...Array(22)].map((_,i)=>{const d=document.createElement('div');d.className='bk';const r=40+R(i,1)*140;Object.assign(d.style,{width:r+'px',height:r+'px'});fx.appendChild(d);return{d,x:R(i,2)*1080,y:R(i,3)*1920,s:4+R(i,4)*14,ph:R(i,5)*6}});
+const sps=[...Array(30)].map((_,i)=>{const d=document.createElement('div');d.className='sp';fx.appendChild(d);return{d,x:R(i,6)*1080,y:R(i,7)*1700,ph:R(i,8)*6,sp:1+R(i,9)*2}});
+const coins=[...Array(18)].map((_,i)=>{const d=document.createElement('div');d.className='coin';const r=90+R(i,10)*60;Object.assign(d.style,{width:r+'px',height:r*0.55+'px'});$('#coins').appendChild(d);return{d,x:R(i,11)*1080-60,y:150+R(i,12)*170}});
+const fall=[...Array(10)].map((_,i)=>{const d=document.createElement('div');d.className='coin';const r=70+R(i,13)*40;Object.assign(d.style,{width:r+'px',height:r+'px'});fx.appendChild(d);return{d,x:R(i,14)*1000,s:220+R(i,15)*220,ph:R(i,16)*9,rot:R(i,17)}});
+let P;
+window.setPlan=p=>{P=p;$('#list').innerHTML=p.rows.map(r=>`<div class="row${r.rank<=3?' top':''}"><span class="rk">${r.rank}위 ${r.ddi}띠:</span><span class="yr">${r.years}년생</span></div>`).join('');
+  $('#crown .c2').textContent=p.rows[0].ddi+'띠'; $('#crown .c3').innerHTML=p.crown;
+  for(const k of ['t1','t2','t3']){const e=$('.'+k);e.textContent=p[k];const base={t1:104,t2:118,t3:112}[k];e.style.fontSize=Math.min(base,Math.floor(980/Math.max(1,p[k].length)))+'px'}
+  $('#hookt').innerHTML=String(p.hook||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').split('\n').map((x,j,a)=>j===a.length-1?'<em>'+x+'</em>':x).join('<br>');$('#hook').style.display=p.hook?'flex':'none';
+  $('#crown .c1').textContent=p.c1; $('#foot').innerHTML=p.foot+'<small>운명서재 · unmyeong-saju.com</small>';};
+window.render=t=>{
+  for(const b of bks){b.d.style.transform=`translate(${b.x+Math.sin(t*.3+b.ph)*40}px,${b.y-t*b.s}px)`;b.d.style.opacity=.25+.35*Math.sin(t*.8+b.ph)**2}
+  for(const s of sps){const a=Math.max(0,Math.sin(t*s.sp+s.ph));s.d.style.transform=`translate(${s.x}px,${s.y}px) scale(${.4+a*1.4})`;s.d.style.opacity=a}
+  coins.forEach((c,i)=>c.d.style.transform=`translate(${c.x}px,${c.y+Math.sin(t*2+i)*3}px)`);
+  for(const f of fall){const y=((t*f.s+f.ph*200)%2300)-200;f.d.style.transform=`translate(${f.x+Math.sin(t+f.ph)*30}px,${y}px) rotate(${t*90*f.rot}deg) scaleX(${0.55+0.45*Math.abs(Math.cos(t*2+f.ph))})`;f.d.style.opacity=t<P.reveal[0]?1:.35}
+  const HK=P.hook?1.7:0;
+  if(P.hook){const hin=ease(t/0.3),hout=clamp((t-HK+0.3)/0.3);$('#hook').style.opacity=hin*(1-hout);$('#hookt').style.transform=`scale(${(0.5+0.5*hin)*(1+0.05*Math.sin(t*10)*(1-hout))+0.2*hout})`}
+  let fl=0;P.reveal.slice(0,3).forEach(at=>{const d=t-at;if(d>=0&&d<0.3)fl=Math.max(fl,0.45*(1-d/0.3))});{const d=t-P.crownAt;if(d>=0&&d<0.4)fl=Math.max(fl,0.6*(1-d/0.4))}$('#flash').style.opacity=fl;
+  const tt=t-HK+0.2, ti=$('#title'); ti.style.transform=`scale(${1.25-.25*ease(tt/0.8)})`;
+  const rows=[...document.querySelectorAll('.row')];
+  rows.forEach((r,i)=>{const at=P.reveal[i]; const a=ease((t-at)/0.35); r.style.opacity=a; r.style.transform=`translateX(${(1-a)*-160}px) scale(${1+(1-a)*.15})`;
+    if(i<3){const g=Math.max(0,Math.sin((t-at)*3));r.style.filter=t>at?`drop-shadow(0 0 ${8+g*14}px rgba(255,210,100,.8))`:'none'}});
+  const cs=P.crownAt, c=ease((t-cs)/0.5); $('#crown').style.opacity=t<cs?0:c; $('#crown').style.transform=`scale(${.6+.4*c})`;
+  $('#list').style.opacity=t<cs?1:1-c; $('#title').style.opacity=t<cs?ease(tt/0.4):1-c*.6;
+  const L=P.caps.find(x=>t>=x.s&&t<x.e); $('#cap').textContent=L?L.text:''; $('#cap').style.opacity=L?ease((t-L.s)/0.2):0;
+};
+</script></body></html>

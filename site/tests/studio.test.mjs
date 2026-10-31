@@ -102,3 +102,42 @@ test('35일 지난 묶음은 파일까지 지운다', async () => {
   assert.equal(await t.studioStore.getBytes('files/2026-08-01/a.png'), null);
   assert.ok(await t.studioStore.getBytes('files/2026-10-19/a.png'));
 });
+
+test('승인한 게시물만 오늘 목록에 승인으로 나오고, 올린 결과가 남는다', async () => {
+  const t = setup();
+  const day = { week: '2026-11-02', days: [{ date: '2026-11-02', items: [{ id: 'r', slot: '오전', channel: 'instagram-reel' }, { id: 'th', slot: '저녁', channel: 'threads' }] }], problems: [], used: [] };
+  await t.call('POST', '/api/internal/studio/2026-11-02/manifest', { body: day, headers: t.worker });
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  assert.equal((await t.call('POST', '/api/studio/approve', { body: { week: '2026-11-02', ids: ['r', 'th'], approved: true } })).status, 200);
+  await t.call('POST', '/api/studio/approve', { body: { week: '2026-11-02', id: 'th', approved: false } });
+  assert.equal((await t.call('GET', '/api/internal/studio/today?date=2026-11-02')).status, 403);
+  const plan = await (await t.call('GET', '/api/internal/studio/today?date=2026-11-02', { headers: t.worker })).json();
+  assert.equal(plan.week, '2026-11-02');
+  assert.deepEqual(Object.keys(plan.approved), ['r']);
+  await t.call('POST', '/api/internal/studio/2026-11-02/posted', { body: { id: 'r', ok: true, url: 'https://instagram.com/p/x' }, headers: t.worker });
+  const view = await (await t.call('GET', '/api/studio/weeks/2026-11-02')).json();
+  assert.equal(view.posted.r.ok, true);
+  assert.deepEqual(Object.keys(view.approved), ['r']);
+  const none = await (await t.call('GET', '/api/internal/studio/today?date=2026-11-05', { headers: t.worker })).json();
+  assert.equal(none.week, null);
+});
+
+test('메타가 가져가는 파일 주소는 서명이 맞아야 열린다', async () => {
+  const { pubSig } = await import('../netlify/functions/lib/studio.mjs');
+  const t = setup();
+  await t.call('PUT', '/api/internal/studio/2026-11-02/file?path=' + encodeURIComponent('인스타/a.jpg'), { raw: new Uint8Array([1, 2, 3]), headers: { ...t.worker, 'Content-Type': 'image/jpeg' } });
+  const sig = pubSig(ENV, '2026-11-02', '인스타/a.jpg');
+  const ok = await t.call('GET', `/api/studio/pub/2026-11-02?path=${encodeURIComponent('인스타/a.jpg')}&sig=${sig}`);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('content-type'), 'image/jpeg');
+  assert.equal((await t.call('GET', `/api/studio/pub/2026-11-02?path=${encodeURIComponent('인스타/a.jpg')}&sig=bad`)).status, 403);
+  assert.equal((await t.call('GET', `/api/studio/pub/2026-11-02?path=${encodeURIComponent('인스타/b.jpg')}&sig=${sig}`)).status, 403);
+});
+
+test('스레드 열쇠를 저장하고 꺼낸다 (작업 비밀 열쇠로만)', async () => {
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/internal/studio/meta/threads-token')).status, 403);
+  await t.call('POST', '/api/internal/studio/meta/threads-token', { body: { token: 'THAA'.padEnd(40, 'x'), refreshedAt: '2026-11-01T00:00:00Z' }, headers: t.worker });
+  const j = await (await t.call('GET', '/api/internal/studio/meta/threads-token', { headers: t.worker })).json();
+  assert.equal(j.refreshedAt, '2026-11-01T00:00:00Z');
+});

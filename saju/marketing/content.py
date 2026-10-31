@@ -170,6 +170,16 @@ def instagram_reel(p: Post) -> dict:
     return {"캡션": "\n".join(cap)}
 
 
+def facebook_reel(p: Post) -> dict:
+    """페이스북 페이지 릴스: 40~60대가 많이 보므로 해시태그를 줄이고 차분한 설명으로 쓴다 (인스타와 문장이 다르게)."""
+    cap = [p.title, "", p.sub, ""]
+    cap += [f"▪ {s['head']}" for s in p.slides[:3]]
+    cap += ["", f"오늘 기억할 한 줄: {p.remember}", "",
+            "띠는 태어난 해 하나만 본 것이에요. 생년월일과 태어난 시간까지 보면 내 운의 흐름이 더 자세히 나와요.", "",
+            " ".join(p.tags[:3])]
+    return {"캡션": "\n".join(cap)}
+
+
 def instagram_cards(p: Post) -> dict:
     cap = [p.hook, "", p.sub, "", "👉 옆으로 넘겨서 보세요.", "", f"기억할 한 줄: {p.remember}", "",
            "저장해 두면 필요할 때 바로 꺼내 볼 수 있어요.", "내 생년월일로 보는 2027 신년운세는 프로필 링크에 있어요.", "",

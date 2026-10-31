@@ -3,7 +3,8 @@
     python -m saju.marketing --start 2026-10-19 --out 게시물 [--trends] [--publish]
 
 하루 재료 2개: 오전 = 띠별 2027 운세, 저녁 = 사주 상식(보는 법·시기).
-  유튜브 쇼츠 2 (오전·저녁 재료), 인스타 릴스 1 (오전 재료), 인스타 카드뉴스 1 (저녁 재료),
+  유튜브 쇼츠 2: 오전 = 목소리 입힌 이야기형(오전 재료), 저녁 = 띠 순위형(ranking.py, 엔진 계산)
+  인스타 릴스 1 (오전 쇼츠와 같은 영상), 인스타 카드뉴스 1 (저녁 재료),
   스레드 2 (오전·저녁 재료), 페이스북은 인스타에서 같이 공유, 당근은 주 1회 소식.
 재료 순서는 그 주 레퍼런스 계정에서 뜬 주제(trends)와 겹치는 것부터, 이미 쓴 재료는 뒤로.
 결과: <out>/<첫날>/ 아래 채널별 폴더, manifest.json(관리 사이트가 읽음), 일정표.csv, 검사결과.txt
@@ -19,13 +20,16 @@ import shutil
 from pathlib import Path
 
 from . import cards, trends as tr
-from .checks import check_post
-from .content import (daangn, ddi_posts, instagram_cards, instagram_reel, summary_post, threads, topic_posts,
-                      youtube)
+from .checks import check_post, check_rank
+from .ranking import rank_posts, youtube_rank
+from .content import (daangn, ddi_posts, facebook_reel, instagram_cards, instagram_reel, summary_post, threads,
+                      topic_posts, youtube)
 
 WEEKDAYS = "월화수목금토일"
-AM, PM = "08:00", "20:00"
-CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "instagram-cards": "인스타 카드뉴스",
+# 출근길·퇴근길 (사장님 2026-10-31). 인스타·페북·스레드는 승인한 것만 이 시각에 자동으로 올라간다(meta.py).
+AM, PM = "07:30", "18:00"
+CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "facebook-reel": "페이스북 릴스",
+                 "instagram-cards": "인스타 카드뉴스",
                  "threads": "스레드", "daangn": "당근 소식"}
 
 
@@ -36,15 +40,45 @@ def pick(days: int, trends: dict | None, used: set[str]) -> list[tuple]:
     return [(am[i % len(am)], pm[i % len(pm)]) for i in range(days)]
 
 
+def pick_ranks(start: dt.date, days: int, used: set[str]) -> list:
+    pool = rank_posts(start)
+    pool = [p for p in pool if p.key not in used] + [p for p in pool if p.key in used]
+    return [pool[i % len(pool)] for i in range(days)]
+
+
+def _thumb(video: Path, at: float, out: Path) -> None:
+    import subprocess
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{at:.2f}", "-i", str(video), "-frames:v", "1", str(out)],
+                   check=True)
+
+
+def _jpgs(pngs: list[Path]) -> list[Path]:
+    """인스타 API는 사진을 JPEG만 받는다. 카드 PNG를 JPEG로 바꾼다 (ffmpeg 이 없으면 PNG 그대로)."""
+    import shutil as sh
+    import subprocess
+    if not sh.which("ffmpeg"):
+        return pngs
+    out = []
+    for p in pngs:
+        j = p.with_suffix(".jpg")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(p), "-q:v", "2", str(j)], check=True)
+        p.unlink()
+        out.append(j)
+    return out
+
+
 def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used: set[str] | None = None,
           video: bool = True) -> dict:
     used = used or set()
+    if video:
+        from .video import render as vr
     week = out / start.isoformat()
     week.mkdir(parents=True, exist_ok=True)
     manifest = {"week": start.isoformat(), "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
                 "days": [], "problems": [], "trends": trends or {"items": [], "notes": ["뜬 주제 모으기를 하지 않음"]},
                 "used": []}
     rows, posts = [], []
+    ranks = pick_ranks(start, days, used)
 
     def save(rel: str, text: str) -> str:
         (week / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -60,35 +94,52 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
             manifest["used"].append(p.key)
             base = f"{tag}_{slot}"
             packs = {"youtube": youtube(p), "threads": threads(p)}
-            # 유튜브 쇼츠: 세로 카드 → 영상
-            tall = cards.render_pngs(p, "shorts", week / "_작업" / base / "yt", "s")
-            vid = f"유튜브/{base}_{p.key}.mp4"
             (week / "유튜브").mkdir(exist_ok=True)
-            if video:
-                cards.render_video(tall, week / vid)
-            thumb = f"유튜브/{base}_{p.key}_표지.png"
-            tall[0].replace(week / thumb)
-            entry["items"].append({"id": f"{base}-youtube", "channel": "youtube", "time": time, "slot": slot,
-                                   "material": p.key, "title": packs["youtube"]["제목"], "score": score,
-                                   "video": vid if video else "", "thumb": thumb, "texts": packs["youtube"]})
             if slot == "오전":
-                # 인스타 릴스: 첫 화면만 릴스용 한 줄로 바꾼 영상
-                packs["instagram-reel"] = instagram_reel(p)
-                reel_pngs = cards.render_pngs(p, "shorts", week / "_작업" / base / "reel", "r", cover="reel")
-                reel = f"인스타/{base}_릴스_{p.key}.mp4"
-                (week / "인스타").mkdir(exist_ok=True)
+                # 유튜브 쇼츠: 목소리 입힌 이야기형. 인스타 릴스도 같은 영상을 쓴다
+                vid, thumb = f"유튜브/{base}_{p.key}.mp4", f"유튜브/{base}_{p.key}_표지.jpg"
                 if video:
-                    cards.render_video(reel_pngs, week / reel)
-                rthumb = f"인스타/{base}_릴스_{p.key}_표지.png"
-                reel_pngs[0].replace(week / rthumb)
+                    info = vr.make_talk(p, week / vid, seed=d * 2 + 1, day=day.isoformat())
+                    manifest["voice"] = info["voice"]
+                    manifest["art"] = f"{vr.images.status()} · 그린 장면 {info['art']}장"
+                    _thumb(week / vid, 1.2, week / thumb)
+                else:
+                    thumb = ""
+                entry["items"].append({"id": f"{base}-youtube", "channel": "youtube", "time": time, "slot": slot,
+                                       "material": p.key, "title": packs["youtube"]["제목"], "score": score,
+                                       "video": vid if video else "", "thumb": thumb, "texts": packs["youtube"]})
+                packs["instagram-reel"] = instagram_reel(p)
                 entry["items"].append({"id": f"{base}-reel", "channel": "instagram-reel", "time": time, "slot": slot,
                                        "material": p.key, "title": p.reel_hook, "score": score,
-                                       "video": reel if video else "", "thumb": rthumb,
+                                       "video": vid if video else "", "thumb": thumb,
                                        "texts": packs["instagram-reel"]})
+                packs["facebook-reel"] = facebook_reel(p)
+                entry["items"].append({"id": f"{base}-fbreel", "channel": "facebook-reel", "time": time, "slot": slot,
+                                       "material": p.key, "title": p.title, "score": score,
+                                       "video": vid if video else "", "thumb": thumb,
+                                       "texts": packs["facebook-reel"]})
             else:
+                # 유튜브 쇼츠: 띠 순위형 (엔진이 매긴 순위)
+                rp = ranks[d]
+                manifest["used"].append(rp.key)
+                ypack = youtube_rank(rp)
+                vid, thumb = f"유튜브/{base}_{rp.key}.mp4", f"유튜브/{base}_{rp.key}_표지.jpg"
+                if video:
+                    info = vr.make_rank(rp, week / vid, seed=d * 2 + 2)
+                    manifest["voice"] = info["voice"]
+                    _thumb(week / vid, info["seconds"] - 3.0, week / thumb)
+                else:
+                    thumb = ""
+                entry["items"].append({"id": f"{base}-youtube", "channel": "youtube", "time": time, "slot": slot,
+                                       "material": rp.key, "title": ypack["제목"], "score": 0,
+                                       "video": vid if video else "", "thumb": thumb, "texts": ypack})
+                save(f"유튜브/{base}_youtube_{rp.key}.txt", "\n\n".join(f"[{kk}]\n{vv}" for kk, vv in ypack.items()))
+                manifest["problems"] += [f"{tag} {slot} {rp.key}: {i}" for i in check_rank(rp, ypack)]
+                del packs["youtube"]
+            if slot == "저녁":
                 # 인스타 카드뉴스 (페북은 인스타에서 같이 공유)
                 packs["instagram-cards"] = instagram_cards(p)
-                imgs = cards.render_pngs(p, "feed", week / "인스타" / f"{base}_카드_{p.key}", "카드")
+                imgs = _jpgs(cards.render_pngs(p, "feed", week / "인스타" / f"{base}_카드_{p.key}", "카드"))
                 entry["items"].append({"id": f"{base}-cards", "channel": "instagram-cards", "time": time, "slot": slot,
                                        "material": p.key, "title": p.hook, "score": score,
                                        "images": [str(i.relative_to(week)) for i in imgs],
@@ -100,7 +151,7 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
                      "\n\n".join(f"[{kk}]\n{vv}" for kk, vv in v.items()))
             manifest["problems"] += [f"{tag} {slot} {p.key}: {i}" for i in check_post(p, packs)]
             for it in entry["items"]:
-                if it["slot"] == slot and it["material"] == p.key:
+                if it["slot"] == slot:
                     rows.append([f"{day.isoformat()} {time}", CHANNEL_NAMES[it["channel"]], it["title"], it["id"]])
         manifest["days"].append(entry)
     manifest["daangn"] = daangn(posts)

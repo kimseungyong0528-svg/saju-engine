@@ -75,9 +75,76 @@ def test_build_one_day_manifest(tmp_path):
     r = build(__import__("datetime").date(2026, 10, 19), 1, tmp_path, video=False)
     m = json.loads((r["folder"] / "manifest.json").read_text(encoding="utf-8"))
     chans = [it["channel"] for it in m["days"][0]["items"]]
-    assert sorted(chans) == sorted(["youtube", "instagram-reel", "threads", "youtube", "instagram-cards", "threads"])
+    assert sorted(chans) == sorted(["youtube", "instagram-reel", "facebook-reel", "threads", "youtube",
+                                         "instagram-cards", "threads"])
     assert m["problems"] == []
     for it in m["days"][0]["items"]:
         for f in [it.get("thumb"), *it.get("images", [])]:
             if f:
                 assert (r["folder"] / f).exists()
+
+
+def test_build_cards_are_jpeg_for_instagram(tmp_path):
+    import shutil
+    if not shutil.which("ffmpeg"):
+        return
+    r = build(__import__("datetime").date(2026, 10, 19), 1, tmp_path, video=False)
+    m = json.loads((r["folder"] / "manifest.json").read_text(encoding="utf-8"))
+    imgs = [f for it in m["days"][0]["items"] for f in it.get("images", [])]
+    assert imgs and all(f.endswith(".jpg") for f in imgs)
+
+
+def test_meta_clean_removes_site_link_until_toss_live(monkeypatch):
+    from saju.marketing import meta
+    text = "질문이에요?\n\n내 생년월일로 보는 2027 신년운세: https://unmyeong-saju.com"
+    monkeypatch.delenv("SNS_SITE_LINK", raising=False)
+    assert meta.clean(text) == "질문이에요?"
+    monkeypatch.setenv("SNS_SITE_LINK", "on")
+    assert meta.clean(text) == text
+
+
+def test_meta_media_url_signature_matches_site(monkeypatch):
+    import hashlib
+    import hmac
+    from saju.marketing import meta
+    monkeypatch.setenv("WORKER_SECRET", "worker-secret")
+    url = meta.media_url("2026-11-02", "인스타/a.jpg")
+    sig = hmac.new(b"worker-secret", "pub:2026-11-02/인스타/a.jpg".encode(), hashlib.sha256).hexdigest()
+    assert url.endswith(f"&sig={sig}") and "/api/studio/pub/2026-11-02?path=" in url
+
+
+def test_meta_run_posts_only_approved_and_unposted(monkeypatch):
+    from saju.marketing import meta
+    calls = []
+    plan = {"week": "2026-11-02", "approved": {"a": "t", "b": "t", "d": "t"}, "posted": {"b": {"ok": True}},
+            "items": [{"id": "a", "slot": "오전", "channel": "threads", "title": "", "texts": {}},
+                      {"id": "b", "slot": "오전", "channel": "threads", "title": "", "texts": {}},
+                      {"id": "c", "slot": "오전", "channel": "threads", "title": "", "texts": {}},
+                      {"id": "d", "slot": "저녁", "channel": "threads", "title": "", "texts": {}},
+                      {"id": "e", "slot": "오전", "channel": "youtube", "title": "", "texts": {}}]}
+
+    def fake_call(method, path, body=None, content_type=""):
+        calls.append((method, path, body))
+        return plan if path.startswith("/api/internal/studio/today") else {}
+    monkeypatch.setattr(meta.publish, "_call", fake_call)
+    monkeypatch.setitem(meta.POSTERS, "threads", lambda week, it: f"https://threads.net/{it['id']}")
+    assert meta.run("오전", "2026-11-02") == 0
+    posted = [json.loads(b)["id"] for m_, p, b in calls if p.endswith("/posted")]
+    assert posted == ["a"]
+
+
+def test_sns_rules_fixed():
+    """사장님이 못 박은 SNS 게시 규칙 (2026-10-31). 지우거나 바꾸면 이 검사가 빨간불이 된다."""
+    import datetime as dt
+    from saju.marketing import rules
+    from saju.marketing.__main__ import AM, PM
+    r = rules.load()
+    am, pm = rules.slot("아침"), rules.slot("저녁")
+    assert (am["time"], pm["time"]) == (AM, PM) == ("07:30", "18:00")
+    assert {f["key"] for f in am["formats"]} >= {"solo", "forceteller", "sinbi", "tier"}
+    assert [f["key"] for f in pm["formats"]] == ["threads-capture"]
+    assert "salgusaju" in pm["formats"][0]["ref"] and "taebaek_saju" in pm["formats"][0]["ref"]
+    assert any("엔진 계산" in t for t in r["always"]) and any("승인" in t for t in r["always"])
+    days = [dt.date(2026, 11, 1) + dt.timedelta(days=i) for i in range(60)]
+    fmts = [rules.morning_format(d) for d in days]
+    assert all(a != b for a, b in zip(fmts, fmts[1:]))
