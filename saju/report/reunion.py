@@ -71,6 +71,19 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     years, _, periods = T.marked(f, mark)
     # 사장님 2026-10-30: 재회는 몇 달 안의 결과로, 길어야 2~3년. 결제 전 화면도 리포트도 앞으로 24개월 달마다 보고, 해는 3년만.
     years = years[:3]
+    # 해 표도 표시와 점수 방향을 맞춘다: 합·배우자 별만 있으면 60점 이상, 충만 있으면 40점 이하, 둘 다면 45~55점
+    # (손님 테스트 3차: '배우자 별, 그 사람 일지와 합' 해가 46점으로 보통 해보다 낮았다)
+    from .. import reveal as RV
+    ny_side, ny_score = RV.ny_verdict(T.fourpillars(result), f["person"]["sex"])
+    for y in years:
+        good = any("충" not in x for x in y["t_signs"])
+        bad = any("충" in x for x in y["t_signs"])
+        v = y["t_score"]
+        y["t_score"] = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
+        if y["year"] == 2027 and ny_side == "bad" and good and not bad:
+            y["ny_note"] = "2027년에는 재회에 좋은 기운이 들어오지만, 한 해 전체 운은 조심할 쪽이에요. 연락은 이 해의 좋은 달에 맞춰 하세요."
+        elif y["year"] == 2027 and ny_side == "good" and bad and not good:
+            y["ny_note"] = "2027년 한 해 전체 운은 좋은 쪽이지만, 두 사람 사이에는 부딪히는 기운이 들어와요. 이 해에는 서두르지 마세요."
     months = [dict(m, **mark(m)) for m in f["screen_months"]]
     T.reveal_fix(result, "reunion", months)   # 제1조항: 결제 전 화면의 24개월 지도와 같은 표시·방향
     for m in months:

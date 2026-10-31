@@ -81,7 +81,7 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     _, rule_of = RV._marker(fp, sex)
     # 2027년 달: 신년운세 결제 전 화면(2027년 12달 지도)에서 '조심할 달'인 달은 다른 책에서도 좋은 달로 쓰지 않는다
     # (손님 테스트 3차: 묶음으로 산 사업운은 2027년 4월이 '큰돈', 신년운세는 4월이 '조심할 달'이었다).
-    ny_bad = {c["ko"] for c in RV.luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product not in ("newyear", "reunion") else set()
+    ny_bad = {c["ko"] for c in RV.luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product != "newyear" else set()
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}

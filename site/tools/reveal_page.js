@@ -131,6 +131,8 @@ function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
  const key=revealKey(p,d);
+ // 선물 주문이면 주문에 표시를 남겨, PDF가 받는 분에게 '구매해 주신'이라고 쓰지 않게 한다(손님 테스트 3차)
+ d.answers=d.answers||{};if(typeof isGift==='function'&&isGift(p.id))d.answers.revealGift='1';else delete d.answers.revealGift;try{save()}catch{}
  // 새로고침해도 보던 장면에서 이어 본다(장면마다 남긴 브라우저 기록을 다시 읽는다, 손님 테스트 2차)
  const SK='unmyeong.rvScene.'+p.id;
  if(revealState.key!==key){let h=history.state&&typeof history.state.rvScene==='number'?history.state.rvScene:null;if(h===null)try{const t=JSON.parse(sessionStorage.getItem(SK)||'null');h=t&&t.key===key?t.scene:0}catch{h=0}revealState={key,scene:Math.min(Math.max(h,0),REVEAL_SCENES-1),confirm:{},view:null}}

@@ -72,7 +72,7 @@
   <tr><th>띠</th>{% for b in kb.branches[6:] %}<td>{{ b.animal }}</td>{% endfor %}</tr></table>
 {%- elif k == "symbols" -%}
   <table>{% for a, b in static.symbols %}<tr><th style="width: 34%">{{ a }}</th><td class="left">{{ b }}</td></tr>{% endfor %}</table>
-  <div class="box"><p>이 책의 모든 계산은 {{ P.birth_text }} {{ P.time_text }}, {{ P.place }} 출생을 기준으로 했어요.</p></div>
+  <div class="box"><p>이 책의 모든 계산은 {{ P.birth_text }} · {{ P.time_text }}, {{ P.place }} 출생을 기준으로 했어요.</p></div>
 {%- elif k == "pillars" -%}
   <table>
   <tr><th></th>{% for p in f.pillars|reverse %}<th>{{ p.label }}</th>{% endfor %}</tr>
@@ -177,7 +177,7 @@
     <div class="two-col"><div><span class="item-label">좋은 일</span><br>{{ mt.good|para }}</div><div><span class="item-label">주의할 일</span><br>{{ mt.careful|para }}</div></div>{% endif %}
   </div>{% endfor %}
 {%- elif k == "question" -%}
-  <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or ("다른 리포트와 함께 사셔서 이 리포트의 질문은 따로 받지 않았어요. 이 운에서 가장 많이 궁금해하시는 내용으로 답해 드려요." if f.bundled else "질문을 남기지 않으셨어요. 요즘 생활에 맞춰 가장 많이 궁금해하시는 내용으로 답해 드려요.") }}</p></div>
+  <div class="box"><b>남겨 주신 질문</b><p>{{ f.order.question or ("다른 리포트와 함께 사셔서 이 리포트의 질문은 따로 받지 않았어요. 이 운에서 가장 많이 궁금해하시는 내용으로 답해 드려요." if f.bundled else "따로 받은 질문이 없어서, 이 운에서 가장 많이 궁금해하시는 내용으로 답해 드려요.") }}</p></div>
 {%- elif k == "yongsin" -%}
   <div class="center"><span class="big-han" style="font-size: 54pt">{{ f.lucky.hanja }}</span><br><b>{{ f.lucky.element_name }}({{ f.lucky.element }}) 기운</b></div>
 {%- elif k == "lucky" -%}
@@ -212,7 +212,7 @@
   <div class="rebuy">
     <p class="rebuy-big">다음 리포트 10% 할인</p>
     <p class="rebuy-lead">{{ f.person.name }} 님, 위 운마다 붙은 '자세히 보기' 링크를 누르면 그 리포트를 10% 싸게 받아 보실 수 있어요.</p>
-    <p>위의 운들은 {{ f.person.name }} 님에게 중요한 핵심 사주예요. 이 책을 구매해 주신 감사의 마음을 담아, 특별히 10% 할인된 가격에 안내 드려요.</p>
+    <p>위의 운들은 {{ f.person.name }} 님에게 중요한 핵심 사주예요. {% if f.order.gift %}이 책을 선물로 받으신 것을 기념해, 특별히 10% 할인된 가격에 안내 드려요{% else %}이 책을 구매해 주신 감사의 마음을 담아, 특별히 10% 할인된 가격에 안내 드려요{% endif %}.</p>
     <ul class="rebuy-how">
       <li>이 책 안의 링크로 들어가야만 할인돼요.</li>
       <li>코드 없이, 링크를 누르고 주문하면 저절로 할인돼요.</li>
@@ -304,7 +304,7 @@
   {% if f.variant_count > 1 %}<div class="box"><p>가능한 사주 후보: {{ f.variants|join(" / ") }}</p></div>{% endif %}
 {%- elif k == "method" -%}
   <table>
-  <tr><th style="width: 30%">입력한 출생 정보</th><td class="left">{{ P.birth_text }} {{ P.time_text }} · {{ P.place }} · {{ P.sex_word }}</td></tr>
+  <tr><th style="width: 30%">입력한 출생 정보</th><td class="left">{{ P.birth_text }} · {{ P.time_text }} · {{ P.place }} · {{ P.sex_word }}</td></tr>
   <tr><th>출생 시각 보정</th><td class="left">{{ "평균태양시(출생지 경도로 보정)" if f.options.solar_time == "mean" else "진태양시" if f.options.solar_time == "apparent" else "보정 없음" }}. 한국 표준시 변경과 서머타임 시기를 반영했어요.</td></tr>
   <tr><th>해·달의 기준</th><td class="left">해는 입춘, 달은 절기가 드는 시각에 바뀌어요.</td></tr>
   <tr><th>자시 기준</th><td class="left">{{ "밤 11시부터 다음 날로 봐요." if f.options.zi_rule == "23" else "자정부터 다음 날로 봐요(야자시)." }}</td></tr>
@@ -399,7 +399,7 @@
 
   <div class="who">
     <b class="customer-name">{{ P.name }} 님</b>
-    <div>{{ P.birth_text }} {{ P.time_text }}</div>
+    <div>{{ P.birth_text }} · {{ P.time_text }}</div>
     <div>{{ P.place }}</div>
     <div>{{ P.sex_word }} · {{ P.zodiac }}띠{% if f.partner %} · 함께 보는 사람 {{ f.partner.person.name }} 님{% endif %}</div>
   </div>

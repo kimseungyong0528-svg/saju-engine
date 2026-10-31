@@ -69,7 +69,7 @@ def problems(product: str, result: dict, facts: dict, partner: dict | None = Non
                 for k, ar in r["areas"].items():
                     if ar["score"] >= 60:
                         out.append(f"신년운세 {ny_bad.get(r['ganzhi'], r['ganzhi'])}: 조심할 달인데 분야 '{k}'는 {ar['score']}점(좋은 달)")
-    elif product != "reunion":
+    else:
         months = facts["romance"]["months"] if product == "romance" else (facts.get("theme") or {}).get("months") or []
         for r in months:
             if r.get("year") == 2027 and r["ganzhi"] in ny_bad and r.get("r_good"):
