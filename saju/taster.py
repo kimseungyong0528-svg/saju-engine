@@ -286,7 +286,8 @@ def _health(f, T):
         out.append(("he_balance", 16, {}))
     if 50 <= f["st"] < 70:
         out.append(("he_stamina", 6, {}))
-    lack = sorted([x for x in vals if x[1] < 8], key=lambda x: x[1])
+    # 같은 비율이면 뒤 순서(맛보기 '가장 모자란 기운'·reveal._weakest 와 같게, 손님 테스트 3차: 흙·불 4.7% 동률에 서로 다른 기운)
+    lack = sorted([x for x in vals if x[1] < 8], key=lambda x: (x[1], -ELEMENTS.index(x[0])))
     if lack:
         e, v = lack[0]
         # 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). taster.mjs 와 같은 식.
@@ -335,7 +336,7 @@ def digest(r: dict, product: str | None = None) -> dict:
     items = [("좋은 운", a) for a in r["good"]] + [("조심할 운", a) for a in r["bad"]]
     mine = [{"구분": k, "운": a["title"], "맛보기에서 본 글": a["text"]} for k, a in items if a["id"] == product]
     out = {
-        "읽는 법": "아래 6가지 운(좋은 운 3·조심할 운 3)은 같은 사주 계산에서 나왔고, 무료 분석 화면과 이 책 맨 끝 보너스 쪽에 글자 그대로 실립니다. "
+        "읽는 법": "아래 6가지 운(좋은 운 3·조심할 운 3)은 같은 사주 계산에서 나왔고, 사이트 화면과 이 책 맨 끝 보너스 쪽에 글자 그대로 실립니다. "
                  "고객이 본문과 보너스 쪽을 함께 읽으므로, 본문에서 같은 운을 다룰 때는 아래 근거와 같은 결론을 더 깊고 구체적으로 씁니다. "
                  "맛보기에서 좋은 운이라고 한 것은 언제, 어디서, 어떻게 그 운을 크게 쓰는지까지 쓰고, "
                  "조심할 운이라고 한 것은 언제 조심하고 어떻게 막는지까지 씁니다. 아래 내용과 반대되거나 다른 결론은 쓰지 않습니다(예: 보너스 쪽에서 재성이 없다고 했으면 본문에서 재성이 있다고 쓰지 않습니다).",

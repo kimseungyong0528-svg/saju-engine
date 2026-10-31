@@ -73,6 +73,9 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     years = years[:3]
     months = [dict(m, **mark(m)) for m in f["screen_months"]]
     T.reveal_fix(result, "reunion", months)   # 제1조항: 결제 전 화면의 24개월 지도와 같은 표시·방향
+    for m in months:
+        if m.get("t_their") and not m["r_good"] and not m["r_bad"]:
+            m["t_score"] = max(m["t_score"], 55)   # 그 사람과 합이 드는 보통 달은 보통 달 안에서 높은 쪽(손님 테스트 3차: 합이 드는 달이 41점)
     harmony, tension = cmp["cross_relations"]["harmony"], cmp["cross_relations"]["tension"]
     strong = sum(1 for m in months[:12] if m["t_score"] >= 70)
     level_pts = (harmony - tension) + 2 * strong + (2 if cmp["spouse_palace"]["tone"] == "조화" else -2 if cmp["spouse_palace"]["tone"] == "긴장" else 0)
@@ -217,8 +220,8 @@ def build_outline(f: dict) -> list[dict]:
     section("7", [
         P("rn7_open", "재회 신호 읽기", figure="kv", opener=True, rows=[
             ["재회 신호", t["level"]],
-            ["좋은 달 수", f"앞으로 24개월 가운데 재회 점수 70점 이상 {sum(1 for m in th['months'] if m['t_score'] >= 70)}달"],
-            ["그 사람과 합이 드는 달", ", ".join(T.ym(m) for m in th["months"] if m.get("t_their")) or "앞으로 24개월 안에는 없어요"],
+            ["좋은 달 수", f"앞으로 24개월 가운데 좋은 표시가 붙은 달 {sum(1 for m in th['months'] if m.get('r_good'))}달"],   # 화면 지도와 같은 수(손님 테스트 3차)
+            ["그 사람과 합이 드는 달", ", ".join(T.ym(m) for m in th["months"] if m.get("t_their") and not m.get("r_bad")) or "앞으로 24개월 안에는 없어요"],
         ], slot=S("rn7_open", "재회 신호가 왜 이 정도인지 근거를 들어 솔직하게 설명해 주세요.", HALF)),
         P("rn7_chance", "재회가 가능한 이유와 어려운 이유",
           slot=S("rn7_chance", "두 사람 비교와 다가오는 운을 근거로 재회가 가능한 이유와 어려운 이유를 나란히 쓰고, 어떤 경우에 가능성이 커지는지 써 주세요.")),
@@ -280,7 +283,7 @@ def build_outline(f: dict) -> list[dict]:
         P("rn12_lucky", "마음을 돕는 색·장소·행동", figure="lucky",
           slot=S("rn12_lucky", "용신 기운을 근거로 연락 전후 마음을 안정시키는 색, 장소, 행동을 써 주세요.", HALF)),
         P("rn12_two_roads", "다시 만난다면, 정리한다면",
-          slot=S("rn12_two_roads", "재회하는 경우와 정리하는 경우 각각 앞으로 6개월 동안 할 일을 시기 순서로 써 주세요. 달을 적을 때는 24개월 표의 표시와 같은 방향으로만 씁니다('가장 좋은 달'·'다시 이어짐' 달은 연락과 만남의 달, '엇갈림' 달은 연락을 멈추는 달).", 680, "plan")),
+          slot=S("rn12_two_roads", "재회하는 경우와 정리하는 경우 각각 앞으로 6개월 동안 할 일을 시기 순서로 써 주세요. 6개월 안에 '가장 좋은 달'이 없으면 가장 좋은 달까지 이어서 씁니다. 달을 적을 때는 24개월 표의 표시와 같은 방향으로만 씁니다('가장 좋은 달'·'다시 이어짐' 달은 연락과 만남의 달, '엇갈림' 달은 연락을 멈추는 달).", 680, "plan")),
         P("rn12_todo", "오늘부터 할 일 목록", figure="habits",
           slot=S("rn12_todo", "오늘부터 실천할 일 10가지를 체크리스트로 써 주세요. 한 줄에 한 가지, 바로 할 수 있는 행동으로 씁니다.", 560, "checklist")),
         P("rn12_heart", "불안한 마음을 다루는 법", span=2,

@@ -63,7 +63,7 @@ def _svg_strength(score: float) -> str:
             '<rect x="30" y="34" width="440" height="18" fill="#e9dfc6" stroke="#b9a77f"/>'
             '<rect x="228" y="34" width="44" height="18" fill="#d3c5a3"/>'
             f'<polygon points="{x - 9:.0f},22 {x + 9:.0f},22 {x:.0f},36" fill="#9e2f22"/>'
-            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#9e2f22">{score:.0f}점</text>'
+            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#9e2f22">{int(score + 0.5)}점</text>'
             '<text x="30" y="80" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신약</text>'
             '<text x="250" y="80" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">중화</text>'
             '<text x="470" y="80" text-anchor="end" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신강</text></svg>')
@@ -216,7 +216,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
         # 책 맨 끝 '더보기' 앞쪽에 보너스로 6가지 핵심운(좋은 운 3·조심할 운 3)을 넣는다(목차 줄은 그대로).
         recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"), facts.get("owned") or (),
                              [facts["order"].get("daily"), facts["order"].get("relationship"), *(facts.get("answers") or {}).values()])
-        sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 무료 풀이의 좋은 운과 조심할 운", "figure": "taster_recap",
+        sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 나의 좋은 운과 조심할 운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
                                       *[dict(pg, opener=False, cont=True, title="운명서재의 다른 리포트" if pg["title"] == sec["title"] else pg["title"]) for pg in sec["pages"]]])
                     if sec.get("no") == "더보기" else sec for sec in sections]

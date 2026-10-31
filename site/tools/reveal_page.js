@@ -92,7 +92,7 @@ function rvScene2(p,v){const s=SALES[p.id];
  const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW}가 있습니다`):'미리 알면 대비할 수 있습니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
- <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` ${esc(word)} 전체 점수 ${pt.score}점은 좋은 근거와 조심할 근거를 모두 합해 매긴 점수이고, 여기서는 둘을 나눠 따로 매겼어요.`:''}</p>
+ <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` ${esc(word)} 전체 점수 ${pt.score}점은 이 운의 사주 근거를 한데 모아 매긴 점수예요. 좋은 점과 조심할 점은 근거를 둘로 나눠 따로 매긴 점수라서, 전체 점수와 숫자가 다를 수 있어요.`:''}</p>
  ${pairCard}
  ${good?`${goodPart}<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`}
  ${revealLocks(s?.locks||[])}`}
@@ -124,15 +124,19 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  ${typeof savedCoupon==='function'&&savedCoupon()?'<p class="rv-price-note">재구매 할인 10%는 결제 화면에서 더 깎여요.</p>':''}
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
-window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
+// 결제 화면으로 넘어갈 때(주소 #만 바뀜)도 popstate가 오므로, 이야기 화면 주소 그대로일 때만 장면을 바꾼다(손님 테스트 3차: 결제 화면에서 뒤로 가면 STEP 1).
+window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view||location.hash!==revealState.hash)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;
 function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
  const key=revealKey(p,d);
  // 새로고침해도 보던 장면에서 이어 본다(장면마다 남긴 브라우저 기록을 다시 읽는다, 손님 테스트 2차)
- if(revealState.key!==key){const h=history.state&&typeof history.state.rvScene==='number'?history.state.rvScene:0;revealState={key,scene:Math.min(Math.max(h,0),REVEAL_SCENES-1),confirm:{},view:null}}
+ const SK='unmyeong.rvScene.'+p.id;
+ if(revealState.key!==key){let h=history.state&&typeof history.state.rvScene==='number'?history.state.rvScene:null;if(h===null)try{const t=JSON.parse(sessionStorage.getItem(SK)||'null');h=t&&t.key===key?t.scene:0}catch{h=0}revealState={key,scene:Math.min(Math.max(h,0),REVEAL_SCENES-1),confirm:{},view:null}}
+ revealState.hash=location.hash;
  const paint=()=>{
+  try{sessionStorage.setItem(SK,JSON.stringify({key,scene:revealState.scene}))}catch{}
   const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
   const body=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
   const cta=n===REVEAL_SCENES-1?`전체 풀이 받기 · ${money(p.price)}`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];

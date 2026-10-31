@@ -33,6 +33,15 @@ def test_check_finds_made_up_facts():
     assert all(i["slot"] == "a" for i in V.check(f, texts))
 
 
+def test_gyeokguk_name_is_not_shinsal():
+    _, f, _ = _career()
+    f = copy.deepcopy(f)
+    for p in [f] + ([f["partner"]] if f.get("partner") else []):
+        p["shinsal_names"] = [n for n in p["shinsal_names"] if not n.startswith("양인")]
+    texts = {"a": ["사주의 틀(격국)은 양인격이에요.", "중화 · 양인격"], "b": ["사주에 양인살이 있어요."]}
+    assert [i["slot"] for i in V.check(f, texts) if i["kind"] == "없는 신살"] == ["b"]
+
+
 def test_repeats_over_limit_only():
     texts = {f"s{i}": [f"중요한 결정은 하루 뒤에 다시 보세요. {i}"] for i in range(5)}
     hits = V.repeats(texts)

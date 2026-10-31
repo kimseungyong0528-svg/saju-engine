@@ -162,7 +162,7 @@ const RULES = {
     const vals = ELEMENTS.map(e => [e, f.elements[e]]);
     if (vals.every(([, v]) => v >= 10 && v <= 30)) out.push(['he_balance', 16]);
     if (f.st >= 50 && f.st < 70) out.push(['he_stamina', 6]);
-    const lack = vals.filter(([, v]) => v < 8).sort((a, b) => a[1] - b[1]);
+    const lack = vals.filter(([, v]) => v < 8).sort((a, b) => a[1] - b[1] || ELEMENTS.indexOf(b[0]) - ELEMENTS.indexOf(a[0]));   // 같으면 뒤 순서(taster.py 와 같다)
     // 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). saju/taster.py 와 같은 식.
     const gap = lack.length ? Math.round(8 - lack[0][1]) : 0;
     if (lack.length) out.push(['he_lack', lack.length > 1 ? -(10 + gap) : -(6 + gap), { lack: lack[0][0], lackWord: T.ELEMENT_WORD[lack[0][0]], lackPct: lack[0][1], lackBody: T.ELEMENT_BODY[lack[0][0]] }]);

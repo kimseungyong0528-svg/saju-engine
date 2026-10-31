@@ -65,15 +65,15 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "<div class=\"pillars\">${['생시','생일','생월','생년'].map(t=>`<div><small>${t}</small><b>${t==='생시'&&uncertain?'?':'—'}</b><b>${t==='생시'&&uncertain?'?':'—'}</b></div>`).join('')}</div>", "")
     s = _swap(s, "<p>사주 원국은 분석 서비스 연결 후 표시됩니다.</p>", "")
     # 제1조항: 시간을 '대략'으로 넣으면 결제 전 화면과 리포트가 조금 다를 수 있다는 것을 미리 알린다(사장님 2026-10-28)
-    # 대략 시간: 두 시간 단위(옛 시간 이름)로 한 번에 고르게 한다. 고르면 아래 시작·끝 칸이 저절로 채워진다.
+    # 대략 시간: 두 시간 단위로 한 번에 고르게 한다. 옛 시간 이름(묘시 등)은 붙이지 않는다: 한국 시각과 30분쯤 어긋나 '새벽 5시~(묘시)'를 골라도 인시로 풀린다(손님 테스트 3차). 고르면 아래 시작·끝 칸이 저절로 채워진다.
     s = _swap(s, '<p class="birth-help">기억나는 시간의 시작과 끝을 골라주세요.</p>',
               '<label class="birth-label" for="${who}-quick-range">두 시간 단위로 한 번에 고르기</label><select id="${who}-quick-range" data-quick-range>'
               '<option value="">시간대를 골라 주세요</option>${QUICK_RANGES.map(([a,b,t])=>`<option value="${a}|${b}" ${range.start===a&&range.end===b?\'selected\':\'\'}>${t}</option>`).join(\'\')}</select>'
               '<p class="birth-help">아니면 아래에서 시작과 끝을 직접 골라 주세요.</p>')
     s = _swap(s, "function birthClockParts(time,draft={}){",
-              "const QUICK_RANGES=[['23:00','01:00','밤 11시~새벽 1시 (자시)'],['01:00','03:00','새벽 1시~3시 (축시)'],['03:00','05:00','새벽 3시~5시 (인시)'],['05:00','07:00','새벽 5시~아침 7시 (묘시)'],"
-              "['07:00','09:00','아침 7시~9시 (진시)'],['09:00','11:00','오전 9시~11시 (사시)'],['11:00','13:00','오전 11시~오후 1시 (오시)'],['13:00','15:00','오후 1시~3시 (미시)'],"
-              "['15:00','17:00','오후 3시~5시 (신시)'],['17:00','19:00','오후 5시~저녁 7시 (유시)'],['19:00','21:00','저녁 7시~9시 (술시)'],['21:00','23:00','밤 9시~11시 (해시)']];\n"
+              "const QUICK_RANGES=[['23:00','01:00','밤 11시~새벽 1시'],['01:00','03:00','새벽 1시~3시'],['03:00','05:00','새벽 3시~5시'],['05:00','07:00','새벽 5시~아침 7시'],"
+              "['07:00','09:00','아침 7시~9시'],['09:00','11:00','오전 9시~11시'],['11:00','13:00','오전 11시~오후 1시'],['13:00','15:00','오후 1시~3시'],"
+              "['15:00','17:00','오후 3시~5시'],['17:00','19:00','오후 5시~저녁 7시'],['19:00','21:00','저녁 7시~9시'],['21:00','23:00','밤 9시~11시']];\n"
               "document.addEventListener('change',ev=>{const sel=ev.target.closest&&ev.target.closest('[data-quick-range]');if(!sel||!sel.value)return;const form=sel.form;if(!form)return;"
               "const [a,b]=sel.value.split('|');const set=(prefix,t)=>{const h=Number(t.slice(0,2));const per=form.querySelector(`input[name=\"${prefix}Period\"][value=\"${h<12?'am':'pm'}\"]`);if(per){per.checked=true;per.dispatchEvent(new Event('change',{bubbles:true}))}"
               "for(const [n,v] of [['Hour',String(h%12).padStart(2,'0')],['Minute',t.slice(3)]]){const el=form.elements.namedItem(prefix+n);if(el){el.value=v;el.dispatchEvent(new Event('change',{bubbles:true}))}}};"
@@ -209,7 +209,7 @@ def patch_texts(s: str, b: dict) -> str:
     s = _swap(s, "['결과를 받기까지 얼마나 걸리나요?','현재는 미리보기 단계로 실제 분석이나 이메일 발송을 진행하지 않습니다. 정식 서비스의 소요 시간은 연결 후 안내할 예정이에요.']",
               "['결과를 받기까지 얼마나 걸리나요?','결제 후 보통 10분 안에, 늦어도 1일 안에 이메일로 도착해요. 30분이 지나도 오지 않으면 스팸함을 확인한 뒤 고객센터로 알려주세요.']")
     s = _swap(s, "'정확히 앎·대략 앎·모름 중 선택할 수 있어요. 대략 아는 경우 시간 범위를 받고, 시간별 차이를 나누어 다루도록 저장합니다. 모르는 시간은 임의로 채우지 않으며, 실제 분석은 서비스 연결 후 제공됩니다.']",
-              "'정확히 앎·대략 앎·모름 중 고를 수 있어요. 대략 알면 넣어 주신 범위의 시작 시각으로 풀어요. 모르면 태어난 시간의 기둥(시주)은 비워 두고 해·달·날의 여섯 글자로 풀어요. 무료 풀이, 결제 전 화면, 리포트 모두 같은 방법으로 풀어서 결과가 같아요.']")
+              "'정확히 앎·대략 앎·모름 중 고를 수 있어요. 대략 알면 넣어 주신 범위의 시작 시각으로 풀어요. 모르면 태어난 시간의 기둥(시주)은 비워 두고 해·달·날의 여섯 글자로 풀어요. 사이트의 모든 풀이 화면과 리포트가 같은 방법으로 풀어서 결과가 같아요.']")
     s = _swap(s, "['결과를 계속 보관할 수 있나요?','미리보기 주문은 현재 브라우저의 세션에만 저장됩니다. 정식 서비스에서는 온라인 열람과 PDF 다운로드를 별도로 제공할 예정이에요.']",
               "['결과를 계속 보관할 수 있나요?','이메일로 받은 PDF를 내려받아 보관해주세요. 개인정보 보호를 위해 출생 정보는 메일을 보내는 즉시 지우고, 결과 PDF는 7일 뒤 지워요. 7일 안에는 주문 화면에서 다시 받을 수 있어요.']")
 
@@ -497,6 +497,9 @@ def add_input_helpers(s: str) -> str:
     # 선물이면 질문·리포트 안내·결제 화면의 '나' 말투를 받는 분 기준으로(손님 테스트 2차, 2026-10-30)
     s = _swap(s, "<p class=\"muted\">${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>",
               "<p class=\"muted\">${isGift(p.id)?'선물 받을 분의 입장에서 골라 주세요. ':''}${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p>")
+    # 선물이면 자유 질문 제목도 받는 분 기준('나의 일상' → '받는 분의 일상', 손님 테스트 3차)
+    s = _swap(s, '<span class="eyebrow">YOUR QUESTION</span><h1>${s.title}</h1>',
+              '<span class="eyebrow">YOUR QUESTION</span><h1>${isGift(p.id)?s.title.replace(/^나의 /,\'받는 분의 \'):s.title}</h1>')
     s = _swap(s, "${personSummary(d.self,'나의 이야기')}", "${personSummary(d.self,isGift(p.id)?esc(d.self.name||'받는 분')+' 님의 이야기 (선물)':'나의 이야기')}")
     s = _swap(s, "<p>나만을 위한 한 권의 기록</p>", "<p>${isGift(p.id)?esc(d.self.name||'받는 분')+' 님을 위한 한 권의 기록':'나만을 위한 한 권의 기록'}</p>")
     s = _swap(s, '<h1>${s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>',
@@ -658,7 +661,7 @@ EXTRAS_CSS = (
     ".bundle-price span{font-size:16px;font-weight:800;color:var(--x-text);white-space:nowrap}.bundle-price em,.qb-final em{font-style:normal;color:#ff4d5a;font-weight:800;margin-right:6px}"
     ".price-box .qb-final{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3}.price-box .qb-final s{font-size:15px;color:var(--x-muted);font-weight:500}"
     ".price-box .qb-items{display:block;padding:0 0 10px;margin:0 0 10px;border-bottom:1px dashed #ffffff22}.price-box .qb-items div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--x-muted);padding:3px 0;margin:0;border:0}.price-box .qb-items span{white-space:nowrap}"
-    ".qb-no{font-style:normal;margin-right:6px;color:var(--x-gold)}.price-box .qb-disc{padding:10px 12px;margin:6px -12px;border-radius:10px;background:#ff4d5a14;border:1px dashed #ff4d5a66}.price-box .qb-disc em{color:#ff4d5a!important}"
+    ".qb-missing{outline:2px solid #c0392b;outline-offset:1px;background:#fff4f2}.qb-no{font-style:normal;margin-right:6px;color:var(--x-gold)}.price-box .qb-disc{padding:10px 12px;margin:6px -12px;border-radius:10px;background:#ff4d5a14;border:1px dashed #ff4d5a66}.price-box .qb-disc em{color:#ff4d5a!important}"
     ".price-box .qb-disc small{display:block;margin-top:2px;font-size:14px;font-weight:500;color:var(--x-muted)}.price-box .qb-disc.wait strong{color:var(--x-muted)}.price-box .qb-final small{font-size:14px;color:var(--x-muted);margin-top:4px}.price-box .qb-final small b{color:#ff4d5a}"
     ".price-box .qb-disc span,.price-box .qb-disc strong{color:var(--x-gold-2);font-weight:800}.price-box .qb-disc em{font-style:normal;color:inherit;margin-left:4px}"
     ".qb-note{margin:10px 2px 0;font-size:14px;line-height:1.55;color:var(--x-muted)}"
@@ -794,7 +797,7 @@ def add_discounts(s: str) -> str:
               "orderName:(config.productNames?.[productId]??'운명서재 사주 결과')+(draft.extras.length?` 외 ${draft.extras.length}건`:''),")
     s = _swap(s, "e.message==='COUPON_NOT_AVAILABLE'?'체험용 쿠폰은 실제 결제에 사용할 수 없어요.'",
               "e.message==='COUPON_INVALID'?'재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 결제해주세요.'"
-              ":e.message==='BUNDLE_INCOMPLETE'?(typeof showBundleGap==='function'&&showBundleGap(),'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.')"
+              ":e.message==='BUNDLE_INCOMPLETE'?((typeof showBundleGap==='function'&&showBundleGap())||'함께 살 리포트의 질문(재회사주·깊은 궁합은 상대방 정보)을 채워 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.')"
               ":e.message==='EMAIL_REQUIRED'?'이메일 주소를 다시 확인해 주세요. 끝(.com, .net)까지 넣어야 해요. 예: name@naver.com'")
     return s
 

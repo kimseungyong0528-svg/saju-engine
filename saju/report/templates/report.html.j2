@@ -124,7 +124,7 @@
   {% else %}<div class="box"><p>눈에 띄는 신살이 없는 사주예요.</p></div>{% endif %}
 {%- elif k == "strength" -%}
   {{ svg.strength | safe }}
-  <table><tr><th style="width: 24%">신강·신약</th><td class="left"><b>{{ f.strength.label }}</b> ({{ f.strength.score }}점) · {{ f.strength.text }}</td></tr>
+  <table><tr><th style="width: 24%">신강·신약</th><td class="left"><b>{{ f.strength.label }}</b> ({{ (f.strength.score + 0.5)|int }}점) · {{ f.strength.text }}</td></tr>
   <tr><th>격국</th><td class="left"><b>{{ f.gyeokguk.name }}</b> · {{ f.gyeokguk.text }}</td></tr>
   <tr><th>용신</th><td class="left"><b>{{ f.lucky.element_name }}({{ f.lucky.element }})</b> · {{ f.lucky.basis }}</td></tr></table>
 {%- elif k == "classics" and f.classics -%}
@@ -197,7 +197,7 @@
   <tr><th>지금 대운</th><td class="left">{% set d = f.daewoon.periods[[f.daewoon.current_index,0]|max] %}{{ d.age_text }} {{ d.ganzhi }}</td></tr>
   <tr><th>행운</th><td class="left">{{ f.lucky.color }} · {{ f.lucky.numbers }} · {{ f.lucky.direction }}</td></tr></table>
 {%- elif k == "taster_recap" -%}
-  <p>{{ f.person.name }} 님이 {{ product.name }} 리포트를 확인하실 때 입력한 정보로, 여덟 가지 운(연애·인기, 결혼·궁합, 헤어진 인연, 돈 모으기, 직장·이직, 내 사업, 몸의 힘, 2027년 한 해 흐름)을 모두 살폈어요. 그 가운데 {{ f.person.name }} 님 사주에서 가장 좋은 운 3개와 가장 조심할 운 3개를 무료 풀이와 같은 점수 그대로 다시 짚어 드려요.</p>
+  <p>{{ f.person.name }} 님이 {{ product.name }} 리포트를 확인하실 때 입력한 정보로, 여덟 가지 운(연애·인기, 결혼·궁합, 헤어진 인연, 돈 모으기, 직장·이직, 내 사업, 몸의 힘, 2027년 한 해 흐름)을 모두 살폈어요. 그 가운데 {{ f.person.name }} 님 사주에서 가장 좋은 운 3개와 가장 조심할 운 3개를 사이트 화면과 같은 점수 그대로 다시 짚어 드려요.</p>
   <p>이 책에서 다 담지 못한 운을 보너스로 미리 짚어 드려요. 운마다 그 운을 가장 깊게 풀어 주는 리포트도 함께 알려 드릴게요.</p>
   {% for group, label in [(recap.good, "좋은 운"), (recap.bad, "조심할 운")] %}
   <h3 class="recap-head {{ 'good' if label == '좋은 운' else 'bad' }}">{{ label }} TOP 3</h3>
@@ -236,7 +236,7 @@
   <tr><th>도화·홍염</th><td class="left">{{ r.peach|join(", ") if r.peach else "태어날 때 받은 여덟 글자 안에는 없어요" }} · 도화가 드는 글자: {{ r.peach_branches|join(", ") }}</td></tr></table>
 {%- elif k == "love_glance" -%}
   {%- set r = f.romance -%}
-  <table class="compact"><tr><th style="width: 27%">인연이 오는 해</th><td class="left"><b>{% if r.best_years %}{{ r.best_years|join("년, ") }}년{% else %}앞으로 12년 안에는 뚜렷하지 않아요{% endif %}</b></td></tr>
+  <table class="compact">{% if r.screen_score %}<tr><th style="width: 27%">내 점수</th><td class="left"><b>좋은 점 {{ r.screen_score.good }}점 · 조심할 점 {{ r.screen_score.bad }}점 · 전체 점수 {{ r.screen_score.score }}점</b></td></tr>{% endif %}<tr><th style="width: 27%">인연이 오는 해</th><td class="left"><b>{% if r.best_years %}{{ r.best_years|join("년, ") }}년{% else %}앞으로 12년 안에는 뚜렷하지 않아요{% endif %}</b></td></tr>
   <tr><th>가까운 좋은 달</th><td class="left"><b>{{ r.best_months|join(", ") }}</b></td></tr>
   {% if r.careful_months %}<tr><th>조심할 달</th><td class="left">{{ r.careful_months|join(", ") }}</td></tr>{% endif %}
   <tr><th>그 사람의 자리</th><td class="left">{{ r.day_branch.branch }}({{ r.day_branch.hanja }}) · {{ r.day_branch.ten_god }}</td></tr>
@@ -255,11 +255,12 @@
   <tr><th>조심할 띠</th><td class="left">{{ f.lucky.careful_animal }}띠</td></tr></table>
 {%- elif k == "love_graph" -%}
   {{ svg.love_graph | safe }}
-  <p class="sub">대운(10년)마다 배우자 별, 배우자 자리와의 합, 도화가 들어오면 점수가 올라가요. 참고용 점수예요.</p>
+  <p class="sub">대운(10년)마다 배우자 별, 배우자 자리와의 합, 도화가 들어오면 점수가 올라가요. 점수가 높은 대운일수록 인연이 들어오기 쉬워요.</p>
 {%- elif k == "love_years5" -%}
   <table class="compact"><tr><th>해</th><th>간지</th><th class="left">인연 표시</th><th>인연 점수</th></tr>
   {% for y in f.romance.years %}<tr{% if y.year in f.romance.best_years %} style="background: #e9dfc6"{% endif %}><th>{{ y.year }}</th><td><span class="han">{{ y.hanja }}</span> {{ y.ganzhi }}</td>
   <td class="left">{{ y.love_signs|join(", ") or "—" }}</td><td>{{ y.love_score }}점</td></tr>{% endfor %}</table>
+  {% for y in f.romance.years if y.ny_note %}<p>{{ y.ny_note }}</p>{% endfor %}
 {%- elif k == "love_months" -%}
   <table class="compact"><tr><th>달</th><th>간지</th><th class="left">인연 표시</th><th>점수</th></tr>
   {% for m in f.romance.months %}<tr{% if m.love_score >= 70 %} style="background: #e9dfc6"{% endif %}><th>{{ m.year }}.{{ m.month }}</th><td><span class="han">{{ m.hanja }}</span></td>
@@ -279,6 +280,7 @@
   {%- set g = pg.grid -%}
   <table class="compact"><tr>{% for h in g.head %}<th{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}{% if g.get("widths") %} style="width: {{ g.widths[loop.index0] }}"{% endif %}>{{ h }}</th>{% endfor %}</tr>
   {% for row in g.rows %}<tr{% if loop.index0 in g.get("hl", []) %} style="background: #e9dfc6"{% endif %}>{% for c in row %}{% if loop.first %}<th>{{ c }}</th>{% else %}<td{% if loop.index0 in g.get("left", []) %} class="left"{% endif %}>{{ c }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</table>
+  {% for x in g.get("notes", []) %}<p class="sub">{{ x }}</p>{% endfor %}
   {% if pg.note %}<p class="sub">{{ pg.note }}</p>{% endif %}
 {%- elif k == "theme_graph" -%}
   {{ svg.theme_graph | safe }}

@@ -109,10 +109,11 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
             for sent in sentences(para):
                 negated = bool(NEG.search(sent))
                 # 1) 사주에 없는 신살
+                bare = re.sub(r"(양인|건록|월겁)격", "", sent)   # '양인격'·'건록격' 같은 격국 이름 속 글자는 신살이 아니다
                 for n in names:
-                    if n in sent and n not in have_base and not negated and n not in in_luck:
+                    if n in bare and n not in have_base and not negated and n not in in_luck:
                         # '도화'가 '도화살'의 일부로 이미 걸렸으면 한 번만
-                        if n + "살" in sent and n + "살" in names:
+                        if n + "살" in bare and n + "살" in names:
                             continue
                         issues.append({"slot": sid, "kind": "없는 신살", "detail": f"사주에 없는 '{n}'을 썼어요: {sent[:80]}"})
                 # 2) 십신 무리 개수
@@ -131,6 +132,8 @@ def check(f: dict, texts: dict, skip_repeat: set | frozenset = frozenset()) -> l
                     issues.append({"slot": sid, "kind": "문장", "detail": f"무엇을 하는지(목적어)가 빠졌어요. '돈을 더 넣기'처럼 무엇을 쓰세요: {sent[:80]}"})
                 elif len(re.sub(r"\([^)]*\)", "", body)) > LONG_SENTENCE:   # 괄호 속 용어 풀이는 빼고 센다
                     issues.append({"slot": sid, "kind": "문장", "detail": f"한 문장이 너무 길어요. 한 문장에 한 가지 내용만 쓰세요: {sent[:80]}"})
+                if re.search(r"무료\s*(풀이|사주|분석)|맛보기", sent):
+                    issues.append({"slot": sid, "kind": "문장", "detail": f"손님이 무료 풀이를 안 봤을 수 있어요. '무료 풀이'·'맛보기'라는 말 없이 쓰세요: {sent[:80]}"})
                 if HEDGE.search(sent):
                     issues.append({"slot": sid, "kind": "문장", "detail": f"'참고용', '재미로' 같은 말은 빼고 사주 근거로 그대로 말하세요: {sent[:80]}"})
                 # 4) 범위를 벗어난 연도

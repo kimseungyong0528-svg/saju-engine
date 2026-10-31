@@ -63,7 +63,7 @@ function bundleBlock(p,d){
  // 목록은 접어 두고(결제 화면이 길어지지 않게), 이미 고른 상품이 있으면 펼친다.
  return `<section class="bundle-x"><details class="bundle-more"${on.size?' open':''}><summary><span class="x-eyebrow">FIRST ORDER</span><span class="x-title">함께 사면 전부 <em>10%</em> 할인</span><span class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 전부 10% 할인돼요. 리포트는 한 권씩 따로 보내드려요.</span><b class="bundle-open">여기를 눌러서 할인 받기</b></summary><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em> ${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`}).join('')}</div></details></section>`;
 }
-const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워 주시면 금액에 담겨요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
+const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워야 결제할 수 있어요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
  if(!q)return priceBox(p,0);
  // 내가 고른 상품이 맨 위, 함께 산 상품은 그 아래(사이트 순서)
@@ -76,7 +76,7 @@ function quoteBox(p,q){
   :wait?`<div class="qb-disc wait"><span><i class="qb-no">③</i>첫 구매 묶음 할인 <em>10%</em><small>이메일 확인 뒤 적용</small></span><strong>−${money(cut)}</strong></div>`:'';
  // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
  const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
- const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워 주시면 금액에 담겨요.`:QUOTE_NOTES[n]}</p>`).join('');
+ const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워야 결제할 수 있어요.`:QUOTE_NOTES[n]}</p>`).join('');
  return `<div class="price-box">${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:wait?`<span class="qb-final"><strong>${money(q.amount)}</strong><small>첫 구매라면 <b>${money(q.base-cut)}</b></small></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
 }
 // 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
@@ -85,7 +85,14 @@ function showBundleGap(){
  const rows=[...document.querySelectorAll('.bundle-row')].filter(r=>r.querySelector('input[name=extra]:checked'));
  const el=rows.map(r=>r.querySelector('select[data-extra-q]:not([data-ok])')).find(x=>x&&!x.value)||document.querySelector('[data-bundle-partner] input:invalid, [data-bundle-partner] select:invalid')||rows[0];
  if(el){el.scrollIntoView({block:'center',behavior:'smooth'});try{el.focus({preventScroll:true})}catch{}}
+ // 비어 있는 칸은 빨갛게, 안내 글에는 그 상품 이름을 넣는다(손님 테스트 3차: 어느 상품의 무엇이 빠졌는지 몰랐다)
+ const gap=rows.filter(r=>[...r.querySelectorAll('select[data-extra-q]:not([data-ok])')].some(x=>!x.value));
+ gap.forEach(r=>r.querySelectorAll('select[data-extra-q]').forEach(x=>{if(!x.value)x.classList.add('qb-missing')}));
+ const pf=document.querySelector('[data-bundle-partner]');if(pf&&pf.querySelector('input:invalid, select:invalid'))pf.querySelectorAll('input:invalid, select:invalid').forEach(x=>x.classList.add('qb-missing'));
+ const names=gap.map(r=>(r.querySelector('.bundle-name')?.textContent||'').trim()).filter(Boolean);
+ return names.length?`${names.join(', ')}의 질문을 골라 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.`:'';
 }
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('qb-missing')&&e.target.value)e.target.classList.remove('qb-missing')});
 let quoteSeq=0;
 async function refreshQuote(p,d){
  const seq=++quoteSeq,box=document.querySelector('#checkout-price');if(!box)return;
@@ -109,10 +116,11 @@ function bindDiscounts(p,d){
  if(pf){let pt;bindPerson(pf,(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600);emailHintShow(form)});
+ form.elements.email.addEventListener('blur',()=>emailHintShow(form,true));
  emailHintShow(form);
  // 환불 안내·약관을 보고 돌아와도 동의 체크가 풀리지 않게(손님 테스트 2차)
  const CK='unmyeong.consent.'+p.id,boxes=['privacy','payment'].map(n=>form.elements[n]).filter(Boolean);
- try{if(sessionStorage.getItem(CK)==='1'&&boxes.length){boxes.forEach(b=>{b.checked=true});const all=document.querySelector('#all-consent');if(all)all.checked=true;boxes[0].dispatchEvent(new Event('change',{bubbles:true}))}}catch{}
+ try{if(sessionStorage.getItem(CK)==='1'&&boxes.length){boxes.forEach(b=>{b.checked=true});const all=document.querySelector('#all-consent');if(all)all.checked=true;boxes[0].dispatchEvent(new Event('input',{bubbles:true}))}}catch{}   // 결제 버튼은 'input'에서 다시 계산된다(손님 테스트 3차: 체크는 켜졌는데 버튼이 꺼져 있었음)
  form.addEventListener('change',()=>{try{sessionStorage.setItem(CK,boxes.length&&boxes.every(b=>b.checked)?'1':'0')}catch{}});
  refreshQuote(p,d);
 }
@@ -120,15 +128,22 @@ function bindDiscounts(p,d){
 // 이메일 오타 알려 주기(손님 테스트 2026-10-28): 결과가 남의 메일로 가지 않게, 흔한 오타와 끝(.com)을 빠뜨린 주소를 바로 짚는다.
 const EMAIL_FIX={'gmial.com':'gmail.com','gamil.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com','gmail.cm':'gmail.com','gmail.om':'gmail.com',
  'naver.co':'naver.com','naver.con':'naver.com','naver.cm':'naver.com','naver.om':'naver.com','nave.com':'naver.com','navr.com':'naver.com','naer.com':'naver.com',
- 'daum.ne':'daum.net','daum.com':'daum.net','hanmail.com':'hanmail.net','hanmail.ne':'hanmail.net','kakao.co':'kakao.com','kakao.con':'kakao.com','nate.co':'nate.com','nate.con':'nate.com'};
+ 'daum.ne':'daum.net','daum.com':'daum.net','hanmail.com':'hanmail.net','hanmail.ne':'hanmail.net','kakao.co':'kakao.com','kakao.con':'kakao.com','nate.co':'nate.com','nate.con':'nate.com',
+ 'hanmial.net':'hanmail.net','hanmali.net':'hanmail.net','hamail.net':'hanmail.net','hanmil.net':'hanmail.net','hanmai.net':'hanmail.net','hnmail.net':'hanmail.net','hanmail.ent':'hanmail.net','hanmail.nte':'hanmail.net','hanmial.com':'hanmail.net',
+ 'daum.ent':'daum.net','daum.nte':'daum.net','duam.net':'daum.net','naver.ent':'naver.com','naver.net':'naver.com','gmail.net':'gmail.com','gmali.com':'gmail.com','gmil.com':'gmail.com','nate.ent':'nate.com'};
 const EMAIL_BARE={naver:'naver.com',gmail:'gmail.com',daum:'daum.net',hanmail:'hanmail.net',kakao:'kakao.com',nate:'nate.com'};
-function emailHint(v){const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(v||'').trim());if(!m)return null;const dom=m[2].toLowerCase();
+function emailHint(v){const t=String(v||'').trim(),m=/^([^@\s]+)@([^@\s]+)$/.exec(t);if(!m)return t?{bad:true}:null;const dom=m[2].toLowerCase();
  if(EMAIL_FIX[dom])return {fix:m[1]+'@'+EMAIL_FIX[dom]};if(!dom.includes('.'))return EMAIL_BARE[dom]?{fix:m[1]+'@'+EMAIL_BARE[dom]}:{end:true};return null}
-function emailHintShow(form){
+function emailHintShow(form,done){
  const input=form.elements.email;if(!input)return;let box=form.querySelector('.email-hint');
- const h=emailHint(input.value);
+ let h=emailHint(input.value);
+ // '@'가 빠진 주소는 다 쓰고 칸을 벗어났을 때 알려 준다(쓰는 중에는 띄우지 않는다). 안내가 없으면 결제 버튼이 왜 꺼졌는지 모른다(손님 테스트 3차).
+ if(h&&h.bad&&!done&&!box)h=null;
  if(!h){box?.remove();input.setCustomValidity('');return}
  if(!box){box=document.createElement('p');box.className='email-hint';box.setAttribute('role','status');input.closest('label,div')?.after(box)||input.after(box)}
+ // 같은 안내면 다시 그리지 않는다: '이 주소로 고치기'를 누를 때 칸을 벗어나며(blur) 버튼이 새로 그려지면 누른 것이 사라진다
+ const key=JSON.stringify(h);if(box.dataset.key===key)return;box.dataset.key=key;
  if(h.fix){box.innerHTML=`혹시 <b>${esc(h.fix)}</b> 인가요? <button type="button" class="email-fix">이 주소로 고치기</button>`;box.querySelector('.email-fix').onclick=()=>{input.value=h.fix;input.dispatchEvent(new Event('input',{bubbles:true}))};input.setCustomValidity('')}
+ else if(h.bad){box.textContent='이메일 주소가 맞는지 다시 봐 주세요. 가운데에 @가 들어가야 해요. 예: name@naver.com';input.setCustomValidity('')}
  else{box.textContent='이메일 주소 끝(.com, .net 같은 부분)까지 넣어 주세요. 예: name@naver.com';input.setCustomValidity('이메일 주소 끝까지 넣어 주세요.')}
 }

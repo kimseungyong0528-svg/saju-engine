@@ -628,9 +628,15 @@ def _align_areas(result: dict, months: list[dict]) -> None:
             good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["good"] if rule_of(k)(p)]
             bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["bad"] if rule_of(k)(p)]
             good = [] if bad else good   # 한 달에 좋은 표시와 조심할 표시를 함께 붙이지 않는다(saju/reveal.py year_marks 와 같다)
+            if m.get("r_bad"):
+                good = []   # 결제 전 화면에서 '조심할 달'인 달은 분야별로도 좋은 달로 쓰지 않는다(다른 책 theme.reveal_fix 와 같다)
             v = ar["score"]
             ar["score"] = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
             ar["signs"] = list(dict.fromkeys(good + bad + ar["signs"]))
+        if m.get("r_bad"):
+            for key, ar in m["areas"].items():
+                if key not in AREA_PRODUCT:
+                    ar["score"] = min(ar["score"], 59)   # 조심할 달에는 어느 분야도 '좋은 달' 점수(60점 이상)를 주지 않는다
 
 
 def hook(f: dict) -> str:
@@ -641,6 +647,10 @@ def hook(f: dict) -> str:
     ds = STEMS.index(f["day_master"]["stem"])
     sg, bg = ten_god(ds, STEMS.index(gz[0])), branch_ten_god(ds, BRANCHES.index(gz[1]))
     sj = samjae(f["pillars"][0]["branch"], TARGET_YEAR)
+    from .. import reveal as RV
+    from .products import _screen
+    side = RV.ny_verdict(*_screen(f))[0]   # 제1조항: 모든 책의 12년 지도 2027년 칸과 같은 쪽(손님 테스트 3차: 돈의 별만 말해 '들어오는 해'로 읽혔다)
     return (f"2027년 정미년은 {name} 님에게 {sg}({K.TEN_GOD[sg]['simple']}) 기운과 {bg}({K.TEN_GOD[bg]['simple']}) 기운이 들어오는 해예요. "
+            + ("사주로 본 2027년 전체 운은 좋은 쪽으로 나왔어요. " if side == "good" else "사주로 본 2027년 전체 운은 조심할 쪽으로 나왔어요. ")
             + (f"{f['person']['zodiac']}띠라서 2027년은 {sj['kind']}예요. " if sj["is_samjae"] else f"{f['person']['zodiac']}띠는 2027년에 삼재가 아니에요. ")
             + "분야별 점수와 1월부터 12월까지 좋은 달, 조심할 달을 정리해 드려요.")
