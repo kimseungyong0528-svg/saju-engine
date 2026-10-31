@@ -1,0 +1,60 @@
+{
+ "perms": {
+  "data": [
+   {
+    "permission": "pages_show_list",
+    "status": "granted"
+   },
+   {
+    "permission": "business_management",
+    "status": "granted"
+   },
+   {
+    "permission": "instagram_basic",
+    "status": "granted"
+   },
+   {
+    "permission": "instagram_manage_comments",
+    "status": "granted"
+   },
+   {
+    "permission": "instagram_content_publish",
+    "status": "granted"
+   },
+   {
+    "permission": "instagram_manage_messages",
+    "status": "granted"
+   },
+   {
+    "permission": "pages_read_engagement",
+    "status": "granted"
+   },
+   {
+    "permission": "pages_manage_posts",
+    "status": "granted"
+   },
+   {
+    "permission": "public_profile",
+    "status": "granted"
+   }
+  ]
+ },
+ "own": {
+  "id": "17841476113870391",
+  "followers_count": 0,
+  "media_count": 0,
+  "username": "unmyeong_saju.kr"
+ },
+ "bd_min": {
+  "ERR": 400,
+  "body": "{\"error\":{\"message\":\"(#10) Application does not have permission for this action\",\"type\":\"OAuthException\",\"code\":10,\"fbtrace_id\":\"ANbbtQ_A72DT5QLo7Q7F_ay\"}}"
+ },
+ "bd_media": {
+  "ERR": 400,
+  "body": "{\"error\":{\"message\":\"(#10) Application does not have permission for this action\",\"type\":\"OAuthException\",\"code\":10,\"fbtrace_id\":\"A2MQh7NngLnZhe8YkF3a7Rx\"}}"
+ },
+ "bd_self": {
+  "ERR": 400,
+  "body": "{\"error\":{\"message\":\"(#10) Application does not have permission for this action\",\"type\":\"OAuthException\",\"code\":10,\"fbtrace_id\":\"Axge8MQCumqcfmlyYveOkj7\"}}"
+ }
+}
