@@ -30,11 +30,13 @@ for u in IG_ACCTS:
 for name, ch in YT.items():
     rows = []
     for tab in ("shorts", "videos"):
-        p = subprocess.run(["yt-dlp", "--flat-playlist", "-J", "--extractor-args", "youtube:lang=ko", "--playlist-end", "400", f"{ch}/{tab}"], capture_output=True, text=True)
+        p = subprocess.run(["yt-dlp", "--flat-playlist", "-J", "--playlist-end", "400", f"{ch}/{tab}"], capture_output=True, text=True)
+        k = subprocess.run(["yt-dlp", "--flat-playlist", "-J", "--extractor-args", "youtube:lang=ko", "--playlist-end", "400", f"{ch}/{tab}"], capture_output=True, text=True)
         if p.returncode:
             res["errors"].append(f"YT {name} {tab}: {p.stderr[-200:]}"); continue
+        ko = {e.get("id"): e.get("title") for e in (json.loads(k.stdout).get("entries") or [])} if k.returncode == 0 else {}
         for e in json.loads(p.stdout).get("entries") or []:
-            rows.append({"id": e.get("id"), "title": e.get("title"), "views": e.get("view_count"), "tab": tab,
+            rows.append({"id": e.get("id"), "title": ko.get(e.get("id")) or e.get("title"), "views": e.get("view_count"), "tab": tab,
                          "url": f"https://www.youtube.com/{'shorts/' if tab == 'shorts' else 'watch?v='}{e.get('id')}"})
     # 조회수 상위는 좋아요·댓글 수까지 받는다
     for tab in ("shorts", "videos"):
@@ -43,7 +45,7 @@ for name, ch in YT.items():
                                capture_output=True, text=True)
             if p.returncode == 0:
                 j = json.loads(p.stdout)
-                r.update(likes=j.get("like_count"), comments=j.get("comment_count"), title=j.get("title") or r["title"],
+                r.update(likes=j.get("like_count"), comments=j.get("comment_count"),
                          date=j.get("upload_date"), dur=j.get("duration"))
     res["youtube"][name] = rows
     print(f"YT {name}: {len(rows)}개")
