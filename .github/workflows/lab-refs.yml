@@ -5,7 +5,7 @@ on:
     paths: [".github/workflows/lab-refs.yml", "lab/refs.py"]
     branches: [claude/project-thread-7uafe7]
 permissions:
-  contents: read
+  contents: write
 jobs:
   refs:
     runs-on: ubuntu-latest
@@ -16,7 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - run: pip install -q yt-dlp
       - run: python lab/refs.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: refs
-          path: refs
+      - name: 결과를 refs-data 가지에 올리기
+        run: |
+          cd refs && git init -q -b refs-data && git add -A
+          git -c user.name=bot -c user.email=bot@x commit -qm "refs $(date -u +%F)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-data
