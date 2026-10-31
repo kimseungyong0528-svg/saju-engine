@@ -124,7 +124,7 @@ def build_outline(f: dict) -> list[dict]:
         page("five_elements", "오행(나무·불·흙·쇠·물)이란", static="five_elements", figure="element_cycle"),
         page("stems_branches", "천간과 지지(띠)란", static="stems_branches", figure="stems_branches"),
         page("chart", "나의 사주표", figure="pillars",
-             slot=_slot("chart", f"{name}님의 사주팔자 여덟 글자를 소개하고, 일간이 {dm['stem']}({dm['element_name']})이라는 것과 그 뜻을 쉽게 설명해 주세요.", HALF)),
+             slot=_slot("chart", f"{name} 님의 사주팔자 여덟 글자를 소개하고, 일간이 {dm['stem']}({dm['element_name']})이라는 것과 그 뜻을 쉽게 설명해 주세요.", HALF)),
         page("chart_detail", "나의 사주 상세표", figure="pillars_detail",
              slot=_slot("chart_detail", "상세표의 각 줄(십신, 지장간, 12운성)이 무엇을 보여 주는지 이 사람의 실제 글자를 예로 들어 설명해 주세요.", HALF)),
     ])
@@ -132,7 +132,7 @@ def build_outline(f: dict) -> list[dict]:
     # 2. 타고난 기질과 사주의 구성 (11~22쪽)
     section("2", [
         page("el_ratio", "내 사주의 오행 비율", figure="elements_bar", opener=True,
-             slot=_slot("el_ratio", "오행 비율 그래프를 읽어 주고, 가장 많은 기운과 가장 적은 기운이 무엇인지 말해 주세요.", HALF)),
+             slot=_slot("el_ratio", "오행 비율 그래프를 읽어 주고, 가장 많은 기운과 가장 모자란 기운이 무엇인지 말해 주세요.", HALF)),
         page("el_many_few", "많은 오행과 부족한 오행",
              slot=_slot("el_many_few", "많은 오행과 부족한 오행이 성격과 생활에 어떻게 나타나는지, 부족한 기운을 채우는 생활 습관까지 자세히 써 주세요.")),
         page("tg_intro", "십신이란", static="tengod_intro", figure="tengod_table"),
@@ -265,8 +265,18 @@ def build_outline(f: dict) -> list[dict]:
 
     # 11. 연도별 (87~94쪽)
     spages = []
+    if f.get("sewoon_all") and "r_signs" in f["sewoon_all"][0]:
+        # 제1조항: 결제 전 화면에서 본 12년 지도(2027년부터)를 한 표로 먼저 싣는다
+        from .theme import screen_years
+        ys = screen_years(f)
+        g = page("sw_12", "앞으로 12년 한눈에", figure="grid", opener=True,
+                 slot=_slot("sw_12", "표에서 좋은 표시가 있는 해와 조심할 표시가 있는 해를 골라, " + ("표에 나온 그대로" if f.get("bundled") else "결제 전 화면에서 본 그대로") + " 그 까닭을 짧게 정리해 주세요.", FULL - 520))
+        g["grid"] = {"head": ["해", "간지", "표시", "흐름"],
+                     "rows": [[str(s["year"]), f"{s['hanja']} {s['ganzhi']}", ", ".join(s["r_signs"]) or "—", f"{s['score']}점"] for s in ys],
+                     "hl": [i for i, s in enumerate(ys) if s["r_good"] and not s["r_bad"]], "left": [2]}
+        spages.append(g)
     for i, s in enumerate(f["sewoon"]):
-        spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0),
+        spages.append(page(f"sw_{s['year']}", f"{s['year']}년 운세", figure="sewoon_card", span=s["pages"], opener=(i == 0 and not spages),
                            slot=_slot(f"sw_{s['year']}", f"{s['year']}년 {s['ganzhi']}({s['hanja']})년의 운세를 요약, 좋은 점, 주의할 점, 일, 돈, 연애, 좋은 달 순서로 써 주세요.",
                                       FULL * s["pages"] - (400 if i == 0 else 330) - _rel_len(s), "fortune")))
         spages[-1]["year"] = s["year"]
@@ -326,7 +336,7 @@ def build_outline(f: dict) -> list[dict]:
         page("s15_habits", "운을 키우는 생활 습관", figure="habits",
              slot=_slot("s15_habits", "용신과 이 사주의 약한 점을 바탕으로 매일·매주·매달 실천할 습관 10가지를 체크리스트로 써 주세요. 한 줄에 한 가지, 바로 할 수 있는 행동으로 씁니다.", 520, "checklist")),
         page("s15_last", "마지막 조언", figure="summary_table",
-             slot=_slot("s15_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
+             slot=_slot("s15_last", f"{name} 님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 250)),
     ])
 
     # 다른 사주 안내 (사이트 순서) · 책의 마지막

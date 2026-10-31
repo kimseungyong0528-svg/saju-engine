@@ -11,7 +11,7 @@ from markupsafe import Markup, escape
 
 from . import knowledge as K
 from .outline import STATIC
-from .products import cross_sell
+from .products import cross_sell, no_love_books, taster_recap
 from ..constants import STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ZODIAC_ANIMALS, ELEMENTS, STEM_ELEMENT
 
 HERE = Path(__file__).parent
@@ -63,7 +63,7 @@ def _svg_strength(score: float) -> str:
             '<rect x="30" y="34" width="440" height="18" fill="#e9dfc6" stroke="#b9a77f"/>'
             '<rect x="228" y="34" width="44" height="18" fill="#d3c5a3"/>'
             f'<polygon points="{x - 9:.0f},22 {x + 9:.0f},22 {x:.0f},36" fill="#9e2f22"/>'
-            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#9e2f22">{score:.0f}점</text>'
+            f'<text x="{x:.0f}" y="16" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#9e2f22">{int(score + 0.5)}점</text>'
             '<text x="30" y="80" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신약</text>'
             '<text x="250" y="80" text-anchor="middle" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">중화</text>'
             '<text x="470" y="80" text-anchor="end" font-family="Gowun Batang, Noto Serif CJK KR" font-size="18.7" fill="#3d362c">신강</text></svg>')
@@ -201,6 +201,7 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
     env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape(["html", "j2"]))
     env.filters["para"] = para
     env.filters["bullet"] = bullet
+    env.filters["ord"] = ord
     tpl = env.get_template("report.html.j2")
     svg = {"element_cycle": _svg_element_cycle(), "strength": _svg_strength(facts["strength"]["score"]),
            "life_graph": _svg_life_graph(facts["daewoon"]["periods"], facts["daewoon"]["current_index"])}
@@ -210,9 +211,22 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
         from .theme import near
         svg["theme_graph"] = _svg_life_graph([dict(p, score=min(90, p["t_score"])) for p in near(facts, facts["theme"]["periods"], 100)],
                                              facts["daewoon"]["current_index"])
+    if (facts.get("order") or {}).get("gift"):
+        # 선물 받은 분이 읽는 책: 목차의 '내가 남긴 질문'은 받는 분이 남긴 질문이 아니다(손님 테스트 4차)
+        sections = [dict(sec, title=str(sec.get("title", "")).replace("내가 남긴 질문", "남겨 주신 질문")) for sec in sections]
+    recap = None
+    if facts.get("taster_view"):
+        # 책 맨 끝 '더보기' 앞쪽에 보너스로 6가지 핵심운(좋은 운 3·조심할 운 3)을 넣는다(목차 줄은 그대로).
+        recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"), facts.get("owned") or (),
+                             [facts["order"].get("daily"), facts["order"].get("relationship"), *(facts.get("answers") or {}).values()],
+                             no_love=no_love_books(facts, product))
+        sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 나의 좋은 운과 조심할 운", "figure": "taster_recap",
+                                       "slot": None, "static": None, "span": 2, "opener": True},
+                                      *[dict(pg, opener=False, cont=True, title="운명서재의 다른 리포트" if pg["title"] == sec["title"] else pg["title"]) for pg in sec["pages"]]])
+                    if sec.get("no") == "더보기" else sec for sec in sections]
     return tpl.render(
-        f=facts, sections=sections, texts=texts, static=static or STATIC, kb=_kb(),
-        more=cross_sell(facts, current=product, site=site_url, first=first), secmark={"더보기": "續"},
+        f=facts, sections=sections, recap=recap, texts=texts, static=static or STATIC, kb=_kb(),
+        more=cross_sell(facts, current=product, site=site_url, first=first, coupon=(facts.get("rebuy") or {}).get("code")), secmark={"더보기": "續"},
         glossary=K.GLOSSARY, glossary_sorted=_used_glossary(facts), product=PRODUCT[product],
         svg=svg,
     )

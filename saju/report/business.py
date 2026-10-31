@@ -21,7 +21,7 @@ SECTIONS = [
     ("6", "손님과 돈", "고객을 모으고 이익을 남기는 법"),
     ("7", "돈이 크게 들어오는 시기", "재물운이 함께 들어오는 때와 나가는 때"),
     ("8", "운영과 확장 사이", "넓힐 때와 유지할 때"),
-    ("9", "연도별 사업운", "앞으로 5년, 올해의 사업운"),
+    ("9", "연도별 사업운", "앞으로 12년, 올해의 사업운"),
     ("10", "월별 사업운", "앞으로 12개월, 계약과 오픈에 좋은 달"),
     ("11", "나이별 사업운", "10년마다 달라지는 사업의 흐름"),
     ("12", "현재 나의 단계와 질문에 대한 답", ""),
@@ -44,7 +44,8 @@ STATIC = {
 }
 
 _STAGE = {"창업을 준비하고 있어요": "창업 준비", "처음 사업을 시작했어요": "초기", "사업을 운영하고 있어요": "운영 중",
-          "새로운 확장을 고민해요": "확장 고민", "방향을 다시 정리하고 싶어요": "방향 정리"}
+          "새로운 확장을 고민해요": "확장 고민", "방향을 다시 정리하고 싶어요": "방향 정리",
+          "부업으로 하고 있어요": "부업", "매출이 줄어 고민이에요": "매출 감소 고민"}
 
 
 def _type(f: dict) -> tuple[str, str]:
@@ -82,25 +83,29 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         return {"t_score": T.clamp(score), "t_signs": signs, "t_grow": jae and sik}
 
     years, months, periods = T.marked(f, mark)
+    T.reveal_fix(result, "business", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+    T.reveal_fix(result, "business", months)
     btype, btext = _type(f)
     bi, jae = T.count(f, "비겁"), T.count(f, "재성")
     partner_rule = ("동업은 역할과 돈을 문서로 나눌 때만" if bi >= 3 and jae >= 1 else
                     "혼자 버티기보다 믿을 파트너가 필요" if bi == 0 else "나와 역할이 다른 사람과 함께")
-    grow = [y["year"] for y in years if y["t_grow"]][:2] or T.best(years, 2, lambda y: y["year"])
-    keep = [y["year"] for y in sorted(years, key=lambda y: y["t_score"])[:2] if y["year"] not in grow]
+    grow = T.good_rows(years, 12, lambda y: y["year"])   # 화면의 '큰돈'·'벌이 확장' 해
+    keep = T.bad_rows(years, 12, lambda y: y["year"])    # 화면의 '돈이 샘' 해
+    screen = T.screen_score(f, result, "business")
     data = {
+        "screen_score": screen,
         "stage": _STAGE.get(answers.get("stage", ""), answers.get("stage", "")), "priority": answers.get("priority", ""),
         "type": btype, "type_text": btext, "partner_rule": partner_rule,
         "counts": {g: T.count(f, g) for g in T.GODS},
         "fields": _FIELD[f["lucky"]["element"]],
         "grow_years": grow, "keep_years": sorted(keep),
-        "best_years": T.best(years, 2, lambda y: y["year"]),
-        "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
+        "best_years": T.best(years, 12, lambda y: y["year"]),
+        "best_months": T.near_good_rows(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),   # 표 이름이 '가까운 좋은 달'이라 가까운 순
         # 돈이 잘 풀리는 시기: 재물 별이 드는 때를 먼저, 그다음 사업 점수 높은 순. 새는 때: 비겁(경쟁·지출, 나눠 가져가는 기운)이 드는 때 가운데 점수 낮은 순
-        "money_years": sorted(y["year"] for y in sorted(years, key=lambda y: ("재물 별" not in y["t_signs"], -y["t_score"]))[:2]),
-        "leak_years": sorted(y["year"] for y in sorted(years, key=lambda y: (not _bi(y), y["t_score"]))[:2]),
-        "money_months": [T.ym(m) for m in sorted(months, key=lambda m: ("재물 별" not in m["t_signs"], -m["t_score"]))[:3]],
-        "leak_months": [T.ym(m) for m in sorted(months, key=lambda m: (not _bi(m), m["t_score"]))[:3]],
+        "money_years": T.good_rows(years, 12, lambda y: y["year"]),
+        "leak_years": T.bad_rows(years, 12, lambda y: y["year"]),
+        "money_months": T.good_rows(months, 3, T.ym),
+        "leak_months": T.bad_rows(months, 3, T.ym),
     }
     return {"label": "사업 재료", "data": data,
             "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
@@ -131,30 +136,31 @@ def build_outline(f: dict) -> list[dict]:
         sections.append({"no": no, "title": title, "subtitle": subtitle, "pages": pages, "terms": []})
 
     P, S = T.tpage, _slot
-    yrs = lambda xs: ", ".join(f"{y}년" for y in xs) or "—"
+    yrs = lambda xs: ", ".join(f"{y}년" for y in xs) or "앞으로 12년 안에는 뚜렷하지 않아요"
     section("1", [
         P("cover", "표지", figure="cover"),
         P("toc", "목차", figure="toc"),
         P("how_to_read", "이 책을 읽는 방법", static="b_how_to_read", opener=True),
         P("b_saju", "사주와 사업 짧게 알기", static="b_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간이 일을 벌이고 결정하는 방식에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간이 일을 벌이고 결정하는 방식에서 어떻게 나타나는지 쉽게 설명해 주세요.", HALF)),
         P("b_letters", "사업을 보는 글자", figure="kv", rows=[
             ["비겁(나·동료)", f"{c['비겁']}개"], ["식상(상품·재능)", f"{c['식상']}개"], ["재성(돈·손님)", f"{c['재성']}개"],
             ["관성(체계·신용)", f"{c['관성']}개"], ["인성(문서·자격)", f"{c['인성']}개"],
-            ["신강·신약", f"{f['strength']['label']} ({f['strength']['score']:.0f}점)"],
+            ["신강·신약", f"{f['strength']['label']} ({int(f['strength']['score'] + 0.5)}점)"],
         ], slot=S("b_letters", "표의 글자가 사업에서 각각 무엇을 뜻하는지, 이 사주에서는 어떻게 있는지 설명해 주세요.", HALF - 80)),
     ])
     section("2", [
         P("b_glance", "한눈에 보는 나의 사업운", figure="kv", opener=True, rows=[
+            T.screen_row(t["screen_score"], t.get("seen", True)),
             ["사업 체질", t["type"]], ["함께 일하는 원칙", t["partner_rule"]], ["어울리는 분야", t["fields"]],
             ["넓히기 좋은 해", yrs(t["grow_years"])], ["지키며 다질 해", yrs(t["keep_years"])],
-            ["가까운 좋은 달", ", ".join(t["best_months"])], ["조심할 달", ", ".join(t["careful_months"]) or "—"],
+            ["가까운 좋은 달", ", ".join(t["best_months"])], ["조심할 달", ", ".join(t["careful_months"]) or "크게 조심할 달은 없어요"],
         ], slot=S("b_glance", "표를 이어서 사업운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 160)),
     ])
     section("3", [
         P("b3_open", "나의 사업 체질", figure="opener", opener=True,
-          slot=S("b3_open", f"{name}님의 사업 체질을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 640, "lead")),
+          slot=S("b3_open", f"{name} 님의 사업 체질을 '{t['type']}'로 한 문장 요약(lead)하고, 근거({t['type_text']})를 쉽게 풀어 주세요.", 640, "lead")),
         P("b3_good", "사업할 때 나의 강점",
           slot=S("b3_good", "사업할 때 강점 3가지를 사주 근거와 운영 장면(손님 응대, 상품 만들기, 결정)으로 써 주세요.")),
         P("b3_bad", "사업할 때 나의 약점과 보완법",
@@ -198,7 +204,7 @@ def build_outline(f: dict) -> list[dict]:
     section("7", [
         P("bm_open", "돈이 잘 풀리는 때와 새는 때", figure="kv", opener=True, rows=[
             ["돈이 잘 풀리는 해", yrs(t["money_years"])], ["돈이 새기 쉬운 해", yrs(t["leak_years"])],
-            ["돈이 잘 풀리는 달", ", ".join(t["money_months"]) or "—"], ["지출을 조심할 달", ", ".join(t["leak_months"]) or "—"],
+            ["돈이 잘 풀리는 달", ", ".join(t["money_months"]) or "고르게 비슷해요"], ["지출을 조심할 달", ", ".join(t["leak_months"]) or "크게 조심할 달은 없어요"],
             ["재성(돈·손님)", f"{c['재성']}개"], ["비겁(나눠 가져가는 기운)", f"{c['비겁']}개"],
         ], note="재물 별(재성)이 드는 때와 사업 점수가 높은 때는 돈이 돌기 쉽고, 비겁(나와 같은 기운)이 드는 때는 경쟁과 지출이 커지기 쉬워요.",
           slot=S("bm_open", "표를 근거로 사업 자금이 잘 풀리는 시기와 새기 쉬운 시기를 쉽게 설명해 주세요.", HALF)),
@@ -212,7 +218,7 @@ def build_outline(f: dict) -> list[dict]:
     section("8", [
         P("b7_open", "넓힐 때와 지킬 때", figure="kv", opener=True, rows=[
             ["넓히기 좋은 해", yrs(t["grow_years"])], ["지키며 다질 해", yrs(t["keep_years"])],
-            ["사업 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "사업 자리 변동" in m["t_signs"]) or "없음"],
+            ["사업 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "사업 자리 변동" in m.get("raw_signs", m["t_signs"])) or "없음"],
         ], slot=S("b7_open", "표를 근거로 확장과 유지의 시기를 설명해 주세요.", HALF)),
         P("b7_grow", "확장 신호와 확장하는 법",
           slot=S("b7_grow", "확장해도 되는 신호(사주와 현실 둘 다)와 확장 순서(사람, 공간, 상품, 지역)를 써 주세요.")),
@@ -222,12 +228,12 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("b7_contract", "관성·인성(문서)과 사업 점수를 근거로 큰 계약, 대출, 투자 유치에 좋은 시기와 조심할 점을 써 주세요.")),
     ])
     section("9", [
-        P("b8_years", "앞으로 5년 사업운", figure="grid", opener=True, span=2, grid=T.year_grid(th["years"], t["grow_years"], "사업 점수"),
-          slot=S("b8_years", "표의 5년을 한 해씩 문단으로 써 주세요(그해 표시 근거, 사업의 흐름, 할 일과 피할 일).", FULL * 2 - 460)),
+        P("b8_years", "앞으로 12년 사업운", figure="grid", opener=True, span=3, grid=T.year_grid(th["years"], t["grow_years"], "사업 점수"),
+          slot=S("b8_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(그해 표시 근거, 사업의 흐름, 할 일과 피할 일).", FULL * 3 - 460)),
         P("b8_this", f"{f['order']['year']}년 사업운",
           slot=S("b8_this", "올해 세운의 사업 표시와 점수를 근거로 올해 남은 기간의 운영법을 써 주세요.")),
         P("b8_risk", "위기가 오기 쉬운 해 대비하기",
-          slot=S("b8_risk", "앞으로 5년 가운데 경쟁·지출이나 자리 변동 표시가 있는 해를 근거로 위기 대비(현금, 계약, 사람)를 써 주세요.")),
+          slot=S("b8_risk", "앞으로 12년 가운데 경쟁·지출이나 자리 변동 표시가 있는 해를 근거로 위기 대비(현금, 계약, 사람)를 써 주세요.")),
     ])
     section("10", [
         P("b9_months", "앞으로 12개월 월별 사업운", figure="grid", opener=True, span=2, grid=T.month_grid(th["months"], "사업 점수"),
@@ -268,7 +274,7 @@ def build_outline(f: dict) -> list[dict]:
         P("b12_worry", "사업 걱정에 대한 답", span=2,
           slot=S("b12_worry", "이 사람이 가지기 쉬운 사업 걱정(망하면 어떡하지, 손님이 줄면, 사람이 떠나면, 지금 확장해도 될까)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("b12_last", "마지막 조언",
-          slot=S("b12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 사업에서 오래 갈 수 있는 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
+          slot=S("b12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 이 사주가 사업에서 오래 갈 수 있는 이유를 근거로 말해 주고, 가장 먼저 할 한 가지를 짚어 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

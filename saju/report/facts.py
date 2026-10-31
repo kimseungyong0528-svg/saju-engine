@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from . import knowledge as K
 from . import mulsang as M
@@ -24,6 +24,8 @@ class OrderInfo:
     daily: str = ""             # 요즘 일상: 직장/사업/프리랜서/공부/휴식
     relationship: str = ""      # 연애·결혼 상태(사이트에 항목이 생기면 받는다): 솔로/연애 중/결혼/이혼·사별
     experience: str = ""        # 연애사주: 연애 경험 횟수(사이트 선택지 그대로)
+    reveal_start: str = ""      # 재회사주: 손님이 결제 전 화면에서 본 24개월 지도의 첫 달('2026-11')
+    gift: bool = False          # 선물 주문: 책을 읽는 사람은 산 사람이 아니라 받는 분이다
 
 
 def _age_on(birth: date, on: date) -> int:
@@ -147,6 +149,17 @@ def month_row(m: dict, rate) -> dict:
             "short": f"{d.month}/{d.day}", "month": d.month, "year": d.year, **rate(m)}
 
 
+def _birth_text(inp: dict, solar: date) -> str:
+    """표지·사주표의 생일. 음력으로 넣은 손님은 넣은 음력 날짜와 바뀐 양력 날짜를 함께 보여 준다."""
+    sol = f"{solar.year}년 {solar.month}월 {solar.day}일"
+    y, m, d = (int(x) for x in inp["birth"].split("-"))
+    if inp.get("calendar") == "lunar":
+        return f"음력 {y}년 {m}월 {d}일{'(윤달)' if inp.get('leap') else ''} · 양력 {sol}"
+    if inp.get("calendar") == "unknown":
+        return f"{y}년 {m}월 {d}일(양력·음력 모름, 양력 {sol}로 풀었어요)"
+    return f"양력 {sol}"
+
+
 def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     """analyze_person() 결과 → 리포트 재료."""
     order = order or OrderInfo()
@@ -175,11 +188,11 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
 
     # 오행
     strength = an["elements"]["strength"]
-    total = sum(strength.values()) or 1
     elements = []
     for el in K.ELEMENT_ORDER:
         info = K.ELEMENT[el]
-        pct = round(strength[el] / total * 100)
+        pct = strength[el]   # 이미 합계 100 기준(소수 한 자리). 다시 나누지 않아야 무료 분석·보너스 쪽 숫자와 똑같다.
+        pct = int(pct) if float(pct).is_integer() else pct   # 무료 분석·보너스 쪽과 같은 숫자(4.0 → 4, 1.6 → 1.6)
         status = "많음" if el in an["elements"]["judgement"]["과다"] else "부족" if el in an["elements"]["judgement"]["부족"] else "보통"
         elements.append({"el": el, "hanja": info["hanja"], "name": info["name"], "count": an["elements"]["count"][el],
                          "pct": pct, "status": status, "trait": info["trait"],
@@ -217,12 +230,11 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     # 대운
     dw = an["daewoon"]
     periods = []
-    current_idx = 0
+    # 지금 대운: 대운이 실제로 시작하는 날(start_date) 기준. 만 나이로 고르면 표의 해(2016~2025)와 한 칸 어긋났다(손님 테스트 4차).
+    current_idx = -1
     for i, p in enumerate(dw["periods"]):
-        if p["age_from"] <= age:
+        if (date.fromisoformat(p["start_date"][:10]) if p.get("start_date") else date(p["start_year"], 1, 1)) <= order.order_date:
             current_idx = i
-    if age < dw["periods"][0]["age_from"]:
-        current_idx = -1
     for i, p in enumerate(dw["periods"]):
         state = "지금" if i == current_idx else "지난" if i < current_idx else "앞으로"
         periods.append({
@@ -243,7 +255,8 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
                    relations_text=_relations_text(s["relations"]),
                    animal=K.BRANCH_ANIMAL[s["ganzhi"][1]],
                    pages=2 if i == 0 else 1)
-              for i, s in enumerate(x for x in an["sewoon"] if x["year"] >= order.order_date.year)][:6]
+              for i, s in enumerate(x for x in an["sewoon"] if x["year"] >= order.order_date.year)]
+    sewoon_all, sewoon = sewoon, sewoon[:6]   # sewoon_all: 결제 전 화면의 12년 지도와 같은 해까지(주제 상품 연도 표)
 
     # 월운: 주문한 날이 속한 달부터 12개월
     order_dt = datetime(order.order_date.year, order.order_date.month, order.order_date.day, 12).isoformat()
@@ -252,8 +265,17 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     for i, m in enumerate(span):
         if m["starts"][:16] <= order_dt[:16]:
             start = i
+    # 지금 달이 보름도 안 남았으면(예: 10월 28일 주문) 다음 달부터 12개월을 보여 준다
+    if start + 12 < len(span) and datetime.fromisoformat(span[start + 1]["starts"][:16]) - datetime.fromisoformat(order_dt[:16]) < timedelta(days=15):
+        start += 1
     rate = luck_rater(an)
     months = [month_row(m, rate) for m in span[start:start + 12]]
+    # 재회사주 결제 전 화면의 24개월 지도와 같은 달(saju/reveal.py start_month: 15일까지면 그 달, 16일부터 다음 달)
+    from ..reveal import REUNION_MONTHS, start_month
+    sy, sm = start_month(order.order_date, order.reveal_start)
+    rows = [month_row(m, rate) for m in span]
+    first = next((i for i, r in enumerate(rows) if (r["year"], r["month"]) == (sy, sm)), None)
+    screen_months = rows[first:first + REUNION_MONTHS] if first is not None else []
 
     shinsal = [{**s, "label": PILLAR_LABEL[s["pillar"]], "text": K.SHINSAL.get(s["name"], "")} for s in an["shinsal"]]
     seen_names = []
@@ -265,20 +287,22 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
                  for r in an["relations"]]
 
     sex_word = "남성" if result["person"]["sex"] == "male" else "여성"
-    time_text = result["input"]["time"] or "모름"
-    return {
+    tr = result["input"].get("time_range") or {}
+    time_text = (result["input"]["time"] or
+                 (f"대략 {tr['start']}~{'다음 날 ' if tr.get('endDayOffset') else ''}{tr['end']}" if tr.get("start") else "태어난 시간 모름"))
+    f = {
         "person": {
             "name": result["person"]["name"] or "고객",
             "sex": result["person"]["sex"], "sex_word": sex_word,
             "birth": birth.isoformat(),
-            "birth_text": f"{birth.year}년 {birth.month}월 {birth.day}일",
+            "birth_text": _birth_text(result["input"], birth),
             "calendar": result["input"]["calendar"],
             "time_text": time_text, "place": result["input"]["place"],
             "age": age, "zodiac": an["zodiac"],
         },
-        "order": {"date": order.order_date.isoformat(), "year": order.order_date.year,
+        "order": {"date": order.order_date.isoformat(), "reveal_start": order.reveal_start, "year": order.order_date.year,
                   "question": order.question.strip(), "daily": order.daily,
-                  "relationship": order.relationship},
+                  "relationship": order.relationship, "gift": order.gift},
         "uncertainties": [u["message"] for u in result["uncertainties"]] + result["warnings"],
         "variant_count": result["variant_count"],
         "variants": [v["key"] for v in result["variants"]],
@@ -303,7 +327,31 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "daewoon": {"direction": dw["direction"], "number": dw["start"]["number"],
                     "current_index": current_idx, "periods": periods},
         "sewoon": sewoon,
+        "sewoon_all": sewoon_all,
         "months": months,
+        "screen_months": screen_months,
         "version": result["version"],
         "options": result["options"],
     }
+    _attach_2027(f, result)
+    return f
+
+
+NY_AREA = {"career": "work", "wealth": "money", "business": "biz", "romance": "love", "health": "health"}
+
+
+def _attach_2027(f: dict, result: dict) -> None:
+    """제1조항: 2027년 달은 신년운세 계산(saju/report/newyear.py year_months) 한 곳에서만 매긴다.
+    평생사주 달력의 2027년 달 점수는 신년운세 달 점수 그대로이고, 다른 책의 2027년 달에는 신년운세 분야 점수(ny_areas)를 붙여 그대로 쓰게 한다
+    (손님 테스트 4차: 신년운세 '6월 조심할 달 40점'인데 평생사주 달력은 6월 64점, 연애사주와 신년운세 연애 달 점수가 1~12점 달랐다)."""
+    from .newyear import TARGET_YEAR, year_months
+    _, ny = year_months(f, result)
+    by_gz = {m["ganzhi"]: m for m in ny}
+    for rows in (f["months"], f["screen_months"]):
+        for r in rows:
+            m = by_gz.get(r["ganzhi"]) if r.get("year") == TARGET_YEAR else None
+            if m is None:
+                continue
+            r["score"] = m["t_score"]
+            r["ny_side"] = "good" if m.get("r_good") else "bad" if m.get("r_bad") else ""
+            r["ny_areas"] = {k: {"score": a["score"], "good": list(a["good"]), "bad": list(a["bad"])} for k, a in m["areas"].items()}

@@ -15,7 +15,7 @@ from korean_lunar_calendar import KoreanLunarCalendar
 from . import analysis, classics, luck
 from .constants import PILLAR_NAMES, STEMS, ELEMENTS, STEM_ELEMENT, ZODIAC_ANIMALS
 from .pillars import FourPillars, PillarOptions, compute_pillars, day_pillar_for_date
-from .regions import KOREA, Region, region_by_code
+from .regions import KOREA, PLAIN, Region, region_by_code
 from .timeutil import civil_to_utc
 
 CALCULATION_VERSION = "saju-engine/0.1.0"
@@ -92,8 +92,9 @@ def _place_range(place: dict) -> tuple[Region | None, list[float], str]:
     region = region_by_code(place.get("regionChoice") or place.get("regionCode"))
     if status in ("known", "region-only") and region:
         lons = sorted({region.lon_min, region.lon, region.lon_max})
-        return region, lons, region.name
-    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 미상)"
+        city = str(place.get("city") or "").strip() if status == "known" else ""
+        return region, lons, " ".join(x for x in (PLAIN.get(region.name, region.name), city[:30]) if x)
+    return None, [KOREA.lon_min, KOREA.lon, KOREA.lon_max], "대한민국(지역 모름)"
 
 
 @dataclass
@@ -106,9 +107,13 @@ class Variant:
     utc_sample: datetime | None = None
 
 
-def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions) -> list[Variant]:
+def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: PillarOptions,
+          center: float | None = None) -> list[Variant]:
+    """가능한 명식을 모두 모은다. 맨 앞(대표 명식)은 첫 날짜·시작 시각·지역 대표 경도의 명식이다
+    (시간 모름은 낮 12시. 사이트 engine.mjs chartFromPerson 과 같은 명식, 제1조항)."""
     known_time = p.time_accuracy != "unknown"
     variants: dict[str, Variant] = {}
+    first: list[str] = []
 
     def visit(civil: datetime, basis: str, lon: float):
         ct = civil_to_utc(civil.date(), civil.time())
@@ -118,6 +123,8 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             if not known_time:
                 # 시간 미상: 일주는 입력한 날짜 기준(경도 보정으로 날짜를 옮기지 않음)
                 fp = FourPillars(fp.year, fp.month, day_pillar_for_date(civil.date()), None)
+            if not first and lon == center and (known_time or civil.time() == time(12, 0)):
+                first.append(fp.key)   # 시간 모름은 사이트처럼 낮 12시 명식을 대표로
             v = variants.get(fp.key)
             if v is None:
                 v = variants[fp.key] = Variant(fp, civil, civil, utc_sample=u)
@@ -144,7 +151,7 @@ def _scan(solar_dates: list[dict], p: Person, lons: list[float], options: Pillar
             for lon in lons:
                 visit(t, sd["basis"], lon)
             t += timedelta(minutes=1)
-    return sorted(variants.values(), key=lambda v: v.civil_from)
+    return sorted(variants.values(), key=lambda v: (v.pillars.key not in first, v.civil_from))
 
 
 def _boundary_warnings(p: Person, solar_dates, lon: float, options: PillarOptions, base: FourPillars) -> list[str]:
@@ -187,10 +194,10 @@ def analyze_pillars(fp: FourPillars, utc: datetime, sex: str, current_year: int)
         "relations": analysis.natal_relations(fp),
         "shinsal": analysis.shinsal(fp),
         "daewoon": luck.daewoon(fp, utc, sex),
-        "sewoon": luck.sewoon(fp, list(range(current_year - 1, current_year + 10))),
+        "sewoon": luck.sewoon(fp, list(range(current_year - 1, current_year + 14))),   # 결제 전 화면의 12년 지도(2027~)까지
         "wolwoon": luck.wolwoon(fp, current_year),
-        # 주문한 달부터 12개월을 고를 수 있도록 앞뒤 해까지 36개월
-        "wolwoon_span": [m for y in (current_year - 1, current_year, current_year + 1)
+        # 주문한 달부터 12개월(재회사주 결제 전 화면은 24개월)을 고를 수 있도록 앞 해부터 48개월
+        "wolwoon_span": [m for y in (current_year - 1, current_year, current_year + 1, current_year + 2)
                          for m in luck.wolwoon(fp, y)],
     }
     if fp.hour is None:
@@ -211,15 +218,23 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
 
     solar_dates = solar_birth_dates(p)
     region, lons, place_label = _place_range(p.birth_place)
-    variants = _scan(solar_dates, p, lons, options)
+    variants = _scan(solar_dates, p, lons, options, region.lon if region else KOREA.lon)
 
     uncertainties = []
     if len(solar_dates) > 1:
         uncertainties.append({"kind": "date", "message": "양력·음력 또는 윤달 여부가 확정되지 않아 가능한 날짜를 모두 계산했어요."})
-    if p.time_accuracy != "exact":
-        uncertainties.append({"kind": "time", "message": "출생 시간이 확정되지 않아 가능한 시간 전체를 비교했어요."})
+    if p.time_accuracy == "approximate":   # 사이트 화면과 같은 시각으로 푼다(제1조항)
+        uncertainties.append({"kind": "time", "message": f"출생 시간은 넣어 주신 범위의 시작 시각({p.time_range['start']})으로 풀었어요."})
+    elif p.time_accuracy != "exact":
+        uncertainties.append({"kind": "time", "message": "태어난 시간을 몰라 시주(태어난 시간의 기둥)는 ?로 비워 두고, 해·달·날의 여섯 글자로 풀었어요."})
     if not region or p.birth_place.get("status") != "known":
-        uncertainties.append({"kind": "place", "message": f"출생지를 {place_label} 범위로 두고 결과 차이를 비교했어요."})
+        uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요." if region
+                              else "태어난 지역을 몰라 대한민국 대표 위치로 풀었어요."})
+
+    if p.time_accuracy == "exact" and variants and len(solar_dates) == 1 and variants[0].pillars.hour is not None \
+            and variants[0].pillars.day != day_pillar_for_date(solar_dates[0]["solar"]):
+        # 밤 11시(자시)가 넘어 태어나면 사주의 날은 다음 날로 본다(사이트 engine.mjs 와 같은 규칙). 손님이 놀라지 않게 한 줄 알린다(손님 테스트 4차).
+        uncertainties.append({"kind": "day", "message": "밤 11시(자시)가 넘어 태어나서, 사주의 날(일주)은 다음 날로 풀었어요. 자시부터 하루가 바뀌는 전통 방식이에요."})
 
     analyzed = []
     for v in variants:
@@ -238,10 +253,10 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
         values = {(v.pillars.as_list()[i].korean if v.pillars.as_list()[i] else None) for v in variants}
         common[name] = values.pop() if len(values) == 1 else None
 
-    warnings = []
-    if len(variants) == 1:
-        lon = region.lon if region else KOREA.lon
-        warnings = _boundary_warnings(p, solar_dates, lon, options, variants[0].pillars)
+    # 경계 안내는 대표 명식(대표 경도, 첫 번째 명식) 기준으로 늘 만든다. 사이트 reveal.mjs boundaryLines 와 같다
+    # (손님 테스트 4차: 춘천처럼 경도 범위가 넓어 명식 후보가 둘이면 화면에는 있고 리포트에는 없었다).
+    lon = region.lon if region else KOREA.lon
+    warnings = _boundary_warnings(p, solar_dates, lon, options, variants[0].pillars) if variants else []
     for sd in solar_dates:
         if p.time_accuracy == "exact":
             ct = civil_to_utc(sd["solar"], _parse_hm(p.time))

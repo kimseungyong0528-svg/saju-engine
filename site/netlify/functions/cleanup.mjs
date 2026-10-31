@@ -6,7 +6,8 @@ import { eraseOldWeeks } from './lib/studio.mjs';
 
 export default async () => {
   const store = blobStore();
-  const stuck = await flagStuck(store, realServices(process.env));
+  const services = realServices(process.env);
+  const stuck = await flagStuck(store, services);
   const erased = await eraseOld(store);
   const weeks = await eraseOldWeeks(blobStore('unmyeong-studio'));
   console.log('stuck', stuck, 'erased', erased, 'studio weeks erased', weeks);

@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from . import unity
 from .facts import OrderInfo, build_facts
 from .outline import build_outline
 from .render import render_html, render_pdf
@@ -22,9 +23,22 @@ def check_texts(facts: dict, sections: list[dict], texts: dict, final_section: s
 
 
 def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
-                         html_out: str | Path | None = None) -> dict:
+                         html_out: str | Path | None = None, taster: dict | None = None, taster_view: dict | None = None,
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """analyze_person() 결과로 평생사주 PDF를 만든다. 쪽수와 사용한 글을 돌려준다."""
     facts = build_facts(result, order)
+    _merge_boundary(facts)   # 경계 안내는 결제 전 화면처럼 한 줄(손님 테스트 3차)
+    from .theme import reveal_fix
+    for rows in (facts["sewoon"], facts["sewoon_all"]):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+        reveal_fix(result, "lifetime", rows, score="score", signs="r_signs")
+    unity.require("lifetime", result, facts)
+    if taster:
+        facts["taster"] = taster   # 무료 맛보기에서 고객이 본 6개(saju/taster.py). 리포트에서 더 자세히 푼다.
+    if taster_view:
+        facts["taster_view"] = taster_view   # 책 맨 끝 '무료 분석 다시 보기' 쪽에 그대로 싣는다.
+    if rebuy:
+        facts["rebuy"] = rebuy   # 그 쪽의 재구매 10% 할인 코드(주문 서버가 만든 것)
+    facts["owned"], facts["bundled"] = list(owned), bundled   # 같은 주문에서 함께 산 상품(다시 권하지 않는다)
     sections = build_outline(facts)
     texts = (writer or DraftWriter()).write(facts, sections)
     issues = check_texts(facts, sections, texts, FINAL_SECTION)
@@ -36,12 +50,22 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
 
 
 def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
-                        html_out: str | Path | None = None) -> dict:
+                        html_out: str | Path | None = None, taster: dict | None = None, taster_view: dict | None = None,
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """analyze_person() 결과로 연애사주 PDF(약 50쪽)를 만든다. 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다."""
     from . import romance as R
     from .outline import STATIC
     facts = build_facts(result, order)
+    _merge_boundary(facts)   # 경계 안내는 결제 전 화면처럼 한 줄(손님 테스트 3차: 5쪽에 13분·14분·15분 세 줄)
     facts["romance"] = R.build_romance(facts, result, order)
+    unity.require("romance", result, facts)
+    if taster:
+        facts["taster"] = taster
+    if taster_view:
+        facts["taster_view"] = taster_view
+    if rebuy:
+        facts["rebuy"] = rebuy
+    facts["owned"], facts["bundled"] = list(owned), bundled
     sections = R.build_outline(facts)
     writer = writer or DraftWriter()
     if isinstance(writer, ClaudeWriter):
@@ -73,13 +97,17 @@ def _merge_boundary(facts: dict) -> None:
             continue
         key = (m[2], m[3])
         near[key] = min(near.get(key, 99), int(m[1]))
-    lines = [f"태어난 시각이 {n}분만 {'늦었다면' if d == '이후' else '빨랐다면'} {pillar}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요."
-             for (d, pillar), n in sorted(near.items())]
+    # 같은 분, 같은 방향이면 한 줄로 묶는다('일주와 시주가', 손님 테스트 3차: 거의 같은 말 두 줄). 사이트 reveal.mjs boundaryLines 와 같다.
+    groups: dict[tuple[str, int], list[str]] = {}
+    for (d, pillar), n in sorted(near.items()):
+        groups.setdefault((d, n), []).append(pillar)
+    lines = [f"태어난 시각이 {n}분만 {'늦었다면' if d == '이후' else '빨랐다면'} {'와 '.join(ps)}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요."
+             for (d, n), ps in groups.items()]
     facts["uncertainties"] = lines + rest
 
 
 def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict | None = None,
-                    partner: dict | None = None) -> tuple:
+                    partner: dict | None = None, bundled: bool = False) -> tuple:
     """주제 사주의 재료(facts)와 목차(sections)를 만든다. 두 사람 상품은 partner(상대방 analyze_person 결과)가 필요하다."""
     import importlib
     if product not in THEME_PRODUCTS:
@@ -93,16 +121,27 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
         facts["partner"] = build_facts(partner, order)
         _merge_boundary(facts["partner"])
     facts["theme"] = M.build(facts, result, answers or {}, partner)
+    unity.require(product, result, facts, partner)   # 제1조항: 화면과 다르면 여기서 멈춘다
+    facts["theme"]["data"]["seen"] = not bundled   # 묶음으로 산 상품은 결제 전 이야기 화면을 보지 않았다
     return M, facts, M.build_outline(facts)
 
 
 def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: str | Path, writer=None,
                         html_out: str | Path | None = None, answers: dict | None = None, partner: dict | None = None,
-                        texts: dict | None = None) -> dict:
+                        texts: dict | None = None, taster: dict | None = None, taster_view: dict | None = None,
+                        rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """재회·깊은 궁합·재물·직업·사업·건강·2027 신년운세 PDF(50쪽 이상). 평생사주와 같은 엔진·도안·글쓰기 방식을 쓴다.
     texts를 주면 글을 새로 쓰지 않고 그 글로 만든다(미리 써 둔 글 확인용)."""
     from .outline import STATIC
-    M, facts, sections = prepare_product(product, result, order, answers, partner)
+    M, facts, sections = prepare_product(product, result, order, answers, partner, bundled)
+    facts["answers"] = dict(answers or {})   # 손님이 고른 답 그대로(보너스 쪽 '지금 상황' 한 줄에 쓴다)
+    if taster:
+        facts["taster"] = taster   # 고객이 무료 맛보기에서 본 내용(saju/taster.py). 리포트가 이와 어긋나지 않게 쓴다.
+    if taster_view:
+        facts["taster_view"] = taster_view   # 책 맨 끝 '무료 분석 다시 보기' 쪽에 그대로 싣는다.
+    if rebuy:
+        facts["rebuy"] = rebuy   # 그 쪽의 재구매 10% 할인 코드(주문 서버가 만든 것)
+    facts["owned"], facts["bundled"] = list(owned), bundled   # 같은 주문에서 함께 산 상품(다시 권하지 않는다)
     if texts is None:
         writer = writer or DraftWriter()
         if isinstance(writer, ClaudeWriter):

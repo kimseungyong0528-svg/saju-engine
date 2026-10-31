@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import copy
 from datetime import date, datetime, timedelta
 
 from . import knowledge as K
@@ -145,16 +146,20 @@ def _gz_elements(gz: str) -> list[str]:
     return _ganzhi_elements(gz)
 
 
-def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
+def year_months(f: dict, result: dict) -> tuple[dict, list[dict]]:
+    """2027년 세운과 1월~12월 달(전체 점수·분야별 점수·표시). 신년운세 책이 쓰고, 다른 책의 2027년 달도 이 값을 그대로 가져다 쓴다
+    (제1조항: 같은 달을 두 곳에서 따로 계산하지 않는다 — 손님 테스트 4차: 묶음 책끼리 같은 달 점수와 방향이 달랐다)."""
+    key = (f["order"]["date"], f["person"]["name"])
+    if _YM_CACHE.get("result") is result and _YM_CACHE.get("key") == key:
+        return _YM_CACHE["val"]
     from .. import luck
     an = result["variants"][0]["analysis"]
     fp = T.fourpillars(result)
     rate = luck_rater(an)
-    name = f["person"]["name"]
     male = f["person"]["sex"] == "male"
     strong = f["strength"]["label"] not in ("신약", "극신약")
     n_gwan, n_jae = T.count(f, "관성"), T.count(f, "재성")
-    spouse = "재성" if male else "관성"
+    spouse = "정재" if male else "정관"   # 연애사주 화면의 '배우자 별'과 같은 별(제1조항)
     hits = _hits(f, an)
     excess = [e["el"] for e in f["elements"] if e["status"] == "많음"]
     lacking = [e["el"] for e in f["elements"] if e["status"] == "부족"]
@@ -204,19 +209,19 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
             "work": area((("직장·승진 기운(관성)", gwan), ("문서·합격 기운(인성)", ins), ("실력 발휘(식상)", sik),
                           ("윗사람과 부딪힘(상관견관)", sg), ("일 자리 변동(월지 충)", c_mon), ("이동 기운(역마)", yeok)),
                          base + 8 * gwan + 5 * ins + 4 * sik - 6 * sg - 3 * c_mon),
-            "money": area((("재물 별(재성)", jae), ("재능이 돈으로(식상)", sik), ("나가는 돈 주의(비겁·겁재)", leak),
+            "money": area((("돈의 별(재성)", jae), ("재능이 돈으로(식상)", sik), ("나가는 돈 주의(비겁·겁재)", leak),
                            ("돈의 자리 변동(월지 충)", c_mon)),
                           base + 10 * jae + (5 if strong else 2) * sik - 7 * leak - 4 * c_mon),
             "biz": area((("재능이 돈으로 이어짐(식상생재)", sik and (jae or n_jae > 0)), ("새 일 기운(식상)", sik),
                          ("계약·문서 기운(인성)", ins), ("동업·경쟁 주의(겁재)", geob), ("자리 변동(충)", c_day or c_mon)),
                         base + 5 * sik + 5 * (sik and (jae or n_jae > 0)) + 6 * ins - 6 * geob - 3 * (c_day or c_mon)),
-            "love": area(((f"배우자 별({spouse})", g(spouse)), ("도화 글자", peach), ("배우자 자리 합(일지 합)", h_day),
+            "love": area(((f"배우자 별({spouse})", spouse in gods), ("도화 글자", peach), ("배우자 자리 합(일지 합)", h_day),
                           ("배우자 자리 충(일지 충)", c_day), ("배우자 자리 마찰(형·파·해·원진)", harm_day)),
-                         base + 9 * g(spouse) + 6 * peach + 6 * h_day - 7 * c_day - 3 * harm_day),
+                         base + 9 * (spouse in gods) + 6 * peach + 6 * h_day - 7 * c_day - 3 * harm_day),
             "people": area((("귀인 글자(천을귀인)", gui), ("구설 주의(상관)", "상관" in gods), ("손재 주의(겁재)", geob),
                             ("관재 주의(편관과 충·형)", "편관" in gods and (c_day or c_mon or harm_day)), ("관재 주의(상관견관)", sg)),
                            base + 8 * gui - 4 * ("상관" in gods) - 5 * geob - 6 * ("편관" in gods and (c_day or c_mon or harm_day)) - 4 * sg),
-            "health": area((("부족한 기운 채움", fill), ("넘치는 기운 더함", more > 0), ("몸의 자리 충(일지 충)", c_day),
+            "health": area((("부족한 기운 채움", sum(e in good_el for e in els) > more), ("넘치는 기운 더함", more > sum(e in good_el for e in els)), ("몸의 자리 충(일지 충)", c_day),
                             ("생활 자리 충(월지 충)", c_mon)),
                            base + 4 * fill - 4 * more - 7 * c_day - 4 * c_mon),
             "move": area((("이동 기운(역마)", yeok), ("공부·시험 기운(인성)", ins), ("문창귀인 글자", mun),
@@ -231,11 +236,50 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     year.update(marks(year))
     for m in months:
         m.update(marks(m))
+    T.reveal_fix(result, "newyear", months, replace=False)   # 제1조항: 결제 전 화면의 '돕는 달'·'조심할 달'과 같은 방향
+    _align_areas(result, months)   # 제1조항: 함께 산 재물운·직업운·사업운·연애사주·건강운의 달 표시와 같은 방향
+    _YM_CACHE.update(result=result, key=key, val=(year, months))
+    return year, months
+
+
+_YM_CACHE: dict = {}
+
+
+def _area_best(ms: list[dict], key: str) -> list[str]:
+    """분야별 '좋은 달': 그 분야 점수가 60점 이상인 달 가운데 높은 3개(시간 순). 한 해 전체의 돕는 달을 분야마다 복사하지 않는다
+    (손님 테스트 4차: 7개 분야 '좋은 달'이 모두 같았고, 일·직장 '좋은 달 8월'이 같은 쪽 표에서 20점이었다)."""
+    top = sorted([m for m in ms if m["t_score"] >= 60 and not m.get("r_bad")], key=lambda m: -m["t_score"])[:3]
+    return [m["label"] for m in ms if m in top]
+
+
+def _area_careful(ms: list[dict], key: str) -> list[str]:
+    low = sorted([m for m in ms if (m["areas"][key]["bad"] or m["t_score"] <= 40) and not m.get("r_good")], key=lambda m: m["t_score"])[:2]
+    return [m["label"] for m in ms if m in low]
+
+
+def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
+    from .. import luck
+    an = result["variants"][0]["analysis"]
+    fp = T.fourpillars(result)
+    rate = luck_rater(an)
+    name = f["person"]["name"]
+    male = f["person"]["sex"] == "male"
+    strong = f["strength"]["label"] not in ("신약", "극신약")
+    n_gwan, n_jae = T.count(f, "관성"), T.count(f, "재성")
+    spouse = "정재" if male else "정관"
+    hits = _hits(f, an)
+    excess = [e["el"] for e in f["elements"] if e["status"] == "많음"]
+    lacking = [e["el"] for e in f["elements"] if e["status"] == "부족"]
+    good_el = {f["lucky"]["element"], *lacking}
+    order_day = date.fromisoformat(f["order"]["date"])
+    sy = luck.sewoon(fp, [TARGET_YEAR])[0]
+    year, months = copy.deepcopy(year_months(f, result))
 
     def avg(vals):
         return sum(vals) / len(vals)
 
-    year_score = T.clamp((year["t_score"] + avg([m["t_score"] for m in months])) / 2)
+    screen = T.screen_score(f, result, "newyear")   # 제1조항: 2027년 전체 점수는 결제 전 화면에서 본 점수 그대로
+    year_score = screen["score"]
     label = lambda m: m["label"]
     areas = {}
     for key, title in AREAS:
@@ -244,8 +288,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
             "name": title,
             "score": T.clamp((year["areas"][key]["score"] + avg([m["t_score"] for m in ms])) / 2),
             "year_signs": year["areas"][key]["signs"],
-            "best_months": T.best(ms, 3, label),
-            "careful_months": T.worst(ms, 2, label, limit=45),
+            "best_months": _area_best(ms, key),
+            "careful_months": _area_careful(ms, key),
             "sign_months": {s: [m["label"] for m in ms if s in m["t_signs"]]
                             for s in dict.fromkeys(x for m in ms for x in m["t_signs"])},
         }
@@ -291,11 +335,20 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     sj = samjae(an["pillars"][0]["branch"], TARGET_YEAR)
     roles = _roles(f)
     stem_el, branch_el = _gz_elements(year["ganzhi"])
+    # 제1조항: 2027년에 들어오는 두 기운의 역할은 맛보기 '2027년 운'(돕는 기운·부담이 되는 기운)과 같게 쓴다.
+    from ..taster import ny_sides, pillars_from_result
+    for el, side in ny_sides(pillars_from_result(result), result["person"].get("sex", "")).items():
+        if side == "help" and not roles[el].startswith(("용신", "희신")):
+            roles[el] = "희신(나를 돕는 반가운 기운)"
+        elif side == "hurt" and roles[el].startswith("용신"):
+            roles[el] = "용신(가장 필요한 기운이지만, 2027년에는 맞지 않는 방식으로 들어와 부담이 되는 쪽)"
+        elif side == "hurt":
+            roles[el] = "기신(2027년에 나에게 부담이 되는 기운)"
     rels = [{"kind": K.relation_kind(r["type"]), "type": r["type"], "level": r["level"],
              "with": _pillar_word(r["with"]),
              "meaning": K.RELATION.get(K.relation_kind(r["type"]), "")} for r in year["relations"]]
-    fit_good = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("용신", "희신")))
-    fit_bad = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("기신", "넘치는")))
+    fit_good = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("용신", "희신")) and "부담" not in roles[el])
+    fit_bad = sum(1 for el in (stem_el, branch_el) if roles[el].startswith(("기신", "넘치는")) or "부담" in roles[el])
     fit = "잘 맞는 편" if fit_good > fit_bad else "부담이 있는 편" if fit_bad > fit_good else "반반인 편"
     year_type = ("기회를 잡는 해" if year_score >= 68 else "차근차근 올라가는 해" if year_score >= 58
                  else "다지며 준비하는 해" if year_score >= 47 else "지키며 숨을 고르는 해")
@@ -305,8 +358,6 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     lucky = f["lucky"]
     best = T.best(months, 3, label)
     careful = T.worst(months, 3, label, limit=45)
-    if not careful:
-        careful = [m["label"] for m in sorted(months, key=lambda m: m["t_score"])[:2]]
     health_body = [{"el": e, "name": K_NAME[e], **BODY[e]} for e in excess + [x for x in lacking if x not in excess]]
     health_basis = "넘치는 기운과 모자란 기운의 영역"
     if not health_body:   # 넘치거나 모자란 기운이 없으면 2027년에 크게 들어오는 기운(불·흙) 쪽을 본다
@@ -323,7 +374,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
                             "ten_god_simple": K.TEN_GOD[year["branch_ten_god"]]["simple"], "role": roles[branch_el]},
                  "twelve_stage": year["twelve_stage"], "relations": rels, "gyeok_effect": year["gyeok_effect"],
                  "flow_score": year["score"], "signs": year["t_signs"]},
-        "year_score": year_score, "year_type": year_type, "fit": fit,
+        "year_score": year_score, "screen_score": screen, "year_type": year_type, "fit": fit,
         "age_2027": TARGET_YEAR - birth.year, "age_text": f"{TARGET_YEAR}년 생일이 지나면 만 {TARGET_YEAR - birth.year}세",
         "zodiac": f["person"]["zodiac"], "samjae": sj, "daewoon": daewoon,
         "areas": {k: {kk: v[kk] for kk in ("name", "score", "year_signs", "best_months", "careful_months", "sign_months")} for k, v in areas.items()},
@@ -410,7 +461,7 @@ def build_outline(f: dict) -> list[dict]:
         title, subtitle = next((x, s) for n, x, s in SECTIONS if n == no)
         if no == focus_no:   # 고객이 고른 분야의 장에 한 쪽을 더한다
             pages.insert(len(pages) - 1 if len(pages) > 2 else len(pages), P(
-                f"ny{no}_focus", f"{t['focus']}을 가장 궁금해하신 {name}님께" if t["focus"] != "한 해 전체" else f"한 해 전체를 더 깊이 보기",
+                f"ny{no}_focus", f"{t['focus']}을 가장 궁금해하신 {name} 님께" if t["focus"] != "한 해 전체" else f"한 해 전체를 더 깊이 보기",
                 slot=S(f"ny{no}_focus", f"고객이 가장 궁금해한 분야는 '{t['focus']}'이에요. 이 분야의 2027년 흐름을 달 이름과 사주 근거로 한 번 더 깊게 쓰고, "
                                         "고객이 바로 할 일 세 가지를 순서대로 써 주세요.")))
         sections.append({"no": no, "title": title, "subtitle": subtitle, "pages": pages, "terms": []})
@@ -419,7 +470,7 @@ def build_outline(f: dict) -> list[dict]:
     short = lambda sg: sg.split("(")[0]
     yrow = f"{y['ganzhi']}({y['hanja']})년 · {y['animal']}띠 해"
     gods = f"{y['stem']['char']}: {y['stem']['ten_god']}({y['stem']['ten_god_simple']}) · {y['branch']['char']}: {y['branch']['ten_god']}({y['branch']['ten_god_simple']})"
-    rel_txt = ", ".join(f"{r['with']}{'과' if r['with'][-1] in '날달' else '와'} {r['kind']}" for r in y["relations"]) or "특별히 합치거나 부딪히는 글자가 없어요"
+    rel_txt = ", ".join(f"{r['with']}{'과' if (ord(r['with'][-1]) - 0xAC00) % 28 else '와'} {r['kind']}" for r in y["relations"]) or "특별히 합치거나 부딪히는 글자가 없어요"
     sj_txt = (f"{sj['kind']}예요 ({t['zodiac']}띠, {sj['years_branches']} 해가 삼재)" if sj["is_samjae"]
               else f"삼재가 아니에요 ({t['zodiac']}띠의 삼재는 {sj['years_branches']} 해)")
     dw_txt = dw["change_text"]
@@ -432,10 +483,12 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="ny_how_to_read", opener=True),
         P("ny_saju", "사주와 2027년 짧게 알기", static="ny_what_is_saju", figure="element_cycle"),
         P("chart", "나의 사주표", figure="pillars",
-          slot=S("chart", f"{name}님의 여덟 글자를 소개하고, 일간(나를 나타내는 글자)이 어떤 사람인지 쉽게 설명해 주세요. 2027년을 볼 때 어느 글자가 중요한지 한 문장으로 이어 주세요.", HALF)),
+          slot=S("chart", f"{name} 님의 여덟 글자를 소개하고, 일간(나를 나타내는 글자)이 어떤 사람인지 쉽게 설명해 주세요. 2027년을 볼 때 어느 글자가 중요한지 한 문장으로 이어 주세요.", HALF)),
         P("ny_fate", "나의 2027년 운명", figure="kv", rows=[
             ["2027년의 기운", yrow], ["나에게 들어오는 십신", gods],
-            ["내 사주와의 관계", rel_txt], ["나에게 필요한 기운(용신)", f"{f['lucky']['element_name']}({f['lucky']['element']})"],
+            ["2027년 두 기운의 역할", f"{y['stem']['char']}({y['stem']['element_name']}): {y['stem']['role'].split('(')[1].rstrip(')')} · "
+                                      f"{y['branch']['char']}({y['branch']['element_name']}): {y['branch']['role'].split('(')[1].rstrip(')')}"],
+            ["내 사주와의 관계", rel_txt], ["나에게 가장 필요한 기운(용신)", f"{f['lucky']['element_name']}({f['lucky']['element']})"],
             ["삼재", sj_txt], ["대운", dw_txt],
         ], slot=S("ny_fate", "표를 바탕으로 2027년이 이 사람에게 어떤 해인지 처음 읽는 사람도 알게 소개해 주세요. 십신, 용신, 삼재, 대운이 무슨 뜻인지 괄호로 풀어 주세요.", HALF - 50)),
     ])
@@ -443,9 +496,9 @@ def build_outline(f: dict) -> list[dict]:
                  for v in a.values()]
     section("2", [
         P("ny_glance", "한눈에 보는 나의 2027년", figure="kv", opener=True, rows=[
-            ["한마디로", t["year_type"]], ["2027년 전체 점수", f"{t['year_score']}점"],
+            ["한마디로", t["year_type"]], T.screen_row(t["screen_score"], t.get("seen", True)),
             ["강한 분야", ", ".join(t["strong_areas"])], ["약한 분야", ", ".join(t["weak_areas"])],
-            ["가장 좋은 달", join(t["best_months"])], ["조심할 달", join(t["careful_months"])],
+            ["가장 좋은 달", join(t["best_months"])], ["조심할 달", join(t["careful_months"], "크게 조심할 달은 없어요")],
             ["삼재", "아니에요" if not sj["is_samjae"] else sj["kind"]],
             ["대운", "2027년에 바뀌어요" if dw["changes_in_2027"] else "2027년에는 바뀌지 않아요"],
         ], slot=S("ny_glance", f"표를 이어서 2027년을 한 문장으로 요약하고('{t['year_type']}'), 그 까닭을 세운 글자와 점수로 짧게 설명해 주세요.", HALF - 80)),
@@ -585,7 +638,7 @@ def build_outline(f: dict) -> list[dict]:
                       slot=S("ny12_q", f"고객 질문: \"{q}\". 2027년 세운과 달별 운을 근거로 솔직하고 구체적으로 답해 주세요. 언제(달 이름), 무엇을 하면 되는지 함께 씁니다.", FULL - 100)))
     last += [
         P("ny12_last", "마지막 조언",
-          slot=S("ny12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 새해를 앞두고 가지기 쉬운 걱정 한두 가지에 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'로 답하고, "
+          slot=S("ny12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 새해를 앞두고 가지기 쉬운 걱정 한두 가지에 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'로 답하고, "
                                  "2027년에 이 사주가 가진 힘을 근거로 말한 뒤 새해 첫 주에 할 한 가지를 짚어 주세요.", FULL - 20)),
     ]
     section("12", last)
@@ -598,6 +651,66 @@ def cross_sell_order(f: dict) -> list[str]:
     return {"일과 직장": ["career"], "돈과 재물": ["wealth"], "연애와 결혼": ["romance"], "건강": ["health"]}.get(focus, ["lifetime"])
 
 
+# 신년운세의 분야가 따로 파는 상품과 겹치면, 그 상품 화면·리포트와 같은 규칙(saju/reveal.py)으로 달마다 표시와 점수 방향을 맞춘다.
+AREA_PRODUCT = {"work": "career", "money": "wealth", "biz": "business", "love": "romance", "health": "health"}
+
+
+def short(x: str) -> str:
+    return x.split("(")[0]
+
+
+BAD_WORDS = ("주의", "충", "마찰", "부딪힘", "넘치는")
+
+
+def _is_bad_sign(x: str) -> bool:
+    return any(w in x for w in BAD_WORDS)
+
+
+def _align_areas(result: dict, months: list[dict]) -> None:
+    from .. import reveal as RV
+    from ..taster import texts
+    sex = result["person"].get("sex", "")
+    fp = T.fourpillars(result)
+    _, rule_of = RV._marker(fp, sex)
+    conf, marks = texts()["REVEAL"]["PRODUCTS"], texts()["REVEAL"]["MARKS"]
+    for m in months:
+        p = {"stem": STEMS.index(m["ganzhi"][0]), "branch": BRANCHES.index(m["ganzhi"][1])}
+        for key, ar in m["areas"].items():
+            pid = AREA_PRODUCT.get(key)
+            good = bad = []
+            if pid:
+                gk, bk = RV.year_marks(fp, sex, pid, "", [RV._mark_key(k, sex) for k in conf[pid]["good"] if rule_of(k)(p)],
+                                       [RV._mark_key(k, sex) for k in conf[pid]["bad"] if rule_of(k)(p)])
+                good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
+            # 제1조항: 결제 전 화면에서 '조심할 달'이면 분야별로도 좋은 달이 아니고, '돕는 달'이면 분야별로도 조심할 달이 아니다
+            # (다른 책 theme.reveal_fix 와 같은 규칙. 손님 테스트 4차: 화면 '8월 돕는 달'인데 일·직장 표는 8월 20점이었다).
+            if m.get("r_bad"):
+                good = []
+            if m.get("r_good"):
+                bad = []
+            v = ar["score"]
+            if pid:
+                v = max(v, 60) if good else min(v, 40) if bad else min(max(v, 41), 59)
+            if m.get("r_bad"):
+                v = min(v, 59 if not bad else 40)
+            if m.get("r_good"):
+                v = max(v, 41)
+            ar["score"] = v
+            ar["good"], ar["bad"] = good, bad
+            own = [x for x in ar["signs"] if not (key == "health" and ("기운 채움" in x or "기운 더함" in x))]   # 건강운 책과 같은 '기운 채움' 기준만 쓴다
+            if good or m.get("r_good"):
+                own = [x for x in own if not _is_bad_sign(x)]   # 좋은 달 칸에 조심 표시를 함께 붙이지 않는다
+            if bad or m.get("r_bad"):
+                own = [x for x in own if _is_bad_sign(x)]
+            seen, out = set(), []
+            for x in good + bad + own:
+                k = short(x)
+                if k not in seen:   # '배우자 별'과 '배우자 별(정관)'처럼 같은 말을 두 번 쓰지 않는다
+                    seen.add(k)
+                    out.append(x)
+            ar["signs"] = out
+
+
 def hook(f: dict) -> str:
     """다른 상품 끝에 붙는 신년운세 안내 문장(계산값만 사용)."""
     from ..analysis import branch_ten_god, ten_god
@@ -606,6 +719,10 @@ def hook(f: dict) -> str:
     ds = STEMS.index(f["day_master"]["stem"])
     sg, bg = ten_god(ds, STEMS.index(gz[0])), branch_ten_god(ds, BRANCHES.index(gz[1]))
     sj = samjae(f["pillars"][0]["branch"], TARGET_YEAR)
-    return (f"2027년 정미년은 {name}님에게 {sg}({K.TEN_GOD[sg]['simple']}) 기운과 {bg}({K.TEN_GOD[bg]['simple']}) 기운이 들어오는 해예요. "
+    from .. import reveal as RV
+    from .products import _screen
+    side = RV.ny_verdict(*_screen(f))[0]   # 제1조항: 모든 책의 12년 지도 2027년 칸과 같은 쪽(손님 테스트 3차: 돈의 별만 말해 '들어오는 해'로 읽혔다)
+    return (f"2027년 정미년은 {name} 님에게 {sg}({K.TEN_GOD[sg]['simple']}) 기운과 {bg}({K.TEN_GOD[bg]['simple']}) 기운이 들어오는 해예요. "
+            + ("사주로 본 2027년 전체 운은 좋은 쪽으로 나왔어요. " if side == "good" else "사주로 본 2027년 전체 운은 조심할 쪽으로 나왔어요. ")
             + (f"{f['person']['zodiac']}띠라서 2027년은 {sj['kind']}예요. " if sj["is_samjae"] else f"{f['person']['zodiac']}띠는 2027년에 삼재가 아니에요. ")
             + "분야별 점수와 1월부터 12월까지 좋은 달, 조심할 달을 정리해 드려요.")

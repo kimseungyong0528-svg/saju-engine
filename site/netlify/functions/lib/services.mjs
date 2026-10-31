@@ -1,5 +1,6 @@
 // 바깥 서비스: 토스페이먼츠(결제 승인), 깃허브(결과 작성·SNS 게시물 작업 시작), Resend(이메일).
 import { productName, reportFileName } from './orders.mjs';
+import { PERCENT } from './discounts.mjs';
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -58,6 +59,8 @@ export function realServices(env, fetcher = fetch) {
       `${name}님, 운명서재입니다.`, '',
       `주문하신 ${product} 결과를 PDF 파일로 보내드려요. 이 메일에 붙어 있는 파일을 내려받아 보관해주세요.`, '',
       '개인정보 보호를 위해 출생 정보는 이 메일을 보내면서 바로 지웠어요. 결과 파일도 7일 뒤 서버에서 지워요. 이 PDF를 꼭 내려받아 보관해주세요.',
+      ...(order.amount === 0 && order.parentId ? ['함께 주문하신 다른 리포트는 따로 메일로 보내드려요.', ''] : []),
+      `리포트 끝의 '자세히 보기 (재구매 ${PERCENT}% 할인)' 링크를 누르면 다음 리포트를 ${PERCENT}% 할인받을 수 있어요.`,
       '결과에 오류가 있거나 파일이 열리지 않으면 이 메일에 답장으로 알려주세요.', '',
       `운명서재 ${site}`,
     ].join('\n');
@@ -74,7 +77,7 @@ export function realServices(env, fetcher = fetch) {
     const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : '발송 보류된 주문이 있어요';
     await resendEmail({
       to: [env.OWNER_EMAIL], subject: `[운명서재] ${what} (${productName(order.productId)})`,
-      text: `주문번호 ${order.id}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,
+      text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,
     });
   }
 

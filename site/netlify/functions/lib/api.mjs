@@ -2,9 +2,10 @@
 import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
-  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName,
+  workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
 } from './orders.mjs';
 import { ready } from './services.mjs';
+import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -33,6 +34,12 @@ export function makeApi({ store, services, env, studioStore = store }) {
           productNames: Object.fromEntries(PRODUCTS.map(p => [p.id, p.name])),
         });
       }
+      // 결제 화면의 금액 안내. 주문을 만들 때와 같은 계산(quote)을 쓴다.
+      if (m === 'POST' && parts.join('/') === 'quote') {
+        const q = await quote(store, await readJson(req));
+        if (!q) throw new ApiError(400, 'PRODUCT_REQUIRED');
+        return json({ items: q.items, base: q.base, discount: q.discount, amount: q.amount, notes: q.notes, incomplete: q.incomplete });
+      }
       if (m === 'POST' && parts.join('/') === 'intake/assess') {
         const { payload, ...decision } = assess(await readJson(req));
         return json(decision);
@@ -40,12 +47,11 @@ export function makeApi({ store, services, env, studioStore = store }) {
       if (parts[0] === 'orders' && parts.length === 1 && m === 'POST') {
         if (!ready(env)) throw new ApiError(503, 'CHECKOUT_NOT_READY');
         const body = await readJson(req);
-        // 토스 시험 키(test_)를 쓰는 동안에는 사장님 이메일 주문만 받는다. 시험 결제는 돈이 안 나가지만 API 비용은 나가므로.
-        if (String(env.TOSS_CLIENT_KEY).startsWith('test_')
-          && String(body.email || '').trim().toLowerCase() !== String(env.OWNER_EMAIL || '').trim().toLowerCase()) {
-          throw new ApiError(403, 'TEST_MODE_OWNER_ONLY');
-        }
-        return json(await createOrder(store, body, req.headers.get('idempotency-key')), 201);
+        // 토스 시험 키(test_)를 쓰는 동안 사장님 이메일이 아닌 주문은 시험 결제창까지만 연다(토스·카드사 심사용).
+        // 시험 결제는 돈이 안 나가지만 결과 작성은 API 비용이 나가므로, 이런 주문은 결제가 끝나도 결과를 만들지 않는다.
+        const testOnly = String(env.TOSS_CLIENT_KEY).startsWith('test_')
+          && String(body.email || '').trim().toLowerCase() !== String(env.OWNER_EMAIL || '').trim().toLowerCase();
+        return json(await createOrder(store, body, req.headers.get('idempotency-key'), new Date(), { testOnly }), 201);
       }
       if (parts[0] === 'orders' && parts.length >= 2) {
         const action = parts[2] || '';
@@ -53,7 +59,16 @@ export function makeApi({ store, services, env, studioStore = store }) {
         // (카드 앱을 다녀오며 브라우저 저장값이 사라져도 결제가 승인되게).
         const order = await loadOrder(store, parts[1], action === 'confirm' && !bearer(req) ? undefined : bearer(req));
         const hasPdf = async () => Boolean(await store.getBytes(`pdf/${order.id}`));
-        if (m === 'GET' && !action) return json(publicView(order, await hasPdf()));
+        if (m === 'GET' && !action) {
+          // 묶음 주문: 함께 산 책마다 상태와 PDF 내려받기를 보여 준다(같은 접근 열쇠로 연다).
+          const view = publicView(order, await hasPdf());
+          if (order.children?.length) view.books = (await Promise.all(order.children.map(async id => {
+            const c = await store.get(`orders/${id}`);
+            return c && { orderId: c.id, productName: productName(c.productId), status: c.status, message: STATUS_MESSAGES[c.status] || '',
+              pdfAvailable: Boolean(await store.getBytes(`pdf/${c.id}`)), fileName: reportFileName(c) };
+          }))).filter(Boolean);
+          return json(view);
+        }
         if (m === 'GET' && action === 'pdf') {
           const pdf = await store.getBytes(`pdf/${order.id}`);
           if (!pdf) throw new ApiError(404, 'PDF_NOT_AVAILABLE');
@@ -79,7 +94,13 @@ export function makeApi({ store, services, env, studioStore = store }) {
         const action = parts[3] || '';
         if (m === 'GET' && !action) {
           if (!order.payload) throw new ApiError(410, 'ERASED');
-          return json({ orderId: order.id, productId: order.productId, status: order.status, paidAt: order.paidAt, payload: order.payload, disclosures: order.disclosures });
+          const rebuy = await rebuyForJob(store, order, env.SITE_URL).catch(() => null);
+          // 같은 주문(묶음)에서 함께 산 상품: 리포트가 이미 산 상품을 다시 권하지 않고, 묶음 상품은 '결제 전에 보신'이라고 쓰지 않는다.
+          const root = order.parentId ? await store.get(`orders/${order.parentId}`) : order;
+          const kids = await Promise.all((root?.children || []).map(id => store.get(`orders/${id}`)));
+          const together = [root?.productId, ...kids.map(k => k?.productId)].filter(Boolean);
+          return json({ orderId: order.id, productId: order.productId, status: order.status, paidAt: order.paidAt || root?.paidAt, payload: order.payload, disclosures: order.disclosures, rebuy,
+            together, ...(order.parentId ? { parentId: order.parentId } : {}) });
         }
         if (m === 'POST' && action === 'status') {
           const body = await readJson(req);

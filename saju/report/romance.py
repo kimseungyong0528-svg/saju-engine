@@ -11,6 +11,7 @@ from . import knowledge as K
 from .facts import PILLAR_LABEL
 from .outline import FULL, HALF, _slot, page
 from .writer import STYLE_RULES
+from .theme import screen_score
 
 FINAL_SECTION = "10"
 
@@ -38,7 +39,7 @@ STATIC = {
     "r_what_is_saju": [
         "사주(四柱)는 태어난 해, 달, 날, 시간의 네 기둥이에요. 기둥마다 위 글자(천간)와 아래 글자(지지)가 있어 모두 여덟 글자가 돼요.",
         "여덟 글자는 모두 오행(五行) 가운데 하나예요. 목(나무), 화(불), 토(흙), 금(쇠), 수(물)의 다섯 기운이 서로 돕고(상생) 누르며(상극) 균형을 이뤄요.",
-        "태어난 날의 위 글자(일간)가 '나 자신'이에요. 연애사주에서는 나와 다른 글자의 관계로 이성을 대하는 모습을 보고, 운에서 들어오는 글자로 인연이 오는 때를 봐요.",
+        "태어난 날의 위 글자(일간)가 '나 자신'이에요. 연애사주에서는 나와 다른 글자의 관계로 좋아하는 사람을 대하는 모습을 보고, 운에서 들어오는 글자로 인연이 오는 때를 봐요.",
     ],
     "r_spouse_seat": [
         "태어난 날 기둥의 아래 글자를 '일지(日支)'라고 해요. 나(일간) 바로 아래에 붙어 있는 글자라서, 사주에서는 이 자리를 '배우자 자리'로 봐요.",
@@ -60,7 +61,7 @@ _SEAT_HINT = {
 
 STATUS_TEXT = {
     "썸을 타고 있어요": "썸", "연애 중이에요": "연애 중", "지금은 솔로예요": "솔로",
-    "최근에 헤어졌어요": "최근 이별", "오랫동안 혼자였어요": "오래 혼자", "짝사랑 중이에요": "짝사랑",
+    "최근에 헤어졌어요": "최근 이별", "오랫동안 혼자였어요": "오래 혼자", "짝사랑 중이에요": "짝사랑", "혼자 좋아하고 있어요(짝사랑)": "짝사랑",
 }
 
 
@@ -106,13 +107,22 @@ def build_romance(f: dict, result: dict, order) -> dict:
     visible = [s for s in seats if any(not w.startswith("숨은") for w in s["where"])]
     main_seat = (visible or seats or [None])[0]
 
-    peach = {_PEACH[an["pillars"][0]["branch"]], _PEACH[day["branch"]]}
-    years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in f["sewoon"][:5]]
+    peach = {_PEACH[day["branch"]]}   # 결제 전 지도의 '도화'와 같은 글자(일지 기준, saju/reveal.py PEACH_OF)
+    from .theme import bad_rows, blend_current_year, good_rows, near, near_good_rows, reveal_fix, screen_years
+    years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in screen_years(f)]
     months = [dict(m, **_love_mark(m, gods, peach, m["relations"])) for m in f["months"]]
     periods = [dict(p, **_love_mark(p, gods, peach, p["relations"])) for p in f["daewoon"]["periods"]]
-    from .theme import blend_current_year, near
     blend_current_year(years, months, "love_score")   # 올해 점수에서 이미 지난 달의 몫을 덜어 낸다
-    marriage = [p for p in near(f, periods) if p["state"] != "지난" and (p["love_star"] or p["love_hap"])]
+    for rows in (years, months):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+        reveal_fix(result, "romance", rows, score="love_score", signs="love_signs")
+    # 결혼 인연 대운: 지금 대운과 앞으로의 대운 가운데 55세 안에 시작하는 것만(23세에게 61~80세를 말하지 않게)
+    # 지금 나이부터 20년 안에 시작하고 끝나기까지 1년 넘게 남은 대운만(26세에게 54~63세를, 29세에게 곧 끝나는 21~30세를 말하지 않게)
+    age = f["person"].get("age") or 0
+    def _within(span):
+        return [p for p in near(f, periods) if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + span, 55)
+                and (p["love_star"] or p["love_hap"])]
+    # 먼저 12년 안에서 찾고, 없을 때만 20년까지(손님 테스트 4차: 31세 손님에게 40~59세를 말했다)
+    marriage = _within(12) or _within(20)
 
     natal_day = [r for r in f["relations"] if "일주" in r.get("between", [])]
     status = STATUS_TEXT.get(order.relationship, order.relationship)
@@ -128,12 +138,15 @@ def build_romance(f: dict, result: dict, order) -> dict:
         "peach": [s for s in f["shinsal_names"] if s in ("도화살", "홍염살")],
         "peach_branches": sorted(peach),
         "years": years, "months": months, "periods": periods,
-        "best_years": sorted(y["year"] for y in sorted(years, key=lambda y: -y["love_score"])[:2]),
-        "best_months": [f"{m['year']}년 {m['month']}월" for m in months if m in sorted(months, key=lambda m: -m["love_score"])[:3]],
-        "careful_months": [f"{m['year']}년 {m['month']}월" for m in months if m["love_clash"] or m["love_score"] <= 35][:3],
+        "best_years": good_rows(years, 12, lambda y: y["year"], "love_score"),   # 화면 12년 지도에 표시된 해만
+        "best_months": near_good_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월")   # 요약표 '가까운 좋은 달'이라 가까운 순
+                       or [f"{m['year']}년 {m['month']}월" for m in months if m in sorted(months, key=lambda m: -m["love_score"])[:3]],
+        "careful_months": bad_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월", "love_score"),
         "marriage_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"],
                               "signs": p["love_signs"]} for p in marriage[:3]],
         "status": status, "experience": getattr(order, "experience", "") or "",
+        # 제1조항: 결제 전 화면 STEP 3 '내 점수'(좋은 점·조심할 점·전체 점수)를 첫 요약에 그대로(손님 테스트 3차: PDF에 없었음)
+        "screen_score": screen_score(f, result, "romance"),
     }
 
 
@@ -170,9 +183,9 @@ def build_outline(f: dict) -> list[dict]:
         page("how_to_read", "이 책을 읽는 방법", static="r_how_to_read", opener=True),
         page("r_saju", "사주와 오행 짧게 알기", static="r_what_is_saju", figure="element_cycle"),
         page("chart", "나의 사주표", figure="pillars",
-             slot=_slot("chart", f"{name}님의 여덟 글자를 소개하고, 일간 {dm['stem']}({dm['element_name']})이 연애할 때 어떤 성향으로 나타나는지 쉽게 설명해 주세요.", HALF)),
+             slot=_slot("chart", f"{name} 님의 여덟 글자를 소개하고, 일간 {dm['stem']}({dm['element_name']})이 연애할 때 어떤 성향으로 나타나는지 쉽게 설명해 주세요.", HALF)),
         page("r_letters", "연애에서 보는 글자", figure="love_letters",
-             slot=_slot("r_letters", f"표의 배우자 자리(일지), 배우자 별({r['spouse_group']}), 도화가 각각 무엇이고 {name}님에게 어떻게 있는지 설명해 주세요.", HALF)),
+             slot=_slot("r_letters", f"표의 배우자 자리(일지), 배우자 별({r['spouse_group']}), 도화가 각각 무엇이고 {name} 님에게 어떻게 있는지 설명해 주세요.", HALF)),
     ])
 
     # 2. 한눈에 보는 나의 인연 (7쪽)
@@ -185,8 +198,8 @@ def build_outline(f: dict) -> list[dict]:
     section("3", [
         page("r3_open", "연애 성격 한 줄 요약", figure="opener", opener=True,
              slot=_slot("r3_open", "연애할 때의 성격을 한 문장으로 요약(lead)하고, 사주 근거와 함께 짧게 설명해 주세요.", 520, "lead")),
-        page("r3_first", "내 첫인상과 이성에게 보이는 매력",
-             slot=_slot("r3_first", "처음 만난 사람에게 보이는 첫인상과, 이성이 끌리는 매력 포인트를 일간·도화·식상 근거로 장면과 함께 써 주세요.")),
+        page("r3_first", "내 첫인상과 상대에게 보이는 매력",
+             slot=_slot("r3_first", "처음 만난 사람에게 보이는 첫인상과, 상대가 끌리는 매력 포인트를 일간·도화·식상 근거로 장면과 함께 써 주세요.")),
         page("r3_change", "좋아하면 내가 어떻게 변할까",
              slot=_slot("r3_change", "누군가를 좋아하게 되면 나타나는 말투·연락·행동의 변화(밀당, 집착, 희생 등 해당하는 것)를 장면으로 쓰고 보완법을 붙여 주세요.")),
         page("r3_good", "연애할 때 나의 장점",
@@ -211,7 +224,7 @@ def build_outline(f: dict) -> list[dict]:
     # 5. 다음 연인은 어떤 사람일까 (17~23쪽)
     section("5", [
         page("r5_seat", "배우자 자리(일지)란", static="r_spouse_seat", figure="spouse_seat", opener=True,
-             slot=_slot("r5_seat", f"{name}님의 일지 글자({r['day_branch']['branch']})와 그 안의 숨은 글자가 그 사람에 대해 무엇을 알려 주는지 써 주세요.", HALF - 120)),
+             slot=_slot("r5_seat", f"{name} 님의 일지 글자({r['day_branch']['branch']})와 그 안의 숨은 글자가 그 사람에 대해 무엇을 알려 주는지 써 주세요.", HALF - 120)),
         page("r5_mood", "그 사람의 분위기와 성격",
              slot=_slot("r5_mood", "배우자 자리와 배우자 별의 오행·십신으로 그 사람의 분위기, 말투, 성격, 외모 분위기의 경향을 장면으로 써 주세요.")),
         page("r5_job", "그 사람이 하는 일",
@@ -244,8 +257,8 @@ def build_outline(f: dict) -> list[dict]:
              slot=_slot("r7_now", "지금 대운(10년)의 글자가 배우자 별·배우자 자리·도화와 어떤 관계인지 근거로, 이 10년의 연애 흐름과 할 일을 써 주세요.")),
         page("r7_year", f"{f['order']['year']}년 연애운",
              slot=_slot("r7_year", f"{f['order']['year']}년 세운의 인연 표시와 인연 점수를 근거로 올해 연애운을 쓰고, 남은 달에 할 일을 써 주세요.")),
-        page("r7_5y", "앞으로 5년 연애운", figure="love_years5", span=2,
-             slot=_slot("r7_5y", "표의 5년을 한 해씩 문단으로 써 주세요(해마다 인연 표시 근거, 그해 연애 흐름, 할 일).", FULL * 2 - 420)),
+        page("r7_5y", "앞으로 12년 연애운", figure="love_years5", span=3,
+             slot=_slot("r7_5y", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(해마다 인연 표시 근거, 그해 연애 흐름, 할 일).", FULL * 3 - 420)),
         page("r7_12m", "앞으로 12개월 월별 연애운", figure="love_months", span=2,
              slot=_slot("r7_12m", "표의 12개월 가운데 인연 점수가 높은 달과 조심할 달을 골라, 달마다 무엇을 하면 좋은지 써 주세요.", FULL * 2 - 760)),
         page("r7_contact", "연락하기 좋은 시기, 조심할 때",
@@ -271,7 +284,7 @@ def build_outline(f: dict) -> list[dict]:
     # 9. 결혼운 (40~42쪽)
     section("9", [
         page("r9_when", "몇 살쯤 결혼할까", figure="marriage_years", opener=True,
-             slot=_slot("r9_when", "표의 대운(배우자 별이나 배우자 자리와의 합이 들어오는 10년)을 근거로 결혼 인연이 들어오는 나이대를 쓰고, 그때 준비할 것을 써 주세요.", HALF)),
+             slot=_slot("r9_when", "표의 대운(배우자 별이나 배우자 자리와의 합이 들어오는 10년)을 근거로 결혼 인연이 들어오는 나이대를 쓰고, 그때 준비할 것을 써 주세요. 55세 안에 표시된 대운이 없으면 해마다 바깥에서 들어오는 인연의 해(앞으로 12년)를 근거로 씁니다.", HALF)),
         page("r9_happy", "결혼하면 행복할까, 부딪히는 지점은",
              slot=_slot("r9_happy", "배우자 자리와 재성·관성 균형으로 결혼 생활의 모습, 부딪히기 쉬운 지점(돈, 집안일, 가족, 말투 등)과 보완법을 써 주세요.")),
         page("r9_check", "결혼 전에 꼭 확인할 것",
@@ -293,7 +306,7 @@ def build_outline(f: dict) -> list[dict]:
         page("r10_wait", "그 사람이 올 때까지 내가 할 일", span=2,
              slot=_slot("r10_wait", "다음 인연을 기다리는 동안 이 사람이 할 일을 시기 순서로 써 주세요(지금부터, 좋은 달 전, 좋은 달, 그 뒤). 불안한 마음이 풀리도록 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 씁니다.", FULL * 2 - 60)),
         page("r10_last", "마지막 조언", figure="love_summary",
-             slot=_slot("r10_last", f"{name}님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 사랑받을 이유를 사주 근거로 말해 주고, 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 260)),
+             slot=_slot("r10_last", f"{name} 님에게 전하는 마지막 조언을 따뜻하지만 담백하게 써 주세요. 사랑받을 이유를 사주 근거로 말해 주고, 걱정보다 할 수 있는 일에 집중하게 해 주세요.", FULL - 260)),
     ])
 
     section("더보기", [page("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])

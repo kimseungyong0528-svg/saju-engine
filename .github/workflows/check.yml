@@ -1,0 +1,35 @@
+# 제1조항(모순 금지) 검사: 무료 분석·결제 전 화면·리포트가 같은 답을 내는지 매번 확인한다.
+# 이 검사가 빨간불이면 합치지(merge) 않는다.
+name: 통일성 검사
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: PDF 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils ffmpeg > /dev/null
+          pip install -q -e ".[dev]"
+      - name: 파이썬 검사(리포트)
+        run: python -m pytest -q
+      - name: 사이트 검사(무료 분석·결제 전 화면 = 파이썬)
+        working-directory: site
+        run: npm test

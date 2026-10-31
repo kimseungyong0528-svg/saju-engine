@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from . import theme as T
 from .outline import FULL, HALF, _slot
-from ..pair import compare
+from ..pair import compare, pair_score
 
 FINAL_SECTION = "12"
 
@@ -41,21 +41,12 @@ STATIC = {
         "궁합에서는 두 사람의 일간(나를 나타내는 글자)끼리, 일지(배우자 자리)끼리의 관계와, 서로 모자란 기운을 채워 주는지를 가장 먼저 봐요.",
     ],
     "im_pair": [
-        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산한 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
+        "궁합 점수는 두 사람의 일간 관계, 배우자 자리 관계, 오행 보완, 여덟 글자 사이의 합과 충을 더하고 빼서 계산해요. 점수가 낮아도 다른 점을 알고 맞춰 가면 충분히 좋은 관계가 될 수 있어요.",
     ],
 }
 
 _STATUS = {"연애 중이에요": "연애 중", "혼자 좋아하고 있어요": "짝사랑", "서로 알아가는 중이에요": "썸",
            "결혼한 사이예요": "부부", "헤어진 사이예요": "헤어짐"}
-
-
-def _score(cmp: dict) -> int:
-    s = 62 + 4 * cmp["cross_relations"]["harmony"] - 3 * cmp["cross_relations"]["tension"]
-    s += 6 * (len(cmp["elements"]["상대가_채워주는_나의_부족"]) + len(cmp["elements"]["내가_채워주는_상대의_부족"]))
-    s += {"조화": 8, "긴장": -8, "복합": 2}.get(cmp["spouse_palace"]["tone"], 0)
-    s += {"상대가 나를 생함": 5, "내가 상대를 생함": 5, "같은 기운": 3}.get(cmp["day_master"]["element_relation"], 0)
-    s += 4 if any(r.startswith("천간합") for r in cmp["day_master"]["relations"]) else 0
-    return max(48, min(96, s))
 
 
 def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
@@ -74,8 +65,10 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
         score = (x["score"] + ox["score"]) / 2 + 6 * me_star + 6 * o_star + 6 * hap_me + 6 * hap_o - 7 * clash_me - 7 * clash_o
         return {"t_score": T.clamp(score), "t_signs": signs}
 
-    years = [dict(x, **pair_mark(x, ox)) for x, ox in zip(f["sewoon"][:5], o["sewoon"][:5])]
+    years = [dict(x, **pair_mark(x, ox)) for x, ox in zip(T.screen_years(f), T.screen_years(o))]
     months = [dict(x, **pair_mark(x, ox)) for x, ox in zip(f["months"], o["months"])]
+    T.reveal_fix(result, "intimate", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
+    T.reveal_fix(result, "intimate", months)
 
     def my_mark(p: dict) -> dict:
         star, hap = T.has(p, my_group), T.rel(p, "일주", T.HAP)
@@ -88,14 +81,19 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     periods = [dict(p, **my_mark(p)) for p in f["daewoon"]["periods"]]
 
     def marriage(fx: dict, group: str) -> list[dict]:
+        # 지금 나이부터 20년 안에 시작하고, 끝나기까지 1년 넘게 남은 대운만(91~100세 같은 시기를 말하지 않는다)
+        age = fx["person"].get("age") or 0
         return [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]}
-                for p in fx["daewoon"]["periods"] if p["state"] != "지난" and (T.has(p, group) or T.rel(p, "일주", T.HAP))][:3]
+                for p in fx["daewoon"]["periods"] if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + 20, 60)
+                and (T.has(p, group) or T.rel(p, "일주", T.HAP))][:3]
 
+    screen = T.screen_score(f, result, "intimate")
     data = {
+        "screen_score": screen,
         "status": _STATUS.get(answers.get("status", ""), answers.get("status", "")),
         "duration": answers.get("duration", ""),
-        "compare": cmp, "score": _score(cmp),
-        "best_years": T.best(years, 2, lambda y: y["year"]),
+        "compare": cmp, "score": pair_score(T.fourpillars(result), T.fourpillars(partner)),   # 결제 전 화면의 '두 사람 궁합 점수'와 같다
+        "best_years": T.best(years, 12, lambda y: y["year"]),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "money": {"나": {"재성": T.count(f, "재성"), "비겁": T.count(f, "비겁"), "식상": T.count(f, "식상")},
                   "그 사람": {"재성": T.count(o, "재성"), "비겁": T.count(o, "비겁"), "식상": T.count(o, "식상")}},
@@ -139,23 +137,24 @@ def build_outline(f: dict) -> list[dict]:
         P("how_to_read", "이 책을 읽는 방법", static="im_how_to_read", opener=True),
         P("im_saju", "사주와 오행 짧게 알기", static="im_what_is_saju", figure="element_cycle"),
         P("chart", "두 사람의 사주표", figure="pair_pillars",
-          slot=S("chart", f"{name}님과 {oname}님의 일간({cmp['day_master']['me']}·{cmp['day_master']['other']})과 일지를 소개하고, 두 사람이 한눈에 어떤 조합인지 쉽게 설명해 주세요.", HALF - 120)),
+          slot=S("chart", f"{name} 님과 {oname} 님의 일간({cmp['day_master']['me']}·{cmp['day_master']['other']})과 일지를 소개하고, 두 사람이 한눈에 어떤 조합인지 쉽게 설명해 주세요.", HALF - 120)),
     ])
     section("2", [
         P("im_glance", "한눈에 보는 우리 궁합", static="im_pair", figure="kv", opener=True, rows=[
-            ["궁합 점수", f"{t['score']}점 "],
+            T.screen_row(t["screen_score"], t.get("seen", True)),
+            ["결제 전에 보신 두 사람 궁합 점수" if t.get("seen", True) else "두 사람 궁합 점수", f"{t['score']}점 ({oname} 님 사주와 함께 본 점수)"],
             ["일간끼리", f"{cmp['day_master']['me']}·{cmp['day_master']['other']} · {cmp['day_master']['element_relation']}"],
             ["배우자 자리끼리", f"{cmp['spouse_palace']['me']}·{cmp['spouse_palace']['other']} · {cmp['spouse_palace']['tone']}"],
             ["합 · 충", f"손잡는 관계 {cmp['cross_relations']['harmony']}개 · 부딪히는 관계 {cmp['cross_relations']['tension']}개"],
             ["관계가 깊어지는 달", ", ".join(t["best_months"])],
-            ["두 사람에게 좋은 해", ", ".join(f"{y}년" for y in t["best_years"])],
+            ["내 배우자 자리에 좋은 해 (결제 전 12년 지도)", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
         ], slot=S("im_glance", "표를 이어서 두 사람 궁합의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 200)),
     ])
     section("3", [
         P("im3_open", "그 사람에게 나는 어떤 기운일까", figure="kv", opener=True, rows=[
             ["그 사람에게 나는", f"{cmp['day_master']['me_as_other_ten_god']}의 기운"],
             ["나에게 그 사람은", f"{cmp['day_master']['other_as_my_ten_god']}의 기운"],
-        ], slot=S("im3_open", f"{oname}님에게 {name}님이 어떤 기운(me_as_other_ten_god)인지 한 문장으로 요약(lead)하고, 그 십신이 관계에서 어떤 느낌을 주는지 설명해 주세요.", 520, "lead")),
+        ], slot=S("im3_open", f"{oname} 님에게 {name} 님이 어떤 기운(me_as_other_ten_god)인지 한 문장으로 요약(lead)하고, 그 십신이 관계에서 어떤 느낌을 주는지 설명해 주세요.", 520, "lead")),
         P("im3_charm", "그 사람이 느끼는 나의 매력",
           slot=S("im3_charm", "그 사람 사주 쪽에서 본 나의 매력 포인트를 오행 보완과 십신 근거로 장면과 함께 써 주세요.")),
         P("im3_hurt", "그 사람이 서운해하기 쉬운 나의 모습",
@@ -169,7 +168,7 @@ def build_outline(f: dict) -> list[dict]:
             ["강한 기운", ", ".join(e["name"] for e in o["elements"] if e["status"] == "많음") or "고른 편"],
             ["약한 기운", ", ".join(e["name"] for e in o["elements"] if e["status"] == "부족") or "고른 편"],
             ["사주의 틀", f"{o['strength']['label']} · {o['gyeokguk']['name']}"],
-        ], slot=S("im4_open", f"{oname}님의 사주를 쉽게 소개해 주세요.", HALF - 40)),
+        ], slot=S("im4_open", f"{oname} 님의 사주를 쉽게 소개해 주세요.", HALF - 40)),
         P("im4_person", "그 사람의 성격",
           slot=S("im4_person", "그 사람의 일간·강한 기운·십신으로 성격의 장점과 약점을 장면으로 써 주세요.")),
         P("im4_heart", "그 사람의 속마음과 사랑 표현",
@@ -229,23 +228,33 @@ def build_outline(f: dict) -> list[dict]:
           slot=S("im9_months", "표의 12개월 가운데 관계가 깊어지는 달과 조심할 달을 골라 달마다 함께 하면 좋은 일을 써 주세요.", FULL * 2 - 820)),
         P("im9_careful", "다투기 쉬운 달 미리 대비하기",
           slot=S("im9_careful", "조심할 달마다 왜 부딪히기 쉬운지 근거를 쓰고, 그달에 미리 할 일(약속, 일정, 말투)을 써 주세요.")),
-        P("im9_years", "앞으로 5년 궁합운", figure="grid", span=2, grid=T.year_grid(th["years"], t["best_years"], "관계 점수"),
-          slot=S("im9_years", "표의 5년을 한 해씩 문단으로 써 주세요(두 사람 각각의 표시 근거, 관계의 흐름, 함께 할 일).", FULL * 2 - 460)),
+        P("im9_years", "앞으로 12년 궁합운", figure="grid", span=3, grid=T.year_grid(th["years"], t["best_years"], "관계 점수"),
+          slot=S("im9_years", "표의 12년을 한 해씩 짧은 문단으로 써 주세요(두 사람 각각의 표시 근거, 관계의 흐름, 함께 할 일).", FULL * 3 - 460)),
         P("im9_graph", "나이별 인연의 흐름", figure="theme_graph", note="대운(10년)마다 배우자 별과 그 사람과의 합이 들어오면 점수가 올라가요.",
-          slot=S("im9_graph", f"{name}님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
+          slot=S("im9_graph", f"{name} 님의 대운 그래프에서 이 관계에 힘이 실리는 시기와 조심할 시기를 나이로 짚어 주세요.", HALF - 40)),
     ])
-    mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "뚜렷한 시기 없음"
+    mm = lambda xs: ", ".join(f"{p['age_text']}({p['years_text']})" for p in xs) or "앞으로 20년 안에는 뚜렷한 시기 없음"
+    wed = t["status"] == "부부"   # 이미 결혼한 두 사람에게 '결혼까지 갈 수 있을까'를 묻지 않는다
+    sep = t["status"] == "헤어짐"   # 헤어진 두 사람에게 '결혼 전에 확인할 것'을 묻지 않는다(손님 테스트 4차: 이혼 2년 손님)
+    W = "두 사람은 이미 부부입니다. " if wed else "두 사람은 지금 헤어진 사이입니다. " if sep else ""
+    pick = lambda a, b, c: a if wed else b if sep else c
     section("10", [
-        P("im10_open", "두 사람의 결혼 인연 시기", figure="kv", opener=True, rows=[
+        P("im10_open", pick("부부 사이가 깊어지는 시기", "다시 가까워질 수 있는 시기", "두 사람의 결혼 인연 시기"), figure="kv", opener=True, rows=[
             [name, mm(t["marriage_me"])], [oname, mm(t["marriage_partner"])],
-            ["두 사람에게 좋은 해", ", ".join(f"{y}년" for y in t["best_years"])],
-        ], slot=S("im10_open", "표를 근거로 두 사람의 결혼 인연이 겹치는 시기를 설명해 주세요.", HALF)),
-        P("im10_can", "결혼까지 갈 수 있을까",
-          slot=S("im10_can", "배우자 자리 관계, 궁합 점수, 결혼 인연 시기를 근거로 결혼까지 이어지는 조건과 걸림돌을 솔직하게 써 주세요.")),
-        P("im10_couple", "결혼하면 어떤 부부가 될까",
-          slot=S("im10_couple", "두 사람이 함께 살 때의 모습(집안일, 돈, 대화, 쉬는 날)을 장면으로 쓰고, 부딪히는 지점의 보완법을 붙여 주세요.")),
-        P("im10_check", "결혼 전에 함께 확인할 것",
-          slot=S("im10_check", "이 조합에서 결혼 전에 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요.", FULL, "checklist")),
+            ["내 배우자 자리에 좋은 해 (결제 전 12년 지도)", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+        ], slot=S("im10_open", W + pick("표를 근거로 두 사람 사이가 깊어지는 시기와 그때 함께 할 일을 설명해 주세요.",
+                                       "표를 근거로 두 사람이 다시 가까워질 수 있는 시기와, 그때 서두르지 않고 할 일을 설명해 주세요.",
+                                       "표를 근거로 두 사람의 결혼 인연이 겹치는 시기를 설명해 주세요."), HALF)),
+        P("im10_can", pick("부부 사이를 더 단단하게 하려면", "다시 이어질 수 있을까", "결혼까지 갈 수 있을까"),
+          slot=S("im10_can", W + pick("배우자 자리 관계와 궁합 점수를 근거로 부부 사이를 단단하게 하는 조건과 걸림돌을 솔직하게 써 주세요.",
+                                     "배우자 자리 관계와 궁합 점수를 근거로 두 사람이 다시 이어지는 조건과 걸림돌을 솔직하게 써 주세요. 다시 만나지 않는 선택도 존중해 씁니다.",
+                                     "배우자 자리 관계, 궁합 점수, 결혼 인연 시기를 근거로 결혼까지 이어지는 조건과 걸림돌을 솔직하게 써 주세요."))),
+        P("im10_couple", pick("지금 우리는 어떤 부부일까", "함께였을 때 우리는 어떤 사이였을까", "결혼하면 어떤 부부가 될까"),
+          slot=S("im10_couple", W + "두 사람이 함께 살 때의 모습(집안일, 돈, 대화, 쉬는 날)을 장면으로 쓰고, 부딪히는 지점의 보완법을 붙여 주세요.")),
+        P("im10_check", pick("부부가 함께 확인할 것", "다시 시작하기 전에 확인할 것", "결혼 전에 함께 확인할 것"),
+          slot=S("im10_check", W + pick("이 조합의 부부가 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요.",
+                                       "이 조합의 두 사람이 다시 시작하기 전에 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요.",
+                                       "이 조합에서 결혼 전에 꼭 이야기해 둘 것 6가지를 이유와 함께 써 주세요."), FULL, "checklist")),
     ])
     q = f["order"]["question"]
     section("11", [
@@ -267,7 +276,7 @@ def build_outline(f: dict) -> list[dict]:
         P("im12_worry", "두 사람의 걱정에 대한 답", span=2,
           slot=S("im12_worry", "이 관계에서 들기 쉬운 걱정(마음이 식으면, 크게 싸우면, 가족이 반대하면, 미래가 다르면)마다 '왜 괜찮은지(근거)'와 '무엇을 하면 되는지(행동)'를 함께 답해 주세요.", FULL * 2 - 60)),
         P("im12_last", "마지막 조언",
-          slot=S("im12_last", f"{name}님에게 전하는 마지막 조언을 담백하게 써 주세요. 두 사람이 함께일 때 가장 빛나는 점을 사주 근거로 말해 주세요.", FULL - 120)),
+          slot=S("im12_last", f"{name} 님에게 전하는 마지막 조언을 담백하게 써 주세요. 두 사람이 함께일 때 가장 빛나는 점을 사주 근거로 말해 주세요.", FULL - 120)),
     ])
     section("더보기", [P("more", "다른 사주도 궁금하다면", figure="cross_sell", span=2, opener=True)])
     return sections

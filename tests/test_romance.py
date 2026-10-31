@@ -24,7 +24,7 @@ def _facts():
 def test_romance_facts():
     r = _facts()["romance"]
     assert r["spouse_group"] == "관성" and r["status"] == "솔로" and r["experience"] == "1~2번"
-    assert len(r["years"]) == 5 and len(r["months"]) == 12
+    assert len(r["years"]) == 12 and len(r["months"]) == 12
     assert all(20 <= m["love_score"] <= 95 for m in r["months"])
     assert r["best_years"] == sorted(r["best_years"])
 
