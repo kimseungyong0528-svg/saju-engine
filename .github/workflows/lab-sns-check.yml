@@ -36,7 +36,19 @@ jobs:
               print("IG (graph.facebook.com):", get("https://graph.facebook.com/v23.0/17841476113870391?fields=id,username", ig))
           fb = os.environ.get("FB_PAGE_TOKEN", "")
           if fb:
-              print("FB page:", get("https://graph.facebook.com/v23.0/me?fields=id,name", fb))
+              print("FB me:", get("https://graph.facebook.com/v23.0/me?fields=id,name", fb))
+              try:
+                  with urllib.request.urlopen("https://graph.facebook.com/v23.0/me/accounts?fields=id,name,tasks&access_token=" + urllib.parse.quote(fb), timeout=30) as r:
+                      for pg in json.loads(r.read()).get("data", []):
+                          print("FB 페이지:", pg.get("id"), pg.get("name"), pg.get("tasks"))
+              except urllib.error.HTTPError as e:
+                  print("FB 페이지 목록 실패", e.code, e.read().decode()[:300])
+              try:
+                  with urllib.request.urlopen("https://graph.facebook.com/v23.0/debug_token?input_token=" + urllib.parse.quote(fb) + "&access_token=" + urllib.parse.quote(fb), timeout=30) as r:
+                      d = json.loads(r.read()).get("data", {})
+                  print("FB 열쇠 만료:", d.get("expires_at"), "권한:", d.get("scopes"))
+              except urllib.error.HTTPError as e:
+                  print("FB 열쇠 정보 실패", e.code, e.read().decode()[:300])
           th = os.environ.get("THREADS_TOKEN", "")
           if th:
               print("Threads:", get("https://graph.threads.net/v1.0/me?fields=id,username", th))
