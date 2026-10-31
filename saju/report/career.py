@@ -113,7 +113,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "yeokma": "역마살" in f["shinsal_names"],
         "fields": _FIELD[f["lucky"]["element"]], "roles": _role(top_group, org), "top_group": top_group, "org": org,
         "move_years": move_years, "best_years": T.best(years, 12, lambda y: y["year"]),
-        "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
+        "best_months": T.near_good_rows(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),   # 표 이름이 '가까운 좋은 달'이라 가까운 순
     }
     return {"label": "직업 재료", "data": data,
             "digest": {**data, **T.digest_rows(years, months, T.near(f, periods)),
@@ -209,7 +209,7 @@ def build_outline(f: dict) -> list[dict]:
     section("7", [
         P("c7_open", "이직 신호 읽기", figure="kv", opener=True, rows=[
             ["움직이기 좋은 해", ", ".join(f"{y}년" for y in t["move_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
-            ["일 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "일 자리 변동" in m["t_signs"]) or "없음"],
+            ["일 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "일 자리 변동" in m.get("raw_signs", m["t_signs"])) or "없음"],
             ["이동 기운(역마)", "태어날 때 받은 여덟 글자 안에 있어요" if t["yeokma"] else "태어날 때 받은 여덟 글자 안에는 없고, 바깥에서 들어오는 해에 움직임이 커져요"],
         ], slot=S("c7_open", "표를 근거로 이 사람에게 이직 신호가 언제 드는지 설명해 주세요.", HALF)),
         P("c7_years", "앞으로 12년 직업운", figure="grid", span=3, grid=T.year_grid(th["years"], t["move_years"], "일의 흐름"),

@@ -103,10 +103,13 @@ export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR, start = nul
   const unit = product === 'newyear' || product === 'reunion' ? 'month' : 'year';
   const base = unit === 'month' ? (product === 'reunion' ? reunionMonths(start || [startYear, 1]) : MONTHS_2027) : Array.from({ length: 12 }, (_, i) => ({ ...yearPillar(startYear + i), label: String(startYear + i) }));
   const good = {}, bad = {};
+  // 재회사주 2027년 달: 신년운세 지도에서 '조심할 달'인 달에는 좋은 표시를 붙이지 않는다(saju/reveal.py luck_map 과 같다, 제1조항)
+  const nyBad = product === 'reunion' ? new Set(luckMap(fp, sex, 'newyear', T).cells.filter(c => c.bad.length).map(c => c.ko)) : null;
   const cells = base.map(p => {
     const cell = { label: p.label, ko: p.ko, hanja: p.hanja };
     [cell.good, cell.bad] = yearMarks(fp, sex, product, T, p.label,
       conf.good.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)), conf.bad.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)));
+    if (nyBad && p.label.startsWith('2027년') && nyBad.has(p.ko)) cell.good = [];
     for (const [kind, into] of [['good', good], ['bad', bad]]) for (const key of cell[kind]) (into[key] || (into[key] = [])).push(p.label);
     return cell;
   });
@@ -195,8 +198,15 @@ export function boundaryLines(data, person, solarDate) {
       }
     });
   }
-  return Object.keys(near).sort().map(key => {
-    const [d, pillar] = key.split('|');
-    return `태어난 시각이 ${near[key]}분만 ${d === '이후' ? '늦었다면' : '빨랐다면'} ${pillar}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요.`;
+  // 같은 분, 같은 방향이면 한 줄로 묶는다('일주와 시주가'). 파이썬 saju/report _merge_boundary 와 같다.
+  const groups = new Map();
+  for (const key of Object.keys(near).sort()) {
+    const [d, pillar] = key.split('|'), g = d + '|' + near[key];
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(pillar);
+  }
+  return [...groups].map(([g, ps]) => {
+    const [d, n] = g.split('|');
+    return `태어난 시각이 ${n}분만 ${d === '이후' ? '늦었다면' : '빨랐다면'} ${ps.join('와 ')}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요.`;
   });
 }

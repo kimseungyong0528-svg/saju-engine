@@ -47,9 +47,12 @@ def test_outline_12_chapters_and_50_pages(pid):
         assert [y["year"] for y in t["years"]] == [int(c["label"]) for c in m["cells"]]
         for y, c in zip(t["years"], m["cells"]):
             assert bool(y["r_good"]) == bool(c["good"]) and bool(y["r_bad"]) == bool(c["bad"])
-            if c["good"] and not c["bad"]:
+            if c["label"] == "2027" and all(k.startswith("ny_") for k in c["good"] + c["bad"]):
+                # 2027년 칸에 '2027년 좋은 흐름·조심'만 있으면 맛보기 '2027년 운' 점수 그대로
+                assert y["t_score"] == RV.ny_verdict(RV.taster.pillars_from_result(_prep(pid)[0]), ME["sex"])[1]
+            elif c["good"] and not c["bad"]:
                 assert y["t_score"] >= 60
-            if c["bad"] and not c["good"]:
+            elif c["bad"] and not c["good"]:
                 assert y["t_score"] <= 40
     assert all(20 <= m["score"] <= 95 for m in t["months"])
     assert PRODUCT[pid]["cover"] is COVER[pid]

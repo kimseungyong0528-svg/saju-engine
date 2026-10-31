@@ -76,11 +76,13 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     years, months, periods = T.marked(f, mark)
     T.reveal_fix(result, "wealth", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
     T.reveal_fix(result, "wealth", months)
+    # 대운 표도 화면과 같은 규칙의 표시·방향(손님 테스트 3차: '나가는 돈 주의' 대운이 72점으로 가장 높았다)
+    T.reveal_fix(result, "wealth", periods)
     mtype, mtext = _money_type(f)
     # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
     ahead = [p for p in T.near(f, periods) if p["state"] != "지난"]
     # '나가는 돈 주의' 대운이나 점수가 낮은 대운은 '큰돈이 들어오는 대운'에 넣지 않는다(같은 책 대운 표와 모순 금지)
-    ahead = [p for p in ahead if p["t_score"] >= 55 and "나가는 돈 주의" not in p["t_signs"]]
+    ahead = [p for p in ahead if p["t_score"] >= 55 and not p["r_bad"]]
     big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
     screen = T.screen_score(f, result, "wealth")
     data = {
@@ -135,7 +137,7 @@ def build_outline(f: dict) -> list[dict]:
              + (f" · {', '.join(x for x in t['seats'] if '숨은 글자' not in x)}" if any('숨은 글자' not in x for x in t["seats"]) else "")
              + (f" (개수에 넣지 않은 숨은 글자: {', '.join(x for x in t['seats'] if '숨은 글자' in x)})" if any('숨은 글자' in x for x in t["seats"]) else "")],
             ["식상(재능·표현)", f"{c['식상']}개"], ["비겁(나·동료)", f"{c['비겁']}개"],
-            ["인성(문서·집)", f"{c['인성']}개"], ["신강·신약", f"{f['strength']['label']} ({f['strength']['score']:.0f}점)"],
+            ["인성(문서·집)", f"{c['인성']}개"], ["신강·신약", f"{f['strength']['label']} ({int(f['strength']['score'] + 0.5)}점)"],
         ], slot=S("w_letters", "표의 글자가 각각 돈과 어떤 관계인지, 이 사주에서는 어떻게 있는지 설명해 주세요.", HALF - 40)),
     ])
     section("2", [

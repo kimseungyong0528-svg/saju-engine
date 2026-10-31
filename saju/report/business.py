@@ -100,7 +100,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "fields": _FIELD[f["lucky"]["element"]],
         "grow_years": grow, "keep_years": sorted(keep),
         "best_years": T.best(years, 12, lambda y: y["year"]),
-        "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
+        "best_months": T.near_good_rows(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),   # 표 이름이 '가까운 좋은 달'이라 가까운 순
         # 돈이 잘 풀리는 시기: 재물 별이 드는 때를 먼저, 그다음 사업 점수 높은 순. 새는 때: 비겁(경쟁·지출, 나눠 가져가는 기운)이 드는 때 가운데 점수 낮은 순
         "money_years": T.good_rows(years, 12, lambda y: y["year"]),
         "leak_years": T.bad_rows(years, 12, lambda y: y["year"]),
@@ -147,7 +147,7 @@ def build_outline(f: dict) -> list[dict]:
         P("b_letters", "사업을 보는 글자", figure="kv", rows=[
             ["비겁(나·동료)", f"{c['비겁']}개"], ["식상(상품·재능)", f"{c['식상']}개"], ["재성(돈·손님)", f"{c['재성']}개"],
             ["관성(체계·신용)", f"{c['관성']}개"], ["인성(문서·자격)", f"{c['인성']}개"],
-            ["신강·신약", f"{f['strength']['label']} ({f['strength']['score']:.0f}점)"],
+            ["신강·신약", f"{f['strength']['label']} ({int(f['strength']['score'] + 0.5)}점)"],
         ], slot=S("b_letters", "표의 글자가 사업에서 각각 무엇을 뜻하는지, 이 사주에서는 어떻게 있는지 설명해 주세요.", HALF - 80)),
     ])
     section("2", [

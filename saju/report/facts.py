@@ -25,6 +25,7 @@ class OrderInfo:
     relationship: str = ""      # 연애·결혼 상태(사이트에 항목이 생기면 받는다): 솔로/연애 중/결혼/이혼·사별
     experience: str = ""        # 연애사주: 연애 경험 횟수(사이트 선택지 그대로)
     reveal_start: str = ""      # 재회사주: 손님이 결제 전 화면에서 본 24개월 지도의 첫 달('2026-11')
+    gift: bool = False          # 선물 주문: 책을 읽는 사람은 산 사람이 아니라 받는 분이다
 
 
 def _age_on(birth: date, on: date) -> int:
@@ -302,7 +303,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         },
         "order": {"date": order.order_date.isoformat(), "reveal_start": order.reveal_start, "year": order.order_date.year,
                   "question": order.question.strip(), "daily": order.daily,
-                  "relationship": order.relationship},
+                  "relationship": order.relationship, "gift": order.gift},
         "uncertainties": [u["message"] for u in result["uncertainties"]] + result["warnings"],
         "variant_count": result["variant_count"],
         "variants": [v["key"] for v in result["variants"]],

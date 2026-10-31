@@ -31,15 +31,16 @@ def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, 
     """사이트 답(질문 단계 id → 선택지)을 프로그램 칸으로 옮긴다. 주제 상품은 답을 그대로 넘긴다."""
     answers = dict(payload.get("answers") or {})
     reveal_start = str(answers.pop("revealStart", "") or "")[:7]   # 재회사주 화면의 첫 달(제1조항)
+    gift = answers.pop("revealGift", "") == "1"   # 선물 주문(사이트 결제 전 화면에서 '선물'을 고름)
     question = str(payload.get("question") or "")[:1000]
     d = when.date()
     if product == "lifetime":
-        return OrderInfo(d, question, daily=answers.get("occupation", ""), relationship=answers.get("relationship", "")), {}
+        return OrderInfo(d, question, daily=answers.get("occupation", ""), relationship=answers.get("relationship", ""), gift=gift), {}
     if product == "romance":
-        return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", "")), {}
+        return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", ""), gift=gift), {}
     if product == "newyear" and not question:   # 신년운세는 질문을 answers.question으로 받는다(선택)
         question = str(answers.get("question") or "")[:1000]
-    return OrderInfo(d, question, reveal_start=reveal_start), answers
+    return OrderInfo(d, question, reveal_start=reveal_start, gift=gift), answers
 
 
 def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:

@@ -30,7 +30,9 @@ export const bundleItems = body => { const bad = new Set(bundleIncomplete(body))
 // 함께 사는 상품의 접수 내용: 출생 정보는 주 상품과 같고, 그 상품의 질문 답(extraAnswers)만 따로 받는다.
 export function extraBody(body, id) {
   const ans = body?.extraAnswers && typeof body.extraAnswers === 'object' ? body.extraAnswers[id] : null;
-  return { ...body, productId: id, answers: ans && typeof ans === 'object' ? ans : {}, question: '' };
+  // 선물 주문 표시는 함께 사는 책에도 그대로(받는 분이 읽는 책이다)
+  const gift = body?.answers?.revealGift === '1' ? { revealGift: '1' } : {};
+  return { ...body, productId: id, answers: { ...(ans && typeof ans === 'object' ? ans : {}), ...gift }, question: '' };
 }
 
 async function validCoupon(store, code) {

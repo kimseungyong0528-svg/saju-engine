@@ -147,12 +147,16 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
         [{**_year_pillar(start_year + i), "label": str(start_year + i)} for i in range(12)]
     good: dict[str, list[str]] = {}
     bad: dict[str, list[str]] = {}
+    # 재회사주 2027년 달: 신년운세 지도에서 '조심할 달'인 달에는 좋은 표시를 붙이지 않는다(사이트 reveal.mjs luckMap 과 같다, 제1조항)
+    ny_bad = {c["ko"] for c in luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product == "reunion" else set()
     cells = []
     for p in base:
         cell = {"label": p["label"], "ko": p["ko"], "hanja": p["hanja"]}
         cell["good"], cell["bad"] = year_marks(fp, sex, product, p["label"],
                                                [_mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
                                                [_mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        if p["label"].startswith("2027년") and p["ko"] in ny_bad:
+            cell["good"] = []
         for kind, into in (("good", good), ("bad", bad)):
             for key in cell[kind]:
                 into.setdefault(key, []).append(p["label"])

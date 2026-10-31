@@ -79,32 +79,60 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     marks = texts()["REVEAL"]["MARKS"]
     fp = fourpillars(result)
     _, rule_of = RV._marker(fp, sex)
+    # 2027년 달: 신년운세 결제 전 화면(2027년 12달 지도)에서 '조심할 달'인 달은 다른 책에서도 좋은 달로 쓰지 않는다
+    # (손님 테스트 3차: 묶음으로 산 사업운은 2027년 4월이 '큰돈', 신년운세는 4월이 '조심할 달'이었다).
+    ny_bad = {c["ko"] for c in RV.luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product != "newyear" else set()
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
         label = str(r["year"]) if "month" not in r and "year" in r else ""
         gk, bk = RV.year_marks(fp, sex, product, label, [RV._mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
                                [RV._mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        if "month" in r and r.get("year") == 2027 and gz in ny_bad:
+            gk = []
         good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
         r["r_good"], r["r_bad"] = good, bad
+        raw = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["good"] if rule_of(k)(p)]
+        if label == "2027" and bad and raw:
+            # 2027년 칸은 한 해 전체 운(맛보기 '2027년 운')을 따라 조심으로 표시한다. 그해에 들어오는 좋은 별은 이 줄로 함께 알려 준다(손님 테스트 3차).
+            r["ny_note"] = f"2027년에는 {'·'.join(dict.fromkeys(raw))}도 들어오지만, 한 해 전체 운이 조심할 쪽이라 지도에 '조심'으로 표시했어요."
+        raw_bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["bad"] if rule_of(k)(p)]
+        if label == "2027" and good and not bad and raw_bad:
+            r["ny_note"] = f"2027년에는 {'·'.join(dict.fromkeys(raw_bad))}도 들어오지만, 한 해 전체 운이 좋은 쪽이라 지도에 좋은 표시를 했어요. 이 부분은 조심하세요."
         v = r[score]
-        if product == "lifetime" and label == "2027":
-            v = RV.ny_verdict(fp, sex)[1]   # 무료 풀이에서 본 '2027년 운' 점수 그대로
+        if label == "2027" and (product == "lifetime" or all(k.startswith("ny_") for k in gk + bk)):
+            # 맛보기 '2027년 운' 점수 그대로. 다른 상품도 2027년 칸에 그 상품의 표시가 없고 '2027년 좋은 흐름·조심'만 있으면 같은 점수
+            # (손님 테스트 3차: 건강운 12년 표 2027년 60점, 보너스·신년운세 58점)
+            v = RV.ny_verdict(fp, sex)[1]
         else:
             v = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
         r[score] = v
+        r.setdefault("raw_signs", list(r.get(signs, [])))   # 화면 말로 바꾸기 전 이 상품 계산의 표시(직업운 '일 자리 변동'처럼 화면에 없는 표시를 찾을 때)
         r[signs] = good + bad if replace else list(dict.fromkeys(good + bad + [x for x in r[signs]]))
+
+
+def _own(tags) -> bool:
+    """이 상품의 표시가 있는지. '2027년 좋은 흐름'·'2027년 조심'(한 해 전체 운 표시)만 있는 칸은 '기운 채움 해'·'돈이 샘 해' 같은
+    상품 목록에 넣지 않는다(손님 테스트 3차: 화면은 2027년을 따로 보여 주는데 PDF 요약표가 '기운 채움 해 2027년'으로 묶었다)."""
+    from ..taster import texts
+    m = texts()["REVEAL"]["MARKS"]
+    return bool(set(tags or ()) - {m["ny_good"]["tag"], m["ny_bad"]["tag"]})
 
 
 def good_rows(rows: list[dict], n: int, label, score: str = "t_score") -> list:
     """화면에서 좋은 표시가 붙은 해·달 가운데 점수 높은 n개(시간 순)."""
-    top = sorted([r for r in rows if r.get("r_good")], key=lambda r: -r[score])[:n]
+    top = sorted([r for r in rows if _own(r.get("r_good"))], key=lambda r: -r[score])[:n]
     return [label(r) for r in rows if r in top]
+
+
+def near_good_rows(rows: list[dict], n: int, label) -> list:
+    """'가까운 좋은 달': 화면과 같은 좋은 표시가 붙은 달 가운데 지금부터 가까운 n개(손님 테스트 3차: 점수 순으로 골라 더 가까운 달이 빠졌다)."""
+    return [label(r) for r in rows if _own(r.get("r_good"))][:n]
 
 
 def bad_rows(rows: list[dict], n: int, label, score: str = "t_score") -> list:
     """화면에서 조심할 표시가 붙은 해·달 가운데 점수 낮은 n개(시간 순)."""
-    low = sorted([r for r in rows if r.get("r_bad")], key=lambda r: r[score])[:n]
+    low = sorted([r for r in rows if _own(r.get("r_bad"))], key=lambda r: r[score])[:n]
     return [label(r) for r in rows if r in low]
 
 
@@ -159,7 +187,8 @@ def digest_rows(years: list[dict], months: list[dict], periods: list[dict]) -> d
 def year_grid(years: list[dict], best_years: list[int], head: str = "점수") -> dict:
     return {"head": ["해", "간지", "표시", head],
             "rows": [[str(y["year"]), f"{y['hanja']} {y['ganzhi']}", ", ".join(y["t_signs"]) or "—", f"{y['t_score']}점"] for y in years],
-            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2], "widths": ["13%", "20%", "47%", "20%"]}
+            "hl": [i for i, y in enumerate(years) if y["year"] in best_years], "left": [2], "widths": ["13%", "20%", "47%", "20%"],
+            "notes": [y["ny_note"] for y in years if y.get("ny_note")]}
 
 
 def month_grid(months: list[dict], head: str = "점수") -> dict:
@@ -260,4 +289,5 @@ def screen_score(f: dict, result: dict, product: str) -> dict:
 def screen_row(s: dict, seen: bool = True) -> list[str]:
     """첫 요약의 점수 줄. 묶음으로 산 상품은 결제 전 화면을 보지 않았으므로 '결제 전에 보신'이라고 쓰지 않는다."""
     # 무료 풀이를 안 본 손님도 있으므로 '전체 점수'라고만 쓴다(결제 전 화면 STEP 3과 같은 말, 2026-10-30 사장님).
-    return ["결제 전에 보신 점수" if seen else "이 운의 점수", f"좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점 · 전체 점수 {s['score']}점"]
+    # 칸 이름은 짧게: '결제 전에 보신 점수'는 표에서 '점/수'로 줄이 갈렸다(손님 테스트 3차). STEP 3 제목도 '내 점수'.
+    return ["내 점수", f"좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점 · 전체 점수 {s['score']}점"]

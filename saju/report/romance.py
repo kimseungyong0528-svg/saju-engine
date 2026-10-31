@@ -11,6 +11,7 @@ from . import knowledge as K
 from .facts import PILLAR_LABEL
 from .outline import FULL, HALF, _slot, page
 from .writer import STYLE_RULES
+from .theme import screen_score
 
 FINAL_SECTION = "10"
 
@@ -107,7 +108,7 @@ def build_romance(f: dict, result: dict, order) -> dict:
     main_seat = (visible or seats or [None])[0]
 
     peach = {_PEACH[day["branch"]]}   # 결제 전 지도의 '도화'와 같은 글자(일지 기준, saju/reveal.py PEACH_OF)
-    from .theme import bad_rows, blend_current_year, good_rows, near, reveal_fix, screen_years
+    from .theme import bad_rows, blend_current_year, good_rows, near, near_good_rows, reveal_fix, screen_years
     years = [dict(s, **_love_mark(s, gods, peach, s["relations"])) for s in screen_years(f)]
     months = [dict(m, **_love_mark(m, gods, peach, m["relations"])) for m in f["months"]]
     periods = [dict(p, **_love_mark(p, gods, peach, p["relations"])) for p in f["daewoon"]["periods"]]
@@ -135,12 +136,14 @@ def build_romance(f: dict, result: dict, order) -> dict:
         "peach_branches": sorted(peach),
         "years": years, "months": months, "periods": periods,
         "best_years": good_rows(years, 12, lambda y: y["year"], "love_score"),   # 화면 12년 지도에 표시된 해만
-        "best_months": good_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월", "love_score")
+        "best_months": near_good_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월")   # 요약표 '가까운 좋은 달'이라 가까운 순
                        or [f"{m['year']}년 {m['month']}월" for m in months if m in sorted(months, key=lambda m: -m["love_score"])[:3]],
         "careful_months": bad_rows(months, 3, lambda m: f"{m['year']}년 {m['month']}월", "love_score"),
         "marriage_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"],
                               "signs": p["love_signs"]} for p in marriage[:3]],
         "status": status, "experience": getattr(order, "experience", "") or "",
+        # 제1조항: 결제 전 화면 STEP 3 '내 점수'(좋은 점·조심할 점·전체 점수)를 첫 요약에 그대로(손님 테스트 3차: PDF에 없었음)
+        "screen_score": screen_score(f, result, "romance"),
     }
 
 

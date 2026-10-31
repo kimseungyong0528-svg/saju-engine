@@ -59,15 +59,18 @@ def _screen(f: dict):
     return FourPillars(*ps), f["person"]["sex"]
 
 
-def _first_good(f: dict, pid: str) -> tuple[str, str] | None:
-    """그 상품의 결제 전 12년 지도에서 처음 나오는 좋은 해와 그 해의 설명(화면 문장 그대로). 제1조항: 화면과 다른 해를 말하지 않는다."""
+def _first_good(f: dict, pid: str, current: str = "") -> tuple[str, str] | None:
+    """그 상품의 결제 전 12년 지도에서 처음 나오는 좋은 해와 그 해의 설명(화면 문장 그대로). 제1조항: 화면과 다른 해를 말하지 않는다.
+    current: 지금 읽는 책. 그 책의 지도에서 조심할 표시가 있는 해는 고르지 않는다
+    (손님 테스트 3차: 평생사주 지도는 2034년이 '큰 변화'인데 직업운 안내가 '2034년은 자리의 별'이라고 했다)."""
     from .. import reveal as RV
     from ..taster import fill, texts
     fp, sex = _screen(f)
     marks = texts()["REVEAL"]["MARKS"]
+    own = {c["label"] for c in RV.luck_map(fp, sex, current)["cells"] if c["bad"]} if current in texts()["REVEAL"]["PRODUCTS"] and current != pid else set()
     for c in RV.luck_map(fp, sex, pid)["cells"]:
         keys = [k for k in c["good"] if not k.startswith("ny_")]
-        if keys:
+        if keys and c["label"] not in own:
             return c["label"], fill(marks[keys[0]]["line"], {"name": f["person"]["name"]})
     return None
 
@@ -82,7 +85,7 @@ def _weak_strong(f: dict) -> tuple[str, str]:
     return EL_WORD[RV._weakest(el)], EL_WORD[strong]
 
 
-def hooks(f: dict) -> dict[str, str]:
+def hooks(f: dict, current: str = "") -> dict[str, str]:
     """상품마다 이 사람 사주에 맞춘 한두 문장(계산값만 사용).
     해·기운은 결제 전 화면과 같은 계산에서 가져온다(제1조항). 원국에 없는 별은 '태어날 때 받은 여덟 글자 안에는'으로, 해마다 오는 별은 '바깥에서 들어오는'으로 쓴다."""
     name = f["person"]["name"]
@@ -92,7 +95,7 @@ def hooks(f: dict) -> dict[str, str]:
     dm = f["day_master"]
     peach = [s for s in f["shinsal_names"] if s in ("도화살", "홍염살")]
     weak, strong = _weak_strong(f)
-    year_line = lambda pid, tail: (lambda g: f"{g[0]}년은 {g[1]}예요. " if g else tail)(_first_good(f, pid))
+    year_line = lambda pid, tail: (lambda g: f"{g[0]}년은 {g[1]}예요. " if g else tail)(_first_good(f, pid, current))
     return {
         "lifetime": (f"{name} 님의 일간은 {dm['stem']}({dm['element_name']})이고 사주의 틀은 {ieyo(f['gyeokguk']['name'])}. "
                      "성격, 일, 돈, 연애, 건강과 앞으로의 10년 운, 연도별·월별 운세까지 인생 전체를 15장, 100쪽이 넘는 한 권으로 풀어 드려요. 다른 리포트가 한 가지 주제를 깊게 본다면, 평생사주는 모든 주제를 함께 봐요."),
@@ -134,13 +137,17 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
                coupon: str | None = None) -> list[dict]:
     """다른 상품 안내. 사이트 카테고리 순서(신년운세→연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
     first는 예전 호출과 맞추려고 받기만 한다(2026-10-12 사장님 요청으로 순서를 바꾸지 않음)."""
-    h = hooks(f)
+    h = hooks(f, current)
+    # 결혼했거나 연애 중인 손님(깊은 궁합을 산 손님 포함)에게 '다음 사랑'·'헤어진 인연' 책은 권하지 않는다(손님 테스트 3차: 결혼 35주년 선물 책 끝에 '다음 사랑은…')
+    rel = str((f.get("order") or {}).get("relationship") or "")
+    coupled = current == "intimate" or any(w in rel for w in ("결혼했", "연애하고", "연애 중", "결혼"))
     items = [{**p, "url": product_url(p["id"], site, coupon), "hook": h.get(p["id"], ""),
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
               "discount": discount_percent(p),
               # 재구매 링크로 들어가면 서버(discounts.mjs)가 10%를 더 깎는다. 같은 계산(반올림)으로 보여 준다.
               "rebuy_text": f"{round(p['price'] * 0.9):,}원" if coupon else None} for p in PRODUCTS
-             if p["id"] != current and p["id"] not in (f.get("owned") or [])]   # 같은 주문에서 함께 산 상품은 다시 권하지 않는다
+             if p["id"] != current and p["id"] not in (f.get("owned") or [])   # 같은 주문에서 함께 산 상품은 다시 권하지 않는다
+             and not (coupled and p["id"] in ("romance", "reunion"))]
     items.sort(key=lambda p: SITE_ORDER.index(p["id"]))
     return items
 

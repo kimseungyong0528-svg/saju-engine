@@ -27,6 +27,7 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
                         rebuy: dict | None = None, owned=(), bundled: bool = False) -> dict:
     """analyze_person() 결과로 평생사주 PDF를 만든다. 쪽수와 사용한 글을 돌려준다."""
     facts = build_facts(result, order)
+    _merge_boundary(facts)   # 경계 안내는 결제 전 화면처럼 한 줄(손님 테스트 3차)
     from .theme import reveal_fix
     for rows in (facts["sewoon"], facts["sewoon_all"]):   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
         reveal_fix(result, "lifetime", rows, score="score", signs="r_signs")
@@ -55,6 +56,7 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
     from . import romance as R
     from .outline import STATIC
     facts = build_facts(result, order)
+    _merge_boundary(facts)   # 경계 안내는 결제 전 화면처럼 한 줄(손님 테스트 3차: 5쪽에 13분·14분·15분 세 줄)
     facts["romance"] = R.build_romance(facts, result, order)
     unity.require("romance", result, facts)
     if taster:
@@ -95,8 +97,12 @@ def _merge_boundary(facts: dict) -> None:
             continue
         key = (m[2], m[3])
         near[key] = min(near.get(key, 99), int(m[1]))
-    lines = [f"태어난 시각이 {n}분만 {'늦었다면' if d == '이후' else '빨랐다면'} {pillar}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요."
-             for (d, pillar), n in sorted(near.items())]
+    # 같은 분, 같은 방향이면 한 줄로 묶는다('일주와 시주가', 손님 테스트 3차: 거의 같은 말 두 줄). 사이트 reveal.mjs boundaryLines 와 같다.
+    groups: dict[tuple[str, int], list[str]] = {}
+    for (d, pillar), n in sorted(near.items()):
+        groups.setdefault((d, n), []).append(pillar)
+    lines = [f"태어난 시각이 {n}분만 {'늦었다면' if d == '이후' else '빨랐다면'} {'와 '.join(ps)}가 달라지는 경계예요. 시각이 정확한지 한 번 더 확인해 주세요."
+             for (d, n), ps in groups.items()]
     facts["uncertainties"] = lines + rest
 
 

@@ -46,7 +46,7 @@ def problems(product: str, result: dict, facts: dict, partner: dict | None = Non
             out.append(f"{name}: 간지가 다름({r['ganzhi']} / 화면 {c['ko']})")
         if bool(r.get("r_good")) != bool(c["good"]) or bool(r.get("r_bad")) != bool(c["bad"]):
             out.append(f"{name}: 좋은/조심 표시가 화면과 다름")
-        if product == "lifetime" and c["label"] == "2027":
+        if c["label"] == "2027" and (product == "lifetime" or all(k.startswith("ny_") for k in c["good"] + c["bad"])):
             ny = RV.ny_verdict(fp, sex)[1]
             if r[score] != ny:
                 out.append(f"2027년: 무료 풀이 '2027년 운'은 {ny}점인데 리포트는 {r[score]}점")
@@ -55,11 +55,25 @@ def problems(product: str, result: dict, facts: dict, partner: dict | None = Non
             out.append(f"{name}: 화면은 좋은 표시인데 리포트 점수 {r[score]}점")
         if c["bad"] and not c["good"] and r[score] > 40:
             out.append(f"{name}: 화면은 조심 표시인데 리포트 점수 {r[score]}점")
-    if product not in ("lifetime", "romance"):
+    if product != "lifetime":
         seen = RV.digest(fp, facts["person"]["name"], sex, product, facts["order"]["date"], facts["order"].get("reveal_start", ""))["화면에서 본 점수"]
         want = {"score": seen["전체 점수"], "good": seen["좋은 점"]["점수"], "bad": seen["조심할 점"]["점수"]}
-        if facts["theme"]["data"].get("screen_score") != want:
-            out.append(f"화면 점수 {want}와 리포트 점수 {facts['theme']['data'].get('screen_score')}가 다름")
+        got = facts["romance"].get("screen_score") if product == "romance" else facts["theme"]["data"].get("screen_score")
+        if got != want:
+            out.append(f"화면 점수 {want}와 리포트 점수 {got}가 다름")
+    # 책끼리: 신년운세 결제 전 화면에서 '조심할 달'인 2027년 달을 다른 책이 좋은 달로 쓰지 않는다(묶음으로 함께 사는 책, 손님 테스트 3차)
+    ny_bad = {c["ko"]: c["label"] for c in RV.luck_map(fp, sex, "newyear")["cells"] if c["bad"]}
+    if product == "newyear":
+        for r in facts["theme"]["months"]:
+            if r.get("r_bad"):
+                for k, ar in r["areas"].items():
+                    if ar["score"] >= 60:
+                        out.append(f"신년운세 {ny_bad.get(r['ganzhi'], r['ganzhi'])}: 조심할 달인데 분야 '{k}'는 {ar['score']}점(좋은 달)")
+    else:
+        months = facts["romance"]["months"] if product == "romance" else (facts.get("theme") or {}).get("months") or []
+        for r in months:
+            if r.get("year") == 2027 and r["ganzhi"] in ny_bad and r.get("r_good"):
+                out.append(f"2027년 {r['month']}월: 신년운세 화면은 조심할 달인데 이 책은 좋은 표시")
     if partner is not None and product in ("intimate", "reunion"):
         from ..pair import pair_score
         want = pair_score(fp, taster.pillars_from_result(partner))
