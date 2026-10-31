@@ -9,15 +9,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Song+Myung&display=swap" rel="stylesheet">
 <style>
+@font-face { font-family: Pretendard; src: url(/assets/fonts/PretendardVariable.woff2) format('woff2'); font-weight: 100 900; font-display: swap; }
 :root {
-  --paper: #f3ecdc; --paper2: #ebe2cc; --card: #fbf7ee; --ink: #1f1b16; --ink2: #5a4f40; --line: #d9cdb1;
+  --paper: #f3ecdc; --paper2: #ebe2cc; --card: #fbf7ee; --ink: #000; --ink2: #000; --line: #d9cdb1;
   --red: #9e2f22; --red2: #c0473a; --gold: #b8954a;
   --yt: #d93025; --ig: #c13584; --fb: #1877f2; --th: #1f1b16; --dg: #ff6f0f; --ok: #3d7a4a;
   --r: 14px; --shadow: 0 1px 0 rgba(58,46,34,.06), 0 8px 24px -12px rgba(58,46,34,.25);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--paper); color: var(--ink); font-family: "Gowun Batang", serif; font-size: 16px; line-height: 1.6;
+body { background: var(--paper); color: var(--ink); font-family: Pretendard, "Gowun Batang", sans-serif; font-weight: 700; font-size: 17px; line-height: 1.6;
   background-image: radial-gradient(rgba(120,95,60,.06) 1px, transparent 1px); background-size: 4px 4px; min-height: 100vh; }
 button, input, select { font: inherit; color: inherit; }
 .han { font-family: "Song Myung", serif; }
@@ -38,7 +39,7 @@ button, input, select { font: inherit; color: inherit; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 10px; padding: 11px 16px;
   background: var(--red); color: #fff7ea; cursor: pointer; font-weight: 700; text-decoration: none; transition: transform .08s, background .15s; }
 .btn:hover { background: var(--red2); } .btn:active { transform: translateY(1px); }
-.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 400; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); font-weight: 700; }
 .btn.ghost:hover { background: var(--paper2); }
 .btn.small { padding: 7px 11px; font-size: 14px; border-radius: 8px; }
 .btn.block { width: 100%; margin-top: 12px; }
@@ -64,7 +65,7 @@ h2.sec::before { content: ""; width: 6px; height: 22px; background: var(--red); 
 .days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; scrollbar-width: none; }
 .day { flex: none; min-width: 66px; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 8px 10px; text-align: center; cursor: pointer; }
 .day b { display: block; font-size: 18px; } .day span { font-size: 12px; color: var(--ink2); }
-.day.on { background: var(--ink); color: #f6ecd6; border-color: var(--ink); } .day.on span { color: #d8c9a5; }
+.day.on { background: var(--ink); color: #f6ecd6; border-color: var(--ink); } .day.on span { color: #fff; }
 .day .dots { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
 .day .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); } .day .dots i.ok { background: var(--ok); }
 .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
