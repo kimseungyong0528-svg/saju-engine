@@ -82,7 +82,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     # 지금과 앞으로의 대운 중 80세 전에 시작하는 것에서 재물 점수가 높은 셋(재성이 드는 대운 우선), 나이순
     ahead = [p for p in T.near(f, periods) if p["state"] != "지난"]
     # '나가는 돈 주의' 대운이나 점수가 낮은 대운은 '큰돈이 들어오는 대운'에 넣지 않는다(같은 책 대운 표와 모순 금지)
-    ahead = [p for p in ahead if p["t_score"] >= 55 and not p["r_bad"]]
+    # 같은 책 대운 표에서 '돈의 별' 같은 좋은 표시가 붙은 대운만(손님 테스트 4차: 표시 없는 59점 대운이 요약에 들어갔다)
+    ahead = [p for p in ahead if T._own(p["r_good"]) and not p["r_bad"]]
     big = sorted(sorted(ahead, key=lambda p: (not T.has(p, "재성"), -p["t_score"]))[:3], key=lambda p: periods.index(p))
     screen = T.screen_score(f, result, "wealth")
     data = {
@@ -94,6 +95,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "seats": T.seats(f, "재성"),
         "best_years": (best := T.best(years, 12, lambda y: y["year"])),
         "leak_years": T.bad_rows(years, 12, lambda y: y["year"]),   # 화면의 '돈이 샘'(겁재) 해
+        "leak_none": T.none_text(years, "조심"),
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "big_periods": [{"age_text": p["age_text"], "years_text": p["years_text"], "ganzhi": p["ganzhi"]} for p in big[:3]],
     }
@@ -145,7 +147,7 @@ def build_outline(f: dict) -> list[dict]:
             T.screen_row(t["screen_score"], t.get("seen", True)),
             ["돈 버는 형", t["type"]], ["투자 성향", t["risk"]],
             ["재물운이 좋은 해", ", ".join(f"{y}년" for y in t["best_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
-            ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+            ["나가는 돈 주의할 해", ", ".join(f"{y}년" for y in t["leak_years"]) or t["leak_none"]],
             ["돈 쓰기 좋은 달", ", ".join(t["best_months"])], ["아낄 달", ", ".join(t["careful_months"]) or "크게 아껴야 할 달은 없어요"],
             ["큰돈이 들어오는 대운", ", ".join(p["age_text"] for p in t["big_periods"]) or "운에서 재성이 드는 해를 잡아요"],
         ], slot=S("w_glance", "표를 이어서 재물운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 120)),

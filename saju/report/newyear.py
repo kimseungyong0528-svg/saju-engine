@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import copy
 from datetime import date, datetime, timedelta
 
 from . import knowledge as K
@@ -145,12 +146,16 @@ def _gz_elements(gz: str) -> list[str]:
     return _ganzhi_elements(gz)
 
 
-def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
+def year_months(f: dict, result: dict) -> tuple[dict, list[dict]]:
+    """2027년 세운과 1월~12월 달(전체 점수·분야별 점수·표시). 신년운세 책이 쓰고, 다른 책의 2027년 달도 이 값을 그대로 가져다 쓴다
+    (제1조항: 같은 달을 두 곳에서 따로 계산하지 않는다 — 손님 테스트 4차: 묶음 책끼리 같은 달 점수와 방향이 달랐다)."""
+    key = (f["order"]["date"], f["person"]["name"])
+    if _YM_CACHE.get("result") is result and _YM_CACHE.get("key") == key:
+        return _YM_CACHE["val"]
     from .. import luck
     an = result["variants"][0]["analysis"]
     fp = T.fourpillars(result)
     rate = luck_rater(an)
-    name = f["person"]["name"]
     male = f["person"]["sex"] == "male"
     strong = f["strength"]["label"] not in ("신약", "극신약")
     n_gwan, n_jae = T.count(f, "관성"), T.count(f, "재성")
@@ -233,6 +238,42 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         m.update(marks(m))
     T.reveal_fix(result, "newyear", months, replace=False)   # 제1조항: 결제 전 화면의 '돕는 달'·'조심할 달'과 같은 방향
     _align_areas(result, months)   # 제1조항: 함께 산 재물운·직업운·사업운·연애사주·건강운의 달 표시와 같은 방향
+    _YM_CACHE.update(result=result, key=key, val=(year, months))
+    return year, months
+
+
+_YM_CACHE: dict = {}
+
+
+def _area_best(ms: list[dict], key: str) -> list[str]:
+    """분야별 '좋은 달': 그 분야 점수가 60점 이상인 달 가운데 높은 3개(시간 순). 한 해 전체의 돕는 달을 분야마다 복사하지 않는다
+    (손님 테스트 4차: 7개 분야 '좋은 달'이 모두 같았고, 일·직장 '좋은 달 8월'이 같은 쪽 표에서 20점이었다)."""
+    top = sorted([m for m in ms if m["t_score"] >= 60 and not m.get("r_bad")], key=lambda m: -m["t_score"])[:3]
+    return [m["label"] for m in ms if m in top]
+
+
+def _area_careful(ms: list[dict], key: str) -> list[str]:
+    low = sorted([m for m in ms if (m["areas"][key]["bad"] or m["t_score"] <= 40) and not m.get("r_good")], key=lambda m: m["t_score"])[:2]
+    return [m["label"] for m in ms if m in low]
+
+
+def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
+    from .. import luck
+    an = result["variants"][0]["analysis"]
+    fp = T.fourpillars(result)
+    rate = luck_rater(an)
+    name = f["person"]["name"]
+    male = f["person"]["sex"] == "male"
+    strong = f["strength"]["label"] not in ("신약", "극신약")
+    n_gwan, n_jae = T.count(f, "관성"), T.count(f, "재성")
+    spouse = "정재" if male else "정관"
+    hits = _hits(f, an)
+    excess = [e["el"] for e in f["elements"] if e["status"] == "많음"]
+    lacking = [e["el"] for e in f["elements"] if e["status"] == "부족"]
+    good_el = {f["lucky"]["element"], *lacking}
+    order_day = date.fromisoformat(f["order"]["date"])
+    sy = luck.sewoon(fp, [TARGET_YEAR])[0]
+    year, months = copy.deepcopy(year_months(f, result))
 
     def avg(vals):
         return sum(vals) / len(vals)
@@ -247,8 +288,8 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
             "name": title,
             "score": T.clamp((year["areas"][key]["score"] + avg([m["t_score"] for m in ms])) / 2),
             "year_signs": year["areas"][key]["signs"],
-            "best_months": T.best(ms, 3, label),
-            "careful_months": T.worst(ms, 2, label, limit=45),
+            "best_months": _area_best(ms, key),
+            "careful_months": _area_careful(ms, key),
             "sign_months": {s: [m["label"] for m in ms if s in m["t_signs"]]
                             for s in dict.fromkeys(x for m in ms for x in m["t_signs"])},
         }
@@ -614,6 +655,17 @@ def cross_sell_order(f: dict) -> list[str]:
 AREA_PRODUCT = {"work": "career", "money": "wealth", "biz": "business", "love": "romance", "health": "health"}
 
 
+def short(x: str) -> str:
+    return x.split("(")[0]
+
+
+BAD_WORDS = ("주의", "충", "마찰", "부딪힘", "넘치는")
+
+
+def _is_bad_sign(x: str) -> bool:
+    return any(w in x for w in BAD_WORDS)
+
+
 def _align_areas(result: dict, months: list[dict]) -> None:
     from .. import reveal as RV
     from ..taster import texts
@@ -623,20 +675,40 @@ def _align_areas(result: dict, months: list[dict]) -> None:
     conf, marks = texts()["REVEAL"]["PRODUCTS"], texts()["REVEAL"]["MARKS"]
     for m in months:
         p = {"stem": STEMS.index(m["ganzhi"][0]), "branch": BRANCHES.index(m["ganzhi"][1])}
-        for key, pid in AREA_PRODUCT.items():
-            ar = m["areas"][key]
-            good = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["good"] if rule_of(k)(p)]
-            bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf[pid]["bad"] if rule_of(k)(p)]
-            good = [] if bad else good   # 한 달에 좋은 표시와 조심할 표시를 함께 붙이지 않는다(saju/reveal.py year_marks 와 같다)
+        for key, ar in m["areas"].items():
+            pid = AREA_PRODUCT.get(key)
+            good = bad = []
+            if pid:
+                gk, bk = RV.year_marks(fp, sex, pid, "", [RV._mark_key(k, sex) for k in conf[pid]["good"] if rule_of(k)(p)],
+                                       [RV._mark_key(k, sex) for k in conf[pid]["bad"] if rule_of(k)(p)])
+                good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
+            # 제1조항: 결제 전 화면에서 '조심할 달'이면 분야별로도 좋은 달이 아니고, '돕는 달'이면 분야별로도 조심할 달이 아니다
+            # (다른 책 theme.reveal_fix 와 같은 규칙. 손님 테스트 4차: 화면 '8월 돕는 달'인데 일·직장 표는 8월 20점이었다).
             if m.get("r_bad"):
-                good = []   # 결제 전 화면에서 '조심할 달'인 달은 분야별로도 좋은 달로 쓰지 않는다(다른 책 theme.reveal_fix 와 같다)
+                good = []
+            if m.get("r_good"):
+                bad = []
             v = ar["score"]
-            ar["score"] = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
-            ar["signs"] = list(dict.fromkeys(good + bad + ar["signs"]))
-        if m.get("r_bad"):
-            for key, ar in m["areas"].items():
-                if key not in AREA_PRODUCT:
-                    ar["score"] = min(ar["score"], 59)   # 조심할 달에는 어느 분야도 '좋은 달' 점수(60점 이상)를 주지 않는다
+            if pid:
+                v = max(v, 60) if good else min(v, 40) if bad else min(max(v, 41), 59)
+            if m.get("r_bad"):
+                v = min(v, 59 if not bad else 40)
+            if m.get("r_good"):
+                v = max(v, 41)
+            ar["score"] = v
+            ar["good"], ar["bad"] = good, bad
+            own = [x for x in ar["signs"] if not (key == "health" and ("기운 채움" in x or "기운 더함" in x))]   # 건강운 책과 같은 '기운 채움' 기준만 쓴다
+            if good or m.get("r_good"):
+                own = [x for x in own if not _is_bad_sign(x)]   # 좋은 달 칸에 조심 표시를 함께 붙이지 않는다
+            if bad or m.get("r_bad"):
+                own = [x for x in own if _is_bad_sign(x)]
+            seen, out = set(), []
+            for x in good + bad + own:
+                k = short(x)
+                if k not in seen:   # '배우자 별'과 '배우자 별(정관)'처럼 같은 말을 두 번 쓰지 않는다
+                    seen.add(k)
+                    out.append(x)
+            ar["signs"] = out
 
 
 def hook(f: dict) -> str:

@@ -92,7 +92,9 @@ function showBundleGap(){
  const names=gap.map(r=>(r.querySelector('.bundle-name')?.textContent||'').trim()).filter(Boolean);
  return names.length?`${names.join(', ')}의 질문을 골라 주세요. 사지 않으려면 그 상품의 체크를 풀어 주세요.`:'';
 }
-document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('qb-missing')&&e.target.value)e.target.classList.remove('qb-missing')});
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('qb-missing')&&e.target.value)e.target.classList.remove('qb-missing');
+ // 빈 칸을 채우면 결제 버튼 아래 '질문을 골라 주세요' 안내를 지운다(손님 테스트 4차: 채운 뒤에도 남았다)
+ if(e.target.closest&&(e.target.closest('.bundle-row')||e.target.closest('[data-bundle-partner]'))&&!document.querySelector('.qb-missing')){const n=document.querySelector('[data-checkout-error]');if(n&&/질문|상대방 정보/.test(n.textContent))n.textContent=''}});
 let quoteSeq=0;
 async function refreshQuote(p,d){
  const seq=++quoteSeq,box=document.querySelector('#checkout-price');if(!box)return;
@@ -100,6 +102,8 @@ async function refreshQuote(p,d){
  if(seq!==quoteSeq||!box.isConnected)return;
  if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
  if(q)q.missing=Boolean(q.incomplete?.length);
+ // 이미 구매한 이메일이면 목록의 '10%' 가격을 지운다(손님 테스트 4차: 재구매 손님에게도 '10% 26,820원'이 보였다)
+ document.querySelector('.bundle-x')?.classList.toggle('no-first',Boolean(q?.notes?.includes('BUNDLE_FIRST_ONLY')));
  box.innerHTML=quoteBox(p,q);
 }
 function bindDiscounts(p,d){
@@ -122,6 +126,13 @@ function bindDiscounts(p,d){
  const CK='unmyeong.consent.'+p.id,boxes=['privacy','payment'].map(n=>form.elements[n]).filter(Boolean);
  try{if(sessionStorage.getItem(CK)==='1'&&boxes.length){boxes.forEach(b=>{b.checked=true});const all=document.querySelector('#all-consent');if(all)all.checked=true;boxes[0].dispatchEvent(new Event('input',{bubbles:true}))}}catch{}   // 결제 버튼은 'input'에서 다시 계산된다(손님 테스트 3차: 체크는 켜졌는데 버튼이 꺼져 있었음)
  form.addEventListener('change',()=>{try{sessionStorage.setItem(CK,boxes.length&&boxes.every(b=>b.checked)?'1':'0')}catch{}});
+ // 결제 버튼이 왜 안 눌리는지 알려 준다(손님 테스트 4차: 동의를 안 하면 이유 없이 버튼이 안 눌렸다)
+ const pay=form.querySelector('#pay');
+ if(pay&&boxes.length){let why=form.querySelector('.pay-why');if(!why){why=document.createElement('p');why.className='pay-why';pay.after(why)}
+  const upd=()=>{why.textContent=boxes.every(b=>b.checked)?'':'위의 동의 두 곳에 체크하면 결제 버튼이 눌려요.'};form.addEventListener('input',upd);form.addEventListener('change',upd);upd()}
+ // 이메일 오타 안내가 떠 있으면 결제 전에 한 번 멈춘다(손님 테스트 4차: 오타 추천이 떠 있어도 결제됐다). 그대로 쓰려면 한 번 더 누르면 된다.
+ if(pay){let ok='';pay.addEventListener('click',e=>{const v=form.elements.email?.value||'',h=emailHint(v);if(h&&h.fix&&ok!==v){ok=v;e.preventDefault();e.stopImmediatePropagation();emailHintShow(form,true);
+  const box=form.querySelector('.email-hint');if(box){box.scrollIntoView({block:'center',behavior:'smooth'});box.classList.add('qb-missing')}}},true)}
  refreshQuote(p,d);
 }
 

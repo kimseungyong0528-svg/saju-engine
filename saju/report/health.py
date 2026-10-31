@@ -93,6 +93,7 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
         "body_type": f"{f['strength']['label']} · {temp}", "season": season, "temperature": temp,
         "excess": [{"el": e, **BODY[e]} for e in excess], "lacking": [{"el": e, **BODY[e]} for e in lacking],
         "care_years": T.bad_rows(years, 12, lambda y: y["year"]),   # 화면의 '몸 조심' 해
+        "care_none": T.none_text(years, "조심"),
         "good_years": T.good_rows(years, 12, lambda y: y["year"]),   # 화면의 '기운 채움' 해
         "best_months": T.best(months, 3, T.ym), "careful_months": T.worst(months, 3, T.ym),
         "body_map": BODY,
@@ -141,7 +142,7 @@ def build_outline(f: dict) -> list[dict]:
             T.screen_row(t["screen_score"], t.get("seen", True)),
             ["타고난 체질", t["body_type"]], ["넘치는 기운", els(t["excess"])], ["가장 모자란 기운" if len(t["lacking"]) == 1 else "모자란 기운", els(t["lacking"])],
             ["돌볼 영역", " / ".join(x["area"] for x in t["excess"] + t["lacking"]) or "고른 편이라 전체 리듬을 지켜요"],
-            ["기운 채움 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["몸 조심할 해", ", ".join(f"{y}년" for y in t["care_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"],
+            ["기운 채움 해", ", ".join(f"{y}년" for y in t["good_years"]) or "앞으로 12년 안에는 뚜렷하지 않아요"], ["몸 조심할 해", ", ".join(f"{y}년" for y in t["care_years"]) or t["care_none"]],
             ["조심할 달", ", ".join(t["careful_months"]) or "크게 조심할 달은 없어요"],
         ], slot=S("h_glance", "표를 이어서 건강운의 핵심을 짧게 소개하고, 자세한 내용은 뒤 장에서 다룬다고 안내해 주세요.", HALF - 160)),
     ])

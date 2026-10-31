@@ -133,14 +133,27 @@ def _newyear_hook(f: dict) -> str:
 SITE_ORDER = ("newyear", "romance", "intimate", "reunion", "wealth", "career", "business", "health", "lifetime")
 
 
+def no_love_books(f: dict, current: str = "") -> bool:
+    """연애사주('다음 사랑')·재회사주('헤어진 인연')를 권하지 않을 손님: 결혼했거나 연애 중, 깊은 궁합을 산(함께 산) 손님, 60세 이상
+    (손님 테스트 3·4차: 결혼 35주년 선물 책·68세 손님 책 끝에 '다음 사랑은…'). 책 끝 추천, 보너스 쪽 링크가 같은 기준을 쓴다."""
+    rel = str((f.get("order") or {}).get("relationship") or "")
+    status = str(((f.get("theme") or {}).get("data") or {}).get("status") or "")
+    if status == "헤어짐":
+        return False
+    if current == "intimate" or "intimate" in (f.get("owned") or []):
+        return True
+    if any(w in rel for w in ("결혼했", "연애하고", "연애 중", "결혼")):
+        return True
+    return int((f.get("person") or {}).get("age") or 0) >= 60
+
+
 def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, first: list[str] | None = None,
                coupon: str | None = None) -> list[dict]:
     """다른 상품 안내. 사이트 카테고리 순서(신년운세→연애→재회→금전→건강→인생총운)로 두고 평생사주는 맨 끝.
     first는 예전 호출과 맞추려고 받기만 한다(2026-10-12 사장님 요청으로 순서를 바꾸지 않음)."""
     h = hooks(f, current)
     # 결혼했거나 연애 중인 손님(깊은 궁합을 산 손님 포함)에게 '다음 사랑'·'헤어진 인연' 책은 권하지 않는다(손님 테스트 3차: 결혼 35주년 선물 책 끝에 '다음 사랑은…')
-    rel = str((f.get("order") or {}).get("relationship") or "")
-    coupled = current == "intimate" or any(w in rel for w in ("결혼했", "연애하고", "연애 중", "결혼"))
+    coupled = no_love_books(f, current)
     items = [{**p, "url": product_url(p["id"], site, coupon), "hook": h.get(p["id"], ""),
               "price_text": f"{p['price']:,}원", "original_text": f"{p['original']:,}원",
               "discount": discount_percent(p),
@@ -152,7 +165,7 @@ def cross_sell(f: dict, current: str = "lifetime", site: str | None = None, firs
     return items
 
 
-def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None, owned=(), answers=()) -> dict:
+def taster_recap(view: dict, current: str, site: str | None = None, coupon: str | None = None, owned=(), answers=(), no_love: bool = False) -> dict:
     """리포트 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' (2026-10-27 사장님 요청).
     무료 분석과 같은 계산(saju/taster.py)의 6가지를 다시 짚고, 운마다 그 운을 깊게 다룬 리포트로 잇는다."""
     names = {p["id"]: p["name"].replace("금월선녀의 ", "") for p in PRODUCTS}
@@ -161,7 +174,9 @@ def taster_recap(view: dict, current: str, site: str | None = None, coupon: str 
         from ..taster import situation_note
         note = situation_note(a["id"], answers)   # 결제 전 화면 카드와 같은 '지금 상황' 한 줄
         return {"kind": kind, "rank": n, "title": a["title"], "score": a["score"], "text": a["text"] + (" " + note if note else ""), "hook": a["hook"], "product": pid,
-                "product_name": names.get(pid, ""), "url": product_url(pid, site, coupon), "here": pid == current,
+                "product_name": names.get(pid, ""), "here": pid == current,
+                # 결혼·연애 중·60세 이상 손님에게는 연애사주·재회사주 링크를 달지 않는다(책 끝 추천과 같은 기준, 손님 테스트 4차)
+                "url": None if no_love and pid in ("romance", "reunion") else product_url(pid, site, coupon),
                 "owned": pid != current and pid in owned}   # 같은 주문에서 함께 받은 리포트
     return {"good": [item("good", n, a) for n, a in enumerate(view["good"], 1)],
             "bad": [item("bad", n, a) for n, a in enumerate(view["bad"], 1)]}

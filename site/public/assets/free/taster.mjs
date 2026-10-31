@@ -55,21 +55,26 @@ const RULES = {
     const helpful = f.st >= 55 ? ['식상', '재성', '관성'] : f.st <= 45 ? ['인성', '비겁'] : [];
     const g1 = GROUP_OF[tenGod(f.ds, Y2027.stem)], g2 = GROUP_OF[branchTenGod(f.ds, Y2027.branch)];
     const good = [], bad = [];
+    // 가장 모자란 기운을 '부담'이라 하지 않고, 넘치는 기운을 '도와주는 기운'이라 하지 않는다(saju/taster.py _newyear 와 같다)
+    const lack = new Set(ELEMENTS.filter(e => f.elements[e] < 8)), many = new Set(ELEMENTS.filter(e => f.elements[e] >= 35));
     for (const [g, el] of [[g1, '화'], [g2, '토']]) {
       if (!helpful.length) continue;
-      if (helpful.includes(g)) good.push(el); else bad.push(el);
+      const help = helpful.includes(g);
+      if ((!help && lack.has(el)) || (help && many.has(el))) continue;
+      if (help) good.push(el); else bad.push(el);
     }
     if (good.length === 2) out.push(['ny_help2', 28]);
     else if (good.length === 1) out.push(['ny_help1', 14, { good: elName(good[0]) }]);
     if (bad.length) out.push(['ny_hurt', -11 * bad.length, { bad: bad.map(elName).join('과 ') }]);
-    if (!helpful.length) out.push(['ny_balance', 6]);
     const rel = branchRelation(f.db, Y2027.branch);
+    const mb = f.fp.month.branch;
+    // '부딪히지 않는다'는 말은 태어난 날과 충·형·원진이 없고 더운 계절생이 아닐 때만(saju/taster.py 와 같다)
+    if (!helpful.length && !rel.some(r => ['충', '형', '원진'].includes(r)) && ![5, 6, 7].includes(mb)) out.push(['ny_balance', 6]);
     const dayBranch = branchName(f.db);
     if (rel.includes('충')) out.push(['ny_clash', -16]);
     if (rel.includes('육합') || rel.includes('반합')) out.push(['ny_combine', 9, { dayBranch }]);
     if (rel.includes('형')) out.push(['ny_punish', -8, { dayBranch }]);
     if (rel.includes('원진')) out.push(['ny_wonjin', -7]);
-    const mb = f.fp.month.branch;
     if ([11, 0, 1].includes(mb) && !bad.includes('화')) out.push(['ny_warm', 8]);
     if ([5, 6, 7].includes(mb) && !good.includes('화')) out.push(['ny_hot', -7]);
     return out;

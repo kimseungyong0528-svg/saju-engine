@@ -84,6 +84,9 @@ function show(view){if(view.fileName)fileName=view.fileName;
   // 묶음 주문: 함께 산 책을 한 권씩 보여 주고, 책마다 PDF를 내려받게 한다. 맨 위에 처음 고른 책도 적는다('2권'인데 한 권만 보였다, 손님 테스트 3차).
   const books=view.books||[];
   if(books.length){
+    // 한 권이라도 아직 작성 중이면 맨 위 제목도 '작성 중'(손님 테스트 4차: 맨 위는 '보냈어요', 아래 한 권은 '작성 중')
+    const left=books.filter(b=>b.status!=='email_accepted').length+(sent?0:1);
+    if(sent&&left)$('title').textContent=`${books.length+1}권 중 ${books.length+1-left}권을 보냈어요. 나머지도 작성하고 있어요`;
     $('product').textContent=`${view.productName||''} 외 ${books.length}권`;
     $('pdf').textContent=`${String(view.productName||'').replace(/^금월선녀의\s*/,'')} PDF 내려받기`;
     $('books').hidden=false;

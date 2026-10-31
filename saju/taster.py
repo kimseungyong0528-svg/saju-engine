@@ -104,7 +104,19 @@ def ny_sides(fp: FourPillars, sex: str) -> dict:
     helpful = ["식상", "재성", "관성"] if f["st"] >= 55 else ["인성", "비겁"] if f["st"] <= 45 else []
     g1 = TEN_GOD_GROUP[A.ten_god(f["ds"], Y2027[0])]
     g2 = TEN_GOD_GROUP[A.branch_ten_god(f["ds"], Y2027[1])]
-    return {el: (("help" if g in helpful else "hurt") if helpful else None) for g, el in ((g1, "화"), (g2, "토"))}
+    lack, many = _lack_many(f)
+    out = {}
+    for g, el in ((g1, "화"), (g2, "토")):
+        side = ("help" if g in helpful else "hurt") if helpful else None
+        if (side == "hurt" and el in lack) or (side == "help" and el in many):
+            side = None
+        out[el] = side
+    return out
+
+
+def _lack_many(f: dict) -> tuple[set, set]:
+    """건강운과 같은 기준: 8% 아래면 모자란 기운, 35% 이상이면 넘치는 기운."""
+    return ({e for e in ELEMENTS if f["elements"][e] < 8}, {e for e in ELEMENTS if f["elements"][e] >= 35})
 
 
 def _newyear(f, T):
@@ -114,19 +126,26 @@ def _newyear(f, T):
     g1 = TEN_GOD_GROUP[A.ten_god(f["ds"], Y2027[0])]
     g2 = TEN_GOD_GROUP[A.branch_ten_god(f["ds"], Y2027[1])]
     good, bad = [], []
+    lack, many = _lack_many(f)
     for g, el in ((g1, "화"), (g2, "토")):
         if not helpful:
             continue
-        (good if g in helpful else bad).append(el)
+        side = "help" if g in helpful else "hurt"
+        # 가장 모자란 기운을 '부담'이라 하지 않고, 넘치는 기운을 '도와주는 기운'이라 하지 않는다(건강운 '기운 채움'과 같은 판단, 손님 테스트 4차)
+        if (side == "hurt" and el in lack) or (side == "help" and el in many):
+            continue
+        (good if side == "help" else bad).append(el)
     if len(good) == 2:
         out.append(("ny_help2", 28, {}))
     elif len(good) == 1:
         out.append(("ny_help1", 14, {"good": el_name(good[0])}))
     if bad:
         out.append(("ny_hurt", -11 * len(bad), {"bad": "과 ".join(el_name(e) for e in bad)}))
-    if not helpful:
-        out.append(("ny_balance", 6, {}))
     rel = _rels(f["db"], Y2027[1])
+    mb = f["fp"].month.branch
+    # '해의 기운이 부딪히지 않는다'는 말은 태어난 날과 충·형·원진이 없고, 더운 계절생(불이 하나 더 붙는 해)이 아닐 때만(손님 테스트 4차)
+    if not helpful and not ({"충", "형", "원진"} & set(rel)) and mb not in (5, 6, 7):
+        out.append(("ny_balance", 6, {}))
     day_branch = f"{BRANCHES[f['db']]}({BRANCHES_HANJA[f['db']]})"
     if "충" in rel:
         out.append(("ny_clash", -16, {}))
@@ -136,7 +155,6 @@ def _newyear(f, T):
         out.append(("ny_punish", -8, {"dayBranch": day_branch}))
     if "원진" in rel:
         out.append(("ny_wonjin", -7, {}))
-    mb = f["fp"].month.branch
     # 불(丁)이 부담인 사람에게 '불이 사주를 녹인다'고 하지 않고, 불이 돕는 사람에게 '불이 더 덥게 한다'고 하지 않는다(제1조항).
     if mb in (11, 0, 1) and "화" not in bad:
         out.append(("ny_warm", 8, {}))

@@ -118,8 +118,11 @@ def build_romance(f: dict, result: dict, order) -> dict:
     # 결혼 인연 대운: 지금 대운과 앞으로의 대운 가운데 55세 안에 시작하는 것만(23세에게 61~80세를 말하지 않게)
     # 지금 나이부터 20년 안에 시작하고 끝나기까지 1년 넘게 남은 대운만(26세에게 54~63세를, 29세에게 곧 끝나는 21~30세를 말하지 않게)
     age = f["person"].get("age") or 0
-    marriage = [p for p in near(f, periods) if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + 20, 55)
+    def _within(span):
+        return [p for p in near(f, periods) if p["state"] != "지난" and p["age_to"] > age + 1 and p["age_from"] <= min(age + span, 55)
                 and (p["love_star"] or p["love_hap"])]
+    # 먼저 12년 안에서 찾고, 없을 때만 20년까지(손님 테스트 4차: 31세 손님에게 40~59세를 말했다)
+    marriage = _within(12) or _within(20)
 
     natal_day = [r for r in f["relations"] if "일주" in r.get("between", [])]
     status = STATUS_TEXT.get(order.relationship, order.relationship)
