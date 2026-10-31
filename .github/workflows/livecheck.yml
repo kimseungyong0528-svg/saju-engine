@@ -1,0 +1,17 @@
+name: livecheck
+on: push
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sleep 150
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            a=$(curl -s "https://unmyeong-saju.com/?v=$RANDOM" | grep -c "동의 두 곳에 체크하면" || true)
+            b=$(curl -s "https://unmyeong-saju.com/assets/free/taster.mjs?v=$RANDOM" | grep -c "many.has(el)" || true)
+            c=$(curl -s "https://unmyeong-saju.com/assets/free/reveal.mjs?v=$RANDOM" | grep -c "nyGood" || true)
+            echo "index=$a taster=$b reveal=$c"
+            if [ "$a" -ge 1 ] && [ "$b" -ge 1 ] && [ "$c" -ge 1 ]; then echo LIVE_OK; exit 0; fi
+            sleep 60
+          done
+          exit 1
