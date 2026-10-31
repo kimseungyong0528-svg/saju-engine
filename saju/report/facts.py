@@ -230,12 +230,11 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     # 대운
     dw = an["daewoon"]
     periods = []
-    current_idx = 0
+    # 지금 대운: 대운이 실제로 시작하는 날(start_date) 기준. 만 나이로 고르면 표의 해(2016~2025)와 한 칸 어긋났다(손님 테스트 4차).
+    current_idx = -1
     for i, p in enumerate(dw["periods"]):
-        if p["age_from"] <= age:
+        if (date.fromisoformat(p["start_date"][:10]) if p.get("start_date") else date(p["start_year"], 1, 1)) <= order.order_date:
             current_idx = i
-    if age < dw["periods"][0]["age_from"]:
-        current_idx = -1
     for i, p in enumerate(dw["periods"]):
         state = "지금" if i == current_idx else "지난" if i < current_idx else "앞으로"
         periods.append({
@@ -291,7 +290,7 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
     tr = result["input"].get("time_range") or {}
     time_text = (result["input"]["time"] or
                  (f"대략 {tr['start']}~{'다음 날 ' if tr.get('endDayOffset') else ''}{tr['end']}" if tr.get("start") else "태어난 시간 모름"))
-    return {
+    f = {
         "person": {
             "name": result["person"]["name"] or "고객",
             "sex": result["person"]["sex"], "sex_word": sex_word,
@@ -334,3 +333,25 @@ def build_facts(result: dict, order: OrderInfo | None = None) -> dict:
         "version": result["version"],
         "options": result["options"],
     }
+    _attach_2027(f, result)
+    return f
+
+
+NY_AREA = {"career": "work", "wealth": "money", "business": "biz", "romance": "love", "health": "health"}
+
+
+def _attach_2027(f: dict, result: dict) -> None:
+    """제1조항: 2027년 달은 신년운세 계산(saju/report/newyear.py year_months) 한 곳에서만 매긴다.
+    평생사주 달력의 2027년 달 점수는 신년운세 달 점수 그대로이고, 다른 책의 2027년 달에는 신년운세 분야 점수(ny_areas)를 붙여 그대로 쓰게 한다
+    (손님 테스트 4차: 신년운세 '6월 조심할 달 40점'인데 평생사주 달력은 6월 64점, 연애사주와 신년운세 연애 달 점수가 1~12점 달랐다)."""
+    from .newyear import TARGET_YEAR, year_months
+    _, ny = year_months(f, result)
+    by_gz = {m["ganzhi"]: m for m in ny}
+    for rows in (f["months"], f["screen_months"]):
+        for r in rows:
+            m = by_gz.get(r["ganzhi"]) if r.get("year") == TARGET_YEAR else None
+            if m is None:
+                continue
+            r["score"] = m["t_score"]
+            r["ny_side"] = "good" if m.get("r_good") else "bad" if m.get("r_bad") else ""
+            r["ny_areas"] = {k: {"score": a["score"], "good": list(a["good"]), "bad": list(a["bad"])} for k, a in m["areas"].items()}

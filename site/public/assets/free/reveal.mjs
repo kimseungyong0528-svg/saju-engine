@@ -104,12 +104,16 @@ export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR, start = nul
   const base = unit === 'month' ? (product === 'reunion' ? reunionMonths(start || [startYear, 1]) : MONTHS_2027) : Array.from({ length: 12 }, (_, i) => ({ ...yearPillar(startYear + i), label: String(startYear + i) }));
   const good = {}, bad = {};
   // 재회사주 2027년 달: 신년운세 지도에서 '조심할 달'인 달에는 좋은 표시를 붙이지 않는다(saju/reveal.py luck_map 과 같다, 제1조항)
-  const nyBad = product === 'reunion' ? new Set(luckMap(fp, sex, 'newyear', T).cells.filter(c => c.bad.length).map(c => c.ko)) : null;
+  // 반대로 신년운세 지도에서 '돕는 달'인 달에는 조심할 표시를 붙이지 않는다(손님 테스트 4차: 묶음 책끼리 같은 달을 반대로 말했다)
+  const nyMap = product === 'reunion' ? luckMap(fp, sex, 'newyear', T).cells : null;
+  const nyBad = nyMap ? new Set(nyMap.filter(c => c.bad.length).map(c => c.ko)) : null;
+  const nyGood = nyMap ? new Set(nyMap.filter(c => c.good.length).map(c => c.ko)) : null;
   const cells = base.map(p => {
     const cell = { label: p.label, ko: p.ko, hanja: p.hanja };
     [cell.good, cell.bad] = yearMarks(fp, sex, product, T, p.label,
       conf.good.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)), conf.bad.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)));
     if (nyBad && p.label.startsWith('2027년') && nyBad.has(p.ko)) cell.good = [];
+    if (nyGood && p.label.startsWith('2027년') && nyGood.has(p.ko)) cell.bad = [];
     for (const [kind, into] of [['good', good], ['bad', bad]]) for (const key of cell[kind]) (into[key] || (into[key] = [])).push(p.label);
     return cell;
   });

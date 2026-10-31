@@ -83,18 +83,18 @@ function rvScene2(p,v){const s=SALES[p.id];
  const good=gs!==bs?gs>bs:pt.score>=50;
  // 제목·말풍선은 무료 풀이에서 이 운을 좋은 운/조심할 운 어느 쪽으로 보여 줬는지(areaView sign)를 따른다(제1조항: 모순 금지).
  const tone=v.area.sign>0,unitW=month?'달':'해';
- const speech=tone?(pt.good?`${word}부터 볼게요. 점수가 좋은 편이에요. 때를 알고 움직이면 더 크게 받을 수 있어요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW}가 정해져 있어요. 그때를 알면 놓치지 않고 받을 수 있어요.`)
-  :(good?`${word}부터 볼게요. 좋은 점과 조심할 점이 함께 있어요.`:`${word}부터 볼게요. 조심할 점이 있는 운이에요. 언제 조심하면 되는지 알면 충분히 넘길 수 있어요.`);
+ const speech=tone?(pt.good?`${word}부터 볼게요. ${pt.good.score>=60&&pt.score>=50?'좋은 점 점수가 높은 편이에요':'좋은 점이 분명히 있는 운이에요'}. 때를 알고 움직이면 더 크게 받을 수 있어요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW==="달"?"달이":"해가"} 정해져 있어요. 그때를 알면 놓치지 않고 받을 수 있어요.`)
+  :(good?(badPart?`${word}부터 볼게요. 좋은 점과 조심할 점이 함께 있어요.`:`${word}부터 볼게요. 조심 표시가 붙은 ${unitW==="달"?"달은":"해는"} 없지만, 미리 챙기면 더 편안해요.`):`${word}부터 볼게요. 조심할 점이 있는 운이에요. 언제 조심하면 되는지 알면 충분히 넘길 수 있어요.`);
  const pairCard=v.pair?(()=>{const q=v.pair,ew=e=>({목:'나무',화:'불',토:'흙',금:'쇠',수:'물'})[e]+'('+e+')';
   const palace={조화:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 손을 잡는 사이입니다. 함께 있을수록 마음이 편해집니다.',긴장:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 부딪히는 사이입니다. 가까워질수록 작은 일로 다투기 쉬워, 다투는 때와 푸는 법을 알아 두면 좋습니다.',복합:'두 사람의 배우자 자리(태어난 날의 지지)에 손잡는 면과 부딪히는 면이 함께 있습니다.',중립:'두 사람의 배우자 자리(태어난 날의 지지)는 크게 끌리지도 부딪히지도 않는 담담한 사이입니다.'}[q.palace];
   const fill=[...q.fill.map(e=>`${q.name} 님은 ${v.name} 님에게 모자란 ${ew(e)} 기운을 채워 줍니다.`),...q.give.map(e=>`${v.name} 님은 ${q.name} 님에게 모자란 ${ew(e)} 기운을 채워 줍니다.`)].join(' ');
   return big(q.score>=60?'good':'bad',q.score,`${v.name} 님과 ${q.name} 님 사주를 함께 본 점수`).replace(`${esc(word)}의 ${q.score>=60?'좋은 점':'조심할 점'}`,'두 사람 궁합 점수')+`<div class="rv-card ${q.score>=60?'good':'bad'}"><p>${esc(palace)}${fill?' '+esc(fill):''}</p><p class="rv-hook">두 사람이 언제 가까워지고 언제 부딪히는지는 리포트에 달 이름까지 담았습니다.</p></div>`})():'';
- const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW}가 있습니다`):'미리 알면 대비할 수 있습니다';
+ const head=tone?(pt.good?'좋은 운을 타고났습니다':`들어오는 ${unitW==="달"?"달이":"해가"} 있습니다`):'미리 알면 대비할 수 있습니다';
  return `${revealSpeech(p,speech)}
  <span class="eyebrow">STEP 3 · ${typeof isGift==='function'&&isGift(p.id)?esc(v.name)+' 님':'내'} 점수</span><h1>${esc(v.name)} 님의 ${esc(word)},<br>${head}</h1>
  <p class="rv-score-help">점수는 100점에 가까울수록 좋아요. 좋은 점 점수는 높을수록 크게 받는 운이고, 조심할 점 점수는 낮을수록 더 챙겨야 하는 부분이에요.${pt.score!=null?` ${esc(word)} 전체 점수 ${pt.score}점은 이 운의 사주 근거를 한데 모아 매긴 점수예요. 좋은 점과 조심할 점은 근거를 둘로 나눠 따로 매긴 점수라서, 전체 점수와 숫자가 다를 수 있어요.`:''}</p>
  ${pairCard}
- ${good?`${goodPart}<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`${badPart}<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`}
+ ${good?`${goodPart}${badPart?`<p class="rv-bridge bad">다만, 조심할 점도 함께 있습니다.</p>${badPart}`:`<p class="rv-bridge bad">앞으로 ${spanW} 동안 지도에 조심 표시가 붙은 ${unitW==="달"?"달은":"해는"} 없습니다.</p>`}`:`${badPart}${goodPart?`<p class="rv-bridge good">그리고, 좋은 점도 분명히 있습니다.</p>${goodPart}`:`<p class="rv-bridge good">앞으로 ${spanW} 동안 지도에 좋은 표시가 붙은 ${unitW==="달"?"달은":"해는"} 없습니다.</p>`}`}
  ${revealLocks(s?.locks||[])}`}
 // 4. 지도: 기회의 해·조심할 해는 연도까지 공개, 몇 월인지와 무엇을 해야 하는지는 잠금
 function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=month?'달':'해',re=p.id==='reunion';

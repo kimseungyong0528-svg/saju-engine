@@ -11,7 +11,7 @@ from markupsafe import Markup, escape
 
 from . import knowledge as K
 from .outline import STATIC
-from .products import cross_sell, taster_recap
+from .products import cross_sell, no_love_books, taster_recap
 from ..constants import STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ZODIAC_ANIMALS, ELEMENTS, STEM_ELEMENT
 
 HERE = Path(__file__).parent
@@ -211,11 +211,15 @@ def render_html(facts: dict, sections: list[dict], texts: dict, site_url: str | 
         from .theme import near
         svg["theme_graph"] = _svg_life_graph([dict(p, score=min(90, p["t_score"])) for p in near(facts, facts["theme"]["periods"], 100)],
                                              facts["daewoon"]["current_index"])
+    if (facts.get("order") or {}).get("gift"):
+        # 선물 받은 분이 읽는 책: 목차의 '내가 남긴 질문'은 받는 분이 남긴 질문이 아니다(손님 테스트 4차)
+        sections = [dict(sec, title=str(sec.get("title", "")).replace("내가 남긴 질문", "남겨 주신 질문")) for sec in sections]
     recap = None
     if facts.get("taster_view"):
         # 책 맨 끝 '더보기' 앞쪽에 보너스로 6가지 핵심운(좋은 운 3·조심할 운 3)을 넣는다(목차 줄은 그대로).
         recap = taster_recap(facts["taster_view"], product, site_url, (facts.get("rebuy") or {}).get("code"), facts.get("owned") or (),
-                             [facts["order"].get("daily"), facts["order"].get("relationship"), *(facts.get("answers") or {}).values()])
+                             [facts["order"].get("daily"), facts["order"].get("relationship"), *(facts.get("answers") or {}).values()],
+                             no_love=no_love_books(facts, product))
         sections = [dict(sec, pages=[{"id": "recap", "title": "보너스 · 나의 좋은 운과 조심할 운", "figure": "taster_recap",
                                        "slot": None, "static": None, "span": 2, "opener": True},
                                       *[dict(pg, opener=False, cont=True, title="운명서재의 다른 리포트" if pg["title"] == sec["title"] else pg["title"]) for pg in sec["pages"]]])

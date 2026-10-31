@@ -148,7 +148,10 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
     good: dict[str, list[str]] = {}
     bad: dict[str, list[str]] = {}
     # 재회사주 2027년 달: 신년운세 지도에서 '조심할 달'인 달에는 좋은 표시를 붙이지 않는다(사이트 reveal.mjs luckMap 과 같다, 제1조항)
-    ny_bad = {c["ko"] for c in luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product == "reunion" else set()
+    # 반대로 신년운세 지도에서 '돕는 달'인 달에는 조심할 표시를 붙이지 않는다(손님 테스트 4차: 묶음 책끼리 같은 달을 반대로 말했다)
+    ny_cells = luck_map(fp, sex, "newyear")["cells"] if product == "reunion" else []
+    ny_bad = {c["ko"] for c in ny_cells if c["bad"]}
+    ny_good = {c["ko"] for c in ny_cells if c["good"]}
     cells = []
     for p in base:
         cell = {"label": p["label"], "ko": p["ko"], "hanja": p["hanja"]}
@@ -157,6 +160,8 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
                                                [_mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
         if p["label"].startswith("2027년") and p["ko"] in ny_bad:
             cell["good"] = []
+        if p["label"].startswith("2027년") and p["ko"] in ny_good:
+            cell["bad"] = []
         for kind, into in (("good", good), ("bad", bad)):
             for key in cell[kind]:
                 into.setdefault(key, []).append(p["label"])
@@ -239,10 +244,13 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown
         title = taster.texts()["AREAS"][product]["title"]
         out["화면에서 본 점수"] = {
             "운": title, "전체 점수": pt["score"],
+            # 근거도 없고 지도에 그 쪽 표시도 없으면 화면에 점수 카드가 나오지 않는다(점수 None, 손님 테스트 4차: 화면엔 없는 '조심할 점 50점'이 PDF에 나왔다)
             "좋은 점": {"점수": pt["good"]["score"], "글": pt["good"]["text"]} if pt["good"] else
-                     {"점수": side_score(len({lb for ls in m["good"].values() for lb in ls}), "good", len(m["cells"])), "글": f"앞으로 운이 들어오는 {unit}(아래 '좋은 {unit}')로 매긴 점수"},
+                     {"점수": side_score(len({lb for ls in m["good"].values() for lb in ls}), "good", len(m["cells"])) if m["good"] else None,
+                      "글": f"앞으로 운이 들어오는 {unit}(아래 '좋은 {unit}')로 매긴 점수" if m["good"] else f"화면 지도에 좋은 {unit} 표시가 없음"},
             "조심할 점": {"점수": pt["bad"]["score"], "글": pt["bad"]["text"]} if pt["bad"] else
-                      {"점수": side_score(len({lb for ls in m["bad"].values() for lb in ls}), "bad", len(m["cells"])), "글": f"앞으로 조심할 {unit}(아래 '조심할 {unit}')로 매긴 점수"},
+                      {"점수": side_score(len({lb for ls in m["bad"].values() for lb in ls}), "bad", len(m["cells"])) if m["bad"] else None,
+                       "글": f"앞으로 조심할 {unit}(아래 '조심할 {unit}')로 매긴 점수" if m["bad"] else f"화면 지도에 조심할 {unit} 표시가 없음"},
             "쓸 점": "화면은 이 운의 좋은 점과 조심할 점을 모두 짚었습니다. 리포트는 두 가지 모두를 더 깊게 풀고, "
                     "좋은 점은 크게 받는 시기와 방법을, 조심할 점은 막는 시기와 방법을 씁니다.",
         }

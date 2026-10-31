@@ -99,9 +99,16 @@ def build(f: dict, result: dict, answers: dict, partner=None) -> dict:
     T.reveal_fix(result, "career", years)   # 제1조항: 결제 전 화면의 12년 지도와 같은 표시·방향
     T.reveal_fix(result, "career", months)
     style, style_text = _style(f)
-    top_group = max(("관성", "식상", "재성", "인성", "비겁"), key=lambda g: T.count(f, g))
-    org = "조직형(회사·공공기관)" if (T.count(f, "관성") >= 1 and T.count(f, "인성") >= 1) \
-        or T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)"
+    # '일하는 형·어울리는 역할·맞는 환경'은 같은 무리에서 고른다(손님 테스트 4차: '기술과 표현으로 승부하는 형'인데 역할은 '관리·행정')
+    top_group = {"조직에서 인정받는 형": "관성", "기술과 표현으로 승부하는 형": "식상", "내 판을 짜는 독립형": "비겁",
+                 "성과로 움직이는 형": "재성", "배우고 가르치는 전문가형": "인성"}.get(style) \
+        or max(("관성", "식상", "재성", "인성", "비겁"), key=lambda g: T.count(f, g))
+    if style == "조직에서 인정받는 형":
+        org = "조직형(회사·공공기관)"
+    elif style == "내 판을 짜는 독립형":
+        org = "독립형(전문직·프리랜서·작은 조직)"
+    else:
+        org = "조직형(회사·공공기관)" if T.count(f, "관성") >= max(T.count(f, "식상"), T.count(f, "비겁")) else "독립형(전문직·프리랜서·작은 조직)"
     move_years = T.good_rows(years, 12, lambda y: y["year"])   # 화면의 '자리의 별' 해
     screen = T.screen_score(f, result, "career")
     data = {

@@ -78,6 +78,10 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     for y in years:
         good = any("충" not in x for x in y["t_signs"])
         bad = any("충" in x for x in y["t_signs"])
+        if good and bad:
+            # 한 칸에 좋은 표시와 조심 표시를 함께 붙이지 않는다(모든 지도와 같은 규칙, 손님 테스트 4차: '합, 충 50점')
+            y["t_signs"] = [x for x in y["t_signs"] if "충" in x]
+            good = False
         v = y["t_score"]
         y["t_score"] = max(v, 60) if good and not bad else min(v, 40) if bad and not good else min(max(v, 45), 55) if good else min(max(v, 41), 59)
         if y["year"] == 2027 and ny_side == "bad" and good and not bad:
@@ -95,9 +99,10 @@ def build(f: dict, result: dict, answers: dict, partner: dict) -> dict:
     # 제1조항: 결제 전 화면 STEP 3 제목(좋은 운을 타고났습니다 / 미리 알면 대비할 수 있습니다)과 반대로 쓰지 않는다
     from ..taster import area_view
     sign = area_view(T.fourpillars(result), f["person"]["name"], result["person"].get("sex", ""), "reunion")["sign"]
-    level = ("강한 편" if level_pts >= 4 else "보통") if sign > 0 else ("약한 편" if level_pts < 0 else "보통")
+    # 화면 제목이 '좋은 운을 타고났습니다'면 '보통'이라고 쓰지 않는다(손님 테스트 4차: 화면은 좋은 운, PDF는 '재회 신호 보통')
+    level = ("강한 편" if level_pts >= 4 else "좋은 편") if sign > 0 else ("약한 편" if level_pts < 0 else "보통")
     # '가장 좋은 달'은 24개월 가운데 점수도 가장 높다(표에서 '다시 이어짐' 달보다 낮게 나오지 않게)
-    peak = max(m["t_score"] for m in months)
+    peak = max(70, max(m["t_score"] for m in months))   # 보통 달(59점 이하)과 한눈에 구별되게(손님 테스트 4차: 60점과 59점)
     for m in months:
         if "가장 좋은 달" in m["r_good"]:
             m["t_score"] = peak

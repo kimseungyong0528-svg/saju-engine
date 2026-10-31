@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import * as eng from '../public/assets/free/engine.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../public/assets/free/saju-data.json', import.meta.url)));
-const cases = JSON.parse(readFileSync(new URL('./fixtures/taster-parity.json', import.meta.url)));
+const all = JSON.parse(readFileSync(new URL('./fixtures/taster-parity.json', import.meta.url)));
+const cases = all.filter(c => !c.edge);   // 경계 근처 정확 시간 100건(edge)은 경계 안내 검사에만 쓴다
 const T = JSON.parse(readFileSync(new URL('../public/assets/free/texts.json', import.meta.url)));
 
 test('맛보기 계산기가 파이썬 사주 엔진과 같은 명식·분석을 낸다', () => {
@@ -80,7 +81,7 @@ test('두 사람 궁합 점수(깊은 궁합·재회사주 결제 전 화면)가
 test('태어난 시각 경계 안내(결제 전 화면 STEP 1)가 리포트 사주표와 같다', async () => {
   const { boundaryLines } = await import('../public/assets/free/reveal.mjs');
   const bad = [];
-  for (const c of cases) {
+  for (const c of all) {
     const got = boundaryLines(data, c.person, c.person.birth);
     try { assert.deepEqual(got, c.boundary); } catch { bad.push({ birth: c.person.birth, time: c.person.time, got, want: c.boundary }); }
   }

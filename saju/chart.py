@@ -231,6 +231,11 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
         uncertainties.append({"kind": "place", "message": f"태어난 지역은 {place_label} 대표 위치로 풀었어요." if region
                               else "태어난 지역을 몰라 대한민국 대표 위치로 풀었어요."})
 
+    if p.time_accuracy == "exact" and variants and len(solar_dates) == 1 and variants[0].pillars.hour is not None \
+            and variants[0].pillars.day != day_pillar_for_date(solar_dates[0]["solar"]):
+        # 밤 11시(자시)가 넘어 태어나면 사주의 날은 다음 날로 본다(사이트 engine.mjs 와 같은 규칙). 손님이 놀라지 않게 한 줄 알린다(손님 테스트 4차).
+        uncertainties.append({"kind": "day", "message": "밤 11시(자시)가 넘어 태어나서, 사주의 날(일주)은 다음 날로 풀었어요. 자시부터 하루가 바뀌는 전통 방식이에요."})
+
     analyzed = []
     for v in variants:
         utc = v.utc_sample
@@ -248,10 +253,10 @@ def analyze_person(raw: dict | Person, options: PillarOptions = PillarOptions(),
         values = {(v.pillars.as_list()[i].korean if v.pillars.as_list()[i] else None) for v in variants}
         common[name] = values.pop() if len(values) == 1 else None
 
-    warnings = []
-    if len(variants) == 1:
-        lon = region.lon if region else KOREA.lon
-        warnings = _boundary_warnings(p, solar_dates, lon, options, variants[0].pillars)
+    # 경계 안내는 대표 명식(대표 경도, 첫 번째 명식) 기준으로 늘 만든다. 사이트 reveal.mjs boundaryLines 와 같다
+    # (손님 테스트 4차: 춘천처럼 경도 범위가 넓어 명식 후보가 둘이면 화면에는 있고 리포트에는 없었다).
+    lon = region.lon if region else KOREA.lon
+    warnings = _boundary_warnings(p, solar_dates, lon, options, variants[0].pillars) if variants else []
     for sd in solar_dates:
         if p.time_accuracy == "exact":
             ct = civil_to_utc(sd["solar"], _parse_hm(p.time))

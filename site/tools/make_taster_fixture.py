@@ -6,7 +6,7 @@
 
 import json
 import random
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 from saju.chart import analyze_person
@@ -32,11 +32,25 @@ def main() -> None:
     cases = []
     arnd = random.Random(20261028)   # 대략 시간 100건(앞의 400건은 그대로 둔다)
     srnd = random.Random(20261029)   # 절기 날 + 시간 모름 100건: 사이트·리포트 모두 낮 12시 명식
-    while len(cases) < 600:
+    brnd = random.Random(20261031)   # 경계 근처 정확 시간 100건(명식 후보가 둘이어도 넣는다): 화면과 리포트의 경계 안내가 같은지
+    while len(cases) < 700:
         approx = 400 <= len(cases) < 500
-        term = len(cases) >= 500
-        g = srnd if term else arnd if approx else rnd
+        term = 500 <= len(cases) < 600
+        edge = len(cases) >= 600
+        g = brnd if edge else srnd if term else arnd if approx else rnd
         d = date(1940, 1, 1) + timedelta(days=g.randrange(365 * 86))
+        if edge:
+            code = g.choice(codes)
+            if g.random() < 0.6:   # 절입 시각 ±15분
+                tt = g.choice(astro.solar_terms(g.randrange(1941, 2025)))[0].astimezone(SEOUL_TZ) + timedelta(minutes=g.randrange(-15, 16))
+            else:                  # 시주가 바뀌는 시각 근처(홀수 시 30분 무렵, 경도 보정 포함)
+                tt = datetime.combine(d, datetime.min.time()) + timedelta(hours=g.randrange(1, 24, 2), minutes=g.randrange(15, 60))
+            person = {"name": "하늘", "sex": g.choice(["male", "female"]), "birth": tt.date().isoformat(), "calendar": "solar",
+                      "timeAccuracy": "exact", "time": tt.strftime("%H:%M"),
+                      "birthPlace": {"status": "known", "regionChoice": code}}
+            r = analyze_person(person)
+            cases.append({"person": person, "key": r["variants"][0]["key"], "boundary": _boundary(r), "edge": True})
+            continue
         if term:
             y = g.randrange(1941, 2025)
             d = g.choice(astro.solar_terms(y))[0].astimezone(SEOUL_TZ).date()
@@ -75,11 +89,14 @@ def main() -> None:
             "boundary": _boundary(r),
         })
     # 깊은 궁합·재회사주 결제 전 화면의 '두 사람 궁합 점수': 손님 i와 손님 i+7을 짝지어 본다
+    edges = [c for c in cases if c.get("edge")]
+    cases = [c for c in cases if not c.get("edge")]
     for i, c in enumerate(cases):
         j = (i + 7) % len(cases)
         c["pair"] = {"with": j, "score": pair_score(c["_fp"], cases[j]["_fp"])}
     for c in cases:
         del c["_fp"]
+    cases += edges
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(cases, ensure_ascii=False, indent=0), encoding="utf-8")
     print(f"{len(cases)}건 → {OUT}")

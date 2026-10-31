@@ -10,6 +10,7 @@
 """
 
 import json
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -26,12 +27,18 @@ def minutes(dt: datetime) -> int:
     return round((dt - EPOCH).total_seconds() / 60)
 
 
+def minutes_up(dt: datetime) -> int:
+    """절입 시각은 올림한 분으로 둔다: 파이썬 엔진은 'hh:mm:00 ≥ 절입 시각'이면 새 달로 보므로, 분 단위로는 올림한 분부터 새 달이다
+    (손님 테스트 4차: 입춘 날 경계 안내가 화면 '12분', 리포트 '11분'으로 1분 달랐다)."""
+    return math.ceil((dt - EPOCH).total_seconds() / 60 - 1e-9)
+
+
 def jie_table() -> list[list[int]]:
     out = []
     for y in range(FIRST, LAST + 1):
         for t, lon, _ in astro.solar_terms(y):
             if lon in astro.JIE_LONGITUDES:
-                out.append([minutes(t), astro.JIE_LONGITUDES[lon]])
+                out.append([minutes_up(t), astro.JIE_LONGITUDES[lon]])
     out.sort()
     return out
 

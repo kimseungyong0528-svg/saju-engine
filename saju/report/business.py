@@ -218,7 +218,7 @@ def build_outline(f: dict) -> list[dict]:
     section("8", [
         P("b7_open", "넓힐 때와 지킬 때", figure="kv", opener=True, rows=[
             ["넓히기 좋은 해", yrs(t["grow_years"])], ["지키며 다질 해", yrs(t["keep_years"])],
-            ["사업 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "사업 자리 변동" in m["t_signs"]) or "없음"],
+            ["사업 자리 변동이 드는 달", ", ".join(T.ym(m) for m in th["months"] if "사업 자리 변동" in m.get("raw_signs", m["t_signs"])) or "없음"],
         ], slot=S("b7_open", "표를 근거로 확장과 유지의 시기를 설명해 주세요.", HALF)),
         P("b7_grow", "확장 신호와 확장하는 법",
           slot=S("b7_grow", "확장해도 되는 신호(사주와 현실 둘 다)와 확장 순서(사람, 공간, 상품, 지역)를 써 주세요.")),

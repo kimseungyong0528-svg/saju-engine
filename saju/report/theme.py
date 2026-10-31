@@ -81,7 +81,12 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     _, rule_of = RV._marker(fp, sex)
     # 2027년 달: 신년운세 결제 전 화면(2027년 12달 지도)에서 '조심할 달'인 달은 다른 책에서도 좋은 달로 쓰지 않는다
     # (손님 테스트 3차: 묶음으로 산 사업운은 2027년 4월이 '큰돈', 신년운세는 4월이 '조심할 달'이었다).
-    ny_bad = {c["ko"] for c in RV.luck_map(fp, sex, "newyear")["cells"] if c["bad"]} if product != "newyear" else set()
+    # 반대 방향도 같다: 신년운세 화면에서 '돕는 달'인 2027년 달은 다른 책에서도 조심할 달로 쓰지 않는다(손님 테스트 4차).
+    ny_cells = RV.luck_map(fp, sex, "newyear")["cells"] if product != "newyear" else []
+    ny_bad = {c["ko"] for c in ny_cells if c["bad"]}
+    ny_good = {c["ko"] for c in ny_cells if c["good"]}
+    from .facts import NY_AREA
+    area = NY_AREA.get(product)
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
@@ -90,7 +95,13 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
                                [RV._mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
         if "month" in r and r.get("year") == 2027 and gz in ny_bad:
             gk = []
+        if "month" in r and r.get("year") == 2027 and gz in ny_good:
+            bk = []
         good, bad = [marks[k]["tag"] for k in gk], [marks[k]["tag"] for k in bk]
+        ny_area = (r.get("ny_areas") or {}).get(area) if area and "month" in r else None
+        if ny_area is not None:
+            # 신년운세 책의 같은 분야, 같은 달과 표시·점수를 그대로 쓴다(제1조항: 묶음으로 산 두 책이 같은 달을 다르게 말하지 않게)
+            good, bad = list(ny_area["good"]), list(ny_area["bad"])
         r["r_good"], r["r_bad"] = good, bad
         raw = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["good"] if rule_of(k)(p)]
         if label == "2027" and bad and raw:
@@ -98,9 +109,12 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
             r["ny_note"] = f"2027년에는 {'·'.join(dict.fromkeys(raw))}도 들어오지만, 한 해 전체 운이 조심할 쪽이라 지도에 '조심'으로 표시했어요."
         raw_bad = [marks[RV._mark_key(k, sex)]["tag"] for k in conf["bad"] if rule_of(k)(p)]
         if label == "2027" and good and not bad and raw_bad:
+            r["ny_also_bad"] = list(dict.fromkeys(raw_bad))
             r["ny_note"] = f"2027년에는 {'·'.join(dict.fromkeys(raw_bad))}도 들어오지만, 한 해 전체 운이 좋은 쪽이라 지도에 좋은 표시를 했어요. 이 부분은 조심하세요."
         v = r[score]
-        if label == "2027" and (product == "lifetime" or all(k.startswith("ny_") for k in gk + bk)):
+        if ny_area is not None:
+            v = ny_area["score"]
+        elif label == "2027" and (product == "lifetime" or all(k.startswith("ny_") for k in gk + bk)):
             # 맛보기 '2027년 운' 점수 그대로. 다른 상품도 2027년 칸에 그 상품의 표시가 없고 '2027년 좋은 흐름·조심'만 있으면 같은 점수
             # (손님 테스트 3차: 건강운 12년 표 2027년 60점, 보너스·신년운세 58점)
             v = RV.ny_verdict(fp, sex)[1]
@@ -109,6 +123,15 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
         r[score] = v
         r.setdefault("raw_signs", list(r.get(signs, [])))   # 화면 말로 바꾸기 전 이 상품 계산의 표시(직업운 '일 자리 변동'처럼 화면에 없는 표시를 찾을 때)
         r[signs] = good + bad if replace else list(dict.fromkeys(good + bad + [x for x in r[signs]]))
+
+
+def none_text(rows: list[dict], what: str) -> str:
+    """'몸 조심할 해'처럼 목록이 비었을 때 쓰는 말. 2027년 칸이 한 해 전체 운을 따라 좋은 표시가 됐지만 그해에 조심 기운도 들어오면
+    그 사실을 함께 적는다(손님 테스트 4차: 8쪽은 '뚜렷하지 않아요', 12년 표 아래 줄은 '2027년에는 몸 조심도 들어와요')."""
+    also = next((r["ny_also_bad"] for r in rows if r.get("ny_also_bad")), None)
+    if also:
+        return f"지도에 {what} 표시가 붙은 해는 없어요. 다만 2027년에는 {'·'.join(also)}도 함께 들어와요(12년 표 아래 설명)."
+    return "앞으로 12년 안에는 뚜렷하지 않아요"
 
 
 def _own(tags) -> bool:
@@ -290,4 +313,6 @@ def screen_row(s: dict, seen: bool = True) -> list[str]:
     """첫 요약의 점수 줄. 묶음으로 산 상품은 결제 전 화면을 보지 않았으므로 '결제 전에 보신'이라고 쓰지 않는다."""
     # 무료 풀이를 안 본 손님도 있으므로 '전체 점수'라고만 쓴다(결제 전 화면 STEP 3과 같은 말, 2026-10-30 사장님).
     # 칸 이름은 짧게: '결제 전에 보신 점수'는 표에서 '점/수'로 줄이 갈렸다(손님 테스트 3차). STEP 3 제목도 '내 점수'.
-    return ["내 점수", f"좋은 점 {s['good']}점 · 조심할 점 {s['bad']}점 · 전체 점수 {s['score']}점"]
+    parts = [f"좋은 점 {s['good']}점" if s["good"] is not None else "", f"조심할 점 {s['bad']}점" if s["bad"] is not None else "",
+             f"전체 점수 {s['score']}점"]
+    return ["내 점수", " · ".join(x for x in parts if x)]
