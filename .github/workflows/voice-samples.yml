@@ -1,0 +1,33 @@
+# 타입캐스트 목소리 견본 (사장님 2026-11-01). 손으로만 돌린다. 결과는 voice-samples 브랜치에 올린다.
+name: 목소리 견본
+on:
+  workflow_dispatch:
+    inputs:
+      voice_ids:
+        description: 들어 볼 목소리 ID (쉼표, 비우면 쇼츠용 여자 5·남자 2)
+        required: false
+        default: ""
+permissions:
+  contents: write
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TYPECAST_API_KEY: ${{ secrets.TYPECAST_API_KEY }}
+      VOICE_IDS: ${{ inputs.voice_ids }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -e .
+      - run: python lab/voice_samples.py voice-samples
+      - name: 견본 올리기
+        run: |
+          git config user.name "voice-bot"; git config user.email "voice-bot@users.noreply.github.com"
+          git checkout --orphan voice-samples-tmp
+          git rm -rfq --cached . >/dev/null
+          git add voice-samples
+          git commit -qm "목소리 견본 $(date -u +%F)"
+          git push -f origin HEAD:voice-samples
