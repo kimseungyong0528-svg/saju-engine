@@ -667,19 +667,18 @@ def salgu_tan(day: dt.date, n_tan: int) -> Evening:
 
 
 def salgu_month(day: dt.date, n: int) -> Evening | None:
-    """살구식 '이달 일간편': 그달 엔진 계산으로 일간 10개 한 줄씩."""
+    """살구식 '이달 일간편': 그달 엔진 계산으로 오행(일간 두 개씩)마다 한 줄."""
     p = _month_periods(day)[0]
     lines = []
-    for s in range(10):
-        gods = sorted({_god(STEM_ELEMENT[s], STEM_ELEMENT[p.stem]), _god(STEM_ELEMENT[s], BRANCH_ELEMENT[p.branch])})
-        txt = " ".join(B["salgu_god"][g] for g in gods[:1])
-        lines.append(f"{i_(s)}. {STEM_NAMES[s].split('(')[0]}: {'·'.join(f'{g}({GH[g]})' for g in gods)}. {txt}")
+    for k, el in enumerate(range(5), 1):
+        gods = list(dict.fromkeys([_god(el, STEM_ELEMENT[p.stem]), _god(el, BRANCH_ELEMENT[p.branch])]))
+        a, b = (s for s in range(10) if STEM_ELEMENT[s] == el)
+        names = f"{STEM_NAMES[a].split('(')[0]}·{STEM_NAMES[b].split('(')[0]}"
+        got = "과 ".join(f"{g}({GH[g]})" for g in gods) if len(gods) > 1 else f"{gods[0]}({GH[gods[0]]})"
+        txt = ", ".join([B["salgu_god2"][g] for g in gods[:-1]] + [B["salgu_god3"][gods[-1]]])
+        lines.append(f"{k}. {names} 일간은 {got}이 들어온다. {txt} 달.")
     p1 = [f"흥미로운 사주 이야기들 - {p.label} 일간편", "", f"{josa(p.label, '은', '는')} {copula(p.ganzhi)}", ""] + lines
     return Evening(f"salgu-month-{p.key}", "salgu", [p1, B["salgu_end"][n % 2]], dark=False)
-
-
-def i_(s: int) -> int:
-    return s + 1
 
 
 def jangin_pool(day: dt.date):
