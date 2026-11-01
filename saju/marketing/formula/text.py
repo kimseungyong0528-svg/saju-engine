@@ -383,6 +383,14 @@ def copula(word: str) -> str:
 REL_NAMES7 = ("육합", "반합", "충", "형", "파", "해", "원진")
 
 
+def glyph(p: Period, e: int) -> str:
+    """이 달(해) 기운이 위 글자(천간)에서 온 건지 밝힌다. 다른 글에서 '11월은 수(水) 기운 달'이라 했는데
+    여기서 '토(土) 기운'이라 하면 어긋나 보인다 (제1조항, 심사 2026-11-01)."""
+    if e == STEM_ELEMENT[p.stem] and e != BRANCH_ELEMENT[p.branch]:
+        return f"위 글자 {_stem(p.stem)}의 "
+    return ""
+
+
 def _basis(kind: str, p: Period, r: Row, t: str) -> list[str]:
     """엔진 근거 한 개를 '무슨 글자가 어떻게 만나는지' 줄로 바꾼다."""
     bi = BRANCHES.index(r.branch)
@@ -395,7 +403,7 @@ def _basis(kind: str, p: Period, r: Row, t: str) -> list[str]:
     for e in (STEM_ELEMENT[p.stem], BRANCH_ELEMENT[p.branch]):
         g = _god(BRANCH_ELEMENT[bi], e)
         if GOD_TEXT.get(kind, {}).get(g) == t:
-            return [f"{p.label} {p.ganzhi}의 {ELEMENTS[e]}({EL_HANJA[ELEMENTS[e]]}) 기운은",
+            return [f"{p.label} {p.ganzhi}의 {glyph(p, e)}{ELEMENTS[e]}({EL_HANJA[ELEMENTS[e]]}) 기운은",
                     f"{ddi(r.ddi)}에게 {copula(f'{g}({GH[g]})')}", t]
     return [t]
 
@@ -548,7 +556,7 @@ def basis_stem(kind: str, p: Period, r: "StemRow", w: tuple) -> list[str]:
         a, c = sorted((r.stem, p.stem))
         return [f"- {p.label} {josa(_stem(p.stem), '과', '와')} {short} 일간이 {STEMS[a]}{STEMS[c]}합(合)이에요",
                 f"- {LB['rel_mean'].get(kind, {}).get('천간합', B['stem_hap']['mean'])}"]
-    return [f"- {'이 해' if p.year else '이 달'} {ELEMENTS[e]}({EL_HANJA[ELEMENTS[e]]}) 기운이 {short} 일간에게 {copula(f'{g}({GH[g]})')}", f"- {t}"]
+    return [f"- {'이 해' if p.year else '이 달'} {glyph(p, e)}{ELEMENTS[e]}({EL_HANJA[ELEMENTS[e]]}) 기운이 {short} 일간에게 {copula(f'{g}({GH[g]})')}", f"- {t}"]
 
 
 def next_lines(kind: str, ny: Period, place: int, total: int, unit: str, n: int = 0) -> tuple[list[str], str]:
@@ -751,6 +759,44 @@ def _dohwa_tip_why(topic: str, p: Period, E: str, els: dict, n: int) -> list[str
     else:
         return []
     return ["", DOHWA_WHY_HEAD[n % len(DOHWA_WHY_HEAD)], *ls]
+
+
+NUMS = "❶❷❸❹❺"
+
+
+def dohwa_list(day: dt.date, x: int, n: int) -> Evening:
+    """도화도르식 목록 글 (레퍼런스 '○ 많은 사주가 해두면 좋은 것들(리마인드용) ❶~❺'): 이 달 기운이 그 오행에게 무슨 십신인지로 할 일 5개.
+    사장님 2026-11-01 '얼마나 레퍼 따라한지' — 원문처럼 목록·근거·생활 예시를 꽉 채운다."""
+    y, m = target_month(day)
+    p = month_period(y, m)
+    ei = BRANCH_ELEMENT[p.branch]
+    E, X = ELEMENTS[ei], ELEMENTS[x]
+    g = _god(x, ei)
+    acts = B["dohwa_acts"][g]
+    pick = [acts[(n + k) % len(acts)] for k in range(5)]
+    body = [f"사주에 {X}({EL_HANJA[X]}) 많은 분들 주목", f"{p.label}처럼 {E}({EL_HANJA[E]}) 기운 센 달에 해 두면 좋은 것들(리마인드용)🟡",
+            *[f"{NUMS[k]} {a}" for k, a in enumerate(pick)], "",
+            (f"같은 {E}({EL_HANJA[E]})끼리라 {copula(f'{g}({GH[g]})')}" if E == X else
+             f"{E}({EL_HANJA[E]})는 {X}({EL_HANJA[X]})에게 {copula(f'{g}({GH[g]})')}".replace(f"{E}({EL_HANJA[E]})는", josa(f"{E}({EL_HANJA[E]})", "은", "는"))),
+            GOD_PLAIN[g][n % 2]]
+    reply = [fill(r, p=p.label) for r in B["dohwa_reply"][n % len(B["dohwa_reply"])]]
+    return Evening(f"dohwa-list-{X}-{p.key}", "dohwa", [body, reply], topic=f"list-{X}")
+
+
+def dohwa_ten(day: dt.date, n: int) -> Evening:
+    """도화도르식 10일간 한 줄 스포 (레퍼런스 '갑목[甲] — …' 목록): 일간마다 이 달 십신에 맞는 할 일 하나."""
+    y, m = target_month(day)
+    p = month_period(y, m)
+    ei = BRANCH_ELEMENT[p.branch]
+    E = ELEMENTS[ei]
+    body = [f"{p.label} 일간별로 하나씩만 미리 스포하자면,", f"{start_label(p)}부터 {p.ganzhi}월, 아래 글자 {_branch(p.branch)}의 {E}({EL_HANJA[E]}) 기운으로 봤어요", ""]
+    for s_ in range(10):
+        g = _god(STEM_ELEMENT[s_], ei)
+        act = B["dohwa_acts"][g][(n + s_) % len(B["dohwa_acts"][g])].split(". ")[0]
+        body.append(f"{STEMS[s_]}{ELEMENTS[STEM_ELEMENT[s_]]}[{STEMS_HANJA[s_]}] — {act} ({g} 달)")
+    body += ["", "인성은 나를 받쳐 주는 기운, 관성은 자리 기운, 재성은 돈 기운,", "식상은 표현 기운, 비겁은 내 편 기운이에요"]
+    reply = [fill(r, p=p.label) for r in B["dohwa_reply"][(n + 2) % len(B["dohwa_reply"])]]
+    return Evening(f"dohwa-ten-{p.key}", "dohwa", [body, reply], topic="ten")
 
 
 def dohwa(day: dt.date, t: int) -> Evening:
@@ -1033,8 +1079,14 @@ def dohwa_pool(day: dt.date, off: int = 0):
     n = day.toordinal()
 
     def tips():
-        for t in _rot(list(range(len(B["dohwa"]))), n // 3 + off):
+        # 원문 상위 글처럼 목록 글(❶~❺, 10일간 스포)을 팁 글 사이사이에 넣는다 (사장님 2026-11-01 레퍼런스 심사)
+        lists = [lambda: dohwa_ten(day, n)] + [(lambda x=x: dohwa_list(day, x, n)) for x in _rot(list(range(5)), n)]
+        for i, t in enumerate(_rot(list(range(len(B["dohwa"]))), n // 3 + off)):
+            if i % 2 == 0 and lists:
+                yield lists.pop(0)()
             yield dohwa(day, t)
+        for f in lists:
+            yield f()
 
     def ones():
         for p in periods(day):
@@ -1056,8 +1108,23 @@ def dohwa_pool(day: dt.date, off: int = 0):
         yield from ones()
 
 
+def salgu_list(i: int) -> Evening:
+    """살구식 정리본 (레퍼런스 '남자복 좋은 여자 사주 특징 정리본 (살구 ver.)' 틀): 짧은 줄 8개, 주제 하나."""
+    L = B["salgu_lists"][i]
+    p1 = [L["title"], ""] + [f"{k}. {x}" for k, x in enumerate(L["items"], 1)]
+    end = B["salgu_list_end"][i % len(B["salgu_list_end"])]   # 정리본 끝맺음 ('○탄'이 아니라서 따로)
+    return Evening(f"salgu-list-{i}", "salgu", [p1, list(end)], topic=f"salgu-{L['theme']}")
+
+
 def salgu_pool(day: dt.date, used: set[str]):
-    yield salgu_tan(day, sum(1 for k in used if k.startswith("salgu-") and k.split("-")[1].isdigit()) + 1)
+    n_tan = sum(1 for k in used if k.startswith("salgu-") and k.split("-")[1].isdigit()) + 1
+    n_list = sum(1 for k in used if k.startswith("salgu-list-"))
+    if (n_tan + n_list) % 6 == 0:   # 여섯 번에 한 번은 정리본 (레퍼런스 원문 틀, 심사 2026-11-01)
+        for i in range(len(B["salgu_lists"])):
+            if f"salgu-list-{i}" not in used:
+                yield salgu_list(i)
+                break
+    yield salgu_tan(day, n_tan)
 
 
 def evening_candidates(day: dt.date, used: set[str]):
@@ -1115,6 +1182,10 @@ def pick(cands, used: set[str], facts: dict | None = None, today: set[str] | Non
                 continue
             if strict and ok and not ok(c):
                 continue
+            return c
+    # 그래도 없으면 쓴 적 없는 재료부터 (같은 글이 두 번 나오는 것보다 낫다). 제1조항 겹침(clash)은 끝까지 지킨다.
+    for c in cands:
+        if c.key not in used and "first:" + c.parts[0] not in used and not clash(c, facts):
             return c
     return cands[0]
 
@@ -1210,6 +1281,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     _teasers(out)
     _follow_all(out)
     _vary_lines(out)
+    _fresh_acts(out)
     return out
 
 
@@ -1312,6 +1384,34 @@ def _pools() -> list[list[str]]:
     out = [v for k in B["signals"] for v in B["signals"][k].values()]
     out += [v for v in LB["signals"].values()] + [v for v in LB["actions"].values()] + [v for v in LB["bad_actions"].values()]
     return out
+
+
+def _fresh_acts(days: list[Day]) -> None:
+    """도화도르 목록 글(❶~❺·10일간)의 할 일이 같은 주 다른 글의 할 일과 겹치면 같은 십신의 다른 할 일로 바꾼다
+    (심사 2026-11-01: 11/7 아침 글과 낮 목록 글에 '자동이체 목록'이 두 번)."""
+    allacts = {g: v for g, v in B["dohwa_acts"].items()}
+    key = lambda a: re.sub(r"\s", "", a)[:4]
+    for i, d in enumerate(days):
+        win = days[max(0, i - 3): i + 4]
+        for _, _, e in d.threads:
+            if not e.key.startswith(("dohwa-list-", "dohwa-ten-")):
+                continue
+            others = re.sub(r"\s", "", "".join(x for dd in win for _, _, o in dd.threads if o is not e for pg in o.pages for x in pg))
+            mine = re.sub(r"\s", "", "".join(e.pages[0]))
+            for li, line in enumerate(e.pages[0]):
+                m = re.match(r"^(❶|❷|❸|❹|❺) (.+)$", line) or re.match(r"^(.+?\] — )(.+?)( \((\S+) 달\))$", line)
+                if not m:
+                    continue
+                act = m.group(2)
+                if key(act) not in others:
+                    continue
+                g = m.group(4) if m.lastindex and m.lastindex >= 4 else next((k for k in GOD_PLAIN if f"{k}(" in "".join(e.pages[0][-2:])), None)
+                for alt in allacts.get(g, []):
+                    a2 = alt.split(". ")[0] if m.lastindex and m.lastindex >= 4 else alt
+                    if key(alt) not in others and key(alt) not in mine:
+                        e.pages[0][li] = line.replace(act, a2)
+                        mine = re.sub(r"\s", "", "".join(e.pages[0]))
+                        break
 
 
 def _vary_lines(days: list[Day]) -> None:
