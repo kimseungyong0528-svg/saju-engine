@@ -1,4 +1,4 @@
-# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 자연 영상을 위키미디어 공용에서 받아 refs-videos 가지에 올린다.
+# 시험용(지울 것): Mixkit 무료 영상(상업·SNS 사용 가능)에서 예쁜 자연·야경·카페 영상을 받아 refs-mixkit 가지에 올린다.
 name: lab-photos
 on:
   push:
@@ -14,40 +14,43 @@ jobs:
       - run: |
           mkdir out && cd out
           cat > g.py <<'PY'
-          import json, re, subprocess, urllib.request, urllib.parse
-          UA = {"User-Agent": "saju-engine-lab/1.0 (kimseungyong0528@gmail.com)"}
+          import json, re, subprocess, urllib.request
+          UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36"}
           get = lambda u: urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=120).read()
+          tags = ["sunset", "sea", "beach", "flowers", "cherry-blossom", "forest", "lake", "waterfall", "snow", "clouds", "sky", "nature",
+                  "night", "city-lights", "city", "lights", "bokeh", "rain", "coffee", "cafe", "restaurant", "aesthetic", "vertical", "landscape"]
           meta, seen = [], set()
-          qs = ["sea waves", "ocean waves beach", "sunset sea", "clouds timelapse", "waterfall", "forest stream", "cherry blossom",
-                "night sky timelapse", "sunrise", "lake", "mountain clouds", "snow falling", "rain", "river", "beach", "city night", "city timelapse", "street night lights", "traffic night", "cafe", "coffee shop", "Seoul", "night city skyline", "rain window", "neon street"]
-          for q in qs:
+          for t in tags:
+              try: h = get(f"https://mixkit.co/free-stock-video/{t}/").decode("utf-8", "ignore")
+              except Exception as e: print("page", t, e); continue
+              links = re.findall(r"https://assets\.mixkit\.co/[^\"'\s<>]+?\.mp4", h)
+              ids = []
+              for l in links:
+                  m = re.search(r"/videos/(\d+)/", l) or re.search(r"(mixkit-[a-z0-9-]+?)-(?:large|small|medium)", l)
+                  k = m.group(1) if m else l
+                  if k not in seen and k not in [i for i, _ in ids]: ids.append((k, l))
+              print(t, len(links), len(ids))
               n = 0
-              u = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "generator": "search",
-                  "gsrsearch": f"{q} filetype:video", "gsrnamespace": 6, "gsrlimit": 40, "prop": "videoinfo",
-                  "viprop": "url|extmetadata|size|derivatives"})
-              try: pages = json.loads(get(u)).get("query", {}).get("pages", {})
-              except Exception as e: print("api", q, e); continue
-              for p in pages.values():
-                  if n >= 4: break
-                  vi = (p.get("videoinfo") or [{}])[0]; lic = vi.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
-                  if p["title"] in seen or not re.search(r"CC0|Public domain", lic, re.I): continue
-                  if (vi.get("height") or 0) < 700 or (vi.get("duration") or 0) < 6: continue
-                  ds = sorted([d for d in vi.get("derivatives", []) if d.get("type", "").startswith("video/webm") and 700 <= (d.get("height") or 0) <= 1080],
-                              key=lambda d: -(d.get("height") or 0))
-                  src = ds[0]["src"] if ds else vi["url"]
-                  f = re.sub(r"\W+", "-", q) + f"-{n}"
-                  try:
-                      open(f + ".src", "wb").write(get(src))
-                      subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f + ".src", "-t", "15", "-an", "-vf", "scale=-2:1080",
-                                      "-c:v", "libx264", "-crf", "23", "-preset", "veryfast", f + ".mp4"], check=True)
-                      subprocess.run(["rm", "-f", f + ".src"])
-                      seen.add(p["title"]); n += 1
-                      meta.append({"file": f + ".mp4", "title": p["title"], "license": lic, "source": vi.get("descriptionurl"), "w": vi.get("width"), "h": vi.get("height")})
-                  except Exception as e: print("fail", f, e)
-              print(q, n)
+              for k, l in ids:
+                  if n >= 8: break
+                  cand = [l]
+                  m = re.search(r"/videos/(\d+)/", l)
+                  if m: cand = [f"https://assets.mixkit.co/videos/{k}/{k}-1080.mp4", f"https://assets.mixkit.co/videos/{k}/{k}-720.mp4", l]
+                  f = f"{t}-{n}"
+                  for c in cand:
+                      try:
+                          open(f + ".src", "wb").write(get(c))
+                          subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f + ".src", "-t", "12", "-an", "-vf", "scale=-2:1080",
+                                          "-c:v", "libx264", "-crf", "22", "-preset", "veryfast", f + ".mp4"], check=True)
+                          subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "3", "-i", f + ".mp4", "-frames:v", "1", "-vf", "scale=-2:270", f + ".jpg"])
+                          wh = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=width,height", "-of", "csv=p=0", f + ".src"], capture_output=True, text=True).stdout.strip()
+                          subprocess.run(["rm", "-f", f + ".src"])
+                          meta.append({"file": f + ".mp4", "id": k, "src": c, "wh": wh, "tag": t}); seen.add(k); n += 1
+                          break
+                      except Exception as e: print("fail", c, e)
           open("videos.json", "w").write(json.dumps(meta, ensure_ascii=False, indent=1))
           PY
-          python3 g.py; rm g.py; ls -la
+          python3 g.py; rm g.py; ls | head -300; du -sh .
       - run: |
-          cd out && git init -q && git checkout -q -b refs-videos && git add . && git -c user.name=bot -c user.email=bot@x commit -qm videos
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-videos
+          cd out && git init -q && git checkout -q -b refs-mixkit && git add . && git -c user.name=bot -c user.email=bot@x commit -qm videos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-mixkit
