@@ -259,10 +259,19 @@ def morning_candidates(fmt: str, day: dt.date):
             yield m
 
 
+def _topic(key: str) -> str:
+    """영상 재료의 내용 (형식만 다르고 같은 순위면 같은 내용이다)."""
+    return key.split("-", 1)[1] if "-" in key else key
+
+
 def morning(day: dt.date, used: set[str], fmt: str = "") -> Morning:
+    """영상 심사(2026-11-01): 형식만 바꿔 같은 순위를 한 주에 세 번 내면 보는 사람이 '또 이거네' 한다.
+    형식이 달라도 이미 쓴 순위(주제+기간)는 다시 고르지 않는다."""
     fmt = fmt or rules.morning_format(day)
     cands = list(morning_candidates(fmt, day))
-    return next((c for c in cands if c.key not in used), cands[0])
+    seen = {_topic(k) for k in used}
+    return next((c for c in cands if c.key not in used and _topic(c.key) not in seen),
+                next((c for c in cands if c.key not in used), cands[0]))
 
 
 def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:

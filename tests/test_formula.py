@@ -620,3 +620,20 @@ def test_pick_slots_and_cards_in_build():
     assert "C.thread_cards(x" in src and 'it["images"]' in src
     wf = (Path(__file__).parent.parent / ".github/workflows/sns-post.yml").read_text(encoding="utf-8")
     assert '"17 3 * * *") SLOT=점심글' in wf and 'SLOT="밤 밤글"' in wf and "SNS_PICK" in wf
+
+
+def test_video_scripts_follow_engine(plan90):
+    """영상 대본 (사장님 2026-11-01): 화면과 같은 엔진 순위만 읽고, 끊긴 말 없이 문장을 맺고, 십신은 쉬운 말을 붙인다."""
+    from saju.marketing.formula import script as S
+    for d in plan90[:14]:
+        for m in (d.morning, d.video2):
+            ls = S.script(m)
+            assert ls[-1] == S.END and all(x.endswith((".", "?", "!", "요")) for x in ls), ls
+            if m.rows:
+                assert f"1위, {T.ddi(m.rows[0].ddi)}." in " ".join(ls)
+                assert not any(x.endswith("12위.") for x in ls)
+            for g, plain in S.GOD_PLAIN.items():
+                if f"에게 {g}이에요" in " ".join(ls):
+                    assert plain in " ".join(ls)
+    keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
+    assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다
