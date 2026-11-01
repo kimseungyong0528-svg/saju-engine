@@ -183,7 +183,7 @@ def rank_post(kind: str, period: Period) -> RankPost:
         else:
             lines.append(f"{r.rank}위는 {r.ddi}띠예요.{tail}")
         caps.append(f"{r.rank}위 {r.ddi}띠")
-    lines.append("내일도 띠 순위 올려요. 놓치기 싫으면 팔로우 해 두세요.")
+    lines.append("띠 순위 계속 올려요. 놓치기 싫으면 팔로우 해 두세요.")
     caps.append("놓치기 싫으면 팔로우")
     title = f"{period.label} {head} 순위ㅣ1위는 {top.ddi}띠 ({top.years}년생)"
     tags = [f"#{period.label}운세", f"#{k['name'].replace('·', '')}", "#띠별운세", "#띠순위", "#사주", "#운명서재"]

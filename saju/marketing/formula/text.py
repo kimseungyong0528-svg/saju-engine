@@ -191,7 +191,7 @@ def forceteller_stem(st: str) -> dict:
     return {"tpl": "stem", "el": ELEMENTS[STEM_ELEMENT[i]], "pair": ELEMENTS[STEM_ELEMENT[j]],
             "head": [f"<em>{name} 일간</em>이", "꼭 만나야 하는 사람"],
             "say": [f"{name} 일간은\n{trait}", weak, f"{partner} 일간을 만나면\n{gain}", f"{STEMS[a]}{STEMS[c]}합(合)\n서로 손을 잡는 사이예요",
-                    "이런 오행 이야기 매일 아침 올려요\n놓치기 싫으면 팔로우 해 두세요"]}
+                    "이런 오행 이야기 계속 올려요\n놓치기 싫으면 팔로우 해 두세요"]}
 
 
 def forceteller_month(tpl: str, p: Period) -> dict:
@@ -269,7 +269,7 @@ def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
     return [f"{r.rank}위 {ddi(r.ddi)} ({years_short(r.ddi)}년생)" for r in rows[:upto]]
 
 
-FOLLOW_AM = "매일 아침 띠별 운세 올려요. 놓치기 싫으면 팔로우 해 두세요."
+FOLLOW_AM = "띠별 운세 계속 올려요. 놓치기 싫으면 팔로우 해 두세요."
 
 
 def _am(cap: str) -> dict[str, dict]:
@@ -1151,10 +1151,9 @@ def title_of(e: Evening) -> str:
 
 
 def _teasers(days: list[Day]) -> None:
-    """사주장인식 끝장에 다음 사주장인식 글 예고 한 줄 (팔로우 이유, 실제로 잡힌 글만). 같은 주 안에서만."""
+    """사주장인식 끝장에 다음 사주장인식 글 예고 한 줄 (시간·날짜는 약속하지 않는다, 사장님 2026-11-01) (팔로우 이유, 실제로 잡힌 글만). 같은 주 안에서만."""
     seq = [(d.date, t, e) for d in days for _, t, e in d.threads if e.style == "jangin"]
     for j, ((d0, t0, e0), (d1, t1, e1)) in enumerate(zip(seq, seq[1:])):
-        when = ("오늘 " if d1 == d0 else "내일 ") + SLOT_SAY[t1]
         if d1 - d0 > dt.timedelta(days=1):
             continue
         if e1.key.startswith(("jone-", "jstem-")):
@@ -1166,12 +1165,12 @@ def _teasers(days: list[Day]) -> None:
         last = e0.pages[-1]
         if last[-2:] in LB["find_me"]:    # 끝의 팔로우 두 줄을 '다음 글 예고 + 팔로우'로 바꾼다 (팔로우 말이 두 번 나오지 않게)
             last = last[:-2]
-        e0.pages[-1] = last + [f"{when}엔 {what} 올려요", LB["follow"][j % len(LB["follow"])]]
+        e0.pages[-1] = last + [f"다음엔 {what} 올려요", LB["follow"][j % len(LB["follow"])]]
 
 
-FOLLOW_END = {"jangin": ["이런 이야기 매일 아침, 저녁에 올려요", "놓치기 싫으면 팔로우 해 두세요"],
-              "dohwa": ["🫨 이런 거 매일 낮 12시, 밤 9시에 하나씩 올려요", "놓치기 싫으면 팔로우 해 두세요"],
-              "salgu": ["🍀 매일 오후 3시, 밤 11시에 한 탄씩 올려요", "다음 탄 놓치기 싫으면 팔로우 해 두세요🧚🏻‍♀️"]}
+FOLLOW_END = {"jangin": ["이런 이야기 계속 올려요", "놓치기 싫으면 팔로우 해 두세요"],
+              "dohwa": ["🫨 이런 사주 팁 계속 올려요", "놓치기 싫으면 팔로우 해 두세요"],
+              "salgu": ["🍀 다음 탄도 곧 올려요", "다음 탄 놓치기 싫으면 팔로우 해 두세요🧚🏻‍♀️"]}
 
 
 def has_follow(e: Evening) -> bool:

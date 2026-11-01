@@ -274,32 +274,20 @@ def test_week_variety(plan90):
 
 
 def test_teaser_is_true(plan90):
-    """teaser: 예고한 글이 실제로 그 시간에 잡혀 있다."""
-    for di, d in enumerate(plan90[:14]):
-        for _, t, e in d.threads:
-            line = next((x for x in e.pages[-1] if x.endswith(" 올려요") and ("오늘 " in x or "내일 " in x)), None)
-            if not line:
-                continue
-            day = d if line.startswith("오늘") else plan90[di + 1]
-            slot = {v: k for k, v in T.SLOT_SAY.items()}[re.match(r"^(오늘|내일) (.+?)엔 ", line).group(2)]
-            nxt = next(x for _, tt, x in day.threads if tt == slot)
-            assert nxt.style == "jangin"
-            if "'" in line:
-                assert T.title_of(nxt) in line, (line, T.title_of(nxt))
+    """teaser: '다음엔 … 올려요'는 실제로 바로 다음에 잡힌 사주장인식 글이다 (시간·날짜는 쓰지 않는다)."""
+    seq = [e for d in plan90[:14] for _, _, e in d.threads if e.style == "jangin"]
+    for e, nxt in zip(seq, seq[1:]):
+        line = next((x for x in e.pages[-1] if x.startswith("다음엔 ") and x.endswith(" 올려요")), None)
+        if line and "'" in line:
+            assert T.title_of(nxt) in line, (line, T.title_of(nxt))
 
 
 def test_dohwa_reply_is_true():
-    """dohwa_voice: 답글은 사실인 말만 (올리는 시간이 실제 시간대와 같다)."""
-    times = [t for _, t, st in T.THREAD_SLOTS if st == "dohwa"]
-    assert times == ["12:00", "21:00"]
-    for r in T.B["dohwa_reply"]:
+    """dohwa_voice·follow_all: 답글·끝맺음에 올리는 시간·'매일' 약속이 없다 (사장님 2026-11-01 '내가 이때 올리냐?')."""
+    for r in [*T.B["dohwa_reply"], *T.B["salgu_end"], *T.LB["find_me"], *T.FOLLOW_END.values()]:
         txt = " ".join(r)
-        if "시" in txt and "매일" in txt:
-            assert "낮 12시" in txt and "밤 9시" in txt
-    for r in T.B["salgu_end"]:
-        txt = " ".join(r)
-        if "매일" in txt:
-            assert "오후 3시" in txt and "밤 11시" in txt
+        assert not re.search(r"\d+시|매일|내일", txt), txt
+        assert "팔로우" in txt
 
 
 def test_salgu_long_bank():
@@ -318,8 +306,11 @@ def test_follow_everywhere(plan90):
             assert any("팔로우" in x for x in th.pages[-1]), th.key
             assert sum("팔로우" in x for x in th.pages[-1]) == 1, th.key   # 두 번 조르지 않는다
             assert "프로필 링크" not in "\n".join(th.parts), th.key
+            for x in th.pages[-1]:   # 올리는 시간·날짜 약속 금지 (사장님 2026-11-01 '내가 이때 올리냐?')
+                assert not re.search(r"\d+시|매일|내일|오늘 (아침|낮|오후|저녁|밤)", x), (th.key, x)
         mt = morning_texts(m)
         assert "구독" in mt["youtube"]["설명"]
         for ch in ("instagram-reel", "facebook-reel"):
             assert "팔로우" in mt[ch]["캡션"]
         assert "프로필 링크" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
+        assert "매일" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
