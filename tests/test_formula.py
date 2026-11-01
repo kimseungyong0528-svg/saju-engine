@@ -139,7 +139,7 @@ def _threads(plan90):
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
                                                      "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
-                                                     "long_list_spacing", "emoji_marks"]
+                                                     "long_list_spacing", "emoji_marks", "weekly_popular_topics"]
 
 
 def test_heart_first(plan90):
