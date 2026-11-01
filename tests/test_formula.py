@@ -59,14 +59,14 @@ def test_rankings_come_from_engine(plan90):
 
 
 def test_jangin_shape(plan90):
-    """사주장인식: 본글 1장 + 내 댓글로 이어 쓰기, 끝장은 '따로 봐야 알아요' + 프로필 안내."""
+    """사주장인식: 본글 1장 + 내 댓글로 이어 쓰기, 끝장은 '따로 봐야 알아요' + 팔로우 안내."""
     js = [e for d in plan90 for _, _, e in d.threads if e.style == "jangin"]
     assert js
     for e in js:
         one = e.key.startswith(("jone-", "jstem-"))   # 띠·일간 한 장 글: 본글 + 이유 + 끝장
         assert len(e.pages) == 5 if one else 5 <= len(e.pages) <= 7
         assert any("따로 봐야 알아요" in x for x in e.pages[-1])
-        assert any("프로필 링크" in x for x in e.pages[-1])
+        assert any("팔로우" in x for x in e.pages[-1])
         assert all(pg[0].startswith("※ ") for pg in e.pages[-1:] if not e.key.startswith("jangin-double-"))
 
 
@@ -215,17 +215,17 @@ def test_judges_rubric_fixed():
     assert J["pass"] == 95 and J["per_criterion"] == 5
     assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference"]
     assert [r["id"] for r in RULES["reference_rules"]] == ["question_heads", "term_date", "year_pain", "next_year", "ending",
-                                                           "teaser", "week_variety", "dohwa_voice", "salgu_long"]
+                                                           "teaser", "week_variety", "dohwa_voice", "salgu_long", "follow_all"]
 
 
 def test_reference_structure(plan90):
-    """question_heads·term_date·ending: 사주장인식 댓글 장은 ※ 질문 머리, 기간은 절기 날짜, 끝장은 프로필 링크로 찾아오라는 말."""
+    """question_heads·term_date·ending: 사주장인식 댓글 장은 ※ 질문 머리, 기간은 절기 날짜, 끝장은 팔로우 말."""
     for e in _threads(plan90):
         if e.style != "jangin" or e.key.startswith("jangin-double-"):
             continue
         assert all(pg[0].startswith("※ ") for pg in e.pages[1:]), e.key
         assert re.search(r"(입춘|경칩|청명|입하|망종|소서|입추|백로|한로|입동|대설|소한)\(\d+/\d+\)", e.parts[1]), e.key
-        assert any("프로필 링크" in x for x in e.pages[-1])
+        assert any("팔로우" in x for x in e.pages[-1])
 
 
 def test_term_date_from_engine():
@@ -307,3 +307,19 @@ def test_salgu_long_bank():
     assert len(items) >= 80 and len(set(items)) == len(items)
     assert not [x for x in items for w in T.BANNED if w in x]
     assert not [x for x in items if ("없는" in x or "없으면" in x) and "여덟 글자 안에" not in x and "관성" in x]
+
+
+def test_follow_everywhere(plan90):
+    """follow_all (사장님 2026-11-01): 모든 스레드 글 마지막 장과 모든 아침 캡션에 팔로우(유튜브는 구독) 말. 프로필 링크 말은 어디에도 없다."""
+    from saju.marketing.formula.text import morning_texts
+    for day in plan90:
+        m = day.morning
+        for _, _, th in day.threads:
+            assert any("팔로우" in x for x in th.pages[-1]), th.key
+            assert sum("팔로우" in x for x in th.pages[-1]) == 1, th.key   # 두 번 조르지 않는다
+            assert "프로필 링크" not in "\n".join(th.parts), th.key
+        mt = morning_texts(m)
+        assert "구독" in mt["youtube"]["설명"]
+        for ch in ("instagram-reel", "facebook-reel"):
+            assert "팔로우" in mt[ch]["캡션"]
+        assert "프로필 링크" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
