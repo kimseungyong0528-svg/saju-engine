@@ -311,7 +311,7 @@ class Evening:
     key: str
     style: str
     pages: list[list[str]]
-    dark: bool = True
+    dark: bool = False   # 스레드 글은 전부 흰 배경 (사장님 2026-11-01)
 
     @property
     def parts(self) -> list[str]:
@@ -632,8 +632,11 @@ def dohwa_ddi(kind: str, p: Period, a: str, n: int) -> Evening | None:
     line = fill(tpl[(n + r.rank) % len(tpl)], D=ddi(a), Y=years_short(a).replace(", ", "·"), p=p.label, name=KINDS[kind]["name"],
                 r=r.rank, short=wb["short"][n % len(wb["short"])], act=_action(kind, lead), why=lead)
     line = line.replace(f"{ddi(a)}는", josa(ddi(a), "은", "는"))
+    act = _action(kind, lead)
+    if act.replace("잘 ", "") in line.replace(f"|{act}", ""):   # 근거와 할 일이 같은 말이면 한 번만
+        line = line.replace(f"|{act}", "")
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][(n + 1) % len(B["dohwa_reply"])]]
-    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [[line], reply])
+    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
 def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
@@ -650,7 +653,7 @@ def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
     line = fill(tpl[(n + s) % len(tpl)], S=STEM_NAMES[s].split("(")[0], p=p.label, gname=f"{g}({GH[g]})", why=t.rstrip("."),
                 act=_action(kind, t), name=KINDS[kind]["name"], r=rk)
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][1]]
-    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [[line], reply])
+    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
 def salgu_tan(day: dt.date, n_tan: int) -> Evening:
@@ -663,7 +666,7 @@ def salgu_tan(day: dt.date, n_tan: int) -> Evening:
     rng.shuffle(order)
     six = order[k * 6:k * 6 + 6]
     p1 = [f"흥미로운 사주 이야기들 (금월선녀 ver.) - {n_tan}탄", ""] + [f"{i}. {t}" for i, t in enumerate(six, 1)]
-    return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]], dark=False)
+    return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]])
 
 
 def jangin_pool(day: dt.date):
