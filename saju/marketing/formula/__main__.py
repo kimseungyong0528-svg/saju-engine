@@ -139,7 +139,8 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
                 _thumb(week / vid, 2.5, week / thumb)
             mt = m.texts()
             title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
-            for ch, sfx, tm in (("instagram-reel", "reel", AM), ("facebook-reel", "fbreel", AM), ("youtube", "youtube", YT_AM)):
+            # 영상 없이 만들면(사장님 2026-11-01 "영상은 올리지마 확실히 될때까지 일단 스레드만") 영상 게시물은 넣지 않는다
+            for ch, sfx, tm in ((("instagram-reel", "reel", AM), ("facebook-reel", "fbreel", AM), ("youtube", "youtube", YT_AM)) if R else ()):
                 entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": tm, "slot": "오전", "material": m.key,
                                        "format": FMT_NAMES[m.fmt], "title": title, "score": 0,
                                        "video": vid if R else "", "thumb": thumb if R else "", "texts": mt[ch]})
@@ -155,9 +156,9 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
                 R.threads(e, week / cap, seed=i * 2 + 2)
             first = e.pages[0][0] if e.pages and e.pages[0] else e.key
             ytt = (first.strip("<>") + " #shorts")[:100]
-            for ch, slot, tm, txt in (("youtube", "저녁", YT_PM, {"제목": ytt, "설명": et["instagram-reel"]["캡션"]}),
-                                      ("instagram-reel", "밤", REEL_PM, et["instagram-reel"]),
-                                      ("facebook-reel", "밤", REEL_PM, et["instagram-reel"])):
+            for ch, slot, tm, txt in ((("youtube", "저녁", YT_PM, {"제목": ytt, "설명": et["instagram-reel"]["캡션"]}),
+                                       ("instagram-reel", "밤", REEL_PM, et["instagram-reel"]),
+                                       ("facebook-reel", "밤", REEL_PM, et["instagram-reel"])) if R else ()):
                 sfx = {"youtube": "youtube", "instagram-reel": "reel", "facebook-reel": "fbreel"}[ch]
                 entry["items"].append({"id": f"{tag}_저녁-{sfx}", "channel": ch, "time": tm, "slot": slot, "material": e.key,
                                        "format": "스레드 글 캡처", "title": first, "score": 0, "video": cap if R else "",
