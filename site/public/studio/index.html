@@ -383,13 +383,16 @@ function viewStatus() {
   const mine = allTh.filter(i => appr[i.id]).length;
   const apprOk = allTh.filter(i => i.approved_by === 'claude' || appr[i.id]).length;
   const today = todayIso();
+  // 오류 = 올리다 실패한 글 + 올릴 시각이 30분 넘게 지났는데 안 올라간 글 (사장님 2026-11-01 "업로드 안되면 있음")
+  const late = (x, i) => !posted[i.id]?.ok && Date.now() > new Date(`${x.d.date}T${i.time}:00`).getTime() + 30 * 60000;
+  const why = i => posted[i.id] && !posted[i.id].ok ? `올리기 실패: ${posted[i.id].error}` : '시간이 지났는데 안 올라감';
   const st = x => {
-    const ok = x.th.filter(i => posted[i.id]?.ok).length, bad = x.th.filter(i => posted[i.id] && !posted[i.id].ok);
-    const past = x.d.date < today;
-    return { ok, bad, n: x.th.length, full: ok === x.th.length, missed: past ? x.th.length - ok - bad.length : 0 };
+    const ok = x.th.filter(i => posted[i.id]?.ok).length, bad = x.th.filter(i => (posted[i.id] && !posted[i.id].ok) || late(x, i));
+    return { ok, bad, n: x.th.length, full: ok === x.th.length };
   };
   const fullDays = days.filter(x => st(x).full).length;
-  const errN = days.reduce((n, x) => n + st(x).bad.length, 0);
+  const errs = days.flatMap(x => st(x).bad.map(i => ({ x, i })));
+  const errN = errs.length;
 
   const card = (k, v, cls) => el('div', { class: 'box' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v));
   return el('div', {},
@@ -399,17 +402,18 @@ function viewStatus() {
       card('스레드 준비', allTh.length ? `${allTh.length}개 준비됨` : '없음', allTh.length >= 42 ? 'good' : 'bad'),
       card('승인', apprOk === allTh.length && allTh.length ? (claude ? '클로드에서 이미 승인 완료' : '직접 승인함') : `${apprOk} / ${allTh.length} 승인`, apprOk === allTh.length ? 'good' : 'bad'),
       card('며칠치 올라갔나', `${fullDays} / 7일`),
-      card('오류', errN ? `${errN}건` : '없음', errN ? 'bad' : 'good')),
-    el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과한 주라서 클로드가 한 번에 승인했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
+      el('div', { class: 'box' }, el('div', { class: 'k' }, '오류'), el('div', { class: 'v ' + (errN ? 'bad' : 'good') }, errN ? `있음 ${errN}건` : '없음'),
+        errN ? el('ul', { class: 'errs', style: 'margin-top:6px' }, errs.map(({ x, i }) => el('li', {}, `${fmtDate(x.d.date)} (${x.d.weekday}) ${i.time} · ${why(i)}`))) : null)),
+    el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과한 주라서 클로드에서 이미 승인 완료했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
     el('h2', { class: 'sec' }, '하루하루 잘 올라가는지'),
     el('div', { class: 'box' }, days.map(x => {
       const s = st(x);
-      const label = s.bad.length ? `오류 ${s.bad.length}` : s.full ? `${s.ok} / ${s.n} 완료` : x.d.date > today ? `${s.n}개 예정` : x.d.date === today ? `${s.ok} / ${s.n} 올림` : `${s.ok} / ${s.n} 올림 (안 올라간 ${s.missed}개)`;
+      const label = s.bad.length ? `${s.ok} / ${s.n} · 오류 ${s.bad.length}` : s.full ? `${s.ok} / ${s.n} 완료` : x.d.date > today ? `${s.n}개 예정` : `${s.ok} / ${s.n} 올림`;
       return el('div', { class: 'drow' + (x.d.date === today ? ' today' : '') },
         el('b', {}, `${fmtDate(x.d.date)} ${x.d.weekday}${x.d.date === today ? ' · 오늘' : ''}`),
-        el('div', { class: 'pips' }, x.th.map(i => el('i', { class: posted[i.id]?.ok ? 'ok' : posted[i.id] ? 'bad' : '', title: `${i.time} ${i.title}` }))),
+        el('div', { class: 'pips' }, x.th.map(i => el('i', { class: posted[i.id]?.ok ? 'ok' : s.bad.includes(i) ? 'bad' : '', title: `${i.time} ${i.title}` }))),
         el('span', { class: 'dres ' + (s.bad.length ? 'bad' : s.full ? 'ok' : '') }, label),
-        s.bad.length ? el('ul', { class: 'errs' }, s.bad.map(i => el('li', {}, `${i.time} ${i.title}: ${posted[i.id].error}`))) : null);
+        s.bad.length ? el('ul', { class: 'errs' }, s.bad.map(i => el('li', {}, `${i.time} · ${why(i)}`))) : null);
     })),
     el('p', { class: 'muted' }, '칸 하나가 스레드 글 하나예요. 초록은 올라간 것, 빨강은 오류, 빈칸은 아직 안 올라간 것이에요.'));
 }
