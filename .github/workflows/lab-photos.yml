@@ -1,4 +1,4 @@
-# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 풍경 사진을 Openverse 에서 받아 refs-photos 가지에 올린다.
+# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 풍경 사진을 받아 refs-photos 가지에 올린다.
 name: lab-photos
 on:
   push:
@@ -12,23 +12,48 @@ jobs:
     steps:
       - run: |
           mkdir out && cd out
-          for q in "sunset sea cliff" "ocean sunset" "mountain sunrise" "cherry blossom" "night sky stars" "autumn forest" "lake mountains" "snow mountain" "milky way" "beach sunset"; do
-            curl -s "https://api.openverse.org/v1/images/?q=$(echo $q | sed 's/ /+/g')&license=cc0,pdm&aspect_ratio=tall&size=large&page_size=8" > r.json || true
-            python3 - "$q" <<'PY'
-          import json,sys,urllib.request,re
-          q=sys.argv[1]; d=json.load(open("r.json"))
-          meta=[]
-          for i,r in enumerate(d.get("results",[])[:8]):
-              n=re.sub(r"\W+","-",q)+f"-{i}.jpg"
+          cat > g.py <<'PY'
+          import json, re, sys, time, urllib.request, urllib.parse
+          UA = {"User-Agent": "saju-engine-lab/1.0 (kimseungyong0528@gmail.com)"}
+          def get(u):
+              return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40).read()
+          meta = []
+          qs = ["sunset sea cliff", "ocean sunset", "mountain sunrise", "cherry blossom tree", "night sky stars milky way",
+                "autumn forest", "lake mountains reflection", "snow mountain", "beach sunset waves", "sunrise clouds"]
+          for q in qs:
+              n = 0
+              # 1) Openverse (CC0·PD 만)
               try:
-                  req=urllib.request.Request(r["url"],headers={"User-Agent":"Mozilla/5.0 saju-lab"})
-                  open(n,"wb").write(urllib.request.urlopen(req,timeout=30).read())
-                  meta.append({"file":n,"title":r.get("title"),"license":r.get("license"),"creator":r.get("creator"),"source":r.get("foreign_landing_url")})
-              except Exception as e: print("fail",n,e)
-          open(re.sub(r"\W+","-",q)+".json","w").write(json.dumps(meta,ensure_ascii=False,indent=1))
+                  d = json.loads(get("https://api.openverse.org/v1/images/?" + urllib.parse.urlencode({"q": q, "license": "cc0,pdm", "page_size": 20})))
+                  for r in d.get("results", []):
+                      if n >= 5: break
+                      if (r.get("height") or 0) < 1000: continue
+                      f = re.sub(r"\W+", "-", q) + f"-ov{n}.jpg"
+                      try:
+                          open(f, "wb").write(get(r["url"])); n += 1
+                          meta.append({"file": f, "license": r.get("license"), "creator": r.get("creator"), "source": r.get("foreign_landing_url")})
+                      except Exception as e: print("fail", e)
+              except Exception as e: print("openverse", q, e)
+              time.sleep(2)
+              # 2) 위키미디어 공용 (CC0·퍼블릭 도메인만)
+              try:
+                  u = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "generator": "search",
+                      "gsrsearch": f"{q} filetype:bitmap", "gsrnamespace": 6, "gsrlimit": 40, "prop": "imageinfo", "iiprop": "url|extmetadata|size", "iiurlwidth": 1600})
+                  pages = json.loads(get(u)).get("query", {}).get("pages", {})
+                  for p in pages.values():
+                      if n >= 8: break
+                      ii = p["imageinfo"][0]; lic = ii.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
+                      if not re.search(r"CC0|Public domain|PD", lic, re.I) or ii.get("height", 0) < 1200: continue
+                      f = re.sub(r"\W+", "-", q) + f"-wm{n}.jpg"
+                      try:
+                          open(f, "wb").write(get(ii["thumburl"])); n += 1
+                          meta.append({"file": f, "license": lic, "source": ii.get("descriptionurl")})
+                      except Exception as e: print("fail", e)
+              except Exception as e: print("commons", q, e)
+              print(q, n)
+          open("photos.json", "w").write(json.dumps(meta, ensure_ascii=False, indent=1))
           PY
-          done
-          rm -f r.json; ls -la | head -100
+          python3 g.py; rm g.py; ls | wc -l
       - run: |
           cd out && git init -q && git checkout -q -b refs-photos && git add . && git -c user.name=bot -c user.email=bot@x commit -qm photos
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-photos
