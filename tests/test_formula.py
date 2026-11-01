@@ -22,14 +22,16 @@ def test_formats_rotate(plan90):
     fmts = [m.fmt for _, m, _ in plan90]
     assert all(a != b for a, b in itertools.pairwise(fmts))
     assert set(fmts) == {f["key"] for f in rules.slot("아침")["formats"]}
-    styles = [e.style for _, _, e in plan90]
+    styles = [e.style for d in plan90 for _, _, e in d.threads]
     assert {"jangin", "salgu", "dohwa"} <= set(styles)
 
 
 def test_no_repeat_for_60_days(plan90):
-    """두 달 동안 같은 재료를 다시 쓰지 않는다 (스레드 하루 5개 포함)."""
+    """두 달 동안 같은 재료를 다시 쓰지 않는다 (스레드 하루 6개 포함). 첫 장(본글)은 석 달 동안 겹치지 않는다."""
     keys = [m.key for _, m, _ in plan90[:60]] + [e.key for d in plan90[:60] for _, _, e in d.threads]
     assert len(keys) == len(set(keys))
+    firsts = [e.parts[0] for d in plan90 for _, _, e in d.threads]
+    assert len(firsts) == len(set(firsts))
     firsts = [e.parts[0] for _, _, e in plan90[:60]]
     assert len(firsts) == len(set(firsts))
 
@@ -56,10 +58,11 @@ def test_rankings_come_from_engine(plan90):
 
 def test_jangin_shape(plan90):
     """사주장인식: 본글 1장 + 내 댓글로 이어 쓰기, 끝장은 '따로 봐야 알아요' + 프로필 안내."""
-    js = [e for _, _, e in plan90 if e.style == "jangin"]
+    js = [e for d in plan90 for _, _, e in d.threads if e.style == "jangin"]
     assert js
     for e in js:
-        assert 5 <= len(e.pages) <= 7
+        one = e.key.startswith(("jone-", "jstem-"))   # 띠·일간 한 장 글: 본글 + 이유 + 끝장
+        assert len(e.pages) == 3 if one else 5 <= len(e.pages) <= 7
         assert any("따로 봐야 알아요" in x for x in e.pages[-1])
         assert "프로필 링크" in e.pages[-1][-1]
 
@@ -84,29 +87,32 @@ def test_years_only_to_2007():
     assert T.years("돼지")[0] == 2007 and T.years("쥐")[-1] == 1960
 
 
-def test_nine_posts_a_day(plan90):
-    """사장님 2026-11-01 "하루 9번": 스레드 5개(07:30·12:00·18:00·21:00·23:00), 같은 날 같은 글감 두 번 없음."""
-    assert [t for _, t in T.THREAD_SLOTS] == ["07:30", "12:00", "18:00", "21:00", "23:00"]
+def test_six_threads_a_day(plan90):
+    """사장님 2026-11-01: 스레드 하루 6개, 사주장인식·도화도르식·살구식을 번갈아 두 번씩."""
+    assert [(t, st) for _, t, st in T.THREAD_SLOTS] == [("07:30", "jangin"), ("12:00", "dohwa"), ("15:00", "salgu"),
+                                                       ("18:00", "jangin"), ("21:00", "dohwa"), ("23:00", "salgu")]
     for d in plan90:
-        assert [t for _, t, _ in d.threads] == [t for _, t in T.THREAD_SLOTS]
+        assert [(t, e.style) for _, t, e in d.threads] == [(t, st) for _, t, st in T.THREAD_SLOTS]
         assert d.evening.key == next(e.key for s, _, e in d.threads if s == "저녁")
-        ones = [e.key.split("-")[2] for _, _, e in d.threads if e.style == "one"]
-        assert len(ones) == len(set(ones))   # 같은 날 같은 띠 두 번 없음
-        if rules.morning_format(d.date) == "sinbi":
-            assert not any(e.style == "daily" for _, _, e in d.threads)
 
 
-def test_one_posts_use_engine_rank(plan90):
-    """제1조항: '띠 하나 운 하나'·'일간 하나 운 하나'·'총정리'의 순위는 엔진 순위 그대로."""
-    for d in plan90[:20]:
+def test_salgu_bank_is_ours():
+    """살구식 재료는 약 300개, 서로 겹치지 않고 금지어가 없다."""
+    items = T.B["salgu"]
+    assert len(items) >= 280 and len(set(items)) == len(items)
+    assert not [x for x in items for w in T.BANNED if w in x]
+
+
+def test_one_cards_use_engine_rank(plan90):
+    """제1조항: 띠 한 장 글의 띠·근거는 엔진 순위 그대로 (앞 4개 또는 뒤 3개만)."""
+    for d in plan90[:30]:
         for _, _, e in d.threads:
-            if e.style == "one":
+            if e.key.startswith("jone-"):
                 _, kind, a, *pk = e.key.split("-")
                 p = next(p for p in T.periods(d.date) if p.key == "-".join(pk))
                 r = next(r for r in rank(kind, p) if r.ddi == a)
-                assert f"12띠 중 {r.rank}위" in e.parts[0]
-            if e.style == "daily":
-                assert all(f"{T.ddi(a)}: {t}" in "".join(e.parts) for a, t in T.sinbi_data(d.date)["text"].items())
+                assert r.rank <= 4 or r.rank >= 10
+                assert f"{T.ddi(a)} ({T.years_full(a)})" in e.parts[0]
 
 
 def test_sns_post_runs_every_slot():
@@ -114,5 +120,5 @@ def test_sns_post_runs_every_slot():
 
     from saju.marketing import meta
     y = pathlib.Path(__file__).resolve().parents[1].joinpath(".github/workflows/sns-post.yml").read_text(encoding="utf-8")
-    assert meta.SLOTS == [s for s, _ in T.THREAD_SLOTS]
+    assert meta.SLOTS == [s for s, _, _ in T.THREAD_SLOTS]
     assert all(f"SLOT={s}" in y for s in meta.SLOTS)

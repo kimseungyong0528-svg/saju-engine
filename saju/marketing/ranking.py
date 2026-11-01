@@ -13,7 +13,15 @@ import datetime as dt
 from dataclasses import dataclass, field
 
 from ..analysis import branch_relation
-from ..constants import BRANCH_ELEMENT, BRANCHES, BRANCHES_HANJA, ELEMENTS, STEM_ELEMENT, STEMS, STEMS_HANJA, ZODIAC_ANIMALS
+from ..constants import (
+    BRANCH_ELEMENT,
+    BRANCHES,
+    BRANCHES_HANJA,
+    STEM_ELEMENT,
+    STEMS,
+    STEMS_HANJA,
+    ZODIAC_ANIMALS,
+)
 from ..report.newyear import samjae
 from .content import SITE_URL, birth_years
 

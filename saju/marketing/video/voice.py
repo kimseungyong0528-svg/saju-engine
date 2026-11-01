@@ -19,7 +19,7 @@ def clean(text: str) -> str:
     """읽기 좋게: 한자 괄호, 따옴표, 번호 매기기를 뺀다."""
     t = re.sub(r"\([㐀-鿿·\s]+\)", "", text)
     t = re.sub(r"[㐀-鿿]+", "", t)
-    t = re.sub(r"^\s*\d+\.\s*", "", t, flags=re.M)
+    t = re.sub(r"^\s*\d+\.\s*", "", t, flags=re.MULTILINE)
     t = t.replace("'", "").replace("\"", "").replace("ㅣ", ", ").replace("·", ", ").replace("—", ", ").replace("×", "와 ")
     return re.sub(r"\s+", " ", t).strip()
 

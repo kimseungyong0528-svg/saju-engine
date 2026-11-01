@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 
 from ..report.verify import HEDGE
-from .content import THREADS_LIMIT, Post, SITE_URL
+from .content import SITE_URL, THREADS_LIMIT, Post
 
 # 과장 약속: 표시광고 문제가 될 수 있고 신뢰를 깎는다
 HYPE = re.compile(r"돈벼락|수백억|수억|일확천금|인생역전|딱\s*1번|두\s*번\s*다시\s*없|100\s*%|무조건|반드시\s*대박|초대박|로또")

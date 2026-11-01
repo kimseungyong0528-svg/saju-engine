@@ -19,11 +19,21 @@ import json
 import shutil
 from pathlib import Path
 
-from . import cards, trends as tr
+from . import cards
+from . import trends as tr
 from .checks import check_post, check_rank
+from .content import (
+    daangn,
+    ddi_posts,
+    facebook_reel,
+    instagram_cards,
+    instagram_reel,
+    summary_post,
+    threads,
+    topic_posts,
+    youtube,
+)
 from .ranking import rank_posts, youtube_rank
-from .content import (daangn, ddi_posts, facebook_reel, instagram_cards, instagram_reel, summary_post, threads,
-                      topic_posts, youtube)
 
 WEEKDAYS = "월화수목금토일"
 # 출근길·퇴근길 (사장님 2026-10-31). 인스타·페북·스레드는 승인한 것만 이 시각에 자동으로 올라간다(meta.py).
@@ -74,7 +84,7 @@ def build(start: dt.date, days: int, out: Path, trends: dict | None = None, used
         from .video import render as vr
     week = out / start.isoformat()
     week.mkdir(parents=True, exist_ok=True)
-    manifest = {"week": start.isoformat(), "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
+    manifest = {"week": start.isoformat(), "createdAt": dt.datetime.now(dt.UTC).isoformat(timespec="minutes"),
                 "days": [], "problems": [], "trends": trends or {"items": [], "notes": ["뜬 주제 모으기를 하지 않음"]},
                 "used": []}
     rows, posts = [], []

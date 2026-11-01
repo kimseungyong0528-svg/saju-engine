@@ -361,7 +361,7 @@ function viewToday() {
   const chips = el('div', { class: 'days' }, days.map(d => el('button', { class: 'day' + (d.date === day.date ? ' on' : ''), type: 'button', onclick: () => { S.day = d.date; render(); } },
     el('span', {}, d.weekday + (d.date === todayIso() ? ' · 오늘' : '')), el('b', {}, new Date(d.date + 'T00:00:00').getDate()),
     el('div', { class: 'dots' }, d.items.map(i => el('i', { class: isDone(i) ? 'ok' : '' }))))));
-  const slots = ['오전', '점심', '저녁', '밤', '늦은밤'].map(slot => {
+  const slots = ['오전', '점심', '오후', '저녁', '밤', '늦은밤'].map(slot => {
     const items = all.filter(i => i.slot === slot);
     return items.length ? [el('div', { class: 'slot' }, `${slot} ${(items.find(i => i.channel === 'threads') || items[0]).time}`), el('div', { class: 'grid' }, items.map(postCard))] : [];
   });

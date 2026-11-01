@@ -221,7 +221,6 @@ def make_rank(p: RankPost, out: Path, seed: int = 11) -> dict:
 
 
 if __name__ == "__main__":   # 시험: python -m saju.marketing.video.render 출력폴더
-    import datetime as dt
     import sys
 
     from ..content import ddi_posts
