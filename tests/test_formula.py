@@ -378,3 +378,13 @@ def test_judges_authority_first():
     assert a["order"][:3] == ["사장님이 직접 한 말", "제1조항 (엔진 사실·통일성)", "심사원 피드백"]
     assert "인용" in a["detail"] and "무효" in a["detail"]
     assert "상위90-원문.txt" in j["references"] and any("원문" in s and "나란히" in s for s in j["strict"])
+
+
+def test_judge_model_top_priority_pinned():
+    """사장님 2026-11-01 '무조건 이 심사원 모델 1순위로 저장하고': 모델이 지워지거나 약해지면 실패."""
+    j = json.loads((Path(T.__file__).parent / "thread_rules.json").read_text(encoding="utf-8"))["judges"]
+    assert j["pass"] == 100
+    assert "무조건" in j["authority"]["_must"] and "올리지 않는다" in j["authority"]["_must"]
+    assert any("0부터" in s for s in j["strict"])
+    md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "제2조항: 심사원 모델 1순위" in md and "상위90-원문.txt" in md
