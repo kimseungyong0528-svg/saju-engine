@@ -53,7 +53,9 @@ def top_title(m) -> str:
     if m.fmt == "forceteller":
         h1, h2 = (_plain(x) for x in m.data["head"])
         return f"{h1} {h2}"
-    return " ".join(_plain(x) for x in m.title[:2])   # 천복식: '1위부터 12위'는 화면 글로만
+    t = [_plain(x) for x in m.title]
+    # 천복식: '1위부터 12위'는 화면 글로만. 둘째 줄이 '…할'로 끝나면 셋째 줄('구설수 낀 띠')까지 읽어야 말이 된다
+    return " ".join(t[:2] if t[1].endswith("띠") or len(t) < 3 or t[2].startswith("1위") else t[:3])
 
 
 def _spoken(s: str, m) -> str:
