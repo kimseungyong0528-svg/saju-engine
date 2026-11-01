@@ -718,6 +718,41 @@ def double(p: Period, n: int) -> Evening | None:
     return Evening(f"jangin-double-{p.key}", "jangin", [p1, p2, *cards, same, end], facts=tuple((x["ddi"], p.key, "double", "+") for x in ys))
 
 
+GOD_OF = {"E": "비겁", "M": "식상", "K": "재성", "P2": "관성", "C": "인성"}   # 이 달 기운(E)이 그 일간에게 무엇인지
+
+
+def dohwa_month_lines(p: Period) -> list[str]:
+    """이 달 기운 한 줄, 같은 사실을 말투만 바꿔서 (같은 줄이 한 주에 몰리지 않게 _vary_lines 가 돌려 쓴다)."""
+    E = ELEMENTS[BRANCH_ELEMENT[p.branch]]
+    e, b = f"{E}({EL_HANJA[E]})", _branch(p.branch)
+    return [f"{p.label} {p.ganzhi}월은 {b}, {e} 기운이 센 달이에요",
+            f"{p.label}은 {p.ganzhi}월이라 {b} 글자의 {e} 기운이 세요".replace(f"{p.label}은", josa(p.label, "은", "는")),
+            f"{p.label}의 달 글자는 {copula(b)}. {e} 기운이에요",
+            f"사주 달력으로 {p.label}은 {p.ganzhi}월이에요. {e} 기운이 들어와요".replace(f"{p.label}은", josa(p.label, "은", "는"))]
+
+
+def _dohwa_tip_why(topic: str, p: Period, E: str, els: dict, n: int) -> list[str]:
+    """도화도르식 팁 글 밑 사주 근거 (사장님 2026-11-01 "이게 끝임?"): 이 달 기운 → 그 사람에게 무엇인지 → 쉬운 뜻."""
+    month = dohwa_month_lines(p)[0]
+    who = topic.split(":")[0]
+    if who in GOD_OF:
+        X, g = els[who], GOD_OF[who]
+        ls = [month, f"{E}({EL_HANJA[E]})는 {X}({B['elements'][X]['stems']}) 일간에게 {copula(f'{g}({GH[g]})')}".replace(f"{E}({EL_HANJA[E]})는", josa(f"{E}({EL_HANJA[E]})", "은", "는")),
+              GOD_PLAIN[g][n % 2]]
+    elif topic == "lack":
+        ls = [month, f"태어날 때 받은 여덟 글자 안에 없던 {E}({EL_HANJA[E]}) 기운이 이 달엔 바깥에서 들어와요", "모자란 걸 채워 주니까 머리가 맑아지고 결정이 쉬워져요"]
+    elif topic == "much":
+        ls = [month, f"원래 많은 {E}({EL_HANJA[E]})에 바깥에서 들어오는 {E}({EL_HANJA[E]})가 더해져요", "내가 잘하는 쪽 기운이 더 세지니까 자신감이 붙어요"]
+    elif topic == "good":
+        ls = [month, "용신은 내 사주의 균형을 맞춰 주는 기운이에요", f"그 {E}({EL_HANJA[E]})가 이 달엔 바깥에서 들어오니까 막혔던 일이 풀려요"]
+    elif topic == "jeol":
+        ls = ["사주 달력은 1일이 아니라 절기에 달이 바뀌어요", f"{start_label(p)}부터 {p.ganzhi}월이고, {_branch(p.branch)}는 {E}({EL_HANJA[E]}) 기운이에요",
+              "물(수) 기운 달은 생각이 많아지기 쉬워서, 먼저 움직인 사람이 앞서가요" if E == "수" else "달 기운이 바뀔 때 먼저 움직인 사람이 앞서가요"]
+    else:
+        return []
+    return ["", DOHWA_WHY_HEAD[n % len(DOHWA_WHY_HEAD)], *ls]
+
+
 def dohwa(day: dt.date, t: int) -> Evening:
     y, m = target_month(day)
     p = month_period(y, m)
@@ -731,6 +766,7 @@ def dohwa(day: dt.date, t: int) -> Evening:
     body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")).replace(f"{p.label}이 ", josa(p.label, "이", "가") + " ") for x in body]
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][t % len(B["dohwa_reply"])]]
     topic = B["dohwa_topic"][t]
+    body = body + _dohwa_tip_why(topic, p, E, {"C": C, "K": K, "P2": P2, "M": M, "E": E}, t)
     facts = ()
     if ":" in topic:      # 어느 일간에게 좋은 말인지도 사실로 남긴다 (제1조항: 같은 주에 같은 일간을 조심으로 쓰지 않게)
         who, kind = topic.split(":")
@@ -1259,9 +1295,12 @@ def _groups(days: list[Day]) -> list[list[tuple[str, ...]]]:
             g.append([(fill(h, d=d, k=k),) for h in LB["do_head"]])
         g.append([(f"※ 왜 {d}부터일까",), (f"※ {d}부터 뭐가 달라질까",), (f"※ 왜 하필 {d}부터일까",)])
         g.append([(f"※ 왜 {d}부터 천천히 가야 할까",), (f"※ {d}부터 왜 속도를 줄여야 할까",)])
+        g.append([(x,) for x in dohwa_month_lines(p)])
     g += [[tuple(x) for x in B["salgu_end"]], [tuple(x) for x in B["dohwa_reply"]], [tuple(x) for x in LB["find_me"]]]
     for s in [LB["close"], LB["follow"], LB["sign_head"], LB["sign_head_bad"], LB["next_keep"], LB["next_go"], *B["vary"]]:
         g.append([(x,) for x in s])
+    g.append([(x,) for x in DOHWA_WHY_HEAD])
+    g += [[(x,) for x in v] for v in GOD_PLAIN.values()]
     for k, v in B["heart_hooks"].items():
         for gb in v.values():
             g.append([tuple(x) for x in gb])

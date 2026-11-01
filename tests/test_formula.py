@@ -356,7 +356,7 @@ def test_dohwa_has_reason():
     n = 0
     for day in T.plan(dt.date(2026, 11, 1), 8):
         for _, _, e in day.threads:
-            if e.style == "dohwa" and e.key.startswith(("dohwa-d-", "dohwa-s-")):
+            if e.style == "dohwa":
                 assert set(e.pages[0]) & set(T.DOHWA_WHY_HEAD), e.key
                 n += 1
     assert n
