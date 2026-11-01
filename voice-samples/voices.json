@@ -1,0 +1,123 @@
+{
+ "line": "11월에 먼저 연락 오는 사람 생길 띠, 1위는 호랑이띠예요. 98년생, 86년생, 74년생, 62년생이라면 그냥 넘기지 마세요. 입동이 지나면 물 기운이 세지는 기해월이 시작돼요. 이 달 글자 해와 호랑이띠 글자 인이 짝처럼 잘 맞는 육합이라, 곁에 앉고 싶은 사람이 생겨요. 내 띠는 몇 위였는지 댓글로 남겨 주세요.",
+ "voices": [
+  {
+   "name": "다은",
+   "id": "tc_692799c46508f6b9468c54c7",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "TikTok/Reels/Shorts",
+    "Conversational"
+   ],
+   "file": "다은_tc_692799c46508f6b9468c54c7.wav"
+  },
+  {
+   "name": "에코",
+   "id": "tc_67edd95eafe0d80b072ad31e",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Conversational",
+    "Game",
+    "Voicemail/Voice Assistant",
+    "TikTok/Reels/Shorts",
+    "Ads/Promotion",
+    "E-learning/Explainer"
+   ],
+   "file": "에코_tc_67edd95eafe0d80b072ad31e.wav"
+  },
+  {
+   "name": "오드리",
+   "id": "tc_67e38e6d4600650873ac157c",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Game",
+    "Conversational",
+    "TikTok/Reels/Shorts",
+    "Anime",
+    "E-learning/Explainer",
+    "Voicemail/Voice Assistant",
+    "Audiobook/Storytelling"
+   ],
+   "file": "오드리_tc_67e38e6d4600650873ac157c.wav"
+  },
+  {
+   "name": "라일리",
+   "id": "tc_67db7504d5ebacf7578e68f1",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Game",
+    "Anime",
+    "Conversational",
+    "TikTok/Reels/Shorts"
+   ],
+   "file": "라일리_tc_67db7504d5ebacf7578e68f1.wav"
+  },
+  {
+   "name": "조이",
+   "id": "tc_67d238428572120c4aa644cc",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Radio/Podcast",
+    "TikTok/Reels/Shorts",
+    "Conversational",
+    "Ads/Promotion"
+   ],
+   "file": "조이_tc_67d238428572120c4aa644cc.wav"
+  },
+  {
+   "name": "켈시",
+   "id": "tc_6763aa69e0158fa7fe2ecdd2",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Conversational",
+    "TikTok/Reels/Shorts",
+    "Ads/Promotion",
+    "Radio/Podcast",
+    "Voicemail/Voice Assistant",
+    "Game",
+    "Anime"
+   ],
+   "file": "켈시_tc_6763aa69e0158fa7fe2ecdd2.wav"
+  },
+  {
+   "name": "페이지",
+   "id": "tc_6763aa9308bfb62a22f42f3d",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "Conversational",
+    "Radio/Podcast",
+    "Ads/Promotion",
+    "E-learning/Explainer",
+    "Voicemail/Voice Assistant",
+    "TikTok/Reels/Shorts"
+   ],
+   "file": "페이지_tc_6763aa9308bfb62a22f42f3d.wav"
+  },
+  {
+   "name": "스카일러",
+   "id": "tc_67512e8b0b5984173fa04685",
+   "gender": "female",
+   "age": "young_adult",
+   "use_cases": [
+    "TikTok/Reels/Shorts",
+    "Conversational",
+    "Radio/Podcast",
+    "Ads/Promotion",
+    "Game",
+    "Anime",
+    "Voicemail/Voice Assistant",
+    "E-learning/Explainer",
+    "Documentary"
+   ],
+   "file": "스카일러_tc_67512e8b0b5984173fa04685.wav"
+  }
+ ],
+ "all": 631
+}
