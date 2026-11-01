@@ -36,6 +36,22 @@ FB_PAGE_ID = os.environ.get("FB_PAGE_ID") or "1359319530606113"        # 금월�
 AUTO = ("instagram-reel", "instagram-cards", "facebook-reel", "threads")
 KST = dt.timezone(dt.timedelta(hours=9))
 SLOTS = ["오전", "점심", "오후", "저녁", "밤", "늦은밤"]   # formula.text.THREAD_SLOTS 와 같은 시간대
+SLOT_TIME = {"오전": "07:30", "점심": "12:00", "오후": "15:00", "저녁": "18:00", "밤": "21:00", "늦은밤": "23:00"}
+LATE_MIN = 60   # 예약 실행이 이보다 늦게 시작하면 올리지 않는다
+
+
+def scheduled_date(slot: str, now: dt.datetime) -> tuple[str, int]:
+    """예약 실행이 몇 시간씩 늦게 시작해도 날짜를 잘못 잡지 않게 한다 (2026-11-01 사고).
+
+    GitHub 예약 실행이 6시간 40분 늦게(한국 00:28) 시작해서 '오늘'이 다음 날로 넘어갔고,
+    다음 날 18:00 글(3탄)이 2탄보다 먼저 올라갔다. 그래서 날짜는 지금 시각이 아니라
+    '그 칸 시각이 가장 최근에 지난 날'로 잡고, 몇 분 늦었는지 같이 돌려준다."""
+    hh, mm = map(int, SLOT_TIME[slot].split(":"))
+    now = now.astimezone(KST)
+    at = now.replace(hour=hh, minute=mm, second=0, microsecond=0)
+    if at - now > dt.timedelta(minutes=30):   # 칸 시각보다 30분 넘게 이르면 어제 칸이다
+        at -= dt.timedelta(days=1)
+    return at.date().isoformat(), int((now - at).total_seconds() // 60)
 REFRESH_DAYS = 7          # 스레드 열쇠는 60일짜리라 일주일마다 새것으로 바꿔 둔다
 
 
@@ -235,8 +251,15 @@ def main(argv=None) -> int:
     ap.add_argument("--slot", choices=SLOTS, required=True)
     ap.add_argument("--date", default="", help="날짜 (기본: 한국 시각 오늘)")
     ap.add_argument("--dry", action="store_true", help="올리지 않고 목록만 본다")
+    ap.add_argument("--scheduled", action="store_true", help="예약 실행: 날짜를 칸 시각으로 잡고, 너무 늦게 시작했으면 올리지 않는다")
     a = ap.parse_args(argv)
-    return run(a.slot, a.date or dt.datetime.now(KST).date().isoformat(), a.dry)
+    if a.date:
+        return run(a.slot, a.date, a.dry)
+    date, late = scheduled_date(a.slot, dt.datetime.now(KST))
+    if a.scheduled and late > LATE_MIN:
+        print(f"{date} {a.slot} 칸 예약 실행이 {late}분 늦게 시작해서 올리지 않았어요 (순서가 꼬이지 않게)")
+        return 0
+    return run(a.slot, date, a.dry)
 
 
 if __name__ == "__main__":

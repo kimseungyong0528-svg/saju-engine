@@ -65,6 +65,7 @@ jobs:
             esac
           fi
           ARGS=(--slot "$SLOT")
+          [ "${{ github.event_name }}" = "schedule" ] && ARGS+=(--scheduled)
           [ -n "${{ inputs.date }}" ] && ARGS+=(--date "${{ inputs.date }}")
           [ "${{ inputs.dry }}" = "true" ] && ARGS+=(--dry)
           python -m saju.marketing.meta "${ARGS[@]}"
