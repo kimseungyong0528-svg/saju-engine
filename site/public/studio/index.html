@@ -149,6 +149,21 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
 .ok-box { border-left: 5px solid var(--ok); } .bad-box { border-left: 5px solid var(--red); }
 .problems li { margin: 6px 0; }
 
+/* 현황 (사장님 2026-11-01: 몇 주차·스레드 준비·승인·n/7·하루 n/6·오류만) */
+.stat { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin-bottom: 18px; }
+.stat .box { margin: 0; }
+.stat .k { font-size: 14px; color: var(--ink2); }
+.stat .v { font-size: 28px; line-height: 1.3; }
+.stat .v.good { color: var(--ok); } .stat .v.bad { color: var(--red); }
+.drow { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.drow:last-child { border-bottom: 0; }
+.drow.today { background: #fff8e8; margin: 0 -16px; padding: 12px 16px; }
+.pips { display: flex; gap: 5px; flex-wrap: wrap; }
+.pips i { width: 22px; height: 22px; border-radius: 6px; background: var(--paper2); border: 1px solid var(--line); }
+.pips i.ok { background: var(--ok); border-color: var(--ok); } .pips i.bad { background: var(--red); border-color: var(--red); }
+.dres { font-size: 15px; white-space: nowrap; } .dres.ok { color: var(--ok); } .dres.bad { color: var(--red); }
+.errs { grid-column: 1 / -1; margin: 0; padding-left: 18px; color: var(--red); font-size: 14px; }
+
 /* 확대 보기 */
 #zoom { position: fixed; inset: 0; background: rgba(20,14,10,.88); display: grid; place-items: center; z-index: 20; padding: 16px; }
 #zoom img { max-width: 100%; max-height: 92vh; border-radius: 8px; }
@@ -180,7 +195,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
       <select class="field" id="weekSel" aria-label="주 고르기"></select>
       <button class="btn ghost small" id="logout">나가기</button>
     </div>
-    <nav id="tabs">
+    <nav id="tabs" class="hidden">
       <button data-tab="today" class="on">오늘 올릴 것</button>
       <button data-tab="week">이번 주</button>
       <button data-tab="trends">뜬 주제</button>
@@ -188,7 +203,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
       <button data-tab="check">검사</button>
     </nav>
   </header>
-  <details id="rules" open><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
+  <details id="rules"><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -225,7 +240,7 @@ fetch('/studio/rules.json').then(r => r.json()).then(R => {
 }).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });
 const AUTO_TIP = '승인하면 정해진 시각에 자동으로 올라가요. 토스 정식 결제 전에는 사이트 주소 줄은 빼고 올라가요.';
 const isDone = it => CH[it.channel]?.auto ? Boolean(S.data.posted?.[it.id]?.ok) : Boolean(S.data.done[it.id]);
-const S = { weeks: [], week: null, data: null, tab: 'today', day: null };
+const S = { weeks: [], week: null, data: null, tab: 'status', day: null };
 const $ = s => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
   const n = document.createElement(tag);
@@ -276,11 +291,11 @@ async function boot() {
 async function loadWeeks(keep) {
   S.weeks = (await api('weeks')).weeks;
   const sel = $('#weekSel');
-  sel.replaceChildren(...(S.weeks.length ? S.weeks.map(w => el('option', { value: w.week }, `${fmtDate(w.week)} ${(w.posts || 0) > 16 ? '주' : '하루치'}`)) : [el('option', { value: '' }, '아직 없음')]));
+  sel.replaceChildren(...(S.weeks.length ? S.weeks.map(w => el('option', { value: w.week }, weekName(w.week))) : [el('option', { value: '' }, '아직 없음')]));
   const ready = S.weeks.filter(w => w.status === 'ready');
   const cur = keep && S.weeks.find(w => w.week === keep) ? keep
     : (ready.find(w => w.week <= todayIso()) || ready[ready.length - 1] || S.weeks[0] || {}).week;
-  if (cur) { sel.value = cur; await loadWeek(cur); } else { S.week = null; S.data = null; if (S.tab === 'today') S.tab = 'make'; render(); }
+  if (cur) { sel.value = cur; await loadWeek(cur); } else { S.week = null; S.data = null; render(); }
 }
 async function loadWeek(week) {
   S.week = week;
@@ -293,7 +308,7 @@ async function loadWeek(week) {
 function render() {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === S.tab));
   const v = $('#view');
-  v.replaceChildren(({ today: viewToday, week: viewWeek, trends: viewTrends, make: viewMake, check: viewCheck })[S.tab]());
+  v.replaceChildren(({ status: viewStatus, today: viewToday, week: viewWeek, trends: viewTrends, make: viewMake, check: viewCheck })[S.tab]());
   window.scrollTo({ top: 0 });
 }
 const needWeek = () => el('div', { class: 'empty' }, S.week && S.data?.week?.status !== 'ready'
@@ -348,6 +363,55 @@ function postCard(it) {
       res ? el('div', { class: 'result ' + (res.ok ? 'ok' : 'bad') }, res.ok
         ? ['올라갔어요 ✓ ', res.url ? el('a', { href: res.url, target: '_blank', rel: 'noopener' }, '게시물 보기') : '']
         : `올리기 실패: ${res.error} (다음 회차에 다시 시도해요)`) : null));
+}
+
+const weekName = iso => { const d = new Date(iso + 'T00:00:00'); return `${d.getMonth() + 1}월 ${Math.floor((d.getDate() - 1) / 7) + 1}주차`; };
+// 현황: 이 주가 몇 주차인지, 스레드가 준비됐는지, 승인이 끝났는지, 며칠치 올라갔는지, 하루 n개 중 몇 개가 오류 없이 올라갔는지만 보여 준다 (사장님 2026-11-01)
+function viewStatus() {
+  const m = S.data?.manifest;
+  if (!m) return el('div', {}, el('h2', { class: 'sec' }, '현황'), needWeek());
+  const posted = S.data.posted || {}, appr = S.data.approved || {};
+  // 월~일 7일만 보여 준다 (사장님 2026-11-01). 오늘이 든 주, 묶음이 그보다 뒤에 시작하면 묶음의 첫 월요일 주.
+  const iso = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+  const monOf = s => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+  const firstMon = (() => { const d = new Date(m.week + 'T00:00:00'); d.setDate(d.getDate() + ((8 - d.getDay()) % 7)); return iso(d); })();
+  const mon = monOf(todayIso()) < firstMon ? firstMon : monOf(todayIso());
+  const sun = (() => { const d = new Date(mon + 'T00:00:00'); d.setDate(d.getDate() + 6); return iso(d); })();
+  const days = m.days.filter(d => d.date >= mon && d.date <= sun).map(d => ({ d, th: d.items.filter(i => i.channel === 'threads') })).filter(x => x.th.length);
+  const allTh = days.flatMap(x => x.th);
+  const claude = allTh.filter(i => i.approved_by === 'claude').length;
+  const mine = allTh.filter(i => appr[i.id]).length;
+  const apprOk = allTh.filter(i => i.approved_by === 'claude' || appr[i.id]).length;
+  const today = todayIso();
+  const st = x => {
+    const ok = x.th.filter(i => posted[i.id]?.ok).length, bad = x.th.filter(i => posted[i.id] && !posted[i.id].ok);
+    const past = x.d.date < today;
+    return { ok, bad, n: x.th.length, full: ok === x.th.length, missed: past ? x.th.length - ok - bad.length : 0 };
+  };
+  const fullDays = days.filter(x => st(x).full).length;
+  const errN = days.reduce((n, x) => n + st(x).bad.length, 0);
+
+  const card = (k, v, cls) => el('div', { class: 'box' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v));
+  return el('div', {},
+    el('h2', { class: 'sec' }, `${weekName(mon)} 스레드 현황`),
+    el('p', { class: 'muted' }, `${fmtDate(mon)} (월) ~ ${fmtDate(sun)} (일)`),
+    el('div', { class: 'stat' },
+      card('스레드 준비', allTh.length ? `${allTh.length}개 준비됨` : '없음', allTh.length >= 42 ? 'good' : 'bad'),
+      card('승인', apprOk === allTh.length && allTh.length ? (claude ? '클로드가 한 번에 승인함' : '직접 승인함') : `${apprOk} / ${allTh.length} 승인`, apprOk === allTh.length ? 'good' : 'bad'),
+      card('며칠치 올라갔나', `${fullDays} / 7일`),
+      card('오류', errN ? `${errN}건` : '없음', errN ? 'bad' : 'good')),
+    el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과한 주라서 클로드가 한 번에 승인했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
+    el('h2', { class: 'sec' }, '하루하루 잘 올라가는지'),
+    el('div', { class: 'box' }, days.map(x => {
+      const s = st(x);
+      const label = s.bad.length ? `오류 ${s.bad.length}` : s.full ? `${s.ok} / ${s.n} 완료` : x.d.date > today ? `${s.n}개 예정` : x.d.date === today ? `${s.ok} / ${s.n} 올림` : `${s.ok} / ${s.n} 올림 (안 올라간 ${s.missed}개)`;
+      return el('div', { class: 'drow' + (x.d.date === today ? ' today' : '') },
+        el('b', {}, `${fmtDate(x.d.date)} ${x.d.weekday}${x.d.date === today ? ' · 오늘' : ''}`),
+        el('div', { class: 'pips' }, x.th.map(i => el('i', { class: posted[i.id]?.ok ? 'ok' : posted[i.id] ? 'bad' : '', title: `${i.time} ${i.title}` }))),
+        el('span', { class: 'dres ' + (s.bad.length ? 'bad' : s.full ? 'ok' : '') }, label),
+        s.bad.length ? el('ul', { class: 'errs' }, s.bad.map(i => el('li', {}, `${i.time} ${i.title}: ${posted[i.id].error}`))) : null);
+    })),
+    el('p', { class: 'muted' }, '칸 하나가 스레드 글 하나예요. 초록은 올라간 것, 빨강은 오류, 빈칸은 아직 안 올라간 것이에요.'));
 }
 
 function viewToday() {
