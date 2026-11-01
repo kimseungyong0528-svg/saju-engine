@@ -19,7 +19,7 @@ jobs:
           get = lambda u: urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=120).read()
           meta, seen = [], set()
           qs = ["sea waves", "ocean waves beach", "sunset sea", "clouds timelapse", "waterfall", "forest stream", "cherry blossom",
-                "night sky timelapse", "sunrise", "lake", "mountain clouds", "snow falling", "rain", "river", "beach"]
+                "night sky timelapse", "sunrise", "lake", "mountain clouds", "snow falling", "rain", "river", "beach", "city night", "city timelapse", "street night lights", "traffic night", "cafe", "coffee shop", "Seoul", "night city skyline", "rain window", "neon street"]
           for q in qs:
               n = 0
               u = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "generator": "search",
