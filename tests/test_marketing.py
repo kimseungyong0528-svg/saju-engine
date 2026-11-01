@@ -170,3 +170,15 @@ def test_evening_writing_rules():
     assert len(w["first_line"]) >= 5 and any("1장" in x for x in w["structure"])
     assert any("엔진" in x for x in w["never"])
     assert any("3장" in x for x in w["structure"]) and len(w["reply_chain"]) >= 3 and w["endings"]
+
+
+def test_late_schedule_keeps_order():
+    """2026-11-01 사고: 18:00 칸 예약 실행이 한국 00:28에 시작해 다음 날 18:00 글이 먼저 올라갔다. 날짜는 칸 시각 기준, 늦으면 안 올린다."""
+    import datetime as dt
+    from saju.marketing import meta
+    now = dt.datetime(2026, 11, 2, 0, 28, tzinfo=meta.KST)
+    assert meta.scheduled_date("저녁", now) == ("2026-11-01", 388)
+    assert meta.scheduled_date("오전", dt.datetime(2026, 11, 2, 7, 25, tzinfo=meta.KST)) == ("2026-11-02", -5)
+    assert meta.scheduled_date("늦은밤", dt.datetime(2026, 11, 2, 0, 10, tzinfo=meta.KST)) == ("2026-11-01", 70)
+    wf = open(".github/workflows/sns-post.yml", encoding="utf-8").read()
+    assert "--scheduled" in wf
