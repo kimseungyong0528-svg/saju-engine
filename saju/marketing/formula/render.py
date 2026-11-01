@@ -160,7 +160,12 @@ class Renderer:
         _ff(*ins, "-filter_complex", gaps + "".join(f"[a{i}]" for i in range(len(parts))) + f"concat=n={len(parts)}:v=0:a=1[o]",
             "-map", "[o]", str(narr))
         nd = _dur(narr)
-        total = max(_dur(video), nd + 1.0)
+        fit = _dur(video) - 1.0          # 영상은 7초 (사장님 2026-11-01). 대사가 길면 조금 빠르게 읽혀 7초 안에 넣는다
+        if nd > fit:
+            fast = narr.with_name(narr.stem + "-빠르게.wav")
+            _ff("-i", str(narr), "-filter:a", f"atempo={min(nd / fit, 1.25):.3f}", str(fast))
+            narr, nd = fast, _dur(fast)
+        total = max(_dur(video), nd + 0.8)
         bgm = music.bgm(total + 1, self.work / f"bgm-vo-{video.stem}.wav", seed=seed)
         tmp = video.with_name(video.stem + "-목소리.mp4")
         _ff("-i", str(video), "-i", str(narr), "-i", str(bgm), "-filter_complex",
@@ -171,8 +176,11 @@ class Renderer:
         return video
 
     # ── 아침 ──
-    def morning(self, m: Morning, out: Path, seed: int = 1) -> Path:
-        return {"tier": self.tier, "hidden": self.hidden, "sinbi": self.sinbi, "forceteller": self.forceteller,
+    def morning(self, m: Morning, out: Path, seed: int = 1, cta: str = "") -> Path:
+        """영상은 모두 7초 (사장님 2026-11-01, 레퍼런스 5~9초). cta = 화면 밑에 넣는 글 (가림식만, formula/script.py)."""
+        if m.fmt == "hidden":
+            return self.hidden(m, out, seed, cta)
+        return {"tier": self.tier, "sinbi": self.sinbi, "forceteller": self.forceteller,
                 "solo": self.solo}[m.fmt](m, out, seed)
 
     def tier(self, m: Morning, out: Path, seed: int) -> Path:
@@ -220,7 +228,7 @@ class Renderer:
           L.style.left=((1080-L.getBoundingClientRect().width)/2)+'px';}})</script></body>"""
         return self.animated(html, out, 7, seed)
 
-    def hidden(self, m: Morning, out: Path, seed: int) -> Path:
+    def hidden(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """가림식 (90만회 레퍼런스): 은하수 사진이 천천히 다가오고, 12위→4위 공개, 1~3위는 ???? 로 가림."""
         sky = _data_uri(media(B["milky"]), "image/jpeg")
         stars = "".join(f"<i style='left:{(i * 211) % 1080}px;top:{(i * 97) % 1250}px;width:{2 + i % 3}px;height:{2 + i % 3}px;opacity:{.3 + (i % 6) / 9:.2f}'></i>"
@@ -247,12 +255,12 @@ class Renderer:
         .list{{position:absolute;top:560px;left:44px}}
         .r{{font-size:54px;line-height:1;margin-bottom:30px;white-space:nowrap;color:#fff;text-shadow:0 3px 0 #000}}
         .n{{color:#ffc93c;display:inline-block;margin-right:16px}} .e{{font-family:'Noto Color Emoji';font-size:.8em;margin-right:6px}} .d{{color:#ff9a2e}} .p{{color:#fff;margin-left:6px}}
-        .cta{{position:absolute;bottom:150px;width:100%;text-align:center;font-family:Jua;font-size:76px;line-height:1.2;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
+        .cta{{position:absolute;bottom:150px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:76px;line-height:1.2;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
         </style><body><div class=bg></div><div class=tint></div>{stars}<div class=tag>과연 1위는?</div>
         <div class=h><div class=fit data-w=1020>{a}</div><div class=fit data-w=1020><b>{b}</b> 띠 순위</div></div>
         <div class='list fitbox' data-w=1000>{li}</div>
-        <div class=cta>1위가 궁금하면<br>댓글에 내 띠 남기기♥</div></body>"""
-        return self.animated(html, out, 6, seed)
+        <div class=cta>{_cta_html(cta or "1위가 궁금하면 댓글에 내 띠 남기기♥")}</div></body>"""
+        return self.animated(html, out, 7, seed)
 
     def sinbi(self, m: Morning, out: Path, seed: int) -> Path:
         """신비사주식: 흰 표, 날짜 제목 + 계정, 12띠 그림 + 두 줄 글."""
@@ -263,7 +271,7 @@ class Renderer:
         cell = lambda a: (f"<div class=c><div class=l><b>{ddi(a)}</b><img src='{(Z / (a + '.png')).as_uri()}'></div><p>{txt[a]}</p></div>")
         rows = "".join(f"<div class=row>{cell(ORDER[i])}{cell(ORDER[i + 6])}</div>" for i in range(6))
         html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
-        .sheet{{position:absolute;top:250px;left:0;right:0;background:#fff;padding:0 0 30px}}
+        .sheet{{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;background:#fff;padding:0 0 30px}}
         .hd{{display:flex;align-items:center;justify-content:center;height:150px;border-bottom:3px solid #ddd;position:relative}}
         .hd h1{{margin:0;font-weight:700;font-size:56px;color:#111}} .hd i{{position:absolute;right:22px;bottom:18px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
         .row{{display:flex;border-bottom:2px solid #e6e3ef}} .c{{background:linear-gradient(90deg,#fff 0%,#fbfaff 55%,#eeeaf8 100%)}}
@@ -271,7 +279,7 @@ class Renderer:
         .l{{width:168px;flex:none}} .l b{{display:block;color:#222;font-weight:500;font-size:32px;margin-bottom:6px}} .l img{{width:150px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}}
         .c p{{margin:30px 0 0;font-size:31px;line-height:1.5;color:#222;font-weight:400;word-break:keep-all}}
         </style><body><div class=sheet><div class=hd><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div></body>"""
-        return self.still(self.shot(html, out.stem), out, 6, seed)
+        return self.still(self.shot(html, out.stem), out, 7, seed)
 
     def forceteller(self, m: Morning, out: Path, seed: int) -> Path:
         """포스텔러식: 위 검은 띠 큰 2줄 제목 + 아래 수채화 오행 그림, 아래 설명이 바뀐다."""
@@ -313,7 +321,7 @@ class Renderer:
           <rect width=1080 height=1320 filter='url(#grain)'/></svg>"""
         h1, h2 = D["head"]
         pngs = []
-        for i, t in enumerate(D["say"]):
+        for i, t in enumerate(D["say"][:2]):   # 7초엔 두 장까지만 읽힌다. 나머지 풀이는 설명란 (사장님 2026-11-01 7초)
             html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
             .t{{height:600px;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:70px;text-align:center;font-weight:900;font-size:104px;line-height:1.22;color:#fff;letter-spacing:-3px}}
             .t div{{white-space:nowrap}} .t em{{font-style:normal;color:#ffd23f}}
@@ -327,24 +335,53 @@ class Renderer:
             <div class=art>{wc}<svg class=ar width=1080 height=1320><defs>{marks}</defs>{outer}{inner}</svg>
             {circles}<div class=say>{t}</div></div></body>"""
             pngs.append(self.shot(html, f"{out.stem}-{i}"))
-        durs = [3.6] + [3.6] * (len(pngs) - 2) + [3.8]
+        durs = [7 / len(pngs)] * len(pngs)   # 영상은 7초 (사장님 2026-11-01)
         return self.slides(pngs, durs, out, seed)
 
+    def overlay(self, html: str, name: str, sec: float, fps: int = 30) -> Path:
+        """CSS 움직임을 투명 배경 사진 여러 장으로 찍는다 (풍경 영상 위에 얹는다)."""
+        self._load(html, name)
+        fr = self.work / f"_ov-{name}"
+        shutil.rmtree(fr, ignore_errors=True)
+        fr.mkdir()
+        self.pg.evaluate("document.getAnimations().forEach(a=>a.pause())")
+        for k in range(int(sec * fps)):
+            self.pg.evaluate(f"document.getAnimations().forEach(a=>a.currentTime={k * 1000 / fps})")
+            self.pg.screenshot(path=str(fr / f"{k:04d}.png"), omit_background=True)
+        return fr
+
     def solo(self, m: Morning, out: Path, seed: int) -> Path:
-        """솔로사주식: 예쁜 풍경 영상 + 가운데 검은 상자 2줄 제목(흰 줄 + 빨간 줄)."""
+        """솔로사주식: 예쁜 풍경 영상 + 검은 상자 2줄 제목(흰 줄 + 빨간 줄).
+        사장님 2026-11-01: 제목이 화면 한가운데 먼저 나오고 → 위로 올라간 뒤 → 1·2·3위가 하나씩 나온다.
+        순위마다 밑에 자극적인 한 줄 두 개 (banks.json solo_hype, 엔진 순위 종류와 같은 방향)."""
         l1, l2 = m.data["lines"]
+        hype = B["solo_hype"][m.kind]
+        # 사장님 2026-11-01: 제목만 가운데 먼저 → 바로 제목+1·2·3위 네 칸 전체를 한 덩어리로 화면 정가운데에
+        top3 = "".join(
+            f"<div class=k><div class=h><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>"
+            f"<div class=s>{hype[i][0]}<br>{hype[i][1]}</div></div>" for i, r in enumerate(m.rows[:3]))
+        title = f"<div class=t><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div>"
         html = f"""<style>body{{background:transparent;font-family:'Noto Sans KR'}}
-        .w{{position:absolute;top:800px;width:100%;display:flex;flex-direction:column;align-items:center}}
+        .c{{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}}
+        .a{{animation:off 0s linear 1.6s both}} .b{{animation:on 0s linear 1.6s both}}
+        @keyframes off{{to{{visibility:hidden}}}} @keyframes on{{from{{visibility:hidden}}to{{visibility:visible}}}}
+        .t{{display:flex;flex-direction:column;align-items:center}}
         .l,.r{{background:#000;font-weight:900;font-size:96px;line-height:1.18;letter-spacing:-3px;white-space:nowrap}}
         .l{{color:#fff;padding:10px 34px 14px;border-radius:18px 18px 0 0}}
         .r{{color:#ff1f1f;padding:0 34px 16px;border-radius:0 0 18px 18px}}
-        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div></body>"""
-        ov = self.shot(html, f"{out.stem}-제목", transparent=True)
+        .list{{width:980px;margin-top:40px}}
+        .k{{background:rgba(0,0,0,.74);border-radius:24px;padding:22px 30px 24px;margin-top:28px}}
+        .h{{color:#fff;font-weight:900;font-size:68px;line-height:1.1;white-space:nowrap;letter-spacing:-2px}}
+        .h b{{color:#ffd23f}} .h i{{font-style:normal;font-size:44px;color:#eee;font-weight:700}}
+        .s{{color:#ffe9a8;font-weight:800;font-size:50px;line-height:1.3;margin-top:12px;letter-spacing:-1.5px;word-break:keep-all}}
+        </style><body><div class='c a'>{title}</div><div class='c b'>{title}<div class=list>{top3}</div></div></body>"""
+        fr = self.overlay(html, f"{out.stem}-제목", 7)
         clip = media(m.data["bg"])
-        bgm = music.bgm(9, self.work / f"bgm-{out.stem}.wav", seed=seed)
-        _ff("-stream_loop", "-1", "-i", str(clip), "-i", str(ov), "-i", str(bgm), "-filter_complex",
-            "[0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];[bg][1]overlay=0:0,format=yuv420p[v]",
-            "-map", "[v]", "-map", "2", "-t", "8", "-c:v", "libx264", "-c:a", "aac", str(out))
+        bgm = music.bgm(8, self.work / f"bgm-{out.stem}.wav", seed=seed)
+        _ff("-stream_loop", "-1", "-i", str(clip), "-framerate", "30", "-i", str(fr / "%04d.png"), "-i", str(bgm), "-filter_complex",
+            "[0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];[bg][1]overlay=0:0:eof_action=repeat,format=yuv420p[v]",
+            "-map", "[v]", "-map", "2", "-t", "7", "-c:v", "libx264", "-c:a", "aac", str(out))
+        shutil.rmtree(fr, ignore_errors=True)
         return out
 
     # ── 저녁: 스레드 글 캡처 ──
@@ -395,6 +432,15 @@ def _dur(f: Path) -> float:
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(f)],
                        capture_output=True, text=True, check=True)
     return float(r.stdout.strip())
+
+
+def _cta_html(t: str) -> str:
+    """밑에 글을 두 줄로: '…싶다면' 뒤에서 끊는다."""
+    for cut in ("싶다면 ", "궁금하면 "):
+        a, sep, b = t.partition(cut)
+        if sep:
+            return f"<div class=fit data-w=1000>{a}{sep.strip()}</div><div class=fit data-w=1000>{b}</div>"
+    return f"<div class=fit data-w=1000>{t}</div>"
 
 
 def _esc(s: str) -> str:

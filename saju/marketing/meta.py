@@ -225,10 +225,11 @@ POSTERS = {"instagram-reel": ig_reel, "instagram-cards": ig_cards, "facebook-ree
 
 
 def run(slot: str, date: str, dry: bool = False) -> int:
-    if slot in PICK_SLOTS:
+    plan = publish._call("GET", f"/api/internal/studio/today?date={date}")
+    if slot in PICK_SLOTS and not any(it["slot"] == slot for it in plan.get("items", [])):
+        # 사장님이 고른 글을 넣어 둔 날(formula/today_videos.py --picks)은 그 글을, 아니면 전날 인기 글을 고른다
         from .formula import pick
         return pick.run(PICK_SLOTS[slot], date, dry)
-    plan = publish._call("GET", f"/api/internal/studio/today?date={date}")
     if not plan.get("week"):
         print(f"{date} 게시물 묶음이 없어요")
         return 0

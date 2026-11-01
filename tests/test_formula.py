@@ -623,17 +623,33 @@ def test_pick_slots_and_cards_in_build():
 
 
 def test_video_scripts_follow_engine(plan90):
-    """영상 대본 (사장님 2026-11-01): 화면과 같은 엔진 순위만 읽고, 끊긴 말 없이 문장을 맺고, 십신은 쉬운 말을 붙인다."""
+    """영상 (사장님 2026-11-01 "레퍼런스 그대로"): 7초, 대사는 화면 위 제목 한 줄 + '~ 알아보세요!/확인하세요!',
+    밑에 글은 유튜브 구독 · 인스타 댓글 · 페북 팔로우로 곳마다 다르고 '나의 ○○' 로 내 이야기가 된다."""
     from saju.marketing.formula import script as S
+    assert S.SECONDS == 7
     for d in plan90[:14]:
         for m in (d.morning, d.video2):
             ls = S.script(m)
-            assert ls[-1] == S.END and all(x.endswith((".", "?", "!", "요")) for x in ls), ls
-            if m.rows:
-                assert f"1위, {T.ddi(m.rows[0].ddi)}." in " ".join(ls)
-                assert not any(x.endswith("12위.") for x in ls)
-            for g, plain in S.GOD_PLAIN.items():
-                if f"에게 {g}이에요" in " ".join(ls):
-                    assert plain in " ".join(ls)
+            assert len(ls) == 1 and ls[0].endswith(("알아보세요!", "확인하세요!")), ls
+            if m.fmt not in ("sinbi", "forceteller"):
+                assert ls[0].startswith(S.top_title(m)), ls          # 화면 위 제목 그대로 읽는다
+            c = S.cta(m)
+            assert c["youtube"].startswith("나의 ") and c["youtube"].endswith("더 자세히 알고 싶다면 구독!")
+            assert c["facebook-reel"] == c["youtube"].replace("구독!", "팔로우!")
+            assert c["instagram-reel"] == c["facebook-reel"]   # 인스타도 팔로우 (사장님 2026-11-01)
+            assert not any("미리 알고" in x for x in c.values())
     keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
     assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다
+
+
+def test_video_judges_pinned():
+    """사장님 2026-11-01 "제 1원칙으로 못박아둬": 영상도 55명(11항목) + 행동 유도 5명, 100점. 지우거나 약하게 바꾸지 않는다."""
+    j = RULES["judges"]
+    v = j["video"]
+    assert v["pass"] == 100 and v["per_criterion"] == 5 and len(j["criteria"]) == 11
+    assert [c["id"] for c in v["extra_criteria"]] == ["action"]
+    assert {"상단 제목", "영상 내용", "타입캐스트 대사", "밑에 글"} <= {x.split(" (")[0] for x in v["scope"]}
+    assert v["format"]["seconds"] == 7
+    md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
+    first = md.split("## 제2조항")[0]
+    assert "영상도 스레드와 같은 심사" in first and "행동 유도 심사원 5명" in first

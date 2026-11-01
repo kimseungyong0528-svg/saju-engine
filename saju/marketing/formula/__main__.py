@@ -23,7 +23,7 @@ from pathlib import Path
 from ..__main__ import CHANNEL_NAMES, WEEKDAYS
 from ..content import SITE_URL
 from . import text as T
-from .script import script
+from . import script as S
 
 FMT_NAMES = {"tier": "천복식 띠 순위", "hidden": "가림식 띠 순위", "sinbi": "띠별 운세 표", "forceteller": "오행 그림",
              "solo": "풍경 2줄 제목"}
@@ -117,6 +117,57 @@ def move_items(manifest: dict, moves: str) -> int:
 VIDEO_CHANNELS = ("instagram-reel", "facebook-reel", "youtube")
 
 
+SFX = {"instagram-reel": "reel", "facebook-reel": "fbreel", "youtube": "youtube"}
+
+
+def _with_cta(texts: dict, line: str) -> dict:
+    """설명글 끝 팔로우 말을 곳마다 다른 밑에 글로 바꾼다 (사장님 2026-11-01: 유튜브 구독 · 인스타·페북 팔로우)."""
+    out = {}
+    for k, v in texts.items():
+        if k == "제목":
+            out[k] = v
+            continue
+        for old in (T.FOLLOW_AM, T.FOLLOW_AM.replace("팔로우 해 두세요", "구독해 두세요")):
+            v = v.replace(old, line)
+        if "댓글" in line:   # 인스타: 댓글 부탁이 두 번 나오지 않게 (영상 심사 팔로우 항목 '두 번 조름')
+            v = "\n".join(x for x in v.split("\n") if not x.startswith("💬"))
+            while "\n\n\n" in v:
+                v = v.replace("\n\n\n", "\n\n")
+        out[k] = v if line in v else v.replace("\n\n#", f"\n\n{line}\n\n#", 1) if "\n\n#" in v else v + "\n\n" + line
+    return out
+
+
+def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: int, src: Path | None = None) -> list[dict]:
+    """영상 7초 하나를 세 곳에 (사장님 2026-11-01). 가림식은 레퍼런스처럼 화면 밑 글이 곳마다 달라서 영상도 세 개.
+    src: 이미 만들어 사장님께 보여 드린 영상 폴더 (video-samples). 주면 다시 만들지 않고 그 파일을 그대로 쓴다."""
+    if not R and not src:   # 영상 없이 만들면 영상 게시물은 넣지 않는다 ("영상은 올리지마 확실히 될때까지")
+        return []
+    cta, mt = S.cta(m), m.texts()
+    title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
+    made: dict[str, tuple[str, str]] = {}
+    items = []
+    for ch in ("instagram-reel", "facebook-reel", "youtube"):
+        own = m.fmt in S.ON_SCREEN_CTA
+        key = ch if own else "all"
+        if key not in made:
+            stem = f"{tag}_{part}_{m.key}" + (f"_{SFX[ch]}" if own else "")
+            vid, thumb = f"유튜브/{stem}.mp4", f"유튜브/{stem}_표지.jpg"
+            if src:
+                (week / vid).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(src / f"{stem}.mp4", week / vid)
+            else:
+                R.morning(m, week / vid, seed=seed, cta=cta[ch] if own else "")
+                if os.environ.get("TYPECAST_API_KEY"):
+                    R.voiceover(week / vid, S.script(m), seed=seed)
+            _thumb(week / vid, 2.5, week / thumb)
+            made[key] = (vid, thumb)
+        vid, thumb = made[key]
+        items.append({"id": f"{tag}_{part}-{SFX[ch]}", "channel": ch, "time": time, "slot": slot, "material": m.key,
+                      "format": FMT_NAMES[m.fmt], "title": title, "score": 0, "video": vid, "thumb": thumb,
+                      "voice": S.script(m), "cta": cta[ch], "texts": _with_cta(mt[ch], cta[ch])})
+    return items
+
+
 def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
           approve_threads: bool = False, move: str = "", approve_videos: bool = False, cards: bool = False) -> dict:
     week = out / start.isoformat()
@@ -139,19 +190,7 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
             manifest["used"] += [m.key] + [x.key for _, _, x in dd.threads]
             manifest["problems"] += [f"{tag} {p}" for p in problems(m, *[x for _, _, x in dd.threads])]
             # 아침 영상 1개 → 세 채널
-            vid, thumb = f"유튜브/{tag}_오전_{m.key}.mp4", f"유튜브/{tag}_오전_{m.key}_표지.jpg"
-            if R:
-                R.morning(m, week / vid, seed=i * 2 + 1)
-                if os.environ.get("TYPECAST_API_KEY"):
-                    R.voiceover(week / vid, script(m), seed=i * 2 + 1)
-                _thumb(week / vid, 2.5, week / thumb)
-            mt = m.texts()
-            title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
-            # 영상 없이 만들면(사장님 2026-11-01 "영상은 올리지마 확실히 될때까지 일단 스레드만") 영상 게시물은 넣지 않는다
-            for ch, sfx in ((("instagram-reel", "reel"), ("facebook-reel", "fbreel"), ("youtube", "youtube")) if R else ()):
-                entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": VIDEO_AM, "slot": "아침영상", "material": m.key,
-                                       "format": FMT_NAMES[m.fmt], "title": title, "score": 0,
-                                       "video": vid if R else "", "thumb": thumb if R else "", "texts": mt[ch]})
+            entry["items"] += _videos(R, week, m, tag, "오전", "아침영상", VIDEO_AM, i * 2 + 1)
             # 스레드 글 5개
             for slot, tm, x in dd.threads:
                 first = x.pages[0][0] if x.pages and x.pages[0] else x.key
@@ -163,19 +202,8 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
                     it["images"] = [f"인스타/{f.name}" for f in C.thread_cards(x, week / "인스타", stem)]
                 entry["items"].append(it)
             # 저녁 영상 1개 (아침과 다른 형식) → 인스타·페북 릴스·유튜브 쇼츠 19:00 (사장님 2026-11-01 "영상은 아침 8시, 오후 7시")
-            m2 = dd.video2
-            if R and m2:
-                vid2, thumb2 = f"유튜브/{tag}_저녁_{m2.key}.mp4", f"유튜브/{tag}_저녁_{m2.key}_표지.jpg"
-                R.morning(m2, week / vid2, seed=i * 2 + 2)
-                if os.environ.get("TYPECAST_API_KEY"):
-                    R.voiceover(week / vid2, script(m2), seed=i * 2 + 2)
-                _thumb(week / vid2, 2.5, week / thumb2)
-                mt2 = m2.texts()
-                title2 = " ".join(m2.title).replace("“", "").replace("”", "") if m2.title else mt2["youtube"]["제목"]
-                for ch, sfx in (("instagram-reel", "reel"), ("facebook-reel", "fbreel"), ("youtube", "youtube")):
-                    entry["items"].append({"id": f"{tag}_저녁-{sfx}", "channel": ch, "time": VIDEO_PM, "slot": "저녁영상", "material": m2.key,
-                                           "format": FMT_NAMES[m2.fmt], "title": title2, "score": 0,
-                                           "video": vid2, "thumb": thumb2, "texts": mt2[ch]})
+            if dd.video2:
+                entry["items"] += _videos(R, week, dd.video2, tag, "저녁", "저녁영상", VIDEO_PM, i * 2 + 2)
             # 인스타 게시글(캡처)·페북 글은 묶음에 넣지 않는다. 매일 전날 반응 좋은 스레드 글 2개를 골라 12:30·21:00 에 올린다 (formula/pick.py).
             entry["items"].sort(key=lambda it: it["time"])
             for it in entry["items"]:
