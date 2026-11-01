@@ -271,7 +271,7 @@ class Renderer:
         cell = lambda a: (f"<div class=c><div class=l><b>{ddi(a)}</b><img src='{(Z / (a + '.png')).as_uri()}'></div><p>{txt[a]}</p></div>")
         rows = "".join(f"<div class=row>{cell(ORDER[i])}{cell(ORDER[i + 6])}</div>" for i in range(6))
         html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
-        .sheet{{position:absolute;top:250px;left:0;right:0;background:#fff;padding:0 0 30px}}
+        .sheet{{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;background:#fff;padding:0 0 30px}}
         .hd{{display:flex;align-items:center;justify-content:center;height:150px;border-bottom:3px solid #ddd;position:relative}}
         .hd h1{{margin:0;font-weight:700;font-size:56px;color:#111}} .hd i{{position:absolute;right:22px;bottom:18px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
         .row{{display:flex;border-bottom:2px solid #e6e3ef}} .c{{background:linear-gradient(90deg,#fff 0%,#fbfaff 55%,#eeeaf8 100%)}}
@@ -341,12 +341,17 @@ class Renderer:
     def solo(self, m: Morning, out: Path, seed: int) -> Path:
         """솔로사주식: 예쁜 풍경 영상 + 가운데 검은 상자 2줄 제목(흰 줄 + 빨간 줄)."""
         l1, l2 = m.data["lines"]
+        # 띠 3개를 화면에 바로 보여 준다 (사장님 2026-11-01 "더보기 말고 사진으로 보여줘")
+        top3 = "".join(f"<div class=k><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>" for r in m.rows[:3])
         html = f"""<style>body{{background:transparent;font-family:'Noto Sans KR'}}
-        .w{{position:absolute;top:800px;width:100%;display:flex;flex-direction:column;align-items:center}}
+        .w{{position:absolute;top:640px;width:100%;display:flex;flex-direction:column;align-items:center}}
+        .t3{{margin-top:44px;background:rgba(0,0,0,.78);border-radius:22px;padding:26px 40px 10px}}
+        .k{{color:#fff;font-weight:900;font-size:64px;line-height:1;margin-bottom:24px;white-space:nowrap;letter-spacing:-2px}}
+        .k b{{color:#ffd23f}} .k i{{font-style:normal;font-size:46px;color:#eee;font-weight:700}}
         .l,.r{{background:#000;font-weight:900;font-size:96px;line-height:1.18;letter-spacing:-3px;white-space:nowrap}}
         .l{{color:#fff;padding:10px 34px 14px;border-radius:18px 18px 0 0}}
         .r{{color:#ff1f1f;padding:0 34px 16px;border-radius:0 0 18px 18px}}
-        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div></body>"""
+        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div><div class='t3 fitbox' data-w=980>{top3}</div></div></body>"""
         ov = self.shot(html, f"{out.stem}-제목", transparent=True)
         clip = media(m.data["bg"])
         bgm = music.bgm(8, self.work / f"bgm-{out.stem}.wav", seed=seed)
