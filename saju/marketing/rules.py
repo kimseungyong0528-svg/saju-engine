@@ -24,3 +24,11 @@ def morning_format(day: dt.date) -> str:
     """그날 아침 영상 형식. 날마다 돌아가므로 이틀 연속 같은 형식이 나오지 않는다."""
     keys = [f["key"] for f in slot("아침")["formats"]]
     return keys[day.toordinal() % len(keys)]
+
+
+def title(kind: str, day: dt.date, month: int | None = None) -> list[str]:
+    """그날 쓸 고자극 제목 3줄 (사장님 2026-11-01). 날마다 돌아가고, '11월'·'이번 달'은 그달로 바꾼다."""
+    sets = load()["titles"][kind]
+    lines = sets[day.toordinal() % len(sets)]
+    m = month or day.month
+    return [t.replace("11월", f"{m}월") for t in lines]
