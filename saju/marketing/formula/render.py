@@ -404,7 +404,8 @@ class Renderer:
 
     # ── 인스타 게시글: 스레드 글 캡처 사진 (사장님 2026-11-01 "스레드 글은 릴스 말고 게시글로") ──
     def thread_cards(self, e: Evening, folder: Path, stem: str) -> list[Path]:
-        """스레드 글 한 장을 사진 한 장으로 찍는다. 인스타 여러 장 게시글은 4:5(1080×1350)까지라 그 크기로 찍는다."""
+        """스레드 글 한 장을 사진 한 장으로 찍는다. 인스타 여러 장 게시글은 4:5(1080×1350)까지라 그 크기로 찍는다.
+        글은 흰 바탕 칸에 담고, 글이 짧아 남는 위아래 여백은 검정 (사장님 2026-11-02)."""
         pic = _data_uri(ASSETS / "profile.jpg", "image/jpeg")
         folder.mkdir(parents=True, exist_ok=True)
         self.pg.set_viewport_size({"width": 1080, "height": 1350})
@@ -412,8 +413,8 @@ class Renderer:
         try:
             for i, lines in enumerate(e.shown[:10], 1):
                 body = "".join(f"<p>{_esc(x)}</p>" if x else "<div class=gap></div>" for ln in lines for x in ln.split("\n"))
-                html = f"""<style>body{{background:#fff;font-family:'Noto Sans KR'}}
-                .w{{position:absolute;left:70px;right:70px;top:50%;transform:translateY(-50%);color:#111}}
+                html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
+                .w{{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);color:#111;background:#fff;padding:60px 70px;box-sizing:border-box}}
                 .top{{display:flex;align-items:center;gap:22px;margin-bottom:36px}} .top img{{width:96px;height:96px;border-radius:50%;object-fit:cover}}
                 .nm{{font-size:38px;font-weight:700}}
                 p{{margin:0 0 12px;font-size:40px;line-height:1.45;font-weight:500;word-break:keep-all;letter-spacing:-1px}} .gap{{height:28px}}
