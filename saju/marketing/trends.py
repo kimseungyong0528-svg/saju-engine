@@ -124,7 +124,7 @@ def naver(cid: str, secret: str, now: dt.datetime) -> list[dict]:
 
 
 def collect(env=os.environ, now: dt.datetime | None = None) -> dict:
-    now = now or dt.datetime.now(dt.UTC)
+    now = now or dt.datetime.now(dt.timezone.utc)
     items, notes = [], []
     jobs = [("유튜브", ("YOUTUBE_API_KEY",), youtube),
             ("인스타", ("IG_USER_ID", "META_TOKEN"), instagram),
