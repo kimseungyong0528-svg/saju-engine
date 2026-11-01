@@ -1,0 +1,2 @@
+Fluent Emoji 3D (Microsoft, MIT License) — https://github.com/microsoft/fluentui-emoji
+npm @lobehub/fluent-emoji-3d 로 받은 12띠 그림.

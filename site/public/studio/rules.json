@@ -7,14 +7,14 @@
       "what": "영상 1개를 유튜브 쇼츠·인스타 릴스·페북 릴스에 같이 올린다",
       "formats": [
         {
-          "key": "solo",
-          "name": "풍경 + 가운데 2줄 제목",
-          "ref": "솔로사주 @bachelor.saju"
+          "key": "tier",
+          "name": "천복식 띠 순위 1~12위 (황금 배경, 고자극 제목 3줄)",
+          "ref": "천복 띠 순위 456만회"
         },
         {
-          "key": "forceteller",
-          "name": "위 큰 2줄 제목 + 아래 그림·설명",
-          "ref": "포스텔러 @forceteller_official"
+          "key": "hidden",
+          "name": "가림식 띠 순위 (밤하늘, 1~3위 가림)",
+          "ref": "무서운 띠 90만회"
         },
         {
           "key": "sinbi",
@@ -22,12 +22,17 @@
           "ref": "신비사주 @sinbi_saju"
         },
         {
-          "key": "tier",
-          "name": "띠 티어표 (S~D)",
-          "ref": "티어표"
+          "key": "forceteller",
+          "name": "위 큰 2줄 제목 + 아래 오행 그림·설명",
+          "ref": "포스텔러 @forceteller_official"
+        },
+        {
+          "key": "solo",
+          "name": "예쁜 풍경 영상 + 가운데 2줄 제목",
+          "ref": "솔로사주 @bachelor.saju"
         }
       ],
-      "rotate": "형식은 날마다 돌아가며 쓴다. 같은 형식을 이틀 연속 쓰지 않는다."
+      "rotate": "형식은 날마다 돌아가며 쓴다. 같은 형식을 이틀 연속 쓰지 않는다. 날짜만 넣으면 공식(saju/marketing/formula)이 그날 글·영상을 만든다."
     },
     {
       "slot": "저녁",
