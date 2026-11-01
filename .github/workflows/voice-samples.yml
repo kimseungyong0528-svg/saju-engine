@@ -7,6 +7,10 @@ on:
         description: 들어 볼 목소리 ID (쉼표, 비우면 쇼츠용 여자 5·남자 2)
         required: false
         default: ""
+      line:
+        description: 읽힐 문장 (비우면 기본 5문장)
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
@@ -16,6 +20,7 @@ jobs:
     env:
       TYPECAST_API_KEY: ${{ secrets.TYPECAST_API_KEY }}
       VOICE_IDS: ${{ inputs.voice_ids }}
+      VOICE_LINE: ${{ inputs.line }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

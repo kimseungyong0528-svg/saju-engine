@@ -15,7 +15,7 @@ from .text import (KINDS, Morning, _basis, ddi, josa, main_whys, start_label, wh
 END = "놓치기 싫으면 구독이나 팔로우 해 두세요."
 # 십신을 처음 듣는 사람도 알아듣게 한 마디로 (쉬운 설명 심사 2026-11-01). 식상=내가 내보냄, 인성=내가 받음 (sipsin_fact).
 GOD_PLAIN = {"비겁": "나와 같은 편 기운", "식상": "내 마음을 밖으로 꺼내는 기운", "재성": "내가 손에 쥐는 돈 기운",
-             "관성": "나를 누르고 책임을 지우는 기운", "인성": "나를 받쳐 주고 챙겨 주는 기운"}
+             "관성": "나를 다스리고 자리를 주는 기운", "인성": "나를 받쳐 주고 챙겨 주는 기운"}
 
 
 def _years(a: str) -> str:
@@ -81,9 +81,17 @@ def script(m: Morning) -> list[str]:
         out += [f"{ddi(a)}, {t}" for a, t in m.data["text"].items()]
         return _clean(out + ["내 띠 얘기 맞았는지 댓글로 남겨 주세요.", END])
     if m.fmt == "forceteller":
-        head = " ".join(x.replace("<em>", "").replace("</em>", "") for x in m.data["head"])
-        say = [s.replace("\n", " ") for s in m.data["say"]]
-        return _clean([head + "."] + [_say(x) for x in say] + [END])
+        d = m.data
+        e = d["el"]
+        say = [x.replace("\n", " ") for x in d["say"]]
+        if d["tpl"] in ("mlack", "mmuch"):
+            # '수의 달 수 없는 사주'는 귀로 들으면 숫자 '수'처럼 들린다 → 기운 이름을 붙여 말한다 (쉬운 설명 심사)
+            head = f"{josa(m.period.label, '은', '는')} {e} 기운이 센 달이에요. 내 사주에 {e} 기운이 {'없다면' if d['tpl'] == 'mlack' else '많다면'} 꼭 들어 보세요."
+        else:
+            head = " ".join(x.replace("<em>", "").replace("</em>", "") for x in d["head"]) + "."
+        for el in {e, d.get("pair") or e}:
+            say = [x.replace(f"{el} 많은 ", f"{el} 기운 많은 ").replace(f"{el} 없는 ", f"{el} 기운 없는 ") for x in say]
+        return _clean([head] + [_say(x) for x in say] + [END])
     k = KINDS[m.kind]
     p = m.period
     intro = f"{josa(p.label, '은', '는')} {start_label(p).split('(')[0]}부터 {p.ganzhi.split('(')[0]}{'년' if p.year else '월'}이에요."
@@ -93,7 +101,9 @@ def script(m: Morning) -> list[str]:
             out.append(_say(f"{r.rank}위 {ddi(r.ddi)}, {m.data['phrase'][r.ddi]}"))
         out.append("이제 3위부터예요.")
         for r in reversed(m.rows[:3]):
-            out += _top(m, r, full=r.rank == 1)
+            # 화면 맨 아래 1~3위 꼬리말(phrase)을 그대로 읽는다 (제1조항). 2·3위가 같은 말로 겹치지 않는다.
+            basis, _ = _spoken_basis(m, r)
+            out += [f"{r.rank}위, {ddi(r.ddi)}. {_years(r.ddi)}이에요."] + ([basis] if r.rank == 1 else []) + [_say(m.data["phrase"][r.ddi])]
         return _clean(out + [f"내 띠는 몇 위였는지 댓글로 남겨 주세요.", END])
     out = [_hook(m), intro]
     for r in m.rows[:3]:

@@ -137,7 +137,14 @@ def titles(kind: str, p: Period) -> list[list[str]]:
     for sc in k["scenes"]:
         out.append([sc, f"{lab} {k['verb']} 띠", "1위부터 12위"])
         out.append([sc, f"{lab} {k['alt']} 띠", "1위부터 12위"])
+    if kind == "care":
+        # 영상 심사(2026-11-01, 신뢰·사실): 조심운 순위는 충·형·원진·부담처럼 '부딪힘'으로 매기는데
+        # 제목이 '모은 돈 날릴·지갑 닫아야 할·손재수'면 1위 근거와 제목이 어긋난다. 돈 말은 조심운 제목에 쓰지 않는다.
+        out = [t for t in out if not any(w in "".join(t) for w in CARE_MONEY_WORDS)] or out
     return out
+
+
+CARE_MONEY_WORDS = ("돈", "지갑", "카드값", "손해", "손재수")
 
 
 # ── 아침 ──
