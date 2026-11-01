@@ -1,0 +1,34 @@
+# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 풍경 사진을 Openverse 에서 받아 refs-photos 가지에 올린다.
+name: lab-photos
+on:
+  push:
+    branches: [claude/project-thread-7uafe7]
+    paths: [.github/workflows/lab-photos.yml]
+permissions:
+  contents: write
+jobs:
+  get:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          mkdir out && cd out
+          for q in "sunset sea cliff" "ocean sunset" "mountain sunrise" "cherry blossom" "night sky stars" "autumn forest" "lake mountains" "snow mountain" "milky way" "beach sunset"; do
+            curl -s "https://api.openverse.org/v1/images/?q=$(echo $q | sed 's/ /+/g')&license=cc0,pdm&aspect_ratio=tall&size=large&page_size=8" > r.json || true
+            python3 - "$q" <<'PY'
+          import json,sys,urllib.request,re
+          q=sys.argv[1]; d=json.load(open("r.json"))
+          meta=[]
+          for i,r in enumerate(d.get("results",[])[:8]):
+              n=re.sub(r"\W+","-",q)+f"-{i}.jpg"
+              try:
+                  req=urllib.request.Request(r["url"],headers={"User-Agent":"Mozilla/5.0 saju-lab"})
+                  open(n,"wb").write(urllib.request.urlopen(req,timeout=30).read())
+                  meta.append({"file":n,"title":r.get("title"),"license":r.get("license"),"creator":r.get("creator"),"source":r.get("foreign_landing_url")})
+              except Exception as e: print("fail",n,e)
+          open(re.sub(r"\W+","-",q)+".json","w").write(json.dumps(meta,ensure_ascii=False,indent=1))
+          PY
+          done
+          rm -f r.json; ls -la | head -100
+      - run: |
+          cd out && git init -q && git checkout -q -b refs-photos && git add . && git -c user.name=bot -c user.email=bot@x commit -qm photos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-photos
