@@ -139,7 +139,32 @@ def _threads(plan90):
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
                                                      "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
-                                                     "long_list_spacing", "emoji_marks", "weekly_popular_topics"]
+                                                     "long_list_spacing", "emoji_marks", "weekly_popular_topics",
+                                                     "sipsin_fact"]
+
+
+# 1탄 댓글에서 잡힌 실수(인성·식상 뒤바뀜) 같은 짝을 문장 재료 전체에서 막는다 (sipsin_fact).
+SIPSIN_WRONG = [("인성", ("연하", "챙겨 주는 걸 좋아", "베풀")), ("식상", ("연상", "보살핌을 받")),
+                ("편인", ("연하", "챙겨 주는 걸 좋아")), ("정인", ("연하", "챙겨 주는 걸 좋아"))]
+
+
+def _bank_lines(x):
+    if isinstance(x, str):
+        yield x
+    elif isinstance(x, dict):
+        for v in x.values():
+            yield from _bank_lines(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _bank_lines(v)
+
+
+def test_sipsin_fact():
+    banks = json.loads((Path(T.__file__).parent / "banks.json").read_text())
+    for line in _bank_lines(banks):
+        for s in line.replace("...", ".").split(". "):
+            for star, bad in SIPSIN_WRONG:
+                assert not (star in s and any(b in s for b in bad)), line
 
 
 def test_heart_first(plan90):
@@ -411,6 +436,18 @@ def test_shift_threads_one_slot():
     assert where["x3"] == ("2026-11-02", "점심", "12:00")
     assert where["x4"] == ("2026-11-03", "오전", "07:30")
     assert where["r"][0] == "2026-11-01"
+
+
+def test_move_one_item():
+    """사장님 2026-11-01 '지우지 말고 내일 3탄 올릴 시간에 ... 못올리는거 그 중에서 괜찮은거 하나로 대체해'."""
+    from saju.marketing.formula.__main__ import move_items
+    man = {"days": [{"date": "2026-11-01", "weekday": "일", "items": [{"id": "a", "channel": "threads", "slot": "점심", "time": "12:00"}]},
+                    {"date": "2026-11-02", "weekday": "월", "items": [{"id": "b", "channel": "threads", "slot": "저녁", "time": "18:00"}]}]}
+    assert move_items(man, "a=2026-11-02 저녁") == 1
+    assert man["days"][0]["items"] == []
+    assert sorted((x["id"], x["time"]) for x in man["days"][1]["items"]) == [("a", "18:00"), ("b", "18:00")]   # 있던 글은 지우지 않는다
+    with pytest.raises(SystemExit):
+        move_items(man, "없음=2026-11-02 저녁")
 
 
 def test_long_list_spacing():
