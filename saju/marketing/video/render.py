@@ -26,7 +26,7 @@ MFONTS = ROOT / "saju" / "marketing" / "fonts"
 ART = ROOT / "site" / "public" / "assets" / "geumwol"
 FPS = 30
 LEAD, GAP, TAIL = 0.4, 0.3, 1.4
-OUTRO = "내일도 띠별 운세 올려요. 놓치기 싫으면 팔로우 해 두세요."
+OUTRO = "띠별 운세 계속 올려요. 놓치기 싫으면 팔로우 해 두세요."
 BGS = ["palace-study.jpg", "palace-garden.jpg", "palace-gate.jpg"]
 COVER = {"ddi": "newyear-cover.jpg", "summary": "newyear-cover.jpg", "topic": "master.jpg"}
 

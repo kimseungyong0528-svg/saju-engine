@@ -1,5 +1,6 @@
 """SNS 게시물 공식 (사장님 2026-11-01 "전부 공식으로, 무한 발행"): 날짜만 넣으면 겹치지 않는 글이 엔진 계산대로 나온다."""
 
+import collections
 import datetime as dt
 import itertools
 import json
@@ -212,8 +213,11 @@ def test_reason_short(plan90):
 # ── 심사원 30명 + 상위 레퍼런스 90개 (사주장인·도화도르·살구, 사장님 2026-11-01) ──
 def test_judges_rubric_fixed():
     J = RULES["judges"]
-    assert J["pass"] == 95 and J["per_criterion"] == 5
-    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference"]
+    assert J["pass"] == 97 and J["per_criterion"] == 5   # 사장님 2026-11-01: 50명, 10항목, 97점, 냉정하게
+    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference", "expert", "easy", "concrete", "comment"]
+    assert all(c["name"] and c["minus"] for c in J["criteria"])
+    assert len(J["criteria"]) * J["per_criterion"] == 50
+    assert any("냉정" in s for s in J["strict"]) and any("이유" in s for s in J["strict"])
     assert [r["id"] for r in RULES["reference_rules"]] == ["question_heads", "term_date", "year_pain", "next_year", "ending",
                                                            "teaser", "week_variety", "dohwa_voice", "salgu_long", "follow_all"]
 
@@ -274,32 +278,20 @@ def test_week_variety(plan90):
 
 
 def test_teaser_is_true(plan90):
-    """teaser: 예고한 글이 실제로 그 시간에 잡혀 있다."""
-    for di, d in enumerate(plan90[:14]):
-        for _, t, e in d.threads:
-            line = next((x for x in e.pages[-1] if x.endswith(" 올려요") and ("오늘 " in x or "내일 " in x)), None)
-            if not line:
-                continue
-            day = d if line.startswith("오늘") else plan90[di + 1]
-            slot = {v: k for k, v in T.SLOT_SAY.items()}[re.match(r"^(오늘|내일) (.+?)엔 ", line).group(2)]
-            nxt = next(x for _, tt, x in day.threads if tt == slot)
-            assert nxt.style == "jangin"
-            if "'" in line:
-                assert T.title_of(nxt) in line, (line, T.title_of(nxt))
+    """teaser: '다음엔 … 올려요'는 실제로 바로 다음에 잡힌 사주장인식 글이다 (시간·날짜는 쓰지 않는다)."""
+    seq = [e for d in plan90[:14] for _, _, e in d.threads if e.style == "jangin"]
+    for e, nxt in zip(seq, seq[1:]):
+        line = next((x for x in e.pages[-1] if x.startswith("다음엔 ") and x.endswith(" 올려요")), None)
+        if line and "'" in line:
+            assert T.title_of(nxt) in line, (line, T.title_of(nxt))
 
 
 def test_dohwa_reply_is_true():
-    """dohwa_voice: 답글은 사실인 말만 (올리는 시간이 실제 시간대와 같다)."""
-    times = [t for _, t, st in T.THREAD_SLOTS if st == "dohwa"]
-    assert times == ["12:00", "21:00"]
-    for r in T.B["dohwa_reply"]:
+    """dohwa_voice·follow_all: 답글·끝맺음에 올리는 시간·'매일' 약속이 없다 (사장님 2026-11-01 '내가 이때 올리냐?')."""
+    for r in [*T.B["dohwa_reply"], *T.B["salgu_end"], *T.LB["find_me"], *T.FOLLOW_END.values()]:
         txt = " ".join(r)
-        if "시" in txt and "매일" in txt:
-            assert "낮 12시" in txt and "밤 9시" in txt
-    for r in T.B["salgu_end"]:
-        txt = " ".join(r)
-        if "매일" in txt:
-            assert "오후 3시" in txt and "밤 11시" in txt
+        assert not re.search(r"\d+시|매일|내일", txt), txt
+        assert "팔로우" in txt
 
 
 def test_salgu_long_bank():
@@ -318,8 +310,30 @@ def test_follow_everywhere(plan90):
             assert any("팔로우" in x for x in th.pages[-1]), th.key
             assert sum("팔로우" in x for x in th.pages[-1]) == 1, th.key   # 두 번 조르지 않는다
             assert "프로필 링크" not in "\n".join(th.parts), th.key
+            for x in th.pages[-1]:   # 올리는 시간·날짜 약속 금지 (사장님 2026-11-01 '내가 이때 올리냐?')
+                assert not re.search(r"\d+시|매일|내일|오늘 (아침|낮|오후|저녁|밤)", x), (th.key, x)
         mt = morning_texts(m)
         assert "구독" in mt["youtube"]["설명"]
         for ch in ("instagram-reel", "facebook-reel"):
             assert "팔로우" in mt[ch]["캡션"]
         assert "프로필 링크" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
+        assert "매일" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
+
+
+def test_no_line_more_than_three_times_a_week():
+    """judges.strict (사장님 2026-11-01 '냉정하게'): 고정 틀을 뺀 같은 줄이 7일 안에 세 번 넘게 나오지 않는다 (사람 말투).
+    11/1~11/8 심사한 묶음 기준. 다음 주는 만들 때 같은 검사로 다시 본다."""
+    frame = re.compile(r"^(같은 .+(라도|이라도)|나머지 .+ 글자에 따라|- 천간|- 지지|.+ 달라요|.*따로 봐야 알아요|흥미로운 사주 이야기들.*"
+                       r"|태어난 해는 여덟 글자 중 두 글자예요|겹경사인 이유|태어난 해 두 글자와|둘 다 좋게 만나요|\d\. .*)$")
+    P = T.plan(dt.date(2026, 11, 1), 8)
+    for w in range(2):
+        c = collections.Counter(x for d in P[w:w + 7] for _, _, e in d.threads for pg in e.pages for x in pg if x.strip() and not frame.match(x))
+        assert not [(k, v) for k, v in c.items() if v > 3], [(k, v) for k, v in c.most_common(5)]
+
+
+def test_negative_posts_limited():
+    """조심 글은 7일에 두 번까지, 한 장 조심 글은 한 번까지 (심사 2026-11-01)."""
+    P = T.plan(dt.date(2026, 11, 1), 8)
+    for w in range(2):
+        neg = [e for d in P[w:w + 7] for _, _, e in d.threads if e.style == "jangin" and T._negative(e)]
+        assert len(neg) <= 2 and sum(e.key.startswith(("jone-", "jstem-")) for e in neg) <= 1

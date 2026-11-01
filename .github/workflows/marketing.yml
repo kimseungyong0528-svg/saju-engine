@@ -16,7 +16,7 @@ on:
         description: 첫날 (예 2026-10-19)
         required: true
       days:
-        description: 며칠치 (1 또는 7)
+        description: 며칠치 (1~14, 보통 7)
         required: false
         default: "7"
 
@@ -46,7 +46,7 @@ jobs:
             START=$(TZ=Asia/Seoul date -d tomorrow +%F); DAYS=1
             echo "START=$START" >> "$GITHUB_ENV"; echo "DAYS=$DAYS" >> "$GITHUB_ENV"
           fi
-          if ! [[ "$DAYS" =~ ^(1|7)$ ]]; then echo "며칠치는 1 또는 7"; exit 1; fi
+          if ! [[ "$DAYS" =~ ^([1-9]|1[0-4])$ ]]; then echo "며칠치는 1~14"; exit 1; fi
           if ! [[ "$START" =~ ^20[0-9]{2}-[01][0-9]-[0-3][0-9]$ ]]; then echo "날짜 형식이 아님 (예 2026-10-19)"; exit 1; fi
           # 매일 자동으로 돌 때: 그 날이 이미 만든 묶음(심사한 1주일치 등)에 들어 있으면 새로 만들지 않는다. 덮어쓰면 심사한 글이 바뀐다.
           if [ "${{ github.event_name }}" = "schedule" ]; then
