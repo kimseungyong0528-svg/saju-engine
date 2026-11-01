@@ -313,6 +313,16 @@ class Evening:
     style: str
     pages: list[list[str]]
     dark: bool = False   # 스레드 글은 전부 흰 배경 (사장님 2026-11-01)
+    facts: tuple = ()    # (대상, 기간 key, 주제, +/-): 한 주 안에서 같은 대상을 좋다·조심 양쪽으로 쓰지 않는다 (제1조항)
+
+    @property
+    def frame(self) -> str:
+        """글 틀 이름 (같은 틀을 이틀 연속 같은 시간대에 쓰지 않는다)."""
+        k = self.key
+        for pre in ("jangin-double", "jangin-stem", "jstem", "jone", "dohwa-d", "dohwa-s", "salgu"):
+            if k.startswith(pre):
+                return pre
+        return k.split("-")[0] + ("-list" if k.startswith("jangin-") else "")
 
     @property
     def parts(self) -> list[str]:
@@ -360,21 +370,15 @@ def _basis(kind: str, p: Period, r: Row, t: str) -> list[str]:
 
 
 def jangin_card(kind: str, p: Period, r: Row, k: int, tags: set[str]) -> list[str]:
+    """띠 한 장: 꼬리표와 근거는 같은 이유에서 나온다 (꼬리표만 다른 이유를 쓰면 글이 어긋난다)."""
     whys = main_whys(r)
     good = [t for w, t in whys if w > 0]
-    tag = pick_unique([why_bank(kind, t)["tag"] for _, t in whys], tags)
+    cand = good if (good and kind != "care") else [t for _, t in whys]
+    main = next((t for t in cand if why_bank(kind, t)["tag"] not in tags), cand[0])
+    tag = why_bank(kind, main)["tag"]
+    tags.add(tag)
     lines = [f"{ddi(r.ddi)} ({years_full(r.ddi)})", f"- {tag}", ""]
-    lines += _basis(kind, p, r, good[0] if good else whys[0][1])
-    if len(good) > 1 and why_key(kind, good[1]).split(":")[-1] in REL_NAMES7:
-        lines += [""] + _basis(kind, p, r, good[1])
-    bad = [t for w, t in whys if w < 0] if kind != "care" else []
-    if bad:
-        key = why_key(kind, bad[0]).split(":")[-1]
-        if key in REL_NAMES7:
-            lines += ["", f"다만 {key}({B['rel'][key]['hanja']})도 같이 있어요", why_bank(kind, bad[0])["long"][0].split(". ")[-1].rstrip(".")]
-        else:
-            lines += ["", f"다만 {bad[0]}", why_bank(kind, bad[0])["long"][0].split(". ")[-1].rstrip(".")]
-    main = good[0] if good and kind != "care" else whys[0][1]
+    lines += _basis(kind, p, r, main)
     feel = why_bank(kind, main).get("feel") or B["feel"][kind][k % len(B["feel"][kind])]
     lines += ["", feel[0], feel[1]]
     return lines
@@ -392,7 +396,8 @@ def jangin(kind: str, p: Period, n: int) -> Evening:
     tags: set[str] = set()
     cards = [jangin_card(kind, p, r, n + i, tags) for i, r in enumerate(rows)]
     end = [fill(x, where=K["where"]) for x in B["ending"]] + [""] + K["ask"] + ["", B["cta"][n % len(B["cta"])]]
-    return Evening(f"jangin-{kind}-{p.key}", "jangin", [p1, p2, *cards, end])
+    sign = "-" if kind == "care" else "+"
+    return Evening(f"jangin-{kind}-{p.key}", "jangin", [p1, p2, *cards, end], facts=tuple((r.ddi, p.key, kind, sign) for r in rows))
 
 
 STEM_NAMES = [f"{STEMS[i]}{ELEMENTS[STEM_ELEMENT[i]]}({STEMS_HANJA[i]}{EL_HANJA[ELEMENTS[STEM_ELEMENT[i]]]})" for i in range(10)]
@@ -462,7 +467,8 @@ def jangin_stem(kind: str, p: Period, n: int) -> Evening | None:
         cards.append(lines)
     end = ["같은 일간이라도", "나머지 일곱 글자에 따라", f"{K['where']} 달라요", "그건 따로 봐야 알아요", ""] + K["ask"] + \
           ["", "내 일간이 뭔지 모르면", B["cta"][1]]
-    return Evening(f"jangin-stem-{kind}-{p.key}", "jangin", [p1, p2, *cards, end])
+    return Evening(f"jangin-stem-{kind}-{p.key}", "jangin", [p1, p2, *cards, end],
+                   facts=tuple((STEMS[r.stem], p.key, kind, "-" if kind == "care" else "+") for r in rows))
 
 
 DOUBLE_GOOD = ["계약서에 도장이 찍히기 쉬워요", "기다리던 답이 오기 쉬워요", "도와주는 사람이 생기기 쉬워요",
@@ -514,7 +520,7 @@ def double(p: Period, n: int) -> Evening | None:
     end += ["같은 띠라도 천간이 다른 해에 태어났으면", "겹경사는 아니에요", "", "좋은 일이 겹칠수록", "계약서와 약속은 한 번 더 읽고 도장 찍으세요", ""]
     end += ["태어난 해는 여덟 글자 중 두 글자예요", "나머지 여섯 글자에 따라", "경사가 어디로 오는지 달라요", "그건 따로 봐야 알아요",
             "", B["cta"][n % len(B["cta"])]]
-    return Evening(f"jangin-double-{p.key}", "jangin", [p1, p2, *cards, end])
+    return Evening(f"jangin-double-{p.key}", "jangin", [p1, p2, *cards, end], facts=tuple((d["ddi"], p.key, "double", "+") for d in ys))
 
 
 def dohwa(day: dt.date, t: int) -> Evening:
@@ -589,7 +595,7 @@ def jangin_one(kind: str, p: Period, a: str, n: int) -> Evening | None:
     sig = _rot(B["signals"][kind]["good" if good else "bad"], n + ZODIAC_ANIMALS.index(a))[:3]
     p2 = [feel[0], ""] + _basis(kind, p, r, lead) + ["", *sig, "", feel[1],
                                                     B["good_end"][kind] if good else B["bad_end"][kind]]
-    return Evening(f"jone-{kind}-{a}-{p.key}", "jangin", [p1, p2, _end(kind, n)])
+    return Evening(f"jone-{kind}-{a}-{p.key}", "jangin", [p1, p2, _end(kind, n)], facts=((a, p.key, kind, "+" if good else "-"),))
 
 
 def jangin_stem_one(kind: str, p: Period, s: int, n: int) -> Evening | None:
@@ -619,7 +625,7 @@ def jangin_stem_one(kind: str, p: Period, s: int, n: int) -> Evening | None:
     sig = _rot(B["signals"][kind]["good" if good else "bad"], n + s)[:3]
     p2 += ["", *sig, "", feel[1], B["good_end"][kind] if good else B["bad_end"][kind]]
     end = ["같은 일간이라도", "나머지 일곱 글자에 따라", f"{K['where']} 달라요", "그건 따로 봐야 알아요", "", "내 일간이 뭔지 모르면", B["cta"][1]]
-    return Evening(f"jstem-{kind}-{s}-{p.key}", "jangin", [p1, p2, end])
+    return Evening(f"jstem-{kind}-{s}-{p.key}", "jangin", [p1, p2, end], facts=((STEMS[s], p.key, kind, "+" if good else "-"),))
 
 
 def _end(kind: str, n: int) -> list[str]:
@@ -639,7 +645,7 @@ def dohwa_ddi(kind: str, p: Period, a: str, n: int) -> Evening | None:
                 r=r.rank, short=wb["short"][n % len(wb["short"])])
     line = line.replace(f"{ddi(a)}는", josa(ddi(a), "은", "는"))
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][(n + 1) % len(B["dohwa_reply"])]]
-    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply])
+    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply], facts=((a, p.key, kind, "+"),))
 
 
 def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
@@ -655,7 +661,7 @@ def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
     line = fill(tpl[(n + s) % len(tpl)], S=STEM_NAMES[s].split("(")[0], p=p.label, gname=f"{g}({GH[g]})", why=t.rstrip("."),
                 name=KINDS[kind]["name"], r=rk)
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][1]]
-    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply])
+    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply], facts=((STEMS[s], p.key, kind, "+"),))
 
 
 SALGU_ROT = ["love", "self", "love", "money", "love", "self", "love", "flow"]   # 연애·결혼 절반 (salgu_one_theme)
@@ -768,13 +774,29 @@ def slot_candidates(day: dt.date, slot: str, used: set[str]):
     yield from jangin_pool(day)
 
 
-def pick(cands, used: set[str]) -> Evening:
-    """안 쓴 재료 중 첫 장(본글)도 처음 나오는 것을 고른다."""
+def clash(e: Evening, facts: dict) -> bool:
+    """한 주 안에서 같은 대상(띠·일간)·같은 기간을 한쪽은 좋다, 한쪽은 조심으로 쓰면 모순이다 (제1조항).
+    조심(care) 글은 그 기간 모든 좋은 글과 부딪힌다."""
+    for subj, pk, kind, sign in e.facts:
+        for k2, s2 in facts.get((subj, pk), []):
+            if s2 != sign and (k2 == kind or "care" in (k2, kind) or "double" in (k2, kind)):
+                return True
+    return False
+
+
+def pick(cands, used: set[str], facts: dict | None = None, today: set[str] | None = None,
+         avoid_frames: set[str] = frozenset()) -> Evening:
+    """안 쓴 재료 중 첫 장(본글)도 처음 나오는 것을 고른다.
+    facts: 이번 주에 쓴 (대상, 기간) → [(주제, +/-)]. today: 오늘 이미 나온 대상. avoid_frames: 어제 이 시간대에 쓴 틀."""
+    facts, today = facts or {}, today or set()
     first = None
     for c in cands:
         first = first or c
-        if c.key not in used and "first:" + c.parts[0] not in used:
-            return c
+        if c.key in used or "first:" + c.parts[0] in used:
+            continue
+        if clash(c, facts) or c.frame in avoid_frames or any(f[0] in today for f in c.facts):
+            continue
+        return c
     return first
 
 
@@ -798,18 +820,28 @@ class Day:
 
 
 def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
-    """며칠치를 한 번에 고른다. 앞에서 고른 재료는 뒤에서 다시 쓰지 않는다."""
+    """며칠치를 한 번에 고른다. 앞에서 고른 재료는 뒤에서 다시 쓰지 않는다.
+    한 주 안에 같은 대상을 좋다·조심 양쪽으로 쓰지 않고, 같은 날 같은 띠·일간을 두 번 쓰지 않고,
+    같은 시간대에 어제와 같은 틀을 쓰지 않는다."""
     used = set(used or ())
     out = []
+    facts: dict = {}
+    frames: dict[str, str] = {}
     for i in range(days):
         d = start + dt.timedelta(days=i)
         m = morning(d, used)
         used.add(m.key)
-        ths = []
+        ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다
-            e = pick(slot_candidates(d, s, used), used)
+            avoid = {frames[s]} if s in frames and _st == "jangin" else set()
+            e = pick(slot_candidates(d, s, used), used, facts, today, avoid)
             used |= {e.key, "first:" + e.parts[0]}
+            for subj, pk, kind, sign in e.facts:
+                facts.setdefault((subj, pk), []).append((kind, sign))
+                today.add(subj)
+            new_frames[s] = e.frame
             ths.append((s, t, e))
+        frames = new_frames
         ths.sort(key=lambda x: x[1])
         out.append(Day(d, m, ths))
     return out
