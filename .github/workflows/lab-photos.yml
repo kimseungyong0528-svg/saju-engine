@@ -1,4 +1,4 @@
-# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 풍경 사진을 받아 refs-photos 가지에 올린다.
+# 시험용(지울 것): 저작권 없는(CC0·퍼블릭도메인) 자연 영상을 위키미디어 공용에서 받아 refs-videos 가지에 올린다.
 name: lab-photos
 on:
   push:
@@ -10,50 +10,44 @@ jobs:
   get:
     runs-on: ubuntu-latest
     steps:
+      - run: sudo apt-get -qq update && sudo apt-get -qq install -y ffmpeg >/dev/null
       - run: |
           mkdir out && cd out
           cat > g.py <<'PY'
-          import json, re, sys, time, urllib.request, urllib.parse
+          import json, re, subprocess, urllib.request, urllib.parse
           UA = {"User-Agent": "saju-engine-lab/1.0 (kimseungyong0528@gmail.com)"}
-          def get(u):
-              return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40).read()
-          meta = []
-          qs = ["sunset sea cliff", "ocean sunset", "mountain sunrise", "cherry blossom tree", "night sky stars milky way",
-                "autumn forest", "lake mountains reflection", "snow mountain", "beach sunset waves", "sunrise clouds"]
+          get = lambda u: urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=120).read()
+          meta, seen = [], set()
+          qs = ["sea waves", "ocean waves beach", "sunset sea", "clouds timelapse", "waterfall", "forest stream", "cherry blossom",
+                "night sky timelapse", "sunrise", "lake", "mountain clouds", "snow falling", "rain", "river", "beach"]
           for q in qs:
               n = 0
-              # 1) Openverse (CC0·PD 만)
-              try:
-                  d = json.loads(get("https://api.openverse.org/v1/images/?" + urllib.parse.urlencode({"q": q, "license": "cc0,pdm", "page_size": 20})))
-                  for r in d.get("results", []):
-                      if n >= 5: break
-                      if (r.get("height") or 0) < 1000: continue
-                      f = re.sub(r"\W+", "-", q) + f"-ov{n}.jpg"
-                      try:
-                          open(f, "wb").write(get(r["url"])); n += 1
-                          meta.append({"file": f, "license": r.get("license"), "creator": r.get("creator"), "source": r.get("foreign_landing_url")})
-                      except Exception as e: print("fail", e)
-              except Exception as e: print("openverse", q, e)
-              time.sleep(2)
-              # 2) 위키미디어 공용 (CC0·퍼블릭 도메인만)
-              try:
-                  u = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "generator": "search",
-                      "gsrsearch": f"{q} filetype:bitmap", "gsrnamespace": 6, "gsrlimit": 40, "prop": "imageinfo", "iiprop": "url|extmetadata|size", "iiurlwidth": 1600})
-                  pages = json.loads(get(u)).get("query", {}).get("pages", {})
-                  for p in pages.values():
-                      if n >= 8: break
-                      ii = p["imageinfo"][0]; lic = ii.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
-                      if not re.search(r"CC0|Public domain|PD", lic, re.I) or ii.get("height", 0) < 1200: continue
-                      f = re.sub(r"\W+", "-", q) + f"-wm{n}.jpg"
-                      try:
-                          open(f, "wb").write(get(ii["thumburl"])); n += 1
-                          meta.append({"file": f, "license": lic, "source": ii.get("descriptionurl")})
-                      except Exception as e: print("fail", e)
-              except Exception as e: print("commons", q, e)
+              u = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "generator": "search",
+                  "gsrsearch": f"{q} filetype:video", "gsrnamespace": 6, "gsrlimit": 40, "prop": "videoinfo",
+                  "viprop": "url|extmetadata|size|derivatives"})
+              try: pages = json.loads(get(u)).get("query", {}).get("pages", {})
+              except Exception as e: print("api", q, e); continue
+              for p in pages.values():
+                  if n >= 4: break
+                  vi = (p.get("videoinfo") or [{}])[0]; lic = vi.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
+                  if p["title"] in seen or not re.search(r"CC0|Public domain", lic, re.I): continue
+                  if (vi.get("height") or 0) < 700 or (vi.get("duration") or 0) < 6: continue
+                  ds = sorted([d for d in vi.get("derivatives", []) if d.get("type", "").startswith("video/webm") and 700 <= (d.get("height") or 0) <= 1080],
+                              key=lambda d: -(d.get("height") or 0))
+                  src = ds[0]["src"] if ds else vi["url"]
+                  f = re.sub(r"\W+", "-", q) + f"-{n}"
+                  try:
+                      open(f + ".src", "wb").write(get(src))
+                      subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f + ".src", "-t", "15", "-an", "-vf", "scale=-2:1080",
+                                      "-c:v", "libx264", "-crf", "23", "-preset", "veryfast", f + ".mp4"], check=True)
+                      subprocess.run(["rm", "-f", f + ".src"])
+                      seen.add(p["title"]); n += 1
+                      meta.append({"file": f + ".mp4", "title": p["title"], "license": lic, "source": vi.get("descriptionurl"), "w": vi.get("width"), "h": vi.get("height")})
+                  except Exception as e: print("fail", f, e)
               print(q, n)
-          open("photos.json", "w").write(json.dumps(meta, ensure_ascii=False, indent=1))
+          open("videos.json", "w").write(json.dumps(meta, ensure_ascii=False, indent=1))
           PY
-          python3 g.py; rm g.py; ls | wc -l
+          python3 g.py; rm g.py; ls -la
       - run: |
-          cd out && git init -q && git checkout -q -b refs-photos && git add . && git -c user.name=bot -c user.email=bot@x commit -qm photos
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-photos
+          cd out && git init -q && git checkout -q -b refs-videos && git add . && git -c user.name=bot -c user.email=bot@x commit -qm videos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" refs-videos
