@@ -121,7 +121,7 @@ SFX = {"instagram-reel": "reel", "facebook-reel": "fbreel", "youtube": "youtube"
 
 
 def _with_cta(texts: dict, line: str) -> dict:
-    """설명글 끝 팔로우 말을 곳마다 다른 밑에 글로 바꾼다 (사장님 2026-11-01: 유튜브 구독 · 인스타 댓글 · 페북 팔로우)."""
+    """설명글 끝 팔로우 말을 곳마다 다른 밑에 글로 바꾼다 (사장님 2026-11-01: 유튜브 구독 · 인스타·페북 팔로우)."""
     out = {}
     for k, v in texts.items():
         if k == "제목":
@@ -137,9 +137,10 @@ def _with_cta(texts: dict, line: str) -> dict:
     return out
 
 
-def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: int) -> list[dict]:
-    """영상 7초 하나를 세 곳에 (사장님 2026-11-01). 가림식은 레퍼런스처럼 화면 밑 글이 곳마다 달라서 영상도 세 개."""
-    if not R:   # 영상 없이 만들면 영상 게시물은 넣지 않는다 ("영상은 올리지마 확실히 될때까지")
+def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: int, src: Path | None = None) -> list[dict]:
+    """영상 7초 하나를 세 곳에 (사장님 2026-11-01). 가림식은 레퍼런스처럼 화면 밑 글이 곳마다 달라서 영상도 세 개.
+    src: 이미 만들어 사장님께 보여 드린 영상 폴더 (video-samples). 주면 다시 만들지 않고 그 파일을 그대로 쓴다."""
+    if not R and not src:   # 영상 없이 만들면 영상 게시물은 넣지 않는다 ("영상은 올리지마 확실히 될때까지")
         return []
     cta, mt = S.cta(m), m.texts()
     title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
@@ -151,9 +152,13 @@ def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: i
         if key not in made:
             stem = f"{tag}_{part}_{m.key}" + (f"_{SFX[ch]}" if own else "")
             vid, thumb = f"유튜브/{stem}.mp4", f"유튜브/{stem}_표지.jpg"
-            R.morning(m, week / vid, seed=seed, cta=cta[ch] if own else "")
-            if os.environ.get("TYPECAST_API_KEY"):
-                R.voiceover(week / vid, S.script(m), seed=seed)
+            if src:
+                (week / vid).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(src / f"{stem}.mp4", week / vid)
+            else:
+                R.morning(m, week / vid, seed=seed, cta=cta[ch] if own else "")
+                if os.environ.get("TYPECAST_API_KEY"):
+                    R.voiceover(week / vid, S.script(m), seed=seed)
             _thumb(week / vid, 2.5, week / thumb)
             made[key] = (vid, thumb)
         vid, thumb = made[key]
