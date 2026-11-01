@@ -127,7 +127,7 @@ def main(argv=None) -> int:
     from .. import publish
     if a.publish:
         publish.status(start.isoformat(), "running", "만드는 중")
-        used |= publish.used_keys()
+        used |= publish.used_keys(before=start.isoformat())
     try:
         r = build(start, a.days, Path(a.out), used, video=not a.no_video)
     except Exception as e:
