@@ -148,3 +148,16 @@ def test_sns_rules_fixed():
     days = [dt.date(2026, 11, 1) + dt.timedelta(days=i) for i in range(60)]
     fmts = [rules.morning_format(d) for d in days]
     assert all(a != b for a, b in zip(fmts, fmts[1:]))
+
+
+def test_titles_three_lines():
+    """제목은 고자극 카피 3줄 (사장님 2026-11-01). 뻔한 말·금지어는 쓰지 않는다."""
+    import datetime as dt
+    from saju.marketing import rules
+    r = rules.load()
+    assert any("고자극 카피 3줄" in t for t in r["always"])
+    for kind in ("money", "love", "care"):
+        for lines in r["titles"][kind]:
+            assert len(lines) == 3 and lines[2].endswith("띠")
+            assert not any(w in "".join(lines) for w in ("월급날 웃음", "보장", "확정", "참고용", "재미로", "재회"))
+    assert all("11월" not in t for d in range(3) for t in rules.title("money", dt.date(2026, 12, 1 + d)))
