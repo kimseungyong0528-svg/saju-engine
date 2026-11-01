@@ -311,7 +311,7 @@ class Evening:
     key: str
     style: str
     pages: list[list[str]]
-    dark: bool = True
+    dark: bool = False   # 스레드 글은 전부 흰 배경 (사장님 2026-11-01)
 
     @property
     def parts(self) -> list[str]:
@@ -527,7 +527,7 @@ def dohwa(day: dt.date, t: int) -> Evening:
     kw = {"p": p.label, "E": E, "EH": EL_HANJA[E], "Ew": B["elements"][E]["word"], "M": M, "C": C, "CS": st(C), "K": K, "KS": st(K), "P2": P2,
               "P2S": st(P2), "B": BRANCHES[p.branch], "BH": BRANCHES_HANJA[p.branch], "Ega": josa(E, "이", "가"), "EEHga": josa(f"{E}({EL_HANJA[E]})", "이", "가"), "Creul": josa(C, "을", "를"), "jeol": f"{B['jeolgi'][str(m)]}"}
     body = [fill(x, **kw) for x in B["dohwa"][t]]
-    body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")) for x in body]
+    body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")).replace(f"{p.label}이 ", josa(p.label, "이", "가") + " ") for x in body]
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][t % len(B["dohwa_reply"])]]
     return Evening(f"dohwa-{t}-{p.key}", "dohwa", [body, reply])
 
@@ -632,8 +632,11 @@ def dohwa_ddi(kind: str, p: Period, a: str, n: int) -> Evening | None:
     line = fill(tpl[(n + r.rank) % len(tpl)], D=ddi(a), Y=years_short(a).replace(", ", "·"), p=p.label, name=KINDS[kind]["name"],
                 r=r.rank, short=wb["short"][n % len(wb["short"])], act=_action(kind, lead), why=lead)
     line = line.replace(f"{ddi(a)}는", josa(ddi(a), "은", "는"))
+    act = _action(kind, lead)
+    if act.replace("잘 ", "") in line.replace(f"|{act}", ""):   # 근거와 할 일이 같은 말이면 한 번만
+        line = line.replace(f"|{act}", "")
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][(n + 1) % len(B["dohwa_reply"])]]
-    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [[line], reply])
+    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
 def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
@@ -650,7 +653,7 @@ def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
     line = fill(tpl[(n + s) % len(tpl)], S=STEM_NAMES[s].split("(")[0], p=p.label, gname=f"{g}({GH[g]})", why=t.rstrip("."),
                 act=_action(kind, t), name=KINDS[kind]["name"], r=rk)
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][1]]
-    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [[line], reply])
+    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
 def salgu_tan(day: dt.date, n_tan: int) -> Evening:
@@ -663,23 +666,7 @@ def salgu_tan(day: dt.date, n_tan: int) -> Evening:
     rng.shuffle(order)
     six = order[k * 6:k * 6 + 6]
     p1 = [f"흥미로운 사주 이야기들 (금월선녀 ver.) - {n_tan}탄", ""] + [f"{i}. {t}" for i, t in enumerate(six, 1)]
-    return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]], dark=False)
-
-
-def salgu_month(day: dt.date, n: int) -> Evening | None:
-    """살구식 '이달 일간편': 그달 엔진 계산으로 일간 10개 한 줄씩."""
-    p = _month_periods(day)[0]
-    lines = []
-    for s in range(10):
-        gods = sorted({_god(STEM_ELEMENT[s], STEM_ELEMENT[p.stem]), _god(STEM_ELEMENT[s], BRANCH_ELEMENT[p.branch])})
-        txt = " ".join(B["salgu_god"][g] for g in gods[:1])
-        lines.append(f"{i_(s)}. {STEM_NAMES[s].split('(')[0]}: {'·'.join(f'{g}({GH[g]})' for g in gods)}. {txt}")
-    p1 = [f"흥미로운 사주 이야기들 - {p.label} 일간편", "", f"{josa(p.label, '은', '는')} {copula(p.ganzhi)}", ""] + lines
-    return Evening(f"salgu-month-{p.key}", "salgu", [p1, B["salgu_end"][n % 2]], dark=False)
-
-
-def i_(s: int) -> int:
-    return s + 1
+    return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]])
 
 
 def jangin_pool(day: dt.date):
@@ -730,11 +717,6 @@ def dohwa_pool(day: dt.date, off: int = 0):
 
 
 def salgu_pool(day: dt.date, used: set[str]):
-    n = day.toordinal()
-    if day.day <= 3 or n % 15 == 0:
-        ev = salgu_month(day, n)
-        if ev:
-            yield ev
     yield salgu_tan(day, sum(1 for k in used if k.startswith("salgu-") and k.split("-")[1].isdigit()) + 1)
 
 
