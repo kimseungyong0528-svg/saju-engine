@@ -197,12 +197,12 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
       <select class="field" id="weekSel" aria-label="주 고르기"></select>
       <button class="btn ghost small" id="logout">나가기</button>
     </div>
-    <nav id="tabs" class="hidden">
-      <button data-tab="today" class="on">오늘 올릴 것</button>
-      <button data-tab="week">이번 주</button>
-      <button data-tab="trends">뜬 주제</button>
-      <button data-tab="make">만들기</button>
-      <button data-tab="check">검사</button>
+    <!-- SNS 별로 메뉴를 나눈다 (사장님 2026-11-01 "스레드랑 인스타, 유튜브, 페북 sns별로 다 나눠놔") -->
+    <nav id="tabs">
+      <button data-ch="threads" class="on">스레드</button>
+      <button data-ch="instagram-reel">인스타</button>
+      <button data-ch="youtube">유튜브</button>
+      <button data-ch="facebook-reel">페북</button>
     </nav>
   </header>
   <details id="rules"><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
@@ -242,7 +242,7 @@ fetch('/studio/rules.json').then(r => r.json()).then(R => {
 }).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });
 const AUTO_TIP = '승인하면 정해진 시각에 자동으로 올라가요. 토스 정식 결제 전에는 사이트 주소 줄은 빼고 올라가요.';
 const isDone = it => CH[it.channel]?.auto ? Boolean(S.data.posted?.[it.id]?.ok) : Boolean(S.data.done[it.id]);
-const S = { weeks: [], week: null, data: null, tab: 'status', day: null };
+const S = { weeks: [], week: null, data: null, tab: 'status', ch: 'threads', day: null };
 const $ = s => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
   const n = document.createElement(tag);
@@ -280,7 +280,7 @@ $('#loginForm').addEventListener('submit', async e => {
   }
 });
 $('#logout').addEventListener('click', async () => { await api('logout', { method: 'POST' }).catch(() => {}); show('login'); });
-$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.tab = b.dataset.tab; render(); });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.ch = b.dataset.ch; S.tab = 'status'; render(); });
 $('#weekSel').addEventListener('change', async e => { await loadWeek(e.target.value); });
 $('#zoom').addEventListener('click', () => $('#zoom').classList.add('hidden'));
 
@@ -311,7 +311,7 @@ async function loadWeek(week) {
 }
 
 function render() {
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === S.tab));
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', S.tab === 'status' && b.dataset.ch === S.ch));
   const v = $('#view');
   v.replaceChildren(({ status: viewStatus, today: viewToday, week: viewWeek, trends: viewTrends, make: viewMake, check: viewCheck })[S.tab]());
   window.scrollTo({ top: 0 });
@@ -372,7 +372,14 @@ function postCard(it) {
 
 const weekName = iso => { const d = new Date(iso + 'T00:00:00'); return `${d.getMonth() + 1}월 ${Math.floor((d.getDate() - 1) / 7) + 1}주차`; };
 // 현황: 이 주가 몇 주차인지, 스레드가 준비됐는지, 승인이 끝났는지, 며칠치 올라갔는지, 하루 n개 중 몇 개가 오류 없이 올라갔는지만 보여 준다 (사장님 2026-11-01)
+const STAT = {
+  threads: { name: '스레드', unit: '글', per: 6, auto: true },
+  'instagram-reel': { name: '인스타 릴스', unit: '영상', per: 2, auto: true },
+  youtube: { name: '유튜브 쇼츠', unit: '영상', per: 2, auto: false },
+  'facebook-reel': { name: '페북 릴스', unit: '영상', per: 2, auto: true },
+};
 function viewStatus() {
+  const c = STAT[S.ch] || STAT.threads, ch = STAT[S.ch] ? S.ch : 'threads', need = c.per * 7;
   const m = S.data?.manifest;
   if (!m) return el('div', {}, el('h2', { class: 'sec' }, '현황'), needWeek());
   const posted = S.data.posted || {}, appr = S.data.approved || {};
@@ -382,14 +389,15 @@ function viewStatus() {
   const firstMon = (() => { const d = new Date(m.week + 'T00:00:00'); d.setDate(d.getDate() + ((8 - d.getDay()) % 7)); return iso(d); })();
   const mon = monOf(todayIso()) < firstMon ? firstMon : monOf(todayIso());
   const sun = (() => { const d = new Date(mon + 'T00:00:00'); d.setDate(d.getDate() + 6); return iso(d); })();
-  const days = m.days.filter(d => d.date >= mon && d.date <= sun).map(d => ({ d, th: d.items.filter(i => i.channel === 'threads') })).filter(x => x.th.length);
+  const days = m.days.filter(d => d.date >= mon && d.date <= sun).map(d => ({ d, th: d.items.filter(i => i.channel === ch) })).filter(x => x.th.length);
   const allTh = days.flatMap(x => x.th);
   const claude = allTh.filter(i => i.approved_by === 'claude').length;
   const mine = allTh.filter(i => appr[i.id]).length;
   const today = todayIso();
   // 오류 = 올리다 실패한 글 + 올릴 시각이 30분 넘게 지났는데 안 올라간 글 (사장님 2026-11-01 "업로드 안되면 있음")
-  const late = (x, i) => !posted[i.id]?.ok && Date.now() > new Date(`${x.d.date}T${i.time}:00`).getTime() + 30 * 60000;
-  const why = i => posted[i.id] && !posted[i.id].ok ? `올리기 실패: ${posted[i.id].error}` : '시간이 지났는데 안 올라감';
+  const late = (x, i) => c.auto && !posted[i.id]?.ok && Date.now() > new Date(`${x.d.date}T${i.time}:00`).getTime() + 30 * 60000;
+  const why = i => posted[i.id] && !posted[i.id].ok ? `올리기 실패: ${posted[i.id].error}`
+    : i.approved_by !== 'claude' && !appr[i.id] ? '승인 안 해서 안 올라감' : '시간이 지났는데 안 올라감';
   const st = x => {
     const ok = x.th.filter(i => posted[i.id]?.ok).length, bad = x.th.filter(i => (posted[i.id] && !posted[i.id].ok) || late(x, i));
     return { ok, bad, n: x.th.length, full: ok === x.th.length };
@@ -404,10 +412,10 @@ function viewStatus() {
   const apprLine = (a, b, next) => {
     const seen = new Map();
     for (const dt of next ? (S.more || []) : [S.data]) for (const d of dt.manifest?.days || []) if (d.date >= a && d.date <= b)
-      for (const i of d.items) if (i.channel === 'threads') seen.set(i.id, { i, ok: i.approved_by === 'claude' || (dt.approved || {})[i.id] });
+      for (const i of d.items) if (i.channel === ch) seen.set(i.id, { i, ok: i.approved_by === 'claude' || (dt.approved || {})[i.id] });
     const v = [...seen.values()], n = v.length, ok = v.filter(x => x.ok).length;
     if (!n) return { t: '아직 준비 전', cls: 'bad' };
-    if (n < 42) return { t: `아직 준비 전 (${n} / 42개)`, cls: 'bad' };
+    if (n < need) return { t: `아직 준비 전 (${n} / ${need}개)`, cls: 'bad' };
     if (ok < n) return { t: `승인 기다림 (${ok} / ${n})`, cls: 'bad' };
     return { t: v.some(x => x.i.approved_by === 'claude') ? '클로드에서 이미 승인 완료' : '직접 승인 완료', cls: 'good' };
   };
@@ -415,16 +423,19 @@ function viewStatus() {
   const aNow = apprLine(mon, sun), aNext = apprLine(nMon, nSun, true);
   const card = (k, v, cls) => el('div', { class: 'box' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v));
   return el('div', {},
-    el('h2', { class: 'sec' }, `${weekName(mon)} 스레드 현황`),
+    el('h2', { class: 'sec' }, `${weekName(mon)} ${c.name} 현황`),
     el('p', { class: 'muted' }, `${fmtDate(mon)} (월) ~ ${fmtDate(sun)} (일)`),
     el('div', { class: 'stat' },
-      card('스레드 준비', allTh.length ? `${allTh.length}개 준비됨` : '없음', allTh.length >= 42 ? 'good' : 'bad'),
+      card(`${c.name} 준비`, allTh.length ? `${allTh.length}개 준비됨` : '없음', allTh.length >= need ? 'good' : 'bad'),
       el('div', { class: 'box' }, el('div', { class: 'k' }, '승인'),
         el('div', { class: 'al' }, el('span', {}, `이번 주 ${fmtDate(mon)}~${fmtDate(sun)}`), el('b', { class: aNow.cls }, aNow.t)),
         el('div', { class: 'al' }, el('span', {}, `다음 주 ${fmtDate(nMon)}~${fmtDate(nSun)}`), el('b', { class: aNext.cls }, aNext.t))),
       card('며칠치 올라갔나', `${fullDays} / 7일`),
       el('div', { class: 'box' }, el('div', { class: 'k' }, '오류'), el('div', { class: 'v ' + (errN ? 'bad' : 'good') }, errN ? `있음 ${errN}건` : '없음'),
         errN ? el('ul', { class: 'errs', style: 'margin-top:6px' }, errs.map(({ x, i }) => el('li', {}, `${fmtDate(x.d.date)} (${x.d.weekday}) ${i.time} · ${why(i)}`))) : null)),
+    !c.auto ? el('p', { class: 'muted' }, '유튜브는 아직 자동으로 올리는 연결이 없어요. 영상은 준비돼 있고, 올리기는 직접 해야 해요.') :
+    ch !== 'threads' ? el('p', { class: 'muted' }, el('span', {}, '이 영상들은 스튜디오에서 사장님이 승인한 것만 올라가요. '),
+      el('button', { class: 'btn ghost small', type: 'button', onclick: () => { S.tab = 'today'; render(); } }, '오늘 영상 보고 승인하기')) :
     el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과하고 사장님이 대화방에서 "올려" 하신 주라서 클로드에서 이미 승인 완료했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
     el('h2', { class: 'sec' }, '하루하루 잘 올라가는지'),
     el('div', { class: 'box' }, days.map(x => {
@@ -436,7 +447,7 @@ function viewStatus() {
         el('span', { class: 'dres ' + (s.bad.length ? 'bad' : s.full ? 'ok' : '') }, label),
         s.bad.length ? el('ul', { class: 'errs' }, s.bad.map(i => el('li', {}, `${i.time} · ${why(i)}`))) : null);
     })),
-    el('p', { class: 'muted' }, '칸 하나가 스레드 글 하나예요. 초록은 올라간 것, 빨강은 오류, 빈칸은 아직 안 올라간 것이에요.'));
+    el('p', { class: 'muted' }, `칸 하나가 ${c.name} ${c.unit} 하나예요.`+' 초록은 올라간 것, 빨강은 오류, 빈칸은 아직 안 올라간 것이에요.'));
 }
 
 function viewToday() {
