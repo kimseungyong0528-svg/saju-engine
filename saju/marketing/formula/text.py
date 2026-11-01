@@ -1310,7 +1310,9 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         m = morning(d, used)
         used.add(m.key)
         # 저녁 영상은 아침과 다른 형식. 두 칸 뒤 형식을 쓰면 아침·저녁·다음 날 아침이 서로 겹치지 않는다.
-        m2 = morning(d, used, fmt=rules.morning_format(d + dt.timedelta(days=2)))
+        f2 = rules.morning_format(d + dt.timedelta(days=2))
+        # 저녁 7시에 그날 띠 운세는 늦다 (영상 심사 신뢰 항목 2026-11-01) → 저녁 띠별 운세 표는 다음 날 것
+        m2 = morning(d + dt.timedelta(days=1) if f2 == "sinbi" else d, used, fmt=f2)
         used.add(m2.key)
         ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다

@@ -1,8 +1,21 @@
-"""영상 대본: 화면에 나오는 순위·근거를 사람이 말하듯 읽는 대본 (사장님 2026-11-01 "대화 스크립트 따로").
+"""영상 대사와 밑에 글 (사장님 2026-11-01 "레퍼런스 그대로", "구조를 논의하고 만들어").
 
-화면과 같은 엔진 계산에서만 만든다 (제1조항). 대본은 스레드 글처럼 심사원 55명(11항목 × 5명)이 100점 줄 때까지 고친다.
-타입캐스트가 한 줄씩 읽는다 (video/voice.py). 한자는 읽지 않고 한글만 읽는다 (voice.clean).
-한 영상을 유튜브·인스타·페북에 같이 올리므로 끝말은 '구독이나 팔로우'로 둘 다 부른다.
+레퍼런스 (2026-11-01 크롬으로 유튜브 자동 자막 확인): 잘 터진 띠 순위 쇼츠는 5~9초, 목소리는 화면 제목 한 줄만 읽고 끝.
+  천복 띠 456만 7초 · 재물복 띠 209만 5초 · 무서운 띠 90만 6초 · 복 부르는 띠 34만 9초.
+
+사장님이 정한 구조:
+- 영상은 모두 7초. 타입캐스트는 화면 위 고자극 제목을 읽고 '~ 알아보세요!' / '~ 확인하세요!' 로 끝낸다.
+  예) "12월에 연애운 터지는 띠 순위, 10초 만에 알아보세요!"
+- 밑에 글은 곳마다 다르다 (영상 내용은 같다).
+  유튜브 "나의 12월 연애운을 더 자세히 알고 싶다면 구독!"
+  인스타 릴스 "더 자세한 나의 12월 연애운을 알고 싶다면 댓글을 달아 주세요!" (댓글 단 분께 같은 디엠을 보낸다)
+  페북 = 유튜브 말에서 '구독!' 만 '팔로우!' 로.
+  '미리 알고 싶다면' 같은 뻔한 말 금지. '나의 ○○을 더 자세히'로 내 이야기가 되게 쓴다.
+- 레퍼런스 화면에 밑에 글(분홍 글)이 있는 형식(가림식, 무서운 띠 90만)은 그 글을 영상 화면에 넣는다 → 곳마다 영상 3개.
+  레퍼런스에 밑에 글이 없는 형식은 화면에 넣지 않고 게시물 설명글 끝에만 쓴다.
+- 대사·상단 제목·영상 내용·밑에 글은 스레드와 같은 심사원 55명(11항목) + 행동 유도 심사원 5명이 100점 줄 때까지 고친다
+  (thread_rules.json judges.video, CLAUDE.md 제1조항).
+화면 제목과 같은 글만 읽으므로 엔진 계산과 어긋나지 않는다 (제1조항). 한자는 읽지 않는다 (voice.clean).
 """
 
 from __future__ import annotations
@@ -10,103 +23,89 @@ from __future__ import annotations
 import datetime as dt
 import re
 
-from .text import (KINDS, Morning, _basis, ddi, josa, main_whys, start_label, why_bank, years_short)
+from .text import josa
 
-END = "놓치기 싫으면 구독이나 팔로우 해 두세요."
-# 십신을 처음 듣는 사람도 알아듣게 한 마디로 (쉬운 설명 심사 2026-11-01). 식상=내가 내보냄, 인성=내가 받음 (sipsin_fact).
-GOD_PLAIN = {"비겁": "나와 같은 편 기운", "식상": "내 마음을 밖으로 꺼내는 기운", "재성": "내가 손에 쥐는 돈 기운",
-             "관성": "나를 다스리고 자리를 주는 기운", "인성": "나를 받쳐 주고 챙겨 주는 기운"}
-
-
-def _years(a: str) -> str:
-    """화면에 나오는 출생연도 네 개를 다 읽는다 (74·62년생만 빠지면 그분들은 넘긴다, 심사 2026-11-01)."""
-    return years_short(a) + "년생"
+SECONDS = 7
+ON_SCREEN_CTA = {"hidden"}           # 레퍼런스 화면에 밑에 글이 있는 형식
+CHANNELS = ("youtube", "instagram-reel", "facebook-reel")
+# '나의 ○○' 에 들어갈 말 (순위 종류마다)
+TOPIC = {"money": "재물운", "love": "연애운", "work": "승진운", "help": "귀인운", "study": "합격운",
+         "move": "이사·이직운", "care": "조심할 일"}
 
 
-def _say(line: str) -> str:
-    """듣는 말로: 문장 끝을 맺는다."""
-    line = line.strip()
-    if line.endswith("조심"):
-        line += "하세요"
-    elif line.endswith("사람"):
-        line += "이 생겨요"
-    return line if line.endswith((".", "?", "!")) else line + "."
+def _plain(s: str) -> str:
+    s = re.sub(r"<[^>]+>", "", s)
+    s = re.sub(r"\(.+?\)", "", s)
+    return re.sub(r"[“”‘’\"']", "", s).strip()
 
 
-def _spoken_basis(m: Morning, r) -> tuple[str, str]:
-    """(근거 한 문장, 그래서 생기는 일 한 문장). 화면·스레드와 같은 엔진 근거(_basis)를 말로 바꾼다."""
-    whys = main_whys(r) if r.score > 0 else sorted(r.why)
-    if not whys:
-        return "", ""
-    t = whys[0][1]
-    ls = _basis(m.kind, m.period, r, t)
-    short = why_bank(m.kind, t)["short"][0]
-    if len(ls) == 4:
-        return _say(f"{ls[0]} {ls[1]} {ls[2]}"), _say(ls[3])
-    if len(ls) == 3:
-        # '11월 기해(己亥)의 위 글자 기(己)의 토(土) 기운은' 은 귀로 듣기 어렵다 → '11월 위 글자 기토는'
-        h = re.search(r"위 글자 (\S)\(.\)의 (\S)\(.\) 기운", ls[0])
-        b = re.search(r"\S+\((.)(.)\)의 (\S)\(.\) 기운", ls[0])
-        src = f"{m.period.label} 위 글자 {h[1]}{h[2]}" if h else f"{m.period.label} 아래 글자 {m.period.ganzhi[1]}{b[3]}" if b else ls[0]
-        g = re.match(r"(\S+)\(", ls[1].split("에게 ")[1])[1]
-        return _say(f"{josa(src, '은', '는')} {ls[1].split('에게 ')[0]}에게 {g}이에요. {g}은 {GOD_PLAIN[g]}이에요"), _say(short)
-    return "", _say(short)
-
-
-def _top(m: Morning, r, full: bool) -> list[str]:
-    head = f"{r.rank}위, {ddi(r.ddi)}. {_years(r.ddi)}이에요."
-    basis, what = _spoken_basis(m, r)
-    if not full:
-        return [head, what]
-    return [head, basis, what]
-
-
-def _hook(m: Morning) -> str:
-    """제목 3줄을 한 번에 말한다. '1위부터 12위.'처럼 끊긴 말로 끝내지 않는다 (사람 말투 심사)."""
-    t = [re.sub(r"\(.+?\)", "", x).replace("“", "").replace("”", "").replace("‘", "").replace("’", "") for x in m.title]
-    if len(t) == 3 and t[2].startswith("1위"):
-        return f"{t[0]} {t[1]}, 1위부터 12위까지 바로 볼게요."
-    return f"{t[0]}, {' '.join(t[1:])}. 1위부터 바로 볼게요."
-
-
-def _clean(lines: list[str]) -> list[str]:
-    return [x.strip() for x in lines if x and x.strip()]
-
-
-def script(m: Morning) -> list[str]:
-    """한 줄 = 타입캐스트 한 번 = 자막 한 장."""
+def top_title(m) -> str:
+    """화면 위에 보이는 제목 그대로 (형식마다 화면이 다르다)."""
+    if m.fmt == "hidden":
+        from .render import B
+        a, b = [x.replace("{p}", m.period.label) for x in B["kinds"][m.kind]["hidden"]]
+        return f"{a} {b} 띠 순위"
     if m.fmt == "sinbi":
         d = dt.date.fromisoformat(m.data["date"])
-        out = [f"{d.month}월 {d.day}일, 내 띠 운세 바로 볼게요.", f"오늘은 {m.data['ganzhi']}일이에요."]
-        out += [f"{ddi(a)}, {t}" for a, t in m.data["text"].items()]
-        return _clean(out + ["내 띠 얘기 맞았는지 댓글로 남겨 주세요.", END])
+        return f"{d.month}월 {d.day}일 띠별 운세"
+    if m.fmt == "solo":
+        return " ".join(_plain(x) for x in m.data["lines"]).replace(",", ", ")
     if m.fmt == "forceteller":
-        d = m.data
-        e = d["el"]
-        say = [x.replace("\n", " ") for x in d["say"]]
-        if d["tpl"] in ("mlack", "mmuch"):
-            # '수의 달 수 없는 사주'는 귀로 들으면 숫자 '수'처럼 들린다 → 기운 이름을 붙여 말한다 (쉬운 설명 심사)
-            head = f"{josa(m.period.label, '은', '는')} {e} 기운이 센 달이에요. 내 사주에 {e} 기운이 {'없다면' if d['tpl'] == 'mlack' else '많다면'} 꼭 들어 보세요."
-        else:
-            head = " ".join(x.replace("<em>", "").replace("</em>", "") for x in d["head"]) + "."
-        for el in {e, d.get("pair") or e}:
-            say = [x.replace(f"{el} 많은 ", f"{el} 기운 많은 ").replace(f"{el} 없는 ", f"{el} 기운 없는 ") for x in say]
-        return _clean([head] + [_say(x) for x in say] + [END])
-    k = KINDS[m.kind]
-    p = m.period
-    intro = f"{josa(p.label, '은', '는')} {start_label(p).split('(')[0]}부터 {p.ganzhi.split('(')[0]}{'년' if p.year else '월'}이에요."
+        h1, h2 = (_plain(x) for x in m.data["head"])
+        return f"{h1} {h2}"
+    return " ".join(_plain(x) for x in m.title[:2])   # 천복식: '1위부터 12위'는 화면 글로만
+
+
+def _spoken(s: str, m) -> str:
+    """'수 없는 사주'는 귀로 들으면 숫자 '수'처럼 들린다 → 기운 이름을 붙인다 (쉬운 설명 심사)."""
+    if m.fmt == "forceteller":
+        for el in {m.data["el"], m.data.get("pair") or m.data["el"]}:
+            s = re.sub(rf"(?<![가-힣]){el}(의| 없는| 많은)", rf"{el} 기운\1", s)
+    return s
+
+
+def script(m) -> list[str]:
+    """타입캐스트가 읽는 한 줄: 화면 위 제목 + '~ 알아보세요!/확인하세요!'."""
+    if m.fmt == "sinbi":
+        # 화면 제목(날짜)만으로는 멈추지 않는다 (후킹 심사) → 표에 실제로 있는 좋은 띠·조심할 띠를 묶어 말한다
+        # 저녁 영상은 다음 날 표라서 '오늘'이라 하지 않고 날짜로 말한다
+        return [f"{top_title(m).replace(' 띠별 운세', '')} 웃는 띠와 조심할 띠, 지금 바로 확인하세요!"]
+    if m.fmt == "forceteller":
+        h1, h2 = (_spoken(_plain(x), m) for x in m.data["head"])
+        # 화면은 7초라 앞 두 장만 보이고 나머지 풀이는 설명란에 있다 (render.forceteller)
+        if h2.endswith("이렇게"):        # '11월, 수의 달 / 수 없는 사주는 이렇게'
+            return [f"{h1.replace(',', '은')}! {h2[:-3]}어떻게 해야 할까요? 설명란에서 끝까지 확인하세요!"]
+        if h2.endswith("만나면"):        # '수 많은 사람과 / 목 많은 사람이 만나면'
+            return [f"{h1} {h2} 어떻게 될까요? 설명란에서 끝까지 확인하세요!"]
+        return [f"{h1} {h2}, 설명란에서 끝까지 확인하세요!"]
     if m.fmt == "hidden":
-        out = [_hook(m), intro]
-        for r in reversed(m.rows[3:]):
-            out.append(_say(f"{r.rank}위 {ddi(r.ddi)}, {m.data['phrase'][r.ddi]}"))
-        out.append("이제 3위부터예요.")
-        for r in reversed(m.rows[:3]):
-            # 화면 맨 아래 1~3위 꼬리말(phrase)을 그대로 읽는다 (제1조항). 2·3위가 같은 말로 겹치지 않는다.
-            basis, _ = _spoken_basis(m, r)
-            out += [f"{r.rank}위, {ddi(r.ddi)}. {_years(r.ddi)}이에요."] + ([basis] if r.rank == 1 else []) + [_say(m.data["phrase"][r.ddi])]
-        return _clean(out + [f"내 띠는 몇 위였는지 댓글로 남겨 주세요.", END])
-    out = [_hook(m), intro]
-    for r in m.rows[:3]:
-        out += _top(m, r, full=True)
-    out.append(f"4위부터 12위까지는 화면에 다 적어 뒀어요." if m.fmt == "tier" else f"{k['name']} 순위 전체는 화면에서 확인하세요.")
-    return _clean(out + ["내 띠는 몇 위였는지 댓글로 남겨 주세요.", END])
+        # 화면에서 1~3위는 ???? 로 가려져 있고 설명란 맨 아래에 있다 → '10초 만에'라 하면 거짓 (신뢰 심사)
+        return [f"{top_title(m)}, 1위부터 3위는 설명란에서 확인하세요!"]
+    if m.fmt == "solo":
+        # 화면엔 제목만 있고 띠 3개는 설명란에 있다
+        return [f"{top_title(m)}, 설명란에서 바로 확인하세요!"]
+    return [f"{top_title(m)}, 내 띠는 몇 위인지 확인하세요!"]   # 천복식: 12띠가 화면에 다 있다
+
+
+def _topic(m) -> str:
+    """'나의 ○○' : 영상 주제와 같은 말 (행동 유도 심사: 주제와 따로 놀지 않게)."""
+    if m.fmt == "sinbi":
+        return "띠 운세"                      # 하루 지나면 끝나는 날짜 운세는 '더 자세히'와 안 맞는다
+    if m.fmt == "forceteller":
+        h2 = _plain(m.data["head"][1])
+        if "만나야 하는 사람" in h2:
+            return "인연 궁합"
+        if h2.endswith("만나면"):
+            return "궁합"
+        if "조심" in h2:
+            return "사주가 조심할 점"
+        return f"사주 속 {m.data['el']} 기운"
+    return f"{m.period.label} {TOPIC[m.kind]}"
+
+
+def cta(m) -> dict[str, str]:
+    """밑에 글: 곳마다 다르게 (유튜브 구독 · 인스타 댓글 · 페북 팔로우)."""
+    t = josa(_topic(m), "을", "를")
+    yt = f"나의 {t} 더 자세히 알고 싶다면 구독!"
+    return {"youtube": yt, "instagram-reel": f"더 자세한 나의 {t} 알고 싶다면 댓글을 달아 주세요!",
+            "facebook-reel": yt.replace("구독!", "팔로우!")}
