@@ -43,7 +43,44 @@ def _thumb(video: Path, at: float, out: Path) -> None:
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{at:.2f}", "-i", str(video), "-frames:v", "1", str(out)], check=True)
 
 
-def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True) -> dict:
+TH_SLOTS = [("오전", "07:30"), ("점심", "12:00"), ("오후", "15:00"), ("저녁", "18:00"), ("밤", "21:00"), ("늦은밤", "23:00")]
+
+
+def shift_threads(manifest: dict, frm: str) -> int:
+    """스레드 글을 한 칸씩 뒤로 미룬다 (사장님 2026-11-01 "스레드는 한개씩 미루자").
+
+    frm 은 '2026-11-01 늦은밤' 처럼 날짜와 칸. 그 칸부터 뒤의 스레드 글이 모두 다음 칸으로 간다.
+    번호(id)는 그대로 둔다. 사장님이 /studio 에서 누른 승인 표시가 번호에 붙어 있기 때문이다.
+    마지막 글은 다음 날 아침 칸으로 가고, 그 날이 묶음에 없으면 새로 만든다. 옮긴 글 수를 돌려준다.
+    """
+    d0, s0 = frm.split()
+    order = [s for s, _ in TH_SLOTS]
+    key0 = (d0, order.index(s0))
+    moved = []
+    for day in manifest["days"]:
+        keep = []
+        for it in day["items"]:
+            if it["channel"] == "threads" and (day["date"], order.index(it["slot"])) >= key0:
+                moved.append((day["date"], order.index(it["slot"]), it))
+            else:
+                keep.append(it)
+        day["items"] = keep
+    for date, i, it in moved:
+        j = i + 1
+        nd = dt.date.fromisoformat(date) + dt.timedelta(days=j // len(TH_SLOTS))
+        it["slot"], it["time"] = TH_SLOTS[j % len(TH_SLOTS)]
+        day = next((d for d in manifest["days"] if d["date"] == nd.isoformat()), None)
+        if day is None:
+            day = {"date": nd.isoformat(), "weekday": WEEKDAYS[nd.weekday()], "items": []}
+            manifest["days"].append(day)
+        day["items"].append(it)
+    for day in manifest["days"]:
+        day["items"].sort(key=lambda it: it["time"])
+    return len(moved)
+
+
+def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
+          approve_threads: bool = False) -> dict:
     week = out / start.isoformat()
     (week / "유튜브").mkdir(parents=True, exist_ok=True)
     (week / "인스타").mkdir(parents=True, exist_ok=True)
@@ -104,6 +141,20 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
     manifest["daangn"] = {"소식": "\n".join(["이번 주 띠별 운세", ""] + [f"▪ {t}" for t in titles] +
                                          ["", "띠는 태어난 해 하나만 본 것이에요.", "생년월일과 태어난 시간으로 보는 내 운세는 운명서재에서", SITE_URL])}
     shutil.rmtree(week / "_작업", ignore_errors=True)
+    if approve_threads:
+        # 심사원 50명 심사를 통과한 주만 이 표시를 단다 (CLAUDE.md 제2조항). 표시가 있으면 /studio 승인 없이 시간 맞춰 올라간다.
+        n = 0
+        for d in manifest["days"]:
+            for it in d["items"]:
+                if it["channel"] == "threads":
+                    it["approved_by"] = "claude"
+                    n += 1
+        manifest["threads_approved_by"] = "claude"
+        print(f"스레드 글 {n}개 클로드 승인 (심사 통과)")
+    if shift:
+        print(f"스레드 글 {shift_threads(manifest, shift)}개를 한 칸씩 미뤘어요 ({shift}부터)")
+        rows = [[f"{d['date']} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]]
+                for d in manifest["days"] for it in d["items"]]
     with open(week / "일정표.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(["올릴 시각", "채널", "형식", "제목", "번호"])
@@ -121,6 +172,8 @@ def main(argv=None) -> int:
     ap.add_argument("--used", default="", help="이미 쓴 재료 이름들 (쉼표로)")
     ap.add_argument("--publish", action="store_true")
     ap.add_argument("--no-video", action="store_true")
+    ap.add_argument("--approve-threads", action="store_true", help="심사 통과한 주: 스레드 글을 클로드가 한 번에 승인")
+    ap.add_argument("--shift-threads", default="", help="'2026-11-01 늦은밤' 처럼: 그 칸부터 스레드 글을 한 칸씩 미룬다")
     a = ap.parse_args(argv)
     start = dt.date.fromisoformat(a.start)
     used = set(filter(None, a.used.split(",")))
@@ -129,7 +182,7 @@ def main(argv=None) -> int:
         publish.status(start.isoformat(), "running", "만드는 중")
         used |= publish.used_keys(before=start.isoformat())
     try:
-        r = build(start, a.days, Path(a.out), used, video=not a.no_video)
+        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads)
     except Exception as e:
         if a.publish:
             publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")

@@ -138,7 +138,8 @@ def _threads(plan90):
 
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
-                                                     "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis"]
+                                                     "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
+                                                     "long_list_spacing", "emoji_marks"]
 
 
 def test_heart_first(plan90):
@@ -394,3 +395,74 @@ def test_video_fits_studio_upload():
     """넷리파이 함수는 6MB까지 받고, 영상은 글자(base64)로 바뀌어 4/3배가 된다. 2026-11-01 5MB 영상이 413으로 막혔다."""
     from saju.marketing.formula import render
     assert render.MAX_VIDEO * 4 / 3 < 5_000_000
+
+
+def test_shift_threads_one_slot():
+    """사장님 2026-11-01 '2탄은 내일 아침 7시반으로, 스레드는 한개씩 미루자': 번호는 그대로, 칸만 한 칸씩."""
+    from saju.marketing.formula.__main__ import shift_threads
+    def th(i, slot):
+        return {"id": f"x{i}", "channel": "threads", "slot": slot, "time": "", "title": str(i)}
+    man = {"days": [{"date": "2026-11-01", "weekday": "일", "items": [th(1, "오후"), th(2, "늦은밤"), {"id": "r", "channel": "youtube", "slot": "오전", "time": "07:00"}]},
+                    {"date": "2026-11-02", "weekday": "월", "items": [th(3, "오전"), th(4, "늦은밤")]}]}
+    assert shift_threads(man, "2026-11-01 늦은밤") == 3
+    where = {it["id"]: (d["date"], it["slot"], it["time"]) for d in man["days"] for it in d["items"]}
+    assert where["x1"] == ("2026-11-01", "오후", "")
+    assert where["x2"] == ("2026-11-02", "오전", "07:30")
+    assert where["x3"] == ("2026-11-02", "점심", "12:00")
+    assert where["x4"] == ("2026-11-03", "오전", "07:30")
+    assert where["r"][0] == "2026-11-01"
+
+
+def test_long_list_spacing():
+    """사장님 2026-11-01: 긴 번호 목록은 번호 사이에 빈 줄, 짧은 번호 목록은 붙여 둔다. 만든 글 전부 검사."""
+    spaced = 0
+    for dd in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in dd.threads:
+            for raw, part in zip(["\n".join(p).strip() for p in e.shown], e.parts):
+                assert T.space_long_lists(part) == part and part.replace("\n\n", "\n") == raw.replace("\n\n", "\n"), e.key
+                spaced += part != raw
+                lines = part.split("\n")
+                for a, b in zip(lines, lines[1:]):
+                    if T.NUM_LINE.match(a) and T.NUM_LINE.match(b):   # 붙어 있는 번호 목록은 짧은 것뿐
+                        assert len(a) + len(b) <= 2 * T.LONG_ITEM + 20, (e.key, a)
+    assert spaced >= 14  # 살구식 '흥미로운 사주 이야기들' 탄은 전부 띄운다
+    assert "\n\n2." in T.space_long_lists("1. " + "가" * 40 + "\n2. " + "나" * 40)
+    assert T.space_long_lists("1. 1985년생 소띠\n2. 1973년생 소띠") == "1. 1985년생 소띠\n2. 1973년생 소띠"
+
+
+def test_emoji_marks():
+    """사장님 2026-11-01: 숫자는 글자로, 띠 이름표엔 띠 이모지, 좋은·조심 신호는 🟢·🔴, 첫 줄 앞에 이모지 하나."""
+    for dd in T.plan(dt.date(2026, 11, 1), 21):
+        for _, _, e in dd.threads:
+            text = "\n".join(e.parts)
+            assert not re.search("[0-9]\ufe0f?\u20e3", text), e.key            # 1️⃣ 금지
+            assert T._is_emoji(e.parts[0].lstrip()[0]), e.key                  # 첫 줄 이모지
+            for line in text.split("\n"):
+                mo = re.match(r"^(\d+\.\s|.*?년생\s)?(원숭이|호랑이|돼지|토끼|쥐|소|용|뱀|말|양|닭|개)띠", line)
+                assert not mo, (e.key, line)                                    # 이름표 자리 띠는 전부 이모지가 붙었다
+                if "신호" in line and line[:1] in "※🟢🔴":
+                    assert line[0] in "🟢🔴", (e.key, line)
+                    assert (line[0] == "🔴") == any(w in line for w in T.BAD_HEAD), (e.key, line)
+
+
+def test_claude_approves_judged_threads(monkeypatch):
+    """사장님 2026-11-01: 심사 통과한 주의 스레드는 /studio 승인 없이 시간 맞춰 올린다. 다른 채널은 여전히 승인이 있어야 한다."""
+    from saju.marketing import meta, publish
+    plan = {"week": "2026-11-01", "approved": {}, "posted": {}, "items": [
+        {"id": "a", "slot": "오전", "channel": "threads", "approved_by": "claude", "title": "t", "texts": {}},
+        {"id": "b", "slot": "오전", "channel": "threads", "title": "t", "texts": {}},
+        {"id": "c", "slot": "오전", "channel": "instagram-reel", "title": "t", "texts": {}}]}
+    monkeypatch.setattr(publish, "_call", lambda *a, **k: plan)
+    out = []
+    monkeypatch.setattr("builtins.print", lambda *a, **k: out.append(" ".join(map(str, a))))
+    meta.run("오전", "2026-11-02", dry=True)
+    assert "올릴 것: a t" in out and any("승인 안 됨): b" in x for x in out) and any("승인 안 됨): c" in x for x in out)
+
+
+def test_follow_link_only_after_toss(monkeypatch):
+    """사장님 2026-11-01: 토스 연동되면 팔로우 말 뒤에 사이트 링크까지. 그 전엔 링크 없음."""
+    from saju.marketing import meta
+    monkeypatch.delenv("SNS_SITE_LINK", raising=False)
+    assert meta.with_link(["본글", "팔로우 해 두세요!"]) == ["본글", "팔로우 해 두세요!"]
+    monkeypatch.setenv("SNS_SITE_LINK", "on")
+    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1].endswith("https://unmyeong-saju.com")

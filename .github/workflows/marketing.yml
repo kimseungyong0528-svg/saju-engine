@@ -4,10 +4,9 @@
 # 게시물은 사이트 저장소에만 올라가므로 사이트 배포(넷리파이 크레딧)는 쓰지 않는다.
 name: SNS 게시물 만들기
 
-# 매일 오후 2시(한국)에 다음 날 하루치를 저절로 만든다. 사장님이 저녁에 /studio 에서 보고 승인한다.
+# 매일 저절로 만드는 일정은 껐다 (사장님 2026-11-01 "그건 꺼야되고"). 심사원 50명 심사(CLAUDE.md 제2조항)를
+# 거치지 않은 글이 올라가기 때문이다. 심사를 마친 주만 사장님 "올려" 뒤에 손으로 돌린다.
 on:
-  schedule:
-    - cron: "7 5 * * *"
   repository_dispatch:
     types: [studio]
   workflow_dispatch:
@@ -19,6 +18,14 @@ on:
         description: 며칠치 (1~14, 보통 7)
         required: false
         default: "7"
+      shift:
+        description: 스레드 글 한 칸씩 미루기 시작 칸 (예 "2026-11-01 늦은밤", 비우면 안 미룸)
+        required: false
+        default: ""
+      approve:
+        description: 심사원 50명 심사를 통과한 주면 true (스레드 글을 클로드가 한 번에 승인)
+        required: false
+        default: "false"
 
 concurrency:
   group: studio-${{ github.event.client_payload.start || inputs.start || 'daily' }}
@@ -34,6 +41,8 @@ jobs:
     env:
       START: ${{ github.event.client_payload.start || inputs.start }}
       DAYS: ${{ github.event.client_payload.days || inputs.days || 7 }}
+      SHIFT: ${{ inputs.shift || '' }}
+      APPROVE: ${{ inputs.approve || 'false' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
       WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
       SAJU_VOICE: ${{ vars.SAJU_VOICE || 'F2' }}
@@ -84,7 +93,7 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
         # 공식(사장님 2026-11-01): 아침 영상 5형식 + 저녁 스레드 이어 쓰기. 배경 영상은 처음 한 번 받아서 캐시에 둔다.
-        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish
+        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish --shift-threads "$SHIFT" $([ "$APPROVE" = "true" ] && echo --approve-threads)
       - name: 실패하면 관리 사이트에 알리기
         if: failure()
         run: |
