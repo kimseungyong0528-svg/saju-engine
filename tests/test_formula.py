@@ -139,7 +139,7 @@ def _threads(plan90):
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
                                                      "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
-                                                     "long_list_spacing"]
+                                                     "long_list_spacing", "emoji_marks"]
 
 
 def test_heart_first(plan90):
@@ -418,9 +418,28 @@ def test_long_list_spacing():
     spaced = 0
     for dd in T.plan(dt.date(2026, 11, 1), 8):
         for _, _, e in dd.threads:
-            for raw, part in zip(["\n".join(p).strip() for p in e.pages], e.parts):
+            for raw, part in zip(["\n".join(p).strip() for p in e.shown], e.parts):
                 assert T.space_long_lists(part) == part and part.replace("\n\n", "\n") == raw.replace("\n\n", "\n"), e.key
                 spaced += part != raw
+                lines = part.split("\n")
+                for a, b in zip(lines, lines[1:]):
+                    if T.NUM_LINE.match(a) and T.NUM_LINE.match(b):   # 붙어 있는 번호 목록은 짧은 것뿐
+                        assert len(a) + len(b) <= 2 * T.LONG_ITEM + 20, (e.key, a)
     assert spaced >= 14  # 살구식 '흥미로운 사주 이야기들' 탄은 전부 띄운다
     assert "\n\n2." in T.space_long_lists("1. " + "가" * 40 + "\n2. " + "나" * 40)
     assert T.space_long_lists("1. 1985년생 소띠\n2. 1973년생 소띠") == "1. 1985년생 소띠\n2. 1973년생 소띠"
+
+
+def test_emoji_marks():
+    """사장님 2026-11-01: 숫자는 글자로, 띠 이름표엔 띠 이모지, 좋은·조심 신호는 🟢·🔴, 첫 줄 앞에 이모지 하나."""
+    for dd in T.plan(dt.date(2026, 11, 1), 21):
+        for _, _, e in dd.threads:
+            text = "\n".join(e.parts)
+            assert not re.search("[0-9]\ufe0f?\u20e3", text), e.key            # 1️⃣ 금지
+            assert T._is_emoji(e.parts[0].lstrip()[0]), e.key                  # 첫 줄 이모지
+            for line in text.split("\n"):
+                mo = re.match(r"^(\d+\.\s|.*?년생\s)?(원숭이|호랑이|돼지|토끼|쥐|소|용|뱀|말|양|닭|개)띠", line)
+                assert not mo, (e.key, line)                                    # 이름표 자리 띠는 전부 이모지가 붙었다
+                if "신호" in line and line[:1] in "※🟢🔴":
+                    assert line[0] in "🟢🔴", (e.key, line)
+                    assert (line[0] == "🔴") == any(w in line for w in T.BAD_HEAD), (e.key, line)

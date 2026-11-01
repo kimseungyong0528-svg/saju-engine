@@ -328,7 +328,7 @@ class Renderer:
         dark = e.dark
         bg, fg, sub = ("#101010", "#f3f3f3", "#8a8a8a") if dark else ("#fff", "#111", "#999")
         pngs = []
-        for i, lines in enumerate(e.pages, 1):
+        for i, lines in enumerate(e.shown, 1):
             body = "".join(f"<p>{_esc(x)}</p>" if x else "<div class=gap></div>" for ln in lines for x in ln.split("\n"))
             html = f"""<style>body{{background:{'#101010' if dark else '#000'};font-family:'Noto Sans KR'}}
             .w{{position:absolute;left:{40 if dark else 18}px;right:{30 if dark else 18}px;top:50%;transform:translateY(-50%);background:{bg};color:{fg};border-radius:8px;padding:{'0' if dark else '50px 40px 40px'}}}

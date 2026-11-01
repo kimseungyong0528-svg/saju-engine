@@ -353,7 +353,12 @@ class Evening:
     @property
     def parts(self) -> list[str]:
         """스레드에 올릴 글: 첫 장은 본글, 나머지는 내 댓글로 이어 쓴다."""
-        return [space_long_lists("\n".join(p).strip()) for p in self.pages]
+        return [space_long_lists("\n".join(p).strip()) for p in self.shown]
+
+    @property
+    def shown(self) -> list[list[str]]:
+        """사람에게 보이는 장들 (이모지 규칙을 입힌 것). 스레드 글과 캡처 영상이 같은 것을 쓴다."""
+        return emojify(self)
 
     def texts(self) -> dict[str, dict]:
         n = len(self.parts)
@@ -1310,6 +1315,63 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     _vary_lines(out)
     _fresh_acts(out)
     return out
+
+
+# 이모지 규칙 (사장님 2026-11-01 "띠는 이모지로 다 넣고 좋고 나쁨도 저렇게, 첫 글 시작하기 전에도 잘 보이는 이모지 하나. 전부 못박아둬")
+# 번호는 숫자 글자 그대로 둔다("1."), 숫자 이모지(1️⃣)는 쓰지 않는다.
+DDI_EMOJI = {"쥐": "🐭", "소": "🐮", "호랑이": "🐯", "토끼": "🐰", "용": "🐲", "뱀": "🐍",
+             "말": "🐴", "양": "🐑", "원숭이": "🐵", "닭": "🐔", "개": "🐶", "돼지": "🐷"}
+ELEM_EMOJI = {"목": "🌳", "화": "🔥", "토": "⛰️", "금": "🪙", "수": "💧"}
+KIND_EMOJI = {"love": "💕", "money": "💰", "work": "💼", "help": "🤝", "study": "📚", "move": "🧳", "care": "🌙"}
+GOOD, BAD = "🟢", "🔴"
+BAD_HEAD = ("조심", "속도 줄", "멈추")
+
+
+def _is_emoji(ch: str) -> bool:
+    return ord(ch[0]) >= 0x2190 and not ("\uac00" <= ch[0] <= "\ud7a3") and ch[0] not in "※←→↑↓"
+
+
+def lead_emoji(e: Evening) -> str:
+    """첫 줄 앞에 붙일 이모지: 글 종류에 어울리는 것 하나."""
+    k = e.key
+    if k.startswith("salgu-list"):
+        return "📌"
+    if k.startswith("salgu"):
+        return "🔮"
+    if k.startswith("jangin-double"):
+        return "🎉"
+    if k.startswith("dohwa-list-"):
+        return ELEM_EMOJI.get(k.split("-")[2], "💡")
+    if k.startswith("dohwa-ten"):
+        return "✨"
+    if k.startswith("dohwa"):
+        return "💡"
+    return KIND_EMOJI.get(e.kind, "✨")
+
+
+DDI_LABEL = re.compile(r"^(\d+\.\s|.*?년생\s)?(원숭이|호랑이|돼지|토끼|쥐|소|용|뱀|말|양|닭|개)띠")
+
+
+def _ddi(line: str) -> str:
+    """띠가 이름표 자리(줄 맨 앞, '1.' 다음, '○○년생' 다음)에 오면 띠 이모지를 붙인다. 문장 중간에는 붙이지 않는다(읽기 어려움)."""
+    mo = DDI_LABEL.match(line)
+    if not mo:
+        return line
+    i = mo.start(2)
+    return line[:i] + f"{DDI_EMOJI[mo.group(2)]} " + line[i:]
+
+
+def emojify(e: Evening) -> list[list[str]]:
+    """보여 줄 글: 띠 이름 앞에 띠 이모지, 좋은·조심 신호 머리에 🟢·🔴, 첫 줄 앞에 글에 어울리는 이모지 하나.
+    e.pages(재료·검사용 원문)는 그대로 두고, 스레드 글(parts)과 캡처 영상이 이것을 쓴다."""
+    pages = [[_ddi(x) for x in p] for p in e.pages]
+    for p in pages:
+        for i, x in enumerate(p):
+            if x.startswith("※ ") and ("신호" in x or "생기는 일" in x or "멈추" in x):
+                p[i] = (BAD if any(w in x for w in BAD_HEAD) else GOOD) + x[1:]
+    if pages and pages[0] and pages[0][0] and not _is_emoji(pages[0][0].lstrip()[0]):
+        pages[0][0] = f"{lead_emoji(e)} {pages[0][0]}"
+    return pages
 
 
 def _vary_promise(e: Evening, recent: list[str]) -> None:
