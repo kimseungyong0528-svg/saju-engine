@@ -159,8 +159,15 @@ def test_dohwa_short_good(plan90):
     for e in _threads(plan90):
         if e.style != "dohwa":
             continue
-        body = [x for x in e.pages[0] if x.strip()]
+        if e.key.startswith(("dohwa-list-", "dohwa-ten-")):   # 원문 목록 글 (❶~❺, 10일간 스포): 심사원 레퍼런스 지적으로 한두 줄 규칙에서 뺀다
+            body = e.pages[0]
+            assert any("이에요" in x for x in body[-2:]), e.key   # 끝에 십신 뜻 풀이
+            assert not [w for w in ("조심", "과열", "주의", "위험") if w in " ".join(body)], e.key
+            continue
+        head, *why = "\n".join(e.pages[0]).split("\n\n")
+        body = [x for x in head.split("\n") if x.strip()]
         assert len(body) <= 2, e.key
+        assert not why or (why[0].split("\n")[0] in T.DOHWA_WHY_HEAD and len(why[0].split("\n")) <= 4), e.key   # 근거 1~3줄
         assert not [w for w in ("조심", "과열", "주의", "서두르", "위험") if w in " ".join(body)], e.key
 
 
@@ -193,6 +200,10 @@ def test_salgu_one_theme(plan90):
     tans = [e for e in _threads(plan90) if e.style == "salgu"]
     love = 0
     for e in tans:
+        if e.key.startswith("salgu-list-"):   # 정리본은 제목 하나가 주제 (레퍼런스 정리본 틀)
+            assert "정리본" in e.pages[0][0] and e.topic.split("-")[-1] in ("love", "money", "flow", "self"), e.key
+            love += e.topic.endswith("love")
+            continue
         items = [x.split(". ", 1)[1] for x in e.pages[0] if re.match(r"^\d\. ", x)]
         th = {T.salgu_theme(x) for x in items}
         assert th == {"love"} or th == {"self"} or th <= {"money", "flow"}, (e.key, th)
@@ -213,7 +224,7 @@ def test_reason_short(plan90):
 # ── 심사원 30명 + 상위 레퍼런스 90개 (사주장인·도화도르·살구, 사장님 2026-11-01) ──
 def test_judges_rubric_fixed():
     J = RULES["judges"]
-    assert J["pass"] == 97 and J["per_criterion"] == 5   # 사장님 2026-11-01: 50명, 10항목, 97점, 냉정하게
+    assert J["pass"] == 100 and J["per_criterion"] == 5   # 사장님 2026-11-01: 50명, 10항목, 100점(처음 97점), 냉정하게
     assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference", "expert", "easy", "concrete", "comment"]
     assert all(c["name"] and c["minus"] for c in J["criteria"])
     assert len(J["criteria"]) * J["per_criterion"] == 50
@@ -337,3 +348,43 @@ def test_negative_posts_limited():
     for w in range(2):
         neg = [e for d in P[w:w + 7] for _, _, e in d.threads if e.style == "jangin" and T._negative(e)]
         assert len(neg) <= 2 and sum(e.key.startswith(("jone-", "jstem-")) for e in neg) <= 1
+
+
+def test_no_sira_ending():
+    """사장님 2026-11-01: '~시라'는 쓰지 않고 '~하세요!·~보세요!·~두세요!'로 쓴다."""
+    import pathlib
+    for f in ["banks.json", "text.py"]:
+        assert "시라" not in (pathlib.Path(T.__file__).parent / f).read_text(encoding="utf-8"), f
+    for day in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in day.threads:
+            assert "시라" not in "\n".join("\n".join(pg) for pg in e.pages), e.key
+
+
+def test_dohwa_has_reason():
+    """사장님 2026-11-01 "디테일한 설명 없어?": 도화도르식 본글엔 '사주로 보면' 근거가 붙는다."""
+    n = 0
+    for day in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in day.threads:
+            if e.style == "dohwa" and not e.key.startswith(("dohwa-list-", "dohwa-ten-")):
+                assert set(e.pages[0]) & set(T.DOHWA_WHY_HEAD), e.key
+                n += 1
+    assert n
+
+
+def test_judges_authority_first():
+    """사장님 2026-11-01: 심사원 피드백의 디테일과 권위가 1순위 (사장님 말·제1조항 다음), 레퍼런스는 원문과 나란히 비교."""
+    j = json.loads((Path(T.__file__).parent / "thread_rules.json").read_text(encoding="utf-8"))["judges"]
+    a = j["authority"]
+    assert a["order"][:3] == ["사장님이 직접 한 말", "제1조항 (엔진 사실·통일성)", "심사원 피드백"]
+    assert "인용" in a["detail"] and "무효" in a["detail"]
+    assert "상위90-원문.txt" in j["references"] and any("원문" in s and "나란히" in s for s in j["strict"])
+
+
+def test_judge_model_top_priority_pinned():
+    """사장님 2026-11-01 '무조건 이 심사원 모델 1순위로 저장하고': 모델이 지워지거나 약해지면 실패."""
+    j = json.loads((Path(T.__file__).parent / "thread_rules.json").read_text(encoding="utf-8"))["judges"]
+    assert j["pass"] == 100
+    assert "무조건" in j["authority"]["_must"] and "올리지 않는다" in j["authority"]["_must"]
+    assert any("0부터" in s for s in j["strict"])
+    md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "제2조항: 심사원 모델 1순위" in md and "상위90-원문.txt" in md
