@@ -2,7 +2,9 @@
 
 import datetime as dt
 import itertools
+import json
 import re
+from pathlib import Path
 
 import pytest
 
@@ -99,7 +101,7 @@ def test_six_threads_a_day(plan90):
 def test_salgu_bank_is_ours():
     """살구식 재료는 약 300개, 서로 겹치지 않고 금지어가 없다."""
     items = T.B["salgu"]
-    assert len(items) >= 280 and len(set(items)) == len(items)
+    assert len(items) >= 270 and len(set(items)) == len(items)
     assert not [x for x in items for w in T.BANNED if w in x]
 
 
@@ -122,3 +124,85 @@ def test_sns_post_runs_every_slot():
     y = pathlib.Path(__file__).resolve().parents[1].joinpath(".github/workflows/sns-post.yml").read_text(encoding="utf-8")
     assert meta.SLOTS == [s for s, _, _ in T.THREAD_SLOTS]
     assert all(f"SLOT={s}" in y for s in meta.SLOTS)
+
+
+# ── 스레드 이용자 30명 피드백 (사장님 2026-11-01 "그대로 이행하는 것으로 프로그램에 못박아") ──
+RULES = json.loads((Path(T.__file__).parent / "thread_rules.json").read_text())
+
+
+def _threads(plan90):
+    return [e for d in plan90 for _, _, e in d.threads]
+
+
+def test_thread_rules_fixed():
+    assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
+                                                     "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis"]
+
+
+def test_heart_first(plan90):
+    """heart_first·no_scary_tag: 사주장인식 한 장 글은 마음·장면으로 시작, 조심 글 본글엔 꼬리표 없음."""
+    for e in _threads(plan90):
+        if e.key.startswith(("jone-", "jstem-")):
+            p1 = e.pages[0]
+            assert "띠" not in p1[0] and "일간" not in p1[0] and not p1[0].startswith(("축하", "죄송", "그거 아세요"))
+            assert any(x.endswith("분들") for x in p1[:2])
+            if any(x.endswith(B_BAD_ENDS) for x in p1):
+                assert not [x for x in p1 if x.startswith("- ")]
+
+
+B_BAD_ENDS = tuple(v["bl"] for v in T.B["one_lines"].values())
+
+
+def test_dohwa_short_good(plan90):
+    for e in _threads(plan90):
+        if e.style != "dohwa":
+            continue
+        body = [x for x in e.pages[0] if x.strip()]
+        assert len(body) <= 2, e.key
+        assert not [w for w in ("조심", "과열", "주의", "서두르", "위험") if w in " ".join(body)], e.key
+
+
+def test_dohwa_uses_top_ranks():
+    """dohwa_short_good: 띠 4위 안, 일간 3위 안만 (엔진 순위 그대로)."""
+    day = T.dt.date(2026, 11, 1)
+    for p in T.periods(day):
+        for kind in T.DOHWA_KINDS:
+            for a in T.ZODIAC_ANIMALS:
+                ev = T.dohwa_ddi(kind, p, a, 1)
+                if ev:
+                    assert next(r for r in T._rank(kind, p) if r.ddi == a).rank <= 4
+            for s in range(10):
+                ev = T.dohwa_stem(kind, p, s, 1)
+                if ev:
+                    assert [r.stem for r in T.stem_rank(kind, p)].index(s) < 3
+
+
+def test_short_phrase(plan90):
+    """short_phrase: '많은 분'은 짧게, '부족'은 제1조항 문구를 붙인다."""
+    for e in _threads(plan90):
+        for x in [ln for pg in e.pages for ln in pg]:
+            if "많은 분" in x:
+                assert "태어날 때 받은 여덟 글자" not in x, x
+            if "부족한 분" in x:
+                assert x.startswith(("태어날 때 받은 여덟 글자 안에", "(제발부탁)👏🏻 태어날 때 받은 여덟 글자 안에")), x
+
+
+def test_salgu_one_theme(plan90):
+    tans = [e for e in _threads(plan90) if e.style == "salgu"]
+    love = 0
+    for e in tans:
+        items = [x.split(". ", 1)[1] for x in e.pages[0] if re.match(r"^\d\. ", x)]
+        th = {T.salgu_theme(x) for x in items}
+        assert th == {"love"} or th == {"self"} or th <= {"money", "flow"}, (e.key, th)
+        love += th == {"love"}
+    assert love * 2 >= len(tans)
+
+
+def test_salgu_no_memo():
+    assert not [x for x in T.B["salgu"] if re.search(r"자·오|인·신|진·술|갑진·|경진·|쥐-양", x)]
+
+
+def test_reason_short(plan90):
+    for e in _threads(plan90):
+        if e.key.startswith("jangin-double-"):
+            assert e.pages[1][0] == "겹경사인 이유" and len([x for x in e.pages[1][1:] if x.strip()]) <= 3

@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import random
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -499,8 +500,7 @@ def double(p: Period, n: int) -> Evening | None:
         return None
     head = f"<{p.label}, 겹경사 터지는 사람>"
     p1 = [head, ""] + [f"{i}. {d['year']}년생 {ddi(d['ddi'])}" for i, d in enumerate(ys, 1)]
-    p2 = ["겹경사인 이유", "", "태어난 해는 천간과 지지, 두 글자예요",
-          f"{p.label} {p.ganzhi}의 두 글자가", "이 두 글자와 모두 좋게 만나면", "경사가 두 번 겹쳐요"]
+    p2 = ["겹경사인 이유", "", f"{p.label} {p.ganzhi}의 두 글자가", "태어난 해 두 글자와", "둘 다 좋게 만나요"]   # reason_short
     cards = []
     for i, d in enumerate(ys):
         g = _rot(DOUBLE_GOOD, n + i * 2)[:2]
@@ -525,7 +525,7 @@ def dohwa(day: dt.date, t: int) -> Evening:
     M, C, K, P2 = ELEMENTS[(i - 1) % 5], ELEMENTS[(i + 1) % 5], ELEMENTS[(i - 2) % 5], ELEMENTS[(i + 2) % 5]
     st = lambda e: B["elements"][e]["stems"]
     kw = {"p": p.label, "E": E, "EH": EL_HANJA[E], "Ew": B["elements"][E]["word"], "M": M, "C": C, "CS": st(C), "K": K, "KS": st(K), "P2": P2,
-              "P2S": st(P2), "B": BRANCHES[p.branch], "BH": BRANCHES_HANJA[p.branch], "Ega": josa(E, "이", "가"), "EEHga": josa(f"{E}({EL_HANJA[E]})", "이", "가"), "Creul": josa(C, "을", "를"), "jeol": f"{B['jeolgi'][str(m)]}"}
+              "P2S": st(P2), "MS": st(M), "ES": st(E), "B": BRANCHES[p.branch], "BH": BRANCHES_HANJA[p.branch], "Ega": josa(E, "이", "가"), "EEHga": josa(f"{E}({EL_HANJA[E]})", "이", "가"), "Creul": josa(C, "을", "를"), "jeol": f"{B['jeolgi'][str(m)]}"}
     body = [fill(x, **kw) for x in B["dohwa"][t]]
     body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")).replace(f"{p.label}이 ", josa(p.label, "이", "가") + " ") for x in body]
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][t % len(B["dohwa_reply"])]]
@@ -561,6 +561,17 @@ def _lead(r: Row) -> tuple[bool, str]:
     return False, (bad[0] if bad else "")
 
 
+def _heart(kind: str, good: bool, n: int, who: str, kw: dict) -> list[str]:
+    """첫 줄: 읽는 사람의 마음·장면 → '○월 ○○띠는 ~' (thread_rules heart_first)."""
+    hs = B["heart_hooks"][kind]["good" if good else "bad"]
+    end = fill(B["heart_ends"]["good" if good else "bad"], **{**kw, "D": who})
+    return [*hs[n % len(hs)], josa_fix(end, who)]
+
+
+def josa_fix(line: str, who: str) -> str:
+    return line.replace(f"{who}는", josa(who, "은", "는"))
+
+
 def jangin_one(kind: str, p: Period, a: str, n: int) -> Evening | None:
     """사주장인식 띠 한 장 글: 첫 줄(축하·죄송·꺾쇠·그거 아세요) → 띠·출생연도 → 공감 → 근거 → 신호 3개 → 좋아지는 것.
     12띠 중 앞 4개(좋은 쪽)와 뒤 3개(조심 쪽)만 쓴다. 순위는 엔진 그대로."""
@@ -571,9 +582,8 @@ def jangin_one(kind: str, p: Period, a: str, n: int) -> Evening | None:
     K, L = B["kinds"][kind], B["one_lines"][kind]
     kw = {"p": p.label, "D": ddi(a), "Y": years_short(a), "r": r.rank, "name": KINDS[kind]["name"], "verb": K["verb"],
           "gl": L["gl"], "bl": L["bl"], "fix": _action(kind, lead)}
-    hooks = B["one_hooks"]["good" if good else "bad"]
-    p1 = [fill(x, **kw) for x in hooks[(n + ZODIAC_ANIMALS.index(a)) % len(hooks)]]
-    p1 += ["", f"{ddi(a)} ({years_full(a)})", f"- {why_bank(kind, lead)['tag']}"]
+    p1 = _heart(kind, good, n + ZODIAC_ANIMALS.index(a), ddi(a), kw)    # 피드백 heart_first
+    p1 += ["", f"{ddi(a)} ({years_full(a)})"] + ([f"- {why_bank(kind, lead)['tag']}"] if good else [])   # no_scary_tag
     pool = B["feel"][kind] if good else B["bad_feel"][kind]
     feel = why_bank(kind, lead).get("feel") or pool[(n + r.rank) % len(pool)]
     sig = _rot(B["signals"][kind]["good" if good else "bad"], n + ZODIAC_ANIMALS.index(a))[:3]
@@ -590,14 +600,10 @@ def jangin_stem_one(kind: str, p: Period, s: int, n: int) -> Evening | None:
     good = r.score > 0
     if not r.why or not ((good and rk <= 3) or (r.score < 0 and rk >= 9)):
         return None
-    nm, short = STEM_NAMES[s], STEM_NAMES[s].split("(")[0]
+    short = STEM_NAMES[s].split("(")[0]
     K, L = B["kinds"][kind], B["one_lines"][kind]
     ws = sorted(r.why, key=lambda x: -x[0] if good else x[0])
-    if good:
-        p1 = [["축하합니다", f"{short} 일간 분들", f"{p.label}엔 {L['gl']}"], [f"<{p.label}, {K['verb']} 일간>", "", f"1. {nm} 일간"],
-              ["그거 아세요?", f"{p.label} {KINDS[kind]['name']}", f"{short} 일간이 10일간 중 {rk}위예요"]][(n + s) % 3]
-    else:
-        p1 = [["죄송하지만", f"{short} 일간 분들", f"{p.label}엔 {L['bl']}"], [f"{short} 일간 분들", f"{p.label}엔 서두르지 마세요"]][(n + s) % 2]
+    p1 = _heart(kind, good, n + s, f"{short} 일간", {"p": p.label, "gl": L["gl"], "bl": L["bl"]})   # 피드백 heart_first
     p1 += ["", f"태어난 날 첫 글자가 {STEMS[s]}({STEMS_HANJA[s]})인 사람"]
     p2 = []
     t0 = ws[0][1]
@@ -622,48 +628,60 @@ def _end(kind: str, n: int) -> list[str]:
 
 
 def dohwa_ddi(kind: str, p: Period, a: str, n: int) -> Evening | None:
-    """도화도르식 한 줄 (띠): 엔진 순위·근거 한 줄 + 내 댓글."""
+    """도화도르식 한두 줄 (띠): 좋은 소식만, 엔진 순위 4위 안만 (thread_rules dohwa_short_good)."""
     r = next(x for x in _rank(kind, p) if x.ddi == a)
     good, lead = _lead(r)
-    if not lead:
+    if not lead or not good or r.rank > 4:
         return None
     wb = why_bank(kind, lead)
-    tpl = B["dohwa_one"]["good" if good else "bad"]
+    tpl = B["dohwa_one"]["good"]
     line = fill(tpl[(n + r.rank) % len(tpl)], D=ddi(a), Y=years_short(a).replace(", ", "·"), p=p.label, name=KINDS[kind]["name"],
-                r=r.rank, short=wb["short"][n % len(wb["short"])], act=_action(kind, lead), why=lead)
+                r=r.rank, short=wb["short"][n % len(wb["short"])])
     line = line.replace(f"{ddi(a)}는", josa(ddi(a), "은", "는"))
-    act = _action(kind, lead)
-    if act.replace("잘 ", "") in line.replace(f"|{act}", ""):   # 근거와 할 일이 같은 말이면 한 번만
-        line = line.replace(f"|{act}", "")
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][(n + 1) % len(B["dohwa_reply"])]]
     return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
 def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
-    """도화도르식 한 줄 (일간): stem_rank 근거 한 줄 + 내 댓글."""
+    """도화도르식 한두 줄 (일간): 좋은 소식만, stem_rank 3위 안만."""
     rows = stem_rank(kind, p)
     rk = next(i for i, r in enumerate(rows, 1) if r.stem == s)
     r = rows[rk - 1]
-    ws = [w for w in sorted(r.why, key=lambda x: -abs(x[0])) if w[1] != "천간합"]
-    if not ws:
+    ws = [w for w in sorted(r.why, key=lambda x: -x[0]) if w[1] != "천간합" and w[0] > 0]
+    if not ws or rk > 3 or r.score <= 0:
         return None
-    w, t, _e, g = ws[0]
-    good = w > 0
-    tpl = B["dohwa_one"]["stem_good" if good else "stem_bad"]
+    _w, t, _e, g = ws[0]
+    tpl = B["dohwa_one"]["stem_good"]
     line = fill(tpl[(n + s) % len(tpl)], S=STEM_NAMES[s].split("(")[0], p=p.label, gname=f"{g}({GH[g]})", why=t.rstrip("."),
-                act=_action(kind, t), name=KINDS[kind]["name"], r=rk)
+                name=KINDS[kind]["name"], r=rk)
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][1]]
     return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply])
 
 
+SALGU_ROT = ["love", "self", "love", "money", "love", "self", "love", "flow"]   # 연애·결혼 절반 (salgu_one_theme)
+
+
+def salgu_theme(t: str) -> str:
+    if re.search(r"여자|남자|연애|결혼|배우자|일지|남편|아내|궁합|인연|부부|연락|짝|띠와|띠·|사이|홍염|도화|원진", t):
+        return "love"
+    if re.search(r"돈|재성|통장|비상금|재물|지갑|부업|재테크|암록", t):
+        return "money"
+    if re.search(r"대운|세운|월운|개운|운이|운을|운에|운도|운은", t):
+        return "flow"
+    return "self"
+
+
 def salgu_tan(day: dt.date, n_tan: int) -> Evening:
-    """○탄: 재료를 섞어 6개씩. 한 바퀴를 다 쓰면 다른 순서로 섞어 다시 쓴다 (사장님 2026-11-01 '재료 늘려 두 번')."""
-    base = list(B["salgu"])
-    per = len(base) // 6
-    cyc, k = divmod(n_tan - 1, per)
-    rng = random.Random(1000 + cyc)
-    order = base[:]
-    rng.shuffle(order)
+    """○탄: 한 탄에 주제 하나(연애·결혼 절반). 주제마다 재료를 섞어 6개씩, 다 쓰면 다른 순서로 다시 섞는다."""
+    th = SALGU_ROT[(n_tan - 1) % len(SALGU_ROT)]
+    pool = [t for t in B["salgu"] if salgu_theme(t) == th]
+    if th in ("money", "flow"):          # 돈·운 흐름은 재료가 적어서 같이 쓴다
+        pool = [t for t in B["salgu"] if salgu_theme(t) in ("money", "flow")]
+    j = sum(1 for i in range(n_tan - 1) if SALGU_ROT[i % len(SALGU_ROT)] in ((th,) if th not in ("money", "flow") else ("money", "flow")))
+    per = len(pool) // 6
+    cyc, k = divmod(j, per)
+    order = pool[:]
+    random.Random(f"{th}-{cyc}").shuffle(order)
     six = order[k * 6:k * 6 + 6]
     p1 = [f"흥미로운 사주 이야기들 (금월선녀 ver.) - {n_tan}탄", ""] + [f"{i}. {t}" for i, t in enumerate(six, 1)]
     return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]])
@@ -700,12 +718,15 @@ def jangin_card_pool(day: dt.date, off: int = 0):
                     yield ev
 
 
+DOHWA_KINDS = ["money", "love", "work", "study", "help", "move"]   # 조심(care)은 도화도르식에 안 쓴다
+
+
 def dohwa_pool(day: dt.date, off: int = 0):
     n = day.toordinal()
     for t in _rot(list(range(len(B["dohwa"]))), n // 3 + off):
         yield dohwa(day, t)
-    for p in _month_periods(day):
-        for kind in _rot(ONE_KINDS, n + off):
+    for p in periods(day):
+        for kind in _rot(DOHWA_KINDS, n + off):
             for a in _rot(list(ZODIAC_ANIMALS), n * 7 + off * 5):
                 ev = dohwa_ddi(kind, p, a, n)
                 if ev:
