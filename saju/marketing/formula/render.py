@@ -66,7 +66,7 @@ class Renderer:
 
     def __init__(self, work: Path):
         from playwright.sync_api import sync_playwright
-        self.work = work
+        self.work = work = Path(work).resolve()
         work.mkdir(parents=True, exist_ok=True)
         self._pw = sync_playwright().start()
         exe = "/opt/pw-browsers/chromium" if Path("/opt/pw-browsers/chromium").exists() else None
