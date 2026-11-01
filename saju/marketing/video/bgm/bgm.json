@@ -1,0 +1,41 @@
+{
+ "_about": "영상 배경음악 10곡 (사장님 2026-11-01 \"브금은 유행하는거 저작권 괜찮은거 10개 가져와 랜덤돌리게\"). 픽사베이 인기순에서 골랐고, 픽사베이 콘텐츠 라이선스로 상업용·출처 표시 없이 쓸 수 있다(https://pixabay.com/service/license-summary/). 앞 75초만 잘라 둔다. 사장님 2026-11-01 '5678은 빼 나머지만으로 돌려': 5~8번(샤쿠하치·오리엔탈 스카이·미스티컬·미스티컬 트랩) 뺌, 6곡.",
+ "tracks": [
+  {
+   "file": "asian-lofi.mp3",
+   "title": "Asian Lofi",
+   "artist": "ZephiraMusic",
+   "source": "https://pixabay.com/music/beats-asian-lofi-592637/"
+  },
+  {
+   "file": "china-strings.mp3",
+   "title": "Asian China Chinese Music",
+   "artist": "NastelBom",
+   "source": "https://pixabay.com/music/classical-string-quartet-asian-asian-china-chinese-music-501705/"
+  },
+  {
+   "file": "korean-1.mp3",
+   "title": "Korean Music",
+   "artist": "lNPLUSMUSIC",
+   "source": "https://pixabay.com/music/world-korean-korea-korean-music-614543/"
+  },
+  {
+   "file": "korean-2.mp3",
+   "title": "Korean Music",
+   "artist": "HitsLab",
+   "source": "https://pixabay.com/music/world-korean-korea-korean-music-502004/"
+  },
+  {
+   "file": "chill-lofi.mp3",
+   "title": "Chill Lofi",
+   "artist": "ZephiraMusic",
+   "source": "https://pixabay.com/music/lofi-chill-lofi-585360/"
+  },
+  {
+   "file": "trending.mp3",
+   "title": "Popular Trending Music",
+   "artist": "alex-morgan",
+   "source": "https://pixabay.com/music/instrumental-popular-trending-music-548631/"
+  }
+ ]
+}

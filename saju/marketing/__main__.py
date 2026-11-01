@@ -29,7 +29,7 @@ WEEKDAYS = "월화수목금토일"
 # 출근길·퇴근길 (사장님 2026-10-31). 인스타·페북·스레드는 승인한 것만 이 시각에 자동으로 올라간다(meta.py).
 AM, PM = "07:30", "18:00"
 CHANNEL_NAMES = {"youtube": "유튜브 쇼츠", "instagram-reel": "인스타 릴스", "facebook-reel": "페이스북 릴스",
-                 "instagram-cards": "인스타 카드뉴스",
+                 "instagram-cards": "인스타 게시글", "facebook-post": "페이스북 글",
                  "threads": "스레드", "daangn": "당근 소식"}
 
 

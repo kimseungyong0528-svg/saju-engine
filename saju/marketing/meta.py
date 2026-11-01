@@ -2,6 +2,7 @@
 
     python -m saju.marketing.meta --slot 오전        # 오늘 오전 게시물 중 승인한 것만 올린다
                                                    # 시간대: 오전 07:30 · 점심 12:00 · 오후 15:00 · 저녁 18:00 · 밤 21:00 · 늦은밤 23:00
+                                                   # 영상: 아침영상 08:00 · 저녁영상 19:00, 인스타 게시글·페북 글: 점심글 12:30 · 밤글 21:00
     python -m saju.marketing.meta --slot 저녁 --dry   # 올리지 않고 무엇을 올릴지만 보여 준다
 
 순서: 관리 사이트(/studio)에서 오늘 게시물과 승인 표시를 받는다 → 채널별로 올린다 → 결과(주소·실패 이유)를 사이트에 남긴다.
@@ -33,10 +34,13 @@ G = "https://graph.facebook.com/v23.0"
 T = "https://graph.threads.net/v1.0"
 IG_USER_ID = os.environ.get("IG_USER_ID") or "17841476113870391"       # unmyeong_saju.kr
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID") or "1359319530606113"        # 금월선녀 - 운명서재 사주·운세
-AUTO = ("instagram-reel", "instagram-cards", "facebook-reel", "threads")
+AUTO = ("instagram-reel", "instagram-cards", "facebook-reel", "facebook-post", "threads")
 KST = dt.timezone(dt.timedelta(hours=9))
-SLOTS = ["오전", "점심", "오후", "저녁", "밤", "늦은밤"]   # formula.text.THREAD_SLOTS 와 같은 시간대
-SLOT_TIME = {"오전": "07:30", "점심": "12:00", "오후": "15:00", "저녁": "18:00", "밤": "21:00", "늦은밤": "23:00"}
+# 스레드 6칸(formula.text.THREAD_SLOTS 와 같은 시간대) + 영상 2칸 + 인스타 게시글·페북 글 2칸 (사장님 2026-11-01)
+SLOTS = ["오전", "아침영상", "점심", "점심글", "오후", "저녁", "저녁영상", "밤", "밤글", "늦은밤"]
+SLOT_TIME = {"오전": "07:30", "아침영상": "08:00", "점심": "12:00", "점심글": "12:30", "오후": "15:00", "저녁": "18:00",
+             "저녁영상": "19:00", "밤": "21:00", "밤글": "21:00", "늦은밤": "23:00"}
+PICK_SLOTS = {"점심글": 0, "밤글": 1}   # 전날 반응 1등은 12:30, 2등은 21:00 (formula/pick.py)
 LATE_MIN = 60   # 예약 실행이 이보다 늦게 시작하면 올리지 않는다
 
 
@@ -159,6 +163,13 @@ def fb_reel(week: str, it: dict) -> str:
     return f"https://www.facebook.com/reel/{vid}"
 
 
+def fb_post(week: str, it: dict) -> str:
+    """페이스북 페이지에 스레드 긴 글을 그대로 올린다 (사장님 2026-11-01 "페북도 스레드에 있는 긴 글 발행")."""
+    tok = _page_token()
+    r = _http("POST", f"{G}/{FB_PAGE_ID}/feed", {"message": clean(it["texts"]["본문"]), "access_token": tok})
+    return f"https://www.facebook.com/{r['id']}"
+
+
 # ── 스레드 ──
 def threads_token() -> str:
     """사이트에 저장해 둔 새 열쇠가 있으면 그것을, 없으면 GitHub 비밀을 쓴다. 일주일 지나면 새 열쇠로 바꾼다."""
@@ -210,10 +221,13 @@ def threads(week: str, it: dict) -> str:
     return _http("GET", f"{T}/{first}?fields=permalink&access_token={tok}").get("permalink", "")
 
 
-POSTERS = {"instagram-reel": ig_reel, "instagram-cards": ig_cards, "facebook-reel": fb_reel, "threads": threads}
+POSTERS = {"instagram-reel": ig_reel, "instagram-cards": ig_cards, "facebook-reel": fb_reel, "facebook-post": fb_post, "threads": threads}
 
 
 def run(slot: str, date: str, dry: bool = False) -> int:
+    if slot in PICK_SLOTS:
+        from .formula import pick
+        return pick.run(PICK_SLOTS[slot], date, dry)
     plan = publish._call("GET", f"/api/internal/studio/today?date={date}")
     if not plan.get("week"):
         print(f"{date} 게시물 묶음이 없어요")

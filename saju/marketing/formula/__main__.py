@@ -3,9 +3,9 @@
     python -m saju.marketing.formula --start 2026-11-02 --days 1 --out 게시물 [--publish] [--no-video]
 
 하루에 (사장님 2026-11-01)
-  아침 영상 1개 (5가지 형식을 날마다 돌림) → 유튜브 쇼츠 07:00, 인스타·페북 릴스 07:30
   스레드 글 6개: 사주장인식 07:30·18:00, 도화도르식 12:00·21:00, 살구식 15:00·23:00 (첫 장은 본글, 나머지는 내 댓글로 이어 쓰기)
-  18:00 글 캡처 영상 1개 → 유튜브 쇼츠 19:00, 인스타·페북 릴스 21:00
+  영상 2개 (5가지 형식을 날마다 돌림, 아침·저녁 형식이 다름) → 인스타 릴스·페북 릴스·유튜브 쇼츠 모두 08:00, 19:00
+  인스타 게시글(캡처)·페북 글 2개는 묶음 밖: 매일 전날 반응 좋은 스레드 글 2개를 12:30, 21:00 (formula/pick.py)
 이미 쓴 재료(관리 사이트의 used 목록)는 다시 고르지 않는다. 결과 묶음은 /studio 가 읽는 manifest.json 모양 그대로다.
 """
 
@@ -19,14 +19,14 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ..__main__ import AM, CHANNEL_NAMES, WEEKDAYS
+from ..__main__ import CHANNEL_NAMES, WEEKDAYS
 from ..content import SITE_URL
 from . import text as T
 
 FMT_NAMES = {"tier": "천복식 띠 순위", "hidden": "가림식 띠 순위", "sinbi": "띠별 운세 표", "forceteller": "오행 그림",
              "solo": "풍경 2줄 제목"}
 STYLE_NAMES = {"jangin": "사주장인식", "salgu": "살구식", "dohwa": "도화도르식"}
-YT_AM, YT_PM, REEL_PM = "07:00", "19:00", "21:00"
+VIDEO_AM, VIDEO_PM = "08:00", "19:00"   # 사장님 2026-11-01: 영상은 세 SNS 모두 아침 8시·저녁 7시
 
 
 def problems(m: T.Morning, *es: T.Evening) -> list[str]:
@@ -116,17 +116,18 @@ VIDEO_CHANNELS = ("instagram-reel", "facebook-reel", "youtube")
 
 
 def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
-          approve_threads: bool = False, move: str = "", approve_videos: bool = False) -> dict:
+          approve_threads: bool = False, move: str = "", approve_videos: bool = False, cards: bool = False) -> dict:
     week = out / start.isoformat()
     (week / "유튜브").mkdir(parents=True, exist_ok=True)
     (week / "인스타").mkdir(parents=True, exist_ok=True)
     manifest = {"week": start.isoformat(), "createdAt": dt.datetime.now(dt.UTC).isoformat(timespec="minutes"),
                 "maker": "formula", "days": [], "problems": [], "used": [],
                 "trends": {"items": [], "notes": ["공식으로 만든 묶음: 엔진 순위 + 글 재료 창고(banks.json)"]}}
-    R = None
-    if video:
+    R = C = None
+    if video or cards:
         from .render import Renderer
-        R = Renderer(week / "_작업")
+        C = Renderer(week / "_작업")
+        R = C if video else None
     rows = []
     try:
         for i, dd in enumerate(T.plan(start, days, used)):
@@ -143,37 +144,41 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
             mt = m.texts()
             title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
             # 영상 없이 만들면(사장님 2026-11-01 "영상은 올리지마 확실히 될때까지 일단 스레드만") 영상 게시물은 넣지 않는다
-            for ch, sfx, tm in ((("instagram-reel", "reel", AM), ("facebook-reel", "fbreel", AM), ("youtube", "youtube", YT_AM)) if R else ()):
-                entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": tm, "slot": "오전", "material": m.key,
+            for ch, sfx in ((("instagram-reel", "reel"), ("facebook-reel", "fbreel"), ("youtube", "youtube")) if R else ()):
+                entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": VIDEO_AM, "slot": "아침영상", "material": m.key,
                                        "format": FMT_NAMES[m.fmt], "title": title, "score": 0,
                                        "video": vid if R else "", "thumb": thumb if R else "", "texts": mt[ch]})
             # 스레드 글 5개
             for slot, tm, x in dd.threads:
                 first = x.pages[0][0] if x.pages and x.pages[0] else x.key
-                entry["items"].append({"id": f"{tag}_{slot}-threads", "channel": "threads", "time": tm, "slot": slot, "material": x.key,
-                                       "format": STYLE_NAMES[x.style], "title": first, "score": 0, "texts": x.texts()["threads"]})
-            # 18:00 대표 글 캡처 영상 → 유튜브 19:00, 인스타·페북 21:00
-            et = e.texts()
-            cap = f"인스타/{tag}_저녁_{e.key}.mp4"
-            if R:
-                R.threads(e, week / cap, seed=i * 2 + 2)
-            first = e.pages[0][0] if e.pages and e.pages[0] else e.key
-            ytt = (first.strip("<>") + " #shorts")[:100]
-            for ch, slot, tm, txt in ((("youtube", "저녁", YT_PM, {"제목": ytt, "설명": et["instagram-reel"]["캡션"]}),
-                                       ("instagram-reel", "밤", REEL_PM, et["instagram-reel"]),
-                                       ("facebook-reel", "밤", REEL_PM, et["instagram-reel"])) if R else ()):
-                sfx = {"youtube": "youtube", "instagram-reel": "reel", "facebook-reel": "fbreel"}[ch]
-                entry["items"].append({"id": f"{tag}_저녁-{sfx}", "channel": ch, "time": tm, "slot": slot, "material": e.key,
-                                       "format": "스레드 글 캡처", "title": first, "score": 0, "video": cap if R else "",
-                                       "thumb": "", "texts": txt})
+                it = {"id": f"{tag}_{slot}-threads", "channel": "threads", "time": tm, "slot": slot, "material": x.key,
+                      "format": STYLE_NAMES[x.style], "title": first, "score": 0, "texts": x.texts()["threads"]}
+                if C:
+                    # 이 글이 전날 인기 글로 뽑히면 인스타 게시글로 그대로 쓴다 (흰 배경 캡처, formula/pick.py)
+                    stem = f"{tag}_{slot}_{x.key}"
+                    it["images"] = [f"인스타/{f.name}" for f in C.thread_cards(x, week / "인스타", stem)]
+                entry["items"].append(it)
+            # 저녁 영상 1개 (아침과 다른 형식) → 인스타·페북 릴스·유튜브 쇼츠 19:00 (사장님 2026-11-01 "영상은 아침 8시, 오후 7시")
+            m2 = dd.video2
+            if R and m2:
+                vid2, thumb2 = f"유튜브/{tag}_저녁_{m2.key}.mp4", f"유튜브/{tag}_저녁_{m2.key}_표지.jpg"
+                R.morning(m2, week / vid2, seed=i * 2 + 2)
+                _thumb(week / vid2, 2.5, week / thumb2)
+                mt2 = m2.texts()
+                title2 = " ".join(m2.title).replace("“", "").replace("”", "") if m2.title else mt2["youtube"]["제목"]
+                for ch, sfx in (("instagram-reel", "reel"), ("facebook-reel", "fbreel"), ("youtube", "youtube")):
+                    entry["items"].append({"id": f"{tag}_저녁-{sfx}", "channel": ch, "time": VIDEO_PM, "slot": "저녁영상", "material": m2.key,
+                                           "format": FMT_NAMES[m2.fmt], "title": title2, "score": 0,
+                                           "video": vid2, "thumb": thumb2, "texts": mt2[ch]})
+            # 인스타 게시글(캡처)·페북 글은 묶음에 넣지 않는다. 매일 전날 반응 좋은 스레드 글 2개를 골라 12:30·21:00 에 올린다 (formula/pick.py).
             entry["items"].sort(key=lambda it: it["time"])
             for it in entry["items"]:
                 rows.append([f"{day.isoformat()} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]])
             manifest["days"].append(entry)
             print(f"{day} 아침 {m.key} / 스레드 " + ", ".join(x.key for _, _, x in dd.threads))
     finally:
-        if R:
-            R.close()
+        if C:
+            C.close()
     titles = [it["title"] for d in manifest["days"] for it in d["items"] if it["channel"] == "youtube"]
     manifest["daangn"] = {"소식": "\n".join(["이번 주 띠별 운세", ""] + [f"▪ {t}" for t in titles] +
                                          ["", "띠는 태어난 해 하나만 본 것이에요.", "생년월일과 태어난 시간으로 보는 내 운세는 운명서재에서", SITE_URL])}
@@ -222,6 +227,7 @@ def main(argv=None) -> int:
     ap.add_argument("--used", default="", help="이미 쓴 재료 이름들 (쉼표로)")
     ap.add_argument("--publish", action="store_true")
     ap.add_argument("--no-video", action="store_true")
+    ap.add_argument("--no-cards", action="store_true", help="스레드 글 캡처(인스타 게시글용)를 찍지 않는다")
     ap.add_argument("--approve-threads", action="store_true", help="심사 통과한 주: 스레드 글을 클로드가 한 번에 승인")
     ap.add_argument("--approve-videos", action="store_true", help="사장님이 '올려' 한 주: 인스타·페북·유튜브 영상을 클로드가 한 번에 승인")
     ap.add_argument("--shift-threads", default="", help="'2026-11-01 늦은밤' 처럼: 그 칸부터 스레드 글을 한 칸씩 미룬다")
@@ -235,7 +241,7 @@ def main(argv=None) -> int:
         used |= publish.used_keys(before=start.isoformat())
     try:
         r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads,
-                  move=a.move, approve_videos=a.approve_videos)
+                  move=a.move, approve_videos=a.approve_videos, cards=not a.no_cards)
     except Exception as e:
         if a.publish:
             publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")

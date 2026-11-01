@@ -90,3 +90,29 @@ def sfx(total: float, events: list[tuple[float, str]], out: Path) -> Path:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((mix * 32767).astype(np.int16).tobytes())
     return out
+
+
+BGM_DIR = Path(__file__).parent / "bgm"
+
+
+def tracks() -> list[Path]:
+    """배경음악 10곡 (사장님 2026-11-01 "유행하는거 저작권 괜찮은거 10개 가져와 랜덤돌리게"). 목록·출처는 bgm/bgm.json."""
+    import json
+    f = BGM_DIR / "bgm.json"
+    if not f.exists():
+        return []
+    return [BGM_DIR / t["file"] for t in json.loads(f.read_text(encoding="utf-8"))["tracks"] if (BGM_DIR / t["file"]).exists()]
+
+
+def bgm(sec: float, out: Path, seed: int = 7) -> Path:
+    """10곡 중 하나를 seed 로 골라 영상 길이만큼 자르고 앞뒤를 부드럽게 줄인다. 곡이 없으면 직접 만든 배경음을 쓴다."""
+    import subprocess
+    ts = tracks()
+    if not ts:
+        return ambient(sec, out, seed=seed)
+    src = ts[np.random.default_rng(seed).integers(len(ts))]
+    fo = max(0.0, sec - 1.5)
+    subprocess.run(["ffmpeg", "-nostdin", "-y", "-loglevel", "error", "-stream_loop", "-1", "-i", str(src), "-t", f"{sec:.2f}",
+                    "-af", f"afade=t=in:d=0.4,afade=t=out:st={fo:.2f}:d=1.5,volume=0.85", "-ac", "2", "-ar", "44100", str(out)],
+                   check=True)
+    return out

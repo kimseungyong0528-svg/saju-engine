@@ -125,14 +125,14 @@ class Renderer:
         for k in range(sec * fps):
             self.pg.evaluate(f"document.getAnimations().forEach(a=>a.currentTime={k * 1000 / fps})")
             self.pg.screenshot(path=str(fr / f"{k:04d}.jpg"), type="jpeg", quality=92)
-        bgm = music.ambient(sec + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
+        bgm = music.bgm(sec + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
         _ff("-framerate", str(fps), "-i", str(fr / "%04d.jpg"), "-i", str(bgm), "-t", str(sec), "-vf", "format=yuv420p",
             "-c:v", "libx264", "-crf", "18", "-c:a", "aac", "-shortest", str(out))
         shutil.rmtree(fr, ignore_errors=True)
         return out
 
     def still(self, png: Path, out: Path, sec: int, seed: int) -> Path:
-        bgm = music.ambient(sec + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
+        bgm = music.bgm(sec + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
         _ff("-loop", "1", "-i", str(png), "-i", str(bgm), "-t", str(sec), "-vf", "format=yuv420p", "-r", "30",
             "-c:v", "libx264", "-c:a", "aac", "-shortest", str(out))
         return out
@@ -140,7 +140,7 @@ class Renderer:
     def slides(self, pngs: list[Path], durs: list[float], out: Path, seed: int) -> Path:
         lst = self.work / f"{out.stem}.txt"
         lst.write_text("".join(f"file '{p}'\nduration {d}\n" for p, d in zip(pngs, durs)) + f"file '{pngs[-1]}'\n")
-        bgm = music.ambient(sum(durs) + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
+        bgm = music.bgm(sum(durs) + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
         _ff("-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(bgm), "-vf", "fps=30,format=yuv420p",
             "-c:v", "libx264", "-c:a", "aac", "-shortest", str(out))
         return out
@@ -316,7 +316,7 @@ class Renderer:
         </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div></body>"""
         ov = self.shot(html, f"{out.stem}-제목", transparent=True)
         clip = media(m.data["bg"])
-        bgm = music.ambient(9, self.work / f"bgm-{out.stem}.wav", seed=seed)
+        bgm = music.bgm(9, self.work / f"bgm-{out.stem}.wav", seed=seed)
         _ff("-stream_loop", "-1", "-i", str(clip), "-i", str(ov), "-i", str(bgm), "-filter_complex",
             "[0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];[bg][1]overlay=0:0,format=yuv420p[v]",
             "-map", "[v]", "-map", "2", "-t", "8", "-c:v", "libx264", "-c:a", "aac", str(out))
@@ -340,6 +340,31 @@ class Renderer:
             pngs.append(self.shot(html, f"{out.stem}-{i}"))
         return self.slides(pngs, [5.5] + [4.5] * (len(pngs) - 1), out, seed)
 
+    # ── 인스타 게시글: 스레드 글 캡처 사진 (사장님 2026-11-01 "스레드 글은 릴스 말고 게시글로") ──
+    def thread_cards(self, e: Evening, folder: Path, stem: str) -> list[Path]:
+        """스레드 글 한 장을 사진 한 장으로 찍는다. 인스타 여러 장 게시글은 4:5(1080×1350)까지라 그 크기로 찍는다."""
+        pic = _data_uri(ASSETS / "profile.jpg", "image/jpeg")
+        folder.mkdir(parents=True, exist_ok=True)
+        self.pg.set_viewport_size({"width": 1080, "height": 1350})
+        out = []
+        try:
+            for i, lines in enumerate(e.shown[:10], 1):
+                body = "".join(f"<p>{_esc(x)}</p>" if x else "<div class=gap></div>" for ln in lines for x in ln.split("\n"))
+                html = f"""<style>body{{background:#fff;font-family:'Noto Sans KR'}}
+                .w{{position:absolute;left:70px;right:70px;top:50%;transform:translateY(-50%);color:#111}}
+                .top{{display:flex;align-items:center;gap:22px;margin-bottom:36px}} .top img{{width:96px;height:96px;border-radius:50%;object-fit:cover}}
+                .nm{{font-size:38px;font-weight:700}}
+                p{{margin:0 0 12px;font-size:40px;line-height:1.45;font-weight:500;word-break:keep-all;letter-spacing:-1px}} .gap{{height:28px}}
+                .pg{{text-align:right;font-size:30px;color:#999;margin-top:18px}}</style>
+                <body><div class='w fitv'><div class=top><img src="{pic}"><div class=nm>unmyeong_saju.kr</div></div>{body}{f'<div class=pg>{i} / {min(len(e.pages), 10)}</div>' if len(e.pages) > 1 else ''}</div></body>"""
+                png = self.shot(html, f"{stem}-카드{i}")
+                jpg = folder / f"{stem}_{i}.jpg"
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(png), "-q:v", "3", str(jpg)], check=True)
+                out.append(jpg)
+        finally:
+            self.pg.set_viewport_size({"width": 1080, "height": 1920})
+        return out
+
 
 def _esc(s: str) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -353,6 +378,6 @@ FIT_JS = """(()=>{
  document.querySelectorAll('.fitbox').forEach(L=>{const W=+L.dataset.w||1000;L.style.width='max-content';
    const rs=[...L.children];let fs=parseFloat(getComputedStyle(rs[0]).fontSize);
    for(let k=0;k<30&&L.getBoundingClientRect().width>W;k++){fs*=0.96;rs.forEach(r=>r.style.fontSize=fs+'px');}});
- document.querySelectorAll('.fitv').forEach(w=>{let s=1;for(let k=0;k<30&&w.getBoundingClientRect().height>1800;k++){s*=0.96;
+ document.querySelectorAll('.fitv').forEach(w=>{let s=1;for(let k=0;k<40&&w.getBoundingClientRect().height>innerHeight*0.9375;k++){s*=0.96;
    w.querySelectorAll('p').forEach(p=>{p.style.fontSize=(parseFloat(getComputedStyle(p).fontSize)*0.96)+'px'});}});
 })()"""

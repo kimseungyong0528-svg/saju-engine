@@ -259,8 +259,8 @@ def morning_candidates(fmt: str, day: dt.date):
             yield m
 
 
-def morning(day: dt.date, used: set[str]) -> Morning:
-    fmt = rules.morning_format(day)
+def morning(day: dt.date, used: set[str], fmt: str = "") -> Morning:
+    fmt = fmt or rules.morning_format(day)
     cands = list(morning_candidates(fmt, day))
     return next((c for c in cands if c.key not in used), cands[0])
 
@@ -1238,6 +1238,7 @@ class Day:
     date: dt.date
     morning: Morning
     threads: list[tuple[str, str, Evening]]   # (시간대, 시각, 글)
+    video2: Morning | None = None             # 저녁 영상 (사장님 2026-11-01 "릴스는 쇼츠처럼 2개")
 
     @property
     def evening(self) -> Evening:
@@ -1292,6 +1293,9 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         d = start + dt.timedelta(days=i)
         m = morning(d, used)
         used.add(m.key)
+        # 저녁 영상은 아침과 다른 형식. 두 칸 뒤 형식을 쓰면 아침·저녁·다음 날 아침이 서로 겹치지 않는다.
+        m2 = morning(d, used, fmt=rules.morning_format(d + dt.timedelta(days=2)))
+        used.add(m2.key)
         ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다
             avoid = {frames[s]} if s in frames and _st == "jangin" else set()
@@ -1316,7 +1320,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
             ths.append((s, t, e))
         frames = new_frames
         ths.sort(key=lambda x: x[1])
-        out.append(Day(d, m, ths))
+        out.append(Day(d, m, ths, m2))
     _teasers(out)
     _follow_all(out)
     _vary_lines(out)
