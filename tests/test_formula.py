@@ -124,8 +124,8 @@ def test_sns_post_runs_every_slot():
 
     from saju.marketing import meta
     y = pathlib.Path(__file__).resolve().parents[1].joinpath(".github/workflows/sns-post.yml").read_text(encoding="utf-8")
-    assert meta.SLOTS == [s for s, _, _ in T.THREAD_SLOTS]
-    assert all(f"SLOT={s}" in y for s in meta.SLOTS)
+    assert [s for s in meta.SLOTS if s not in ("아침영상", "저녁영상", "점심글", "밤글")] == [s for s, _, _ in T.THREAD_SLOTS]
+    assert all(f"SLOT={s}" in y for s in meta.SLOTS if s not in ("밤", "밤글")) and 'SLOT="밤 밤글"' in y
 
 
 # ── 스레드 이용자 30명 피드백 (사장님 2026-11-01 "그대로 이행하는 것으로 프로그램에 못박아") ──
@@ -531,3 +531,109 @@ def test_threads_only_without_video(tmp_path):
     r = build(dt.date(2026, 11, 2), 1, tmp_path, video=False)
     chans = {it["channel"] for d in r["manifest"]["days"] for it in d["items"]}
     assert chans == {"threads"}
+
+
+def test_claude_approves_videos_only_when_asked(monkeypatch):
+    """사장님 2026-11-01: 릴스·유튜브도 1주치씩. --approve-videos 를 준 주만 영상에 클로드 승인 표시가 붙는다."""
+    from saju.marketing.formula import __main__ as fm
+    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel", "facebook-reel", "youtube"}
+    src = Path(fm.__file__).read_text(encoding="utf-8")
+    assert "if approve_videos:" in src and "--approve-videos" in src
+    wf = (Path(__file__).parent.parent / ".github/workflows/marketing.yml").read_text(encoding="utf-8")
+    assert "--approve-videos" in wf and "approve_videos:" in wf
+
+
+def test_two_videos_and_moved_thread_post(plan90):
+    """사장님 2026-11-01: 영상은 하루 2개(서로 다른 형식), 아침 8시·저녁 7시에 세 SNS 같이. 인스타 게시글·페북 글은 묶음에 넣지 않고 전날 인기 글을 고른다."""
+    from saju.marketing.formula import __main__ as fm
+    from saju.marketing import meta
+    for d in plan90[:14]:
+        assert d.video2 is not None and d.video2.fmt != d.morning.fmt and d.video2.key != d.morning.key
+    assert (fm.VIDEO_AM, fm.VIDEO_PM) == ("08:00", "19:00")
+    assert {k: meta.SLOT_TIME[k] for k in ("아침영상", "점심글", "저녁영상", "밤글")} == \
+        {"아침영상": "08:00", "점심글": "12:30", "저녁영상": "19:00", "밤글": "21:00"}
+    src = Path(fm.__file__).read_text(encoding="utf-8")
+    assert '"channel": "instagram-cards"' not in src and '"channel": "facebook-post"' not in src
+
+
+def test_bgm_six_tracks_random():
+    """사장님 2026-11-01: 배경음악은 직접 만들지 말고 저작권 괜찮은 유행곡 10개를 랜덤으로, 그중 '5678은 빼 나머지만으로 돌려' → 6곡."""
+    from saju.marketing.video import music
+    meta = json.loads((music.BGM_DIR / "bgm.json").read_text(encoding="utf-8"))
+    assert len(meta["tracks"]) == 6 and len(music.tracks()) == 6
+    assert not {"shakuhachi.mp3", "oriental-skies.mp3", "mystical.mp3", "mystical-trap.mp3"} & {t["file"] for t in meta["tracks"]}
+    assert all(t["source"].startswith("https://pixabay.com/music/") for t in meta["tracks"])
+    assert "music.bgm(" in (Path(__file__).parent.parent / "saju/marketing/formula/render.py").read_text(encoding="utf-8")
+
+
+def _pick_plan():
+    T = {"1/1": "🔮 첫 줄\n본문"}
+    items = [{"id": f"y_{s}-threads", "channel": "threads", "slot": s, "time": t, "material": m, "format": f,
+              "images": [f"인스타/{m}_1.jpg"], "texts": T}
+             for s, t, m, f in (("오전", "07:30", "jangin-a", "사주장인식"), ("점심", "12:00", "dohwa-b", "도화도르식"),
+                                ("저녁", "18:00", "jangin-c", "사주장인식"), ("밤", "21:00", "salgu-d", "살구식"))]
+    items.append({"id": "y_오전-reel", "channel": "instagram-reel", "slot": "아침영상", "time": "08:00", "material": "v"})
+    posted = {it["id"]: {"ok": True, "url": f"https://www.threads.com/@u/post/{it['material']}"} for it in items}
+    posted["y_밤-threads"] = {"ok": False}
+    return {"week": "2026-11-02", "items": items, "approved": {}, "posted": posted}
+
+
+def test_pick_yesterday_top_posts(monkeypatch):
+    """사장님 2026-11-01: 인스타 게시글·페북 글은 어제 반응(좋아요+댓글+리포스트+인용) 좋은 스레드 글 2개. 못 읽으면 사주장인식."""
+    from saju.marketing.formula import pick
+    plan = _pick_plan()
+    items = pick.candidates(plan)
+    assert [it["material"] for it in items] == ["jangin-a", "dohwa-b", "jangin-c"]   # 안 올라간 글·영상은 뺀다
+    assert [it["material"] for it in pick.rank(items, None)][:2] == ["jangin-a", "jangin-c"]
+    assert pick.rank(items, {"y_점심-threads": 30, "y_오전-threads": 2, "y_저녁-threads": 9})[0]["material"] == "dohwa-b"
+
+    calls = []
+
+    def fake_call(method, path, body=None, content_type=""):
+        calls.append((method, path, body))
+        if body:
+            b = json.loads(body)
+            plan["posted"][b["id"]] = b
+        return plan if "today" in path else {}
+    monkeypatch.setattr(pick.publish, "_call", fake_call)
+    monkeypatch.setattr(pick, "scores", lambda items, tok: {"y_점심-threads": 30, "y_저녁-threads": 9})
+    sent = []
+    monkeypatch.setitem(pick.meta.POSTERS, "instagram-cards", lambda w, it: sent.append(("ig", it["id"], it["images"])) or "ig")
+    monkeypatch.setitem(pick.meta.POSTERS, "facebook-post", lambda w, it: sent.append(("fb", it["id"], it["texts"]["본문"])) or "fb")
+    monkeypatch.delenv("SNS_PICK", raising=False)
+    assert pick.run(0, "2026-11-03", tok="t") == 0 and sent == []          # 사장님 "올려" 전에는 꺼져 있다
+    monkeypatch.setenv("SNS_PICK", "on")
+    pick.run(0, "2026-11-03", tok="t")
+    pick.run(1, "2026-11-03", tok="t")
+    assert [s[1] for s in sent] == ["2026-11-03_pick-dohwa-b-cards", "2026-11-03_pick-dohwa-b-fbpost",
+                                    "2026-11-03_pick-jangin-c-cards", "2026-11-03_pick-jangin-c-fbpost"]
+    assert sent[0][2] == ["인스타/dohwa-b_1.jpg"] and "🔮 첫 줄" in sent[1][2]
+    assert "today?date=2026-11-02" in calls[0][1]
+
+
+def test_pick_slots_and_cards_in_build():
+    """12:30 점심글·21:00 밤글이 고르기로 이어지고, 묶음을 만들 때 스레드 글마다 캡처를 찍어 둔다."""
+    from saju.marketing import meta
+    from saju.marketing.formula import __main__ as fm
+    assert meta.PICK_SLOTS == {"점심글": 0, "밤글": 1}
+    src = Path(fm.__file__).read_text(encoding="utf-8")
+    assert "C.thread_cards(x" in src and 'it["images"]' in src
+    wf = (Path(__file__).parent.parent / ".github/workflows/sns-post.yml").read_text(encoding="utf-8")
+    assert '"17 3 * * *") SLOT=점심글' in wf and 'SLOT="밤 밤글"' in wf and "SNS_PICK" in wf
+
+
+def test_video_scripts_follow_engine(plan90):
+    """영상 대본 (사장님 2026-11-01): 화면과 같은 엔진 순위만 읽고, 끊긴 말 없이 문장을 맺고, 십신은 쉬운 말을 붙인다."""
+    from saju.marketing.formula import script as S
+    for d in plan90[:14]:
+        for m in (d.morning, d.video2):
+            ls = S.script(m)
+            assert ls[-1] == S.END and all(x.endswith((".", "?", "!", "요")) for x in ls), ls
+            if m.rows:
+                assert f"1위, {T.ddi(m.rows[0].ddi)}." in " ".join(ls)
+                assert not any(x.endswith("12위.") for x in ls)
+            for g, plain in S.GOD_PLAIN.items():
+                if f"에게 {g}이에요" in " ".join(ls):
+                    assert plain in " ".join(ls)
+    keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
+    assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다

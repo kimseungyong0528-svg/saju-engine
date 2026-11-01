@@ -137,7 +137,14 @@ def titles(kind: str, p: Period) -> list[list[str]]:
     for sc in k["scenes"]:
         out.append([sc, f"{lab} {k['verb']} 띠", "1위부터 12위"])
         out.append([sc, f"{lab} {k['alt']} 띠", "1위부터 12위"])
+    if kind == "care":
+        # 영상 심사(2026-11-01, 신뢰·사실): 조심운 순위는 충·형·원진·부담처럼 '부딪힘'으로 매기는데
+        # 제목이 '모은 돈 날릴·지갑 닫아야 할·손재수'면 1위 근거와 제목이 어긋난다. 돈 말은 조심운 제목에 쓰지 않는다.
+        out = [t for t in out if not any(w in "".join(t) for w in CARE_MONEY_WORDS)] or out
     return out
+
+
+CARE_MONEY_WORDS = ("돈", "지갑", "카드값", "손해", "손재수")
 
 
 # ── 아침 ──
@@ -259,10 +266,19 @@ def morning_candidates(fmt: str, day: dt.date):
             yield m
 
 
-def morning(day: dt.date, used: set[str]) -> Morning:
-    fmt = rules.morning_format(day)
+def _topic(key: str) -> str:
+    """영상 재료의 내용 (형식만 다르고 같은 순위면 같은 내용이다)."""
+    return key.split("-", 1)[1] if "-" in key else key
+
+
+def morning(day: dt.date, used: set[str], fmt: str = "") -> Morning:
+    """영상 심사(2026-11-01): 형식만 바꿔 같은 순위를 한 주에 세 번 내면 보는 사람이 '또 이거네' 한다.
+    형식이 달라도 이미 쓴 순위(주제+기간)는 다시 고르지 않는다."""
+    fmt = fmt or rules.morning_format(day)
     cands = list(morning_candidates(fmt, day))
-    return next((c for c in cands if c.key not in used), cands[0])
+    seen = {_topic(k) for k in used}
+    return next((c for c in cands if c.key not in used and _topic(c.key) not in seen),
+                next((c for c in cands if c.key not in used), cands[0]))
 
 
 def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
@@ -1238,6 +1254,7 @@ class Day:
     date: dt.date
     morning: Morning
     threads: list[tuple[str, str, Evening]]   # (시간대, 시각, 글)
+    video2: Morning | None = None             # 저녁 영상 (사장님 2026-11-01 "릴스는 쇼츠처럼 2개")
 
     @property
     def evening(self) -> Evening:
@@ -1292,6 +1309,9 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         d = start + dt.timedelta(days=i)
         m = morning(d, used)
         used.add(m.key)
+        # 저녁 영상은 아침과 다른 형식. 두 칸 뒤 형식을 쓰면 아침·저녁·다음 날 아침이 서로 겹치지 않는다.
+        m2 = morning(d, used, fmt=rules.morning_format(d + dt.timedelta(days=2)))
+        used.add(m2.key)
         ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다
             avoid = {frames[s]} if s in frames and _st == "jangin" else set()
@@ -1316,7 +1336,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
             ths.append((s, t, e))
         frames = new_frames
         ths.sort(key=lambda x: x[1])
-        out.append(Day(d, m, ths))
+        out.append(Day(d, m, ths, m2))
     _teasers(out)
     _follow_all(out)
     _vary_lines(out)

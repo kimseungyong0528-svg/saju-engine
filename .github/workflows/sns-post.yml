@@ -1,5 +1,6 @@
 # 승인한 게시물을 인스타·페이스북·스레드에 올린다 (메타 공식 API, 무료).
-# 하루 여섯 번 (사장님 2026-11-01): 한국 시각 07:30 · 12:00 · 15:00 · 18:00 · 21:00 · 23:00 쯤 올라간다.
+# 스레드 하루 여섯 번 (사장님 2026-11-01): 한국 시각 07:30 · 12:00 · 15:00 · 18:00 · 21:00 · 23:00 쯤 올라간다.
+# 영상(인스타·페북 릴스) 08:00 · 19:00, 전날 인기 스레드 글의 인스타 게시글·페북 글 12:30 · 21:00 (밤글은 밤 칸과 같이 돈다).
 # GitHub 예약 실행은 몇 분 늦게 시작하므로 13분 일찍 걸어 둔다.
 # 손으로 돌릴 때: Actions → SNS 자동 게시 → Run workflow (dry 를 켜면 올리지 않고 목록만 본다).
 name: SNS 자동 게시
@@ -7,15 +8,18 @@ name: SNS 자동 게시
 on:
   schedule:
     - cron: "17 22 * * *"   # 한국 07:17 → 오전
+    - cron: "47 22 * * *"   # 한국 07:47 → 아침영상
     - cron: "47 2 * * *"    # 한국 11:47 → 점심
+    - cron: "17 3 * * *"    # 한국 12:17 → 점심글
     - cron: "47 5 * * *"    # 한국 14:47 → 오후
     - cron: "47 8 * * *"    # 한국 17:47 → 저녁
-    - cron: "47 11 * * *"   # 한국 20:47 → 밤
+    - cron: "47 9 * * *"    # 한국 18:47 → 저녁영상
+    - cron: "47 11 * * *"   # 한국 20:47 → 밤 + 밤글
     - cron: "47 13 * * *"   # 한국 22:47 → 늦은밤
   workflow_dispatch:
     inputs:
       slot:
-        description: 오전·점심·오후·저녁·밤·늦은밤
+        description: 오전·아침영상·점심·점심글·오후·저녁·저녁영상·밤·밤글·늦은밤
         required: true
         default: 오전
       date:
@@ -44,6 +48,7 @@ jobs:
       FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
       THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
       SNS_SITE_LINK: ${{ vars.SNS_SITE_LINK }}
+      SNS_PICK: ${{ vars.SNS_PICK }}   # on 이면 전날 인기 글을 인스타 게시글·페북 글로 올린다 (사장님 견본 확인 후)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -57,15 +62,22 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             case "${{ github.event.schedule }}" in
               "17 22 * * *") SLOT=오전 ;;
+              "47 22 * * *") SLOT=아침영상 ;;
               "47 2 * * *") SLOT=점심 ;;
+              "17 3 * * *") SLOT=점심글 ;;
               "47 5 * * *") SLOT=오후 ;;
               "47 8 * * *") SLOT=저녁 ;;
-              "47 11 * * *") SLOT=밤 ;;
+              "47 9 * * *") SLOT=저녁영상 ;;
+              "47 11 * * *") SLOT="밤 밤글" ;;
               *) SLOT=늦은밤 ;;
             esac
           fi
-          ARGS=(--slot "$SLOT")
-          [ "${{ github.event_name }}" = "schedule" ] && ARGS+=(--scheduled)
-          [ -n "${{ inputs.date }}" ] && ARGS+=(--date "${{ inputs.date }}")
-          [ "${{ inputs.dry }}" = "true" ] && ARGS+=(--dry)
-          python -m saju.marketing.meta "${ARGS[@]}"
+          RC=0
+          for S in $SLOT; do
+            ARGS=(--slot "$S")
+            [ "${{ github.event_name }}" = "schedule" ] && ARGS+=(--scheduled)
+            [ -n "${{ inputs.date }}" ] && ARGS+=(--date "${{ inputs.date }}")
+            [ "${{ inputs.dry }}" = "true" ] && ARGS+=(--dry)
+            python -m saju.marketing.meta "${ARGS[@]}" || RC=1
+          done
+          exit $RC

@@ -1,9 +1,14 @@
-"""대본 한 줄씩 목소리 파일(wav)로 만든다. Supertonic이 없으면 길이만 맞춘 무음을 만든다."""
+"""대본 한 줄씩 목소리 파일(wav)로 만든다.
+
+타입캐스트 열쇠(TYPECAST_API_KEY)가 있으면 타입캐스트로 읽는다 (사장님 2026-11-01 "타입캐스트 존나 자연스러운걸로").
+없으면 Supertonic, 그것도 없으면 길이만 맞춘 무음을 만든다."""
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import urllib.request
 import wave
 from pathlib import Path
 
@@ -56,9 +61,38 @@ def _silence(path: Path, sec: float) -> None:
         w.writeframes(b"\0\0" * int(SR * sec))
 
 
-def speak(text: str, path: Path) -> Path:
-    tts = _engine()
+TYPECAST = "https://api.typecast.ai/v1/text-to-speech"
+TC_MODEL = os.environ.get("TYPECAST_MODEL", "ssfm-v31")
+
+
+def typecast(text: str, path: Path, voice_id: str = "", prev: str = "", nxt: str = "", tempo: float = 0.0) -> Path:
+    """타입캐스트로 읽는다. 앞뒤 문장을 같이 주면 감정을 문맥에 맞춰 넣는다(smart)."""
+    prompt = {"emotion_type": "smart"}
+    if prev:
+        prompt["previous_text"] = prev
+    if nxt:
+        prompt["next_text"] = nxt
+    body = {"text": text, "model": TC_MODEL, "voice_id": voice_id or os.environ["TYPECAST_VOICE"], "prompt": prompt,
+            "output": {"audio_format": "wav", "target_lufs": -14.0, "audio_tempo": tempo or SPEED}}
+    req = urllib.request.Request(TYPECAST, data=json.dumps(body, ensure_ascii=False).encode(), method="POST",
+                                 headers={"X-API-KEY": os.environ["TYPECAST_API_KEY"], "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        Path(path).write_bytes(r.read())
+    return path
+
+
+def typecast_voices(model: str = "") -> list[dict]:
+    req = urllib.request.Request(f"https://api.typecast.ai/v3/voices?model={model or TC_MODEL}",
+                                 headers={"X-API-KEY": os.environ["TYPECAST_API_KEY"]})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.loads(r.read())
+
+
+def speak(text: str, path: Path, prev: str = "", nxt: str = "") -> Path:
     said = clean(text)
+    if os.environ.get("TYPECAST_API_KEY") and os.environ.get("TYPECAST_VOICE"):
+        return typecast(said, path, prev=clean(prev), nxt=clean(nxt))
+    tts = _engine()
     if tts is None:
         _silence(path, max(1.2, len(said) / (8.0 * SPEED)))
         return path
