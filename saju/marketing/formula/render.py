@@ -356,23 +356,25 @@ class Renderer:
         순위마다 밑에 자극적인 한 줄 두 개 (banks.json solo_hype, 엔진 순위 종류와 같은 방향)."""
         l1, l2 = m.data["lines"]
         hype = B["solo_hype"][m.kind]
+        # 사장님 2026-11-01: 제목만 가운데 먼저 → 바로 제목+1·2·3위 네 칸 전체를 한 덩어리로 화면 정가운데에
         top3 = "".join(
-            f"<div class='k' style='animation-delay:{2.3 + i * 1.1:.1f}s'><div class=h><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>"
+            f"<div class=k><div class=h><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>"
             f"<div class=s>{hype[i][0]}<br>{hype[i][1]}</div></div>" for i, r in enumerate(m.rows[:3]))
+        title = f"<div class=t><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div>"
         html = f"""<style>body{{background:transparent;font-family:'Noto Sans KR'}}
-        .w{{position:absolute;left:0;right:0;top:960px;display:flex;flex-direction:column;align-items:center;transform:translateY(-50%);animation:up .7s ease-in-out 1.5s both}}
-        @keyframes up{{to{{top:150px;transform:translateY(0)}}}}
+        .c{{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}}
+        .a{{animation:off 0s linear 1.6s both}} .b{{animation:on 0s linear 1.6s both}}
+        @keyframes off{{to{{visibility:hidden}}}} @keyframes on{{from{{visibility:hidden}}to{{visibility:visible}}}}
+        .t{{display:flex;flex-direction:column;align-items:center}}
         .l,.r{{background:#000;font-weight:900;font-size:96px;line-height:1.18;letter-spacing:-3px;white-space:nowrap}}
         .l{{color:#fff;padding:10px 34px 14px;border-radius:18px 18px 0 0}}
         .r{{color:#ff1f1f;padding:0 34px 16px;border-radius:0 0 18px 18px}}
-        .list{{position:absolute;top:520px;left:50px;right:50px}}
-        .k{{background:rgba(0,0,0,.74);border-radius:24px;padding:22px 30px 24px;margin-bottom:30px;opacity:0;animation:pop .45s ease-out both}}
-        @keyframes pop{{from{{opacity:0;transform:translateY(40px)}}to{{opacity:1;transform:none}}}}
+        .list{{width:980px;margin-top:40px}}
+        .k{{background:rgba(0,0,0,.74);border-radius:24px;padding:22px 30px 24px;margin-top:28px}}
         .h{{color:#fff;font-weight:900;font-size:68px;line-height:1.1;white-space:nowrap;letter-spacing:-2px}}
         .h b{{color:#ffd23f}} .h i{{font-style:normal;font-size:44px;color:#eee;font-weight:700}}
         .s{{color:#ffe9a8;font-weight:800;font-size:50px;line-height:1.3;margin-top:12px;letter-spacing:-1.5px;word-break:keep-all}}
-        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div>
-        <div class=list>{top3}</div></body>"""
+        </style><body><div class='c a'>{title}</div><div class='c b'>{title}<div class=list>{top3}</div></div></body>"""
         fr = self.overlay(html, f"{out.stem}-제목", 7)
         clip = media(m.data["bg"])
         bgm = music.bgm(8, self.work / f"bgm-{out.stem}.wav", seed=seed)
