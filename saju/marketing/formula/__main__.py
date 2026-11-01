@@ -79,7 +79,8 @@ def shift_threads(manifest: dict, frm: str) -> int:
     return len(moved)
 
 
-def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "") -> dict:
+def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
+          approve_threads: bool = False) -> dict:
     week = out / start.isoformat()
     (week / "유튜브").mkdir(parents=True, exist_ok=True)
     (week / "인스타").mkdir(parents=True, exist_ok=True)
@@ -140,6 +141,16 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
     manifest["daangn"] = {"소식": "\n".join(["이번 주 띠별 운세", ""] + [f"▪ {t}" for t in titles] +
                                          ["", "띠는 태어난 해 하나만 본 것이에요.", "생년월일과 태어난 시간으로 보는 내 운세는 운명서재에서", SITE_URL])}
     shutil.rmtree(week / "_작업", ignore_errors=True)
+    if approve_threads:
+        # 심사원 50명 심사를 통과한 주만 이 표시를 단다 (CLAUDE.md 제2조항). 표시가 있으면 /studio 승인 없이 시간 맞춰 올라간다.
+        n = 0
+        for d in manifest["days"]:
+            for it in d["items"]:
+                if it["channel"] == "threads":
+                    it["approved_by"] = "claude"
+                    n += 1
+        manifest["threads_approved_by"] = "claude"
+        print(f"스레드 글 {n}개 클로드 승인 (심사 통과)")
     if shift:
         print(f"스레드 글 {shift_threads(manifest, shift)}개를 한 칸씩 미뤘어요 ({shift}부터)")
         rows = [[f"{d['date']} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]]
@@ -161,6 +172,7 @@ def main(argv=None) -> int:
     ap.add_argument("--used", default="", help="이미 쓴 재료 이름들 (쉼표로)")
     ap.add_argument("--publish", action="store_true")
     ap.add_argument("--no-video", action="store_true")
+    ap.add_argument("--approve-threads", action="store_true", help="심사 통과한 주: 스레드 글을 클로드가 한 번에 승인")
     ap.add_argument("--shift-threads", default="", help="'2026-11-01 늦은밤' 처럼: 그 칸부터 스레드 글을 한 칸씩 미룬다")
     a = ap.parse_args(argv)
     start = dt.date.fromisoformat(a.start)
@@ -170,7 +182,7 @@ def main(argv=None) -> int:
         publish.status(start.isoformat(), "running", "만드는 중")
         used |= publish.used_keys(before=start.isoformat())
     try:
-        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads)
+        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads)
     except Exception as e:
         if a.publish:
             publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")

@@ -443,3 +443,26 @@ def test_emoji_marks():
                 if "신호" in line and line[:1] in "※🟢🔴":
                     assert line[0] in "🟢🔴", (e.key, line)
                     assert (line[0] == "🔴") == any(w in line for w in T.BAD_HEAD), (e.key, line)
+
+
+def test_claude_approves_judged_threads(monkeypatch):
+    """사장님 2026-11-01: 심사 통과한 주의 스레드는 /studio 승인 없이 시간 맞춰 올린다. 다른 채널은 여전히 승인이 있어야 한다."""
+    from saju.marketing import meta, publish
+    plan = {"week": "2026-11-01", "approved": {}, "posted": {}, "items": [
+        {"id": "a", "slot": "오전", "channel": "threads", "approved_by": "claude", "title": "t", "texts": {}},
+        {"id": "b", "slot": "오전", "channel": "threads", "title": "t", "texts": {}},
+        {"id": "c", "slot": "오전", "channel": "instagram-reel", "title": "t", "texts": {}}]}
+    monkeypatch.setattr(publish, "_call", lambda *a, **k: plan)
+    out = []
+    monkeypatch.setattr("builtins.print", lambda *a, **k: out.append(" ".join(map(str, a))))
+    meta.run("오전", "2026-11-02", dry=True)
+    assert "올릴 것: a t" in out and any("승인 안 됨): b" in x for x in out) and any("승인 안 됨): c" in x for x in out)
+
+
+def test_follow_link_only_after_toss(monkeypatch):
+    """사장님 2026-11-01: 토스 연동되면 팔로우 말 뒤에 사이트 링크까지. 그 전엔 링크 없음."""
+    from saju.marketing import meta
+    monkeypatch.delenv("SNS_SITE_LINK", raising=False)
+    assert meta.with_link(["본글", "팔로우 해 두세요!"]) == ["본글", "팔로우 해 두세요!"]
+    monkeypatch.setenv("SNS_SITE_LINK", "on")
+    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1].endswith("https://unmyeong-saju.com")

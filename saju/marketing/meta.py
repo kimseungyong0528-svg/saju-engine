@@ -174,9 +174,19 @@ def _th_post(text: str, tok: str, reply_to: str = "") -> str:
     return _http("POST", f"{T}/me/threads_publish", {"creation_id": cid, "access_token": tok})["id"]
 
 
+FOLLOW_LINK = "운명서재에서 내 사주 보기 👉 https://unmyeong-saju.com"
+
+
+def with_link(parts: list[str]) -> list[str]:
+    """토스 정식 결제가 연결되면(SNS_SITE_LINK=on) 마지막 장 팔로우 말 뒤에 사이트 주소 한 줄을 붙인다 (사장님 2026-11-01)."""
+    if os.environ.get("SNS_SITE_LINK") != "on" or not parts or "unmyeong-saju.com" in parts[-1]:
+        return parts
+    return parts[:-1] + [parts[-1].rstrip() + "\n" + FOLLOW_LINK]
+
+
 def threads(week: str, it: dict) -> str:
     tok = threads_token()
-    parts = [clean(t) for t in it["texts"].values()]
+    parts = with_link([clean(t) for t in it["texts"].values()])
     first = prev = _th_post(parts[0], tok)
     for t in parts[1:]:
         time.sleep(3)
@@ -197,7 +207,8 @@ def run(slot: str, date: str, dry: bool = False) -> int:
     for it in plan["items"]:
         if it["slot"] != slot or it["channel"] not in AUTO:
             continue
-        if not approved.get(it["id"]):
+        # 스레드는 클로드가 심사원 50명 심사(CLAUDE.md 제2조항)를 마친 주를 한 번에 승인한다 (사장님 2026-11-01 "스레드는 승인 없이 한 번에 다 일주일치 클로드에서 승인")
+        if not approved.get(it["id"]) and it.get("approved_by") != "claude":
             print(f"건너뜀 (승인 안 됨): {it['id']}")
             continue
         if posted.get(it["id"], {}).get("ok"):
