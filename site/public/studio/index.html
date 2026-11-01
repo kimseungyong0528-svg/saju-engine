@@ -397,7 +397,7 @@ function viewStatus() {
     el('p', { class: 'muted' }, `${fmtDate(mon)} (월) ~ ${fmtDate(sun)} (일)`),
     el('div', { class: 'stat' },
       card('스레드 준비', allTh.length ? `${allTh.length}개 준비됨` : '없음', allTh.length >= 42 ? 'good' : 'bad'),
-      card('승인', apprOk === allTh.length && allTh.length ? (claude ? '클로드가 한 번에 승인함' : '직접 승인함') : `${apprOk} / ${allTh.length} 승인`, apprOk === allTh.length ? 'good' : 'bad'),
+      card('승인', apprOk === allTh.length && allTh.length ? (claude ? '클로드에서 이미 승인 완료' : '직접 승인함') : `${apprOk} / ${allTh.length} 승인`, apprOk === allTh.length ? 'good' : 'bad'),
       card('며칠치 올라갔나', `${fullDays} / 7일`),
       card('오류', errN ? `${errN}건` : '없음', errN ? 'bad' : 'good')),
     el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과한 주라서 클로드가 한 번에 승인했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
