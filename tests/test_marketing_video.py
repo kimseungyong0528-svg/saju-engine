@@ -34,7 +34,7 @@ def test_rank_posts_pass_checks():
     assert pool[-1].period.key == "2026-11"
     for p in pool:
         assert check_rank(p, youtube_rank(p)) == [], p.key
-        assert len(p.lines) == 14 and p.lines[-1].startswith("더 궁금한 사주는")
+        assert len(p.lines) == 14 and "팔로우" in p.lines[-1]
 
 
 def test_voice_clean_reads_plain_korean():
@@ -47,7 +47,7 @@ def test_talk_plan_scenes_and_lines():
         texts, plan = talk_plan(p)
         types = [s["type"] for s in plan["scenes"]]
         assert types[0] == "cover" and types[-2:] == ["remember", "end"] and types.count("point") == len(p.slides)
-        assert len(texts) == len(plan["caps"]) and texts[-1].startswith("더 궁금한 사주는")
+        assert len(texts) == len(plan["caps"]) and "팔로우" in texts[-1]
         assert all(0 <= sc < len(plan["scenes"]) for _, sc in plan["caps"])
 
 

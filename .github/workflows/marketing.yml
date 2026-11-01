@@ -48,12 +48,20 @@ jobs:
           fi
           if ! [[ "$DAYS" =~ ^(1|7)$ ]]; then echo "며칠치는 1 또는 7"; exit 1; fi
           if ! [[ "$START" =~ ^20[0-9]{2}-[01][0-9]-[0-3][0-9]$ ]]; then echo "날짜 형식이 아님 (예 2026-10-19)"; exit 1; fi
+          # 매일 자동으로 돌 때: 그 날이 이미 만든 묶음(심사한 1주일치 등)에 들어 있으면 새로 만들지 않는다. 덮어쓰면 심사한 글이 바뀐다.
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            N=$(curl -fsS -H "X-Worker-Secret: $WORKER_SECRET" "$SITE_URL/api/internal/studio/today?date=$START" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("items") or []))' || echo 0)
+            if [ "$N" != "0" ]; then echo "$START 은 이미 만든 묶음에 있어서 건너뜀"; echo "SKIP=1" >> "$GITHUB_ENV"; fi
+          fi
       - uses: actions/checkout@v4
+        if: env.SKIP != '1'
       - uses: actions/setup-python@v5
+        if: env.SKIP != '1'
         with:
           python-version: "3.12"
           cache: pip
       - uses: actions/cache@v4
+        if: env.SKIP != '1'
         with:
           path: |
             ~/.cache/huggingface
@@ -61,12 +69,14 @@ jobs:
             ~/.cache/saju-media
           key: shorts-tools-v2
       - name: 도구 설치
+        if: env.SKIP != '1'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils ffmpeg fonts-noto-color-emoji > /dev/null
           pip install -q -e ".[report,video]"
           python -m playwright install --with-deps chromium
       - name: 게시물 만들고 관리 사이트에 올리기
+        if: env.SKIP != '1'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -80,7 +90,7 @@ jobs:
         run: |
           python -c "from saju.marketing import publish; publish.status('$START', 'failed', '만들기 실패: Actions 기록 확인')" || true
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && env.SKIP != '1'
         with:
           name: SNS게시물-${{ env.START }}
           path: 게시물

@@ -62,7 +62,7 @@ function sceneHtml(sc,i){
   if(sc.type==='cover') return `${bg}<div class="shade"></div><div class="cover"><div class="kicker">${esc(sc.kicker||'')}</div><div class="title${sc.title.length>9?' long':''}">${hl(sc.title)}</div></div>`;
   if(sc.type==='point') return `${bg}<div class="dark"></div><div class="headwrap"><div class="no">${NUM[sc.no-1]||sc.no}</div><div class="head">${hl(sc.head)}</div><div class="rule"></div>${sc.items&&sc.items.length?`<div class="list">${sc.items.map((t,j)=>`<div class="item"><i>${j+1}</i>${esc(t)}</div>`).join('')}</div>`:''}</div>`;
   if(sc.type==='remember') return `${bg}<div class="dark" style="background:rgba(14,9,5,.72)"></div><div class="remember"><div class="lab">기억할 한 줄</div><div class="box">${esc(sc.text)}</div></div>`;
-  return `${bg}<div class="dark" style="background:rgba(14,9,5,.8)"></div><div class="end"><div class="seal">운명<br>서재</div><h2>더 궁금한 사주는<br>프로필 링크에서</h2><p>${esc(sc.sub||'내 생년월일로 보는 운세')}</p><div class="url">unmyeong-saju.com</div></div>`;
+  return `${bg}<div class="dark" style="background:rgba(14,9,5,.8)"></div><div class="end"><div class="seal">운명<br>서재</div><h2>놓치기 싫으면<br>팔로우 해 두세요</h2><p>${esc(sc.sub||'내 생년월일로 보는 운세')}</p><div class="url">unmyeong-saju.com</div></div>`;
 }
 let built=-1;
 function setCap(i,p){

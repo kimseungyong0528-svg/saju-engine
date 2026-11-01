@@ -191,7 +191,7 @@ def forceteller_stem(st: str) -> dict:
     return {"tpl": "stem", "el": ELEMENTS[STEM_ELEMENT[i]], "pair": ELEMENTS[STEM_ELEMENT[j]],
             "head": [f"<em>{name} 일간</em>이", "꼭 만나야 하는 사람"],
             "say": [f"{name} 일간은\n{trait}", weak, f"{partner} 일간을 만나면\n{gain}", f"{STEMS[a]}{STEMS[c]}합(合)\n서로 손을 잡는 사이예요",
-                    "내 일간이 뭔지 모르면\n프로필 링크에서 생년월일만 넣어 보세요"]}
+                    "이런 오행 이야기 매일 아침 올려요\n놓치기 싫으면 팔로우 해 두세요"]}
 
 
 def forceteller_month(tpl: str, p: Period) -> dict:
@@ -269,6 +269,16 @@ def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
     return [f"{r.rank}위 {ddi(r.ddi)} ({years_short(r.ddi)}년생)" for r in rows[:upto]]
 
 
+FOLLOW_AM = "매일 아침 띠별 운세 올려요. 놓치기 싫으면 팔로우 해 두세요."
+
+
+def _am(cap: str) -> dict[str, dict]:
+    """아침 캡션: 모든 형식에 팔로우 말 (유튜브는 '구독'으로). 사장님 2026-11-01."""
+    if "팔로우" not in cap:
+        cap = cap.replace("\n\n#", f"\n\n{FOLLOW_AM}\n\n#", 1)
+    return {"yt": cap.replace("팔로우 해 두세요", "구독해 두세요"), "ig": cap}
+
+
 def morning_texts(m: Morning) -> dict[str, dict]:
     tags = "#사주 #운세 #띠별운세 #띠순위 #운명서재"
     if m.fmt == "sinbi":
@@ -276,16 +286,16 @@ def morning_texts(m: Morning) -> dict[str, dict]:
         head = f"{d.month}월 {d.day}일 띠별 운세"
         body = "\n".join(f"{ddi(a)}: {t}" for a, t in m.data["text"].items())
         lines = [head, "", body, "", f"오늘 일진은 {m.data['ganzhi']}일이에요. 띠 글자와 오늘 글자의 관계로 풀었어요.", "",
-                 "저장해 두고 오늘 하루 한 번 더 보세요.", "내 생년월일로 보는 운세는 프로필 링크에서", "", tags]
+                 "저장해 두고 오늘 하루 한 번 더 보세요.", FOLLOW_AM, "", tags]
         cap = "\n".join(lines)
-        return {"youtube": {"제목": f"{head} | 오늘의 운세 #shorts", "설명": cap},
-                "instagram-reel": {"캡션": cap}, "facebook-reel": {"캡션": cap}}
+        return {"youtube": {"제목": f"{head} | 오늘의 운세 #shorts", "설명": _am(cap)["yt"]},
+                "instagram-reel": {"캡션": _am(cap)["ig"]}, "facebook-reel": {"캡션": _am(cap)["ig"]}}
     if m.fmt == "forceteller":
         e = m.data["el"]
         head = " ".join(x.replace("<em>", "").replace("</em>", "") for x in m.data["head"])
         cap = "\n".join([head, ""] + [s.replace("\n", " ") for s in m.data["say"]] + ["", f"#오행 #{e} #사주 #궁합 #운명서재"])
-        return {"youtube": {"제목": f"{head} | 오행 쉽게 보기 #shorts", "설명": cap},
-                "instagram-reel": {"캡션": cap}, "facebook-reel": {"캡션": cap}}
+        return {"youtube": {"제목": f"{head} | 오행 쉽게 보기 #shorts", "설명": _am(cap)["yt"]},
+                "instagram-reel": {"캡션": _am(cap)["ig"]}, "facebook-reel": {"캡션": _am(cap)["ig"]}}
     k = KINDS[m.kind]
     lab = m.period.label
     title = " ".join(m.title).replace("“", "").replace("”", "")
@@ -303,7 +313,8 @@ def morning_texts(m: Morning) -> dict[str, dict]:
     else:
         cap = "\n".join([title, "", *_rank_lines(m.rows), "", basis, "", "💬 내 띠는 몇 위인지 댓글로 남겨 주세요", "", tags])
     yt = f"{lab} {k['name']} 띠 순위 | 1위 {ddi(m.rows[0].ddi)} ({years_short(m.rows[0].ddi)}년생) #shorts"
-    return {"youtube": {"제목": yt[:100], "설명": cap}, "instagram-reel": {"캡션": cap}, "facebook-reel": {"캡션": cap}}
+    return {"youtube": {"제목": yt[:100], "설명": _am(cap)["yt"]}, "instagram-reel": {"캡션": _am(cap)["ig"]},
+            "facebook-reel": {"캡션": _am(cap)["ig"]}}
 
 
 # ── 저녁 ──
@@ -601,8 +612,8 @@ def list_post(key: str, kind: str, p: Period, n: int, W: str, items: list[dict],
     burn = LB["burning"][kind][n % len(LB["burning"][kind])]
     same = "같은 일간이라도" if W == "일간" else ("같은 해에 태어났어도" if W == "해" else "같은 띠라도")
     rest = "나머지 일곱 글자에 따라" if W == "일간" else "나머지 여섯 글자에 따라"
-    end = [q[3], same, rest, f"{K['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", *LB["find_me"][n % 3],
-           LB["close"][n % len(LB["close"])]]
+    end = [q[3], same, rest, f"{K['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", LB["close"][n % len(LB["close"])],
+           "", *LB["find_me"][n % 3]]
     pages.append(end)
     return Evening(key, "jangin", pages, facts=tuple(facts))
 
@@ -694,7 +705,7 @@ def double(p: Period, n: int) -> Evening | None:
     same = ["※ 같은 띠인데 왜 나는 아닐까"] + [f"같은 {ddi(a)}라도 {', '.join(map(str, v))}년생이에요" for a, v in by.items()]
     same += ["같은 띠라도 천간이 다른 해에 태어났으면", "겹경사는 아니에요", "", "좋은 일이 겹칠수록", "계약서와 약속은 한 번 더 읽고 도장 찍으세요"]
     end = ["※ 경사는 어디로 올까", "태어난 해는 여덟 글자 중 두 글자예요", "나머지 여섯 글자에 따라", "경사가 어디로 오는지 달라요", "그건 따로 봐야 알아요", "",
-           "이 겹경사가 돈으로 올지 사람으로 올지", "그간 버틴 고생은 언제 보상받을지", "", *LB["find_me"][n % 3], LB["close"][n % len(LB["close"])]]
+           "이 겹경사가 돈으로 올지 사람으로 올지", "그간 버틴 고생은 언제 보상받을지", "", LB["close"][n % len(LB["close"])], "", *LB["find_me"][n % 3]]
     return Evening(f"jangin-double-{p.key}", "jangin", [p1, p2, *cards, same, end], facts=tuple((x["ddi"], p.key, "double", "+") for x in ys))
 
 
@@ -776,8 +787,8 @@ def one_pages(kind: str, p: Period, n: int, good: bool, p1: list[str], feel: lis
     burn = LB["burning"][kind][n % len(LB["burning"][kind])]
     same = "같은 일간이라도" if W == "일간" else "같은 띠라도"
     rest = "나머지 일곱 글자에 따라" if W == "일간" else "나머지 여섯 글자에 따라"
-    end = [qk[3], same, rest, f"{B['kinds'][kind]['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", *LB["find_me"][n % 3],
-           LB["close"][n % len(LB["close"])]]
+    end = [qk[3], same, rest, f"{B['kinds'][kind]['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", LB["close"][n % len(LB["close"])],
+           "", *LB["find_me"][n % 3]]
     return [p1, p2, p3, p4, end]
 
 
@@ -1107,6 +1118,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         ths.sort(key=lambda x: x[1])
         out.append(Day(d, m, ths))
     _teasers(out)
+    _follow_all(out)
     return out
 
 
@@ -1151,7 +1163,27 @@ def _teasers(days: list[Day]) -> None:
             what = f"{who} {int(pk[5:])}월 {ONE_NOUN[e1.kind]} 이야기"
         else:
             what = f"'{title_of(e1)}'"
-        e0.pages[-1] = e0.pages[-1] + ["", f"{when}엔 {what} 올려요", LB["follow"][j % len(LB["follow"])]]
+        last = e0.pages[-1]
+        if last[-2:] in LB["find_me"]:    # 끝의 팔로우 두 줄을 '다음 글 예고 + 팔로우'로 바꾼다 (팔로우 말이 두 번 나오지 않게)
+            last = last[:-2]
+        e0.pages[-1] = last + [f"{when}엔 {what} 올려요", LB["follow"][j % len(LB["follow"])]]
+
+
+FOLLOW_END = {"jangin": ["이런 이야기 매일 아침, 저녁에 올려요", "놓치기 싫으면 팔로우 해 두세요"],
+              "dohwa": ["🫨 이런 거 매일 낮 12시, 밤 9시에 하나씩 올려요", "놓치기 싫으면 팔로우 해 두세요"],
+              "salgu": ["🍀 매일 오후 3시, 밤 11시에 한 탄씩 올려요", "다음 탄 놓치기 싫으면 팔로우 해 두세요🧚🏻‍♀️"]}
+
+
+def has_follow(e: Evening) -> bool:
+    return any("팔로우" in x for x in e.pages[-1])
+
+
+def _follow_all(days: list[Day]) -> None:
+    """모든 스레드 글은 마지막 장에 팔로우 말이 있다 (사장님 2026-11-01 '어떤 건 하고 어떤 건 안 하면 안 됨'). 프로필 링크 말은 쓰지 않는다."""
+    for d in days:
+        for _, _, e in d.threads:
+            if not has_follow(e):
+                e.pages[-1] = e.pages[-1] + ["", *FOLLOW_END[e.style]]
 
 
 def all_text(m: Morning, *es: Evening) -> str:

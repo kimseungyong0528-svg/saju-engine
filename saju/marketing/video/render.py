@@ -26,7 +26,7 @@ MFONTS = ROOT / "saju" / "marketing" / "fonts"
 ART = ROOT / "site" / "public" / "assets" / "geumwol"
 FPS = 30
 LEAD, GAP, TAIL = 0.4, 0.3, 1.4
-OUTRO = "더 궁금한 사주는 프로필 링크에서 확인해 보세요."
+OUTRO = "내일도 띠별 운세 올려요. 놓치기 싫으면 팔로우 해 두세요."
 BGS = ["palace-study.jpg", "palace-garden.jpg", "palace-gate.jpg"]
 COVER = {"ddi": "newyear-cover.jpg", "summary": "newyear-cover.jpg", "topic": "master.jpg"}
 
@@ -161,7 +161,7 @@ def talk_plan(p: Post) -> tuple[list[str], dict]:
     scenes.append({"type": "remember", "text": p.remember, "bg": (ART / "palace-gate.jpg").as_uri()})
     texts.append(p.remember); caps.append((p.remember, len(scenes) - 1))
     scenes.append({"type": "end", "bg": (ART / "palace-gate.jpg").as_uri(), "sub": "내 생년월일로 보는 운세 한 권"})
-    texts.append(OUTRO); caps.append(("더 궁금한 사주는 프로필 링크에서", len(scenes) - 1))
+    texts.append(OUTRO); caps.append(("놓치기 싫으면 팔로우", len(scenes) - 1))
     chip = "2027 정미년 띠별 운세" if p.kind in ("ddi", "summary") else "운명서재 사주 상식"
     hook = f"{p.key}띠라면\n꼭 보세요" if p.kind == "ddi" else ("내 띠는\n괜찮을까?" if p.kind == "summary" else "모르면\n손해예요")
     return texts, {"scenes": scenes, "caps": caps, "keys": keys, "chip": chip, "hook": hook}
