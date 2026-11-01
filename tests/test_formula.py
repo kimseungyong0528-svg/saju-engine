@@ -388,3 +388,9 @@ def test_judge_model_top_priority_pinned():
     assert any("0부터" in s for s in j["strict"])
     md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
     assert "제2조항: 심사원 모델 1순위" in md and "상위90-원문.txt" in md
+
+
+def test_video_fits_studio_upload():
+    """넷리파이 함수는 6MB까지 받고, 영상은 글자(base64)로 바뀌어 4/3배가 된다. 2026-11-01 5MB 영상이 413으로 막혔다."""
+    from saju.marketing.formula import render
+    assert render.MAX_VIDEO * 4 / 3 < 5_000_000

@@ -57,7 +57,9 @@ def _data_uri(p: Path, mime: str) -> str:
     return f"data:{mime};base64," + base64.b64encode(p.read_bytes()).decode()
 
 
-MAX_VIDEO = 5_000_000  # 관리 사이트(넷리파이 함수)가 한 번에 받을 수 있는 크기(6MB)보다 작게
+# 관리 사이트(넷리파이 함수)는 한 번에 6MB까지 받는데, 영상은 글자로 바꿔 보내면 4/3배로 커진다.
+# 5MB 영상은 6.7MB가 되어 413(너무 큼)으로 막혔다(2026-11-01). 그래서 3.5MB 안으로 줄인다.
+MAX_VIDEO = 3_500_000
 
 
 def _ff(*args: str) -> None:
@@ -71,10 +73,10 @@ def _shrink(out: Path) -> None:
     """영상이 너무 크면 화질을 조금 낮춰 다시 굽는다. 길이·그림·소리는 그대로다."""
     sec = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(out)],
                                capture_output=True, text=True, check=True).stdout.strip() or 1)
-    kbps = max(300, int(MAX_VIDEO * 8 * 0.9 / sec / 1000) - 128)
+    kbps = max(200, int(MAX_VIDEO * 8 * 0.85 / sec / 1000) - 96)
     tmp = out.with_name(out.stem + "_작게.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(out), "-c:v", "libx264", "-b:v", f"{kbps}k",
-                    "-maxrate", f"{kbps}k", "-bufsize", f"{kbps * 2}k", "-c:a", "aac", "-b:a", "128k", str(tmp)], check=True)
+                    "-maxrate", f"{kbps}k", "-bufsize", f"{kbps * 2}k", "-c:a", "aac", "-b:a", "96k", str(tmp)], check=True)
     tmp.replace(out)
 
 
