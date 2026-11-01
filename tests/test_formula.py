@@ -159,8 +159,10 @@ def test_dohwa_short_good(plan90):
     for e in _threads(plan90):
         if e.style != "dohwa":
             continue
-        body = [x for x in e.pages[0] if x.strip()]
+        head, *why = "\n".join(e.pages[0]).split("\n\n")
+        body = [x for x in head.split("\n") if x.strip()]
         assert len(body) <= 2, e.key
+        assert not why or (why[0].split("\n")[0] in T.DOHWA_WHY_HEAD and len(why[0].split("\n")) <= 4), e.key   # 근거 1~3줄
         assert not [w for w in ("조심", "과열", "주의", "서두르", "위험") if w in " ".join(body)], e.key
 
 
@@ -337,3 +339,24 @@ def test_negative_posts_limited():
     for w in range(2):
         neg = [e for d in P[w:w + 7] for _, _, e in d.threads if e.style == "jangin" and T._negative(e)]
         assert len(neg) <= 2 and sum(e.key.startswith(("jone-", "jstem-")) for e in neg) <= 1
+
+
+def test_no_sira_ending():
+    """사장님 2026-11-01: '~시라'는 쓰지 않고 '~하세요!·~보세요!·~두세요!'로 쓴다."""
+    import pathlib
+    for f in ["banks.json", "text.py"]:
+        assert "시라" not in (pathlib.Path(T.__file__).parent / f).read_text(encoding="utf-8"), f
+    for day in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in day.threads:
+            assert "시라" not in "\n".join("\n".join(pg) for pg in e.pages), e.key
+
+
+def test_dohwa_has_reason():
+    """사장님 2026-11-01 "디테일한 설명 없어?": 도화도르식 본글엔 '사주로 보면' 근거가 붙는다."""
+    n = 0
+    for day in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in day.threads:
+            if e.style == "dohwa" and e.key.startswith(("dohwa-d-", "dohwa-s-")):
+                assert set(e.pages[0]) & set(T.DOHWA_WHY_HEAD), e.key
+                n += 1
+    assert n

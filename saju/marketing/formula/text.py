@@ -859,7 +859,32 @@ def dohwa_ddi(kind: str, p: Period, a: str, n: int) -> Evening | None:
                 r=r.rank, short=wb["short"][n % len(wb["short"])])
     line = line.replace(f"{ddi(a)}는", josa(ddi(a), "은", "는"))
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][(n + 1) % len(B["dohwa_reply"])]]
-    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|"), reply], facts=((a, p.key, kind, "+"),))
+    why = _dohwa_why(basis_ddi(kind, p, r, lead), n)
+    return Evening(f"dohwa-d-{kind}-{a}-{p.key}", "dohwa", [line.split("|") + why, reply], facts=((a, p.key, kind, "+"),))
+
+
+DOHWA_WHY_HEAD = ["사주로 보면", "왜 그러냐면", "사주 근거는 이거예요", "이유가 있어요", "사주로 풀면 이래요"]
+
+
+GOD_PLAIN = {   # 십신을 처음 보는 사람도 알게 한 줄로 (쉬운 설명 심사). 같은 줄이 한 주에 몰리지 않게 두 가지씩
+    "비겁": ["비겁은 나와 같은 기운이라, 같이 뛰어 줄 사람이 늘어요", "비겁(比劫)은 내 편 기운이에요. 혼자 하던 일에 손이 붙어요"],
+    "식상": ["식상은 내가 밖으로 내보내는 기운이라, 말·표현·새 일이 술술 나와요", "식상(食傷)은 내 안에 있던 걸 꺼내는 기운이에요. 하고 싶은 말이 쉽게 나와요"],
+    "재성": ["재성은 내가 다스리는 기운이라, 한 만큼 돈과 결과로 남아요", "재성(財星)은 손에 쥐는 기운이에요. 움직인 만큼 통장에 남아요"],
+    "관성": ["관성은 나를 이끄는 기운이라, 자리와 맡을 일이 따라와요", "관성(官星)은 자리를 주는 기운이에요. 맡는 일이 늘고 이름이 알려져요"],
+    "인성": ["인성은 나를 살려 주는 기운이라, 공부·문서·도와주는 어른이 붙어요", "인성(印星)은 나를 받쳐 주는 기운이에요. 배우는 일이 잘 들어오고 챙겨 주는 사람이 생겨요"],
+}
+
+
+def _dohwa_why(basis: list[str], n: int, lead: str = "") -> list[str]:
+    """도화도르식 본글 밑 사주 근거 (사장님 2026-11-01 "디테일한 설명 없어?"):
+    빈 줄 + 머리 한 줄 + 엔진 근거(내 글자 기운 → 이 달 기운이 나에게 무엇인지 → 그 십신 뜻) 최대 3줄."""
+    ls = [b.removeprefix("- ") for b in basis]
+    g = next((k for k in GOD_PLAIN if any(f"{k}(" in x for x in ls)), "")
+    if g:   # 십신 근거: 십신 이름이 나온 줄까지만 두고, 그 뜻을 쉬운 말로 붙인다
+        cut = next(i for i, x in enumerate(ls) if f"{g}(" in x)
+        ls = ls[:cut + 1] + [GOD_PLAIN[g][n % 2]]
+    ls = ([lead] if lead else []) + ls
+    return ["", DOHWA_WHY_HEAD[n % len(DOHWA_WHY_HEAD)], *ls[:3]] if ls else []
 
 
 def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
@@ -875,7 +900,10 @@ def dohwa_stem(kind: str, p: Period, s: int, n: int) -> Evening | None:
     line = fill(tpl[n % len(tpl)], S=STEM_NAMES[s].split("(")[0], p=p.label, gname=f"{g}({GH[g]})", why=t.rstrip("."),
                 name=KINDS[kind]["name"], r=rk)
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][1]]
-    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|"), reply], facts=((STEMS[s], p.key, kind, "+"),))
+    el = ELEMENTS[STEM_ELEMENT[s]]
+    why = _dohwa_why(basis_stem(kind, p, r, ws[0])[:1], n + s,
+                     lead=f"{STEM_NAMES[s].split('(')[0]} 일간은 태어난 날의 글자가 {el}({EL_HANJA[el]}) 기운이에요")
+    return Evening(f"dohwa-s-{kind}-{s}-{p.key}", "dohwa", [line.split("|") + why, reply], facts=((STEMS[s], p.key, kind, "+"),))
 
 
 SALGU_ROT = ["love", "self", "love", "money", "love", "self", "love", "flow"]   # 연애·결혼 절반 (salgu_one_theme)
@@ -1196,7 +1224,7 @@ def _teasers(days: list[Day]) -> None:
 
 
 FOLLOW_END = {"jangin": ["이런 이야기 계속 올려요", "팔로우 해 두시면 놓치지 않아요"],
-              "dohwa": ["🫨 이런 사주 팁 계속 올려요", "놓치기 싫으면 팔로우 해 두시라"],
+              "dohwa": ["🫨 이런 사주 팁 계속 올려요", "놓치기 싫으면 팔로우 해 두세요!"],
               "salgu": ["🍀 다음 탄도 곧 올려요", "다음 탄 놓치기 싫으면 팔로우 해 두세요🧚🏻‍♀️"]}
 
 
