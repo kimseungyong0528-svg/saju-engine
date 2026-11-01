@@ -27,8 +27,8 @@ def test_formats_rotate(plan90):
 
 
 def test_no_repeat_for_60_days(plan90):
-    """두 달 동안 같은 재료를 다시 쓰지 않는다."""
-    keys = [m.key for _, m, _ in plan90[:60]] + [e.key for _, _, e in plan90[:60]]
+    """두 달 동안 같은 재료를 다시 쓰지 않는다 (스레드 하루 5개 포함)."""
+    keys = [m.key for _, m, _ in plan90[:60]] + [e.key for d in plan90[:60] for _, _, e in d.threads]
     assert len(keys) == len(set(keys))
     firsts = [e.parts[0] for _, _, e in plan90[:60]]
     assert len(firsts) == len(set(firsts))
@@ -65,10 +65,12 @@ def test_jangin_shape(plan90):
 
 
 def test_text_rules(plan90):
-    for d, m, e in plan90:
-        txt = T.all_text(m, e)
+    for day in plan90:
+        d, m, e = day
+        es = [x for _, _, x in day.threads]
+        txt = T.all_text(m, *es)
         assert not [w for w in T.BANNED if w in txt], (d, m.key, e.key)
-        assert all(len(p) <= 500 for p in e.parts)
+        assert all(len(p) <= 500 for x in es for p in x.parts)
         for y in re.findall(r"\b(19\d\d|20\d\d)년생", txt):
             assert T.Y_LO <= int(y) <= T.Y_HI
         if m.title:
@@ -80,3 +82,37 @@ def test_text_rules(plan90):
 
 def test_years_only_to_2007():
     assert T.years("돼지")[0] == 2007 and T.years("쥐")[-1] == 1960
+
+
+def test_nine_posts_a_day(plan90):
+    """사장님 2026-11-01 "하루 9번": 스레드 5개(07:30·12:00·18:00·21:00·23:00), 같은 날 같은 글감 두 번 없음."""
+    assert [t for _, t in T.THREAD_SLOTS] == ["07:30", "12:00", "18:00", "21:00", "23:00"]
+    for d in plan90:
+        assert [t for _, t, _ in d.threads] == [t for _, t in T.THREAD_SLOTS]
+        assert d.evening.key == next(e.key for s, _, e in d.threads if s == "저녁")
+        ones = [e.key.split("-")[2] for _, _, e in d.threads if e.style == "one"]
+        assert len(ones) == len(set(ones))   # 같은 날 같은 띠 두 번 없음
+        if rules.morning_format(d.date) == "sinbi":
+            assert not any(e.style == "daily" for _, _, e in d.threads)
+
+
+def test_one_posts_use_engine_rank(plan90):
+    """제1조항: '띠 하나 운 하나'·'일간 하나 운 하나'·'총정리'의 순위는 엔진 순위 그대로."""
+    for d in plan90[:20]:
+        for _, _, e in d.threads:
+            if e.style == "one":
+                _, kind, a, *pk = e.key.split("-")
+                p = next(p for p in T.periods(d.date) if p.key == "-".join(pk))
+                r = next(r for r in rank(kind, p) if r.ddi == a)
+                assert f"12띠 중 {r.rank}위" in e.parts[0]
+            if e.style == "daily":
+                assert all(f"{T.ddi(a)}: {t}" in "".join(e.parts) for a, t in T.sinbi_data(d.date)["text"].items())
+
+
+def test_sns_post_runs_every_slot():
+    import pathlib
+
+    from saju.marketing import meta
+    y = pathlib.Path(__file__).resolve().parents[1].joinpath(".github/workflows/sns-post.yml").read_text(encoding="utf-8")
+    assert meta.SLOTS == [s for s, _ in T.THREAD_SLOTS]
+    assert all(f"SLOT={s}" in y for s in meta.SLOTS)

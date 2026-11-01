@@ -2,9 +2,10 @@
 
     python -m saju.marketing.formula --start 2026-11-02 --days 1 --out 게시물 [--publish] [--no-video]
 
-하루에
-  아침 07:30  영상 1개 (5가지 형식을 날마다 돌림) → 유튜브 쇼츠·인스타 릴스·페북 릴스
-  저녁 18:00  스레드 글 1개 (첫 장은 본글, 나머지는 내 댓글로 이어 쓰기) + 같은 글 캡처 영상 → 인스타 릴스
+하루에 (사장님 2026-11-01 "하루 9번": 스레드 5개, 릴스·쇼츠 2개씩)
+  아침 영상 1개 (5가지 형식을 날마다 돌림) → 유튜브 쇼츠 07:00, 인스타·페북 릴스 07:30
+  스레드 글 5개 07:30 · 12:00 · 18:00 · 21:00 · 23:00 (첫 장은 본글, 나머지는 내 댓글로 이어 쓰기)
+  18:00 글 캡처 영상 1개 → 유튜브 쇼츠 19:00, 인스타·페북 릴스 21:00
 이미 쓴 재료(관리 사이트의 used 목록)는 다시 고르지 않는다. 결과 묶음은 /studio 가 읽는 manifest.json 모양 그대로다.
 """
 
@@ -18,20 +19,22 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ..__main__ import AM, CHANNEL_NAMES, PM, WEEKDAYS
+from ..__main__ import AM, CHANNEL_NAMES, WEEKDAYS
 from ..content import SITE_URL
 from . import text as T
 
 FMT_NAMES = {"tier": "천복식 띠 순위", "hidden": "가림식 띠 순위", "sinbi": "띠별 운세 표", "forceteller": "오행 그림",
              "solo": "풍경 2줄 제목"}
-STYLE_NAMES = {"jangin": "사주장인식 (댓글로 이어 쓰기)", "salgu": "살구식 ○탄", "dohwa": "도화도르식 한 줄"}
+STYLE_NAMES = {"jangin": "사주장인식 (댓글로 이어 쓰기)", "salgu": "살구식 ○탄", "dohwa": "도화도르식 한 줄",
+               "one": "띠 하나 운 하나", "stemone": "일간 하나 운 하나", "month": "띠별 이달 총정리", "daily": "오늘 띠별 운세"}
+YT_AM, YT_PM, REEL_PM = "07:00", "19:00", "21:00"
 
 
-def problems(m: T.Morning, e: T.Evening) -> list[str]:
+def problems(m: T.Morning, *es: T.Evening) -> list[str]:
     out = []
-    txt = T.all_text(m, e)
+    txt = T.all_text(m, *es)
     out += [f"금지어 '{w}'" for w in T.BANNED if w in txt]
-    out += [f"스레드 {i}장이 500자를 넘어요" for i, p in enumerate(e.parts, 1) if len(p) > 500]
+    out += [f"스레드 {e.key} {i}장이 500자를 넘어요" for e in es for i, p in enumerate(e.parts, 1) if len(p) > 500]
     if m.title and len(m.title) != 3:
         out.append("제목이 3줄이 아니에요")
     return out
@@ -54,11 +57,12 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
         R = Renderer(week / "_작업")
     rows = []
     try:
-        for i, (day, m, e) in enumerate(T.plan(start, days, used)):
+        for i, dd in enumerate(T.plan(start, days, used)):
+            day, m, e = dd
             tag = f"{day:%m-%d}"
             entry = {"date": day.isoformat(), "weekday": WEEKDAYS[day.weekday()], "items": []}
-            manifest["used"] += [m.key, e.key]
-            manifest["problems"] += [f"{tag} {p}" for p in problems(m, e)]
+            manifest["used"] += [m.key] + [x.key for _, _, x in dd.threads]
+            manifest["problems"] += [f"{tag} {p}" for p in problems(m, *[x for _, _, x in dd.threads])]
             # 아침 영상 1개 → 세 채널
             vid, thumb = f"유튜브/{tag}_오전_{m.key}.mp4", f"유튜브/{tag}_오전_{m.key}_표지.jpg"
             if R:
@@ -66,25 +70,34 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
                 _thumb(week / vid, 2.5, week / thumb)
             mt = m.texts()
             title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
-            for ch, sfx in (("youtube", "youtube"), ("instagram-reel", "reel"), ("facebook-reel", "fbreel")):
-                entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": AM, "slot": "오전", "material": m.key,
+            for ch, sfx, tm in (("instagram-reel", "reel", AM), ("facebook-reel", "fbreel", AM), ("youtube", "youtube", YT_AM)):
+                entry["items"].append({"id": f"{tag}_오전-{sfx}", "channel": ch, "time": tm, "slot": "오전", "material": m.key,
                                        "format": FMT_NAMES[m.fmt], "title": title, "score": 0,
                                        "video": vid if R else "", "thumb": thumb if R else "", "texts": mt[ch]})
-            # 저녁 스레드 글 + 캡처 영상
+            # 스레드 글 5개
+            for slot, tm, x in dd.threads:
+                first = x.pages[0][0] if x.pages and x.pages[0] else x.key
+                entry["items"].append({"id": f"{tag}_{slot}-threads", "channel": "threads", "time": tm, "slot": slot, "material": x.key,
+                                       "format": STYLE_NAMES[x.style], "title": first, "score": 0, "texts": x.texts()["threads"]})
+            # 18:00 대표 글 캡처 영상 → 유튜브 19:00, 인스타·페북 21:00
             et = e.texts()
             cap = f"인스타/{tag}_저녁_{e.key}.mp4"
             if R:
                 R.threads(e, week / cap, seed=i * 2 + 2)
             first = e.pages[0][0] if e.pages and e.pages[0] else e.key
-            entry["items"].append({"id": f"{tag}_저녁-threads", "channel": "threads", "time": PM, "slot": "저녁", "material": e.key,
-                                   "format": STYLE_NAMES[e.style], "title": first, "score": 0, "texts": et["threads"]})
-            entry["items"].append({"id": f"{tag}_저녁-reel", "channel": "instagram-reel", "time": PM, "slot": "저녁", "material": e.key,
-                                   "format": "스레드 글 캡처", "title": first, "score": 0, "video": cap if R else "",
-                                   "thumb": "", "texts": et["instagram-reel"]})
+            ytt = (first.strip("<>") + " #shorts")[:100]
+            for ch, slot, tm, txt in (("youtube", "저녁", YT_PM, {"제목": ytt, "설명": et["instagram-reel"]["캡션"]}),
+                                      ("instagram-reel", "밤", REEL_PM, et["instagram-reel"]),
+                                      ("facebook-reel", "밤", REEL_PM, et["instagram-reel"])):
+                sfx = {"youtube": "youtube", "instagram-reel": "reel", "facebook-reel": "fbreel"}[ch]
+                entry["items"].append({"id": f"{tag}_저녁-{sfx}", "channel": ch, "time": tm, "slot": slot, "material": e.key,
+                                       "format": "스레드 글 캡처", "title": first, "score": 0, "video": cap if R else "",
+                                       "thumb": "", "texts": txt})
+            entry["items"].sort(key=lambda it: it["time"])
             for it in entry["items"]:
                 rows.append([f"{day.isoformat()} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]])
             manifest["days"].append(entry)
-            print(f"{day} 아침 {m.key} / 저녁 {e.key}")
+            print(f"{day} 아침 {m.key} / 스레드 " + ", ".join(x.key for _, _, x in dd.threads))
     finally:
         if R:
             R.close()

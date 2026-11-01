@@ -1,6 +1,7 @@
 """승인한 게시물을 인스타·페이스북·스레드에 올린다 (메타 공식 API, 무료).
 
     python -m saju.marketing.meta --slot 오전        # 오늘 오전 게시물 중 승인한 것만 올린다
+                                                   # 시간대: 오전 07:30 · 점심 12:00 · 저녁 18:00 · 밤 21:00 · 늦은밤 23:00
     python -m saju.marketing.meta --slot 저녁 --dry   # 올리지 않고 무엇을 올릴지만 보여 준다
 
 순서: 관리 사이트(/studio)에서 오늘 게시물과 승인 표시를 받는다 → 채널별로 올린다 → 결과(주소·실패 이유)를 사이트에 남긴다.
@@ -34,6 +35,7 @@ IG_USER_ID = os.environ.get("IG_USER_ID") or "17841476113870391"       # unmyeon
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID") or "1359319530606113"        # 금월선녀 - 운명서재 사주·운세
 AUTO = ("instagram-reel", "instagram-cards", "facebook-reel", "threads")
 KST = dt.timezone(dt.timedelta(hours=9))
+SLOTS = ["오전", "점심", "저녁", "밤", "늦은밤"]   # formula.text.THREAD_SLOTS 와 같은 시간대
 REFRESH_DAYS = 7          # 스레드 열쇠는 60일짜리라 일주일마다 새것으로 바꿔 둔다
 
 
@@ -151,11 +153,11 @@ def threads_token() -> str:
         print(f"[스레드] 저장된 열쇠 받기 실패: {e}")
     tok = saved.get("token") or os.environ["THREADS_TOKEN"]
     at = saved.get("refreshedAt")
-    if not at or dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(at) > dt.timedelta(days=REFRESH_DAYS):
+    if not at or dt.datetime.now(dt.UTC) - dt.datetime.fromisoformat(at) > dt.timedelta(days=REFRESH_DAYS):
         try:
             new = _http("GET", f"{T}/refresh_access_token?grant_type=th_refresh_token&access_token={tok}")["access_token"]
             publish._call("POST", "/api/internal/studio/meta/threads-token",
-                          json.dumps({"token": new, "refreshedAt": dt.datetime.now(dt.timezone.utc).isoformat()}).encode())
+                          json.dumps({"token": new, "refreshedAt": dt.datetime.now(dt.UTC).isoformat()}).encode())
             tok = new
             print("[스레드] 열쇠를 새것으로 바꿨어요")
         except Exception as e:  # noqa: BLE001
@@ -219,7 +221,7 @@ def run(slot: str, date: str, dry: bool = False) -> int:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="승인한 게시물을 인스타·페이스북·스레드에 올린다")
-    ap.add_argument("--slot", choices=["오전", "저녁"], required=True)
+    ap.add_argument("--slot", choices=SLOTS, required=True)
     ap.add_argument("--date", default="", help="날짜 (기본: 한국 시각 오늘)")
     ap.add_argument("--dry", action="store_true", help="올리지 않고 목록만 본다")
     a = ap.parse_args(argv)

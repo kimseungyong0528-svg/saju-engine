@@ -1,5 +1,5 @@
 # 승인한 게시물을 인스타·페이스북·스레드에 올린다 (메타 공식 API, 무료).
-# 출근길·퇴근길에 맞춰 한국 시각 아침 7시 30분, 저녁 6시쯤 올라간다.
+# 하루 다섯 번 (사장님 2026-11-01 "하루 9번"): 한국 시각 07:30 · 12:00 · 18:00 · 21:00 · 23:00 쯤 올라간다.
 # GitHub 예약 실행은 몇 분 늦게 시작하므로 13분 일찍 걸어 둔다.
 # 손으로 돌릴 때: Actions → SNS 자동 게시 → Run workflow (dry 를 켜면 올리지 않고 목록만 본다).
 name: SNS 자동 게시
@@ -7,11 +7,14 @@ name: SNS 자동 게시
 on:
   schedule:
     - cron: "17 22 * * *"   # 한국 07:17 → 오전
+    - cron: "47 2 * * *"    # 한국 11:47 → 점심
     - cron: "47 8 * * *"    # 한국 17:47 → 저녁
+    - cron: "47 11 * * *"   # 한국 20:47 → 밤
+    - cron: "47 13 * * *"   # 한국 22:47 → 늦은밤
   workflow_dispatch:
     inputs:
       slot:
-        description: 오전 또는 저녁
+        description: 오전·점심·저녁·밤·늦은밤
         required: true
         default: 오전
       date:
@@ -51,7 +54,13 @@ jobs:
         run: |
           SLOT="${{ inputs.slot }}"
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            if [ "${{ github.event.schedule }}" = "17 22 * * *" ]; then SLOT=오전; else SLOT=저녁; fi
+            case "${{ github.event.schedule }}" in
+              "17 22 * * *") SLOT=오전 ;;
+              "47 2 * * *") SLOT=점심 ;;
+              "47 8 * * *") SLOT=저녁 ;;
+              "47 11 * * *") SLOT=밤 ;;
+              *) SLOT=늦은밤 ;;
+            esac
           fi
           ARGS=(--slot "$SLOT")
           [ -n "${{ inputs.date }}" ] && ARGS+=(--date "${{ inputs.date }}")
