@@ -466,3 +466,13 @@ def test_follow_link_only_after_toss(monkeypatch):
     assert meta.with_link(["본글", "팔로우 해 두세요!"]) == ["본글", "팔로우 해 두세요!"]
     monkeypatch.setenv("SNS_SITE_LINK", "on")
     assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1].endswith("https://unmyeong-saju.com")
+
+
+def test_claude_approves_videos_only_when_asked(monkeypatch):
+    """사장님 2026-11-01: 릴스·유튜브도 1주치씩. --approve-videos 를 준 주만 영상에 클로드 승인 표시가 붙는다."""
+    from saju.marketing.formula import __main__ as fm
+    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel", "facebook-reel", "youtube"}
+    src = Path(fm.__file__).read_text(encoding="utf-8")
+    assert "if approve_videos:" in src and "--approve-videos" in src
+    wf = (Path(__file__).parent.parent / ".github/workflows/marketing.yml").read_text(encoding="utf-8")
+    assert "--approve-videos" in wf and "approve_videos:" in wf

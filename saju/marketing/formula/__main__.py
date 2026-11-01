@@ -79,8 +79,11 @@ def shift_threads(manifest: dict, frm: str) -> int:
     return len(moved)
 
 
+VIDEO_CHANNELS = ("instagram-reel", "facebook-reel", "youtube")
+
+
 def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
-          approve_threads: bool = False) -> dict:
+          approve_threads: bool = False, approve_videos: bool = False) -> dict:
     week = out / start.isoformat()
     (week / "유튜브").mkdir(parents=True, exist_ok=True)
     (week / "인스타").mkdir(parents=True, exist_ok=True)
@@ -151,6 +154,16 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
                     n += 1
         manifest["threads_approved_by"] = "claude"
         print(f"스레드 글 {n}개 클로드 승인 (심사 통과)")
+    if approve_videos:
+        # 사장님 2026-11-01 "릴스랑 유튜브도 1주치씩 미리": 사장님이 대화방에서 "올려" 한 주만 영상도 클로드가 한 번에 승인한다.
+        n = 0
+        for d in manifest["days"]:
+            for it in d["items"]:
+                if it["channel"] in VIDEO_CHANNELS:
+                    it["approved_by"] = "claude"
+                    n += 1
+        manifest["videos_approved_by"] = "claude"
+        print(f"영상 {n}개 클로드 승인 (사장님 '올려')")
     if shift:
         print(f"스레드 글 {shift_threads(manifest, shift)}개를 한 칸씩 미뤘어요 ({shift}부터)")
         rows = [[f"{d['date']} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]]
@@ -173,6 +186,7 @@ def main(argv=None) -> int:
     ap.add_argument("--publish", action="store_true")
     ap.add_argument("--no-video", action="store_true")
     ap.add_argument("--approve-threads", action="store_true", help="심사 통과한 주: 스레드 글을 클로드가 한 번에 승인")
+    ap.add_argument("--approve-videos", action="store_true", help="사장님이 '올려' 한 주: 인스타·페북·유튜브 영상을 클로드가 한 번에 승인")
     ap.add_argument("--shift-threads", default="", help="'2026-11-01 늦은밤' 처럼: 그 칸부터 스레드 글을 한 칸씩 미룬다")
     a = ap.parse_args(argv)
     start = dt.date.fromisoformat(a.start)
@@ -182,7 +196,8 @@ def main(argv=None) -> int:
         publish.status(start.isoformat(), "running", "만드는 중")
         used |= publish.used_keys(before=start.isoformat())
     try:
-        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads)
+        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads,
+                  approve_videos=a.approve_videos)
     except Exception as e:
         if a.publish:
             publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")

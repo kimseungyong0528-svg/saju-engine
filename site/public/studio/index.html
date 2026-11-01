@@ -434,7 +434,8 @@ function viewStatus() {
       el('div', { class: 'box' }, el('div', { class: 'k' }, '오류'), el('div', { class: 'v ' + (errN ? 'bad' : 'good') }, errN ? `있음 ${errN}건` : '없음'),
         errN ? el('ul', { class: 'errs', style: 'margin-top:6px' }, errs.map(({ x, i }) => el('li', {}, `${fmtDate(x.d.date)} (${x.d.weekday}) ${i.time} · ${why(i)}`))) : null)),
     !c.auto ? el('p', { class: 'muted' }, '유튜브는 아직 자동으로 올리는 연결이 없어요. 영상은 준비돼 있고, 올리기는 직접 해야 해요.') :
-    ch !== 'threads' ? el('p', { class: 'muted' }, el('span', {}, '이 영상들은 스튜디오에서 사장님이 승인한 것만 올라가요. '),
+    ch !== 'threads' && claude ? el('p', { class: 'muted' }, '사장님이 대화방에서 "올려" 하신 주라서 클로드에서 이미 승인 완료했어요. 정해진 시각에 저절로 올라가요.') :
+    ch !== 'threads' ? el('p', { class: 'muted' }, el('span', {}, '이 영상들은 승인한 것만 올라가요. 사장님이 대화방에서 "올려" 하시면 클로드가 한 주치를 한 번에 승인해요. '),
       el('button', { class: 'btn ghost small', type: 'button', onclick: () => { S.tab = 'today'; render(); } }, '오늘 영상 보고 승인하기')) :
     el('p', { class: 'muted' }, claude ? '심사원 50명 심사를 통과하고 사장님이 대화방에서 "올려" 하신 주라서 클로드에서 이미 승인 완료했어요. 정해진 시각에 저절로 올라가요.' + (mine ? ` 직접 누르신 승인도 ${mine}개 있어요.` : '') : '승인한 글만 올라가요.'),
     el('h2', { class: 'sec' }, '하루하루 잘 올라가는지'),
