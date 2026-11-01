@@ -400,17 +400,19 @@ function viewStatus() {
 
   // 승인은 이번 주·다음 주 두 줄 (사장님 2026-11-01). 클로드 승인은 사장님이 대화방에서 "올려" 한 주만.
   const addDays = (s, n) => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n); return iso(d); };
-  const apprLine = (a, b) => {
+  // 다음 주 줄은 다음 주 묶음만 센다. 이번 주에서 밀려난 글은 세지 않는다 (사장님 2026-11-01 "여기서만 미루고 만거지").
+  const apprLine = (a, b, next) => {
     const seen = new Map();
-    for (const dt of [S.data, ...(S.more || [])]) for (const d of dt.manifest?.days || []) if (d.date >= a && d.date <= b)
+    for (const dt of next ? (S.more || []) : [S.data]) for (const d of dt.manifest?.days || []) if (d.date >= a && d.date <= b)
       for (const i of d.items) if (i.channel === 'threads') seen.set(i.id, { i, ok: i.approved_by === 'claude' || (dt.approved || {})[i.id] });
     const v = [...seen.values()], n = v.length, ok = v.filter(x => x.ok).length;
+    if (!n) return { t: '아직 준비 전', cls: 'bad' };
     if (n < 42) return { t: `아직 준비 전 (${n} / 42개)`, cls: 'bad' };
     if (ok < n) return { t: `승인 기다림 (${ok} / ${n})`, cls: 'bad' };
     return { t: v.some(x => x.i.approved_by === 'claude') ? '클로드에서 이미 승인 완료' : '직접 승인 완료', cls: 'good' };
   };
   const nMon = addDays(mon, 7), nSun = addDays(mon, 13);
-  const aNow = apprLine(mon, sun), aNext = apprLine(nMon, nSun);
+  const aNow = apprLine(mon, sun), aNext = apprLine(nMon, nSun, true);
   const card = (k, v, cls) => el('div', { class: 'box' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v));
   return el('div', {},
     el('h2', { class: 'sec' }, `${weekName(mon)} 스레드 현황`),
