@@ -506,7 +506,9 @@ def pain_ddi(a: str, p: Period, n: int = 0) -> str:
         rel = x.split("(")[0]
         if rel in LB["pain_rel"]:
             v = LB["pain_rel"][rel]
-            return f"- 올해 {yn}엔 {ira(BRANCHES[b] + BRANCHES[Y.branch] + rel)} {v[n % len(v)]}"
+            h = B["rel"].get(rel, {}).get("hanja")   # 파(破)·해(害)처럼 한자와 쉬운 뜻을 붙인다 (달 이름 해(亥)와 헷갈리지 않게)
+            word = BRANCHES[b] + BRANCHES[Y.branch] + rel + (f"({BRANCHES_HANJA[b]}{BRANCHES_HANJA[Y.branch]}{h})" if h else "")
+            return f"- 올해 {yn}엔 {ira(word)} {v[n % len(v)]}"
     g = _god(BRANCH_ELEMENT[b], STEM_ELEMENT[Y.stem])
     if g in LB["pain_god"]:
         e = ELEMENTS[STEM_ELEMENT[Y.stem]]
@@ -531,8 +533,11 @@ def basis_ddi(kind: str, p: Period, r: Row, t: str) -> list[str]:
     if len(ls) == 4:
         rel = why_key(kind, t).split(":")[-1]
         return [f"- {ls[0]} {ls[1]} {ls[2]}", f"- {LB['rel_mean'].get(kind, {}).get(rel, ls[3])}"]
-    if len(ls) == 3:
-        return [f"- {ls[0].replace(' 기운은', ' 기운이')} {ls[1]}", f"- {ls[2]}"]
+    if len(ls) == 3:   # 십신은 띠 글자의 오행을 기준으로 본다는 걸 먼저 밝힌다 (전문성·신뢰 심사 2026-11-01)
+        bi = BRANCHES.index(r.branch)
+        el = ELEMENTS[BRANCH_ELEMENT[bi]]
+        return [f"- {ddi(r.ddi)} 글자 {_branch(bi)}는 {el}({EL_HANJA[el]}) 기운이에요".replace(f"{_branch(bi)}는", josa(_branch(bi), "은", "는")),
+                f"- {ls[0].replace(' 기운은', ' 기운이')} {ls[1]}", f"- {ls[2]}"]
     return [f"- {ls[0]}"]
 
 
@@ -551,10 +556,10 @@ def next_lines(kind: str, ny: Period, place: int, total: int, unit: str, n: int 
     name = KINDS[kind]["name"]
     if kind == "care":
         if place <= 4:
-            return [f"- {ny.long}에도 조심운 {total}{unit} 중 {place}위예요", "- 큰 결정은 내년에도 한 번 더 보고 하세요"], "-"
+            return [f"- {ny.long}에도 조심할 {'띠' if unit == '띠' else '일간'} {total}{unit} 중 {place}위예요", "- 큰 결정은 내년에도 한 번 더 보고 하세요"], "-"
         if place > total // 2:
-            return [f"- {ny.long}엔 조심운 {total}{unit} 중 {place}위로 내려가요", "- 이 달만 잘 넘기면 숨통이 트여요"], ""
-        return [f"- {ny.long}엔 조심운 {total}{unit} 중 {place}위로 보통이에요", "- 무리만 안 하면 괜찮아요"], ""
+            return [f"- {ny.long}엔 조심할 {'띠' if unit == '띠' else '일간'} 순위에서 {place}위로 빠져요", "- 이 달만 잘 넘기면 숨통이 트여요"], ""
+        return [f"- {ny.long}엔 조심할 {'띠' if unit == '띠' else '일간'} 순위에서 {place}위로 보통이에요", "- 무리만 안 하면 괜찮아요"], ""
     if place <= 4:
         return [f"- {ny.long}에도 {name} {total}{unit} 중 {place}위예요", LB["next_go"][n % 3]], "+"
     if place > total - (4 if total == 12 else 3):
@@ -684,20 +689,24 @@ def double_years(p: Period) -> list[dict]:
     return out[:3]
 
 
+DOUBLE_SAY = ["좋은 일이 한 번에 두 개씩 겹쳐 와요.", "기다리던 소식이 한 해에 두 번 찾아와요.", "한 가지 풀리면 다른 하나도 따라 풀려요."]
+
+
 def double(p: Period, n: int) -> Evening | None:
     ys = double_years(p)
     if len(ys) < 2:
         return None
     d = start_label(p)
     p1 = [f"<{p.label}, 겹경사 터지는 사람>", ""] + [f"{i}. {x['year']}년생 {ddi(x['ddi'])}" for i, x in enumerate(ys, 1)]
-    p1 += ["", "이 해에 태어났다면 미리 축하드려요.", "좋은 일이 한 번에 두 개씩 겹쳐 와요."]
+    p1 += ["", "이 해에 태어났다면 미리 축하드려요.", DOUBLE_SAY[n % len(DOUBLE_SAY)]]
     gz = f"{STEMS[p.stem]}{BRANCHES[p.branch]}({STEMS_HANJA[p.stem]}{BRANCHES_HANJA[p.branch]})"
     p2 = ["겹경사인 이유", "", f"{d}부터 들어오는 {gz} 두 글자가", "태어난 해 두 글자와", "둘 다 좋게 만나요"]   # reason_short
     cards = []
     for i, x in enumerate(ys):
         g = _rot(DOUBLE_GOOD, n + i * 2)[:2]
         cards.append([f"{x['year']}년생 {ddi(x['ddi'])} - {x['gz']}년생", "", "- 천간", x["stem"], "", "- 지지", x["branch"], "",
-                      "천간도 합, 지지도 합이라 천합지합이에요" if x["both"] else "생과 합이 같이 들어와요", "",
+                      *(["위 글자도 손잡고, 아래 글자도 손잡아요", "이걸 천합지합이라고 해요. 겹경사 중에서도 제일 센 자리예요"] if x["both"] else
+                        ["위 글자는 내 쪽으로 힘을 보태 주고, 아래 글자는 손을 잡아요", "생(生)은 기운을 보태 준다는 뜻이에요"]), "",
                       f"- {g[0]}", f"- {g[1]}"])
     by: dict[str, list[int]] = {}
     for x in ys:
@@ -1065,6 +1074,10 @@ class Day:
         return iter((self.date, self.morning, self.evening))
 
 
+def _negative(e: Evening) -> bool:
+    return e.kind == "care" or any(sign == "-" for _, _, _, sign in e.facts[:1]) and e.key.startswith(("jone-", "jstem-"))
+
+
 def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     """며칠치를 한 번에 고른다. 앞에서 고른 재료는 뒤에서 다시 쓰지 않는다.
     한 주 안에 같은 대상을 좋다·조심 양쪽으로 쓰지 않고, 같은 날 같은 띠·일간을 두 번 쓰지 않고,
@@ -1077,6 +1090,8 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     ones: list[tuple[int, str]] = []       # (날, 대상): 한 장 글 대상은 한 주에 한 번만
     topics: list[tuple[int, str]] = []     # (날, 주제): 도화도르식 틀 글 주제는 한 주에 한 번만
     promises: list[tuple[int, str]] = []   # (날, 본글 줄): 같은 약속 줄을 한 주에 두 번 쓰지 않는다
+    negs: list[tuple[int, str]] = []       # (날, 'one'|'list'): 사주장인식 조심 글
+    onekinds: list[tuple[int, str]] = []   # (날, 주제): 한 장 글 주제
 
     def ok(i: int):
         def f(c: Evening) -> bool:
@@ -1087,6 +1102,13 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
             if c.key.startswith(("jone-", "jstem-", "dohwa-d-", "dohwa-s-")):
                 if c.facts[0][0] in [a for j, a in ones if i - j < 7]:
                     return False
+            if c.style == "jangin" and _negative(c):
+                # 조심 글은 한 주에 두 번까지, 한 장 조심 글은 한 번만 (심사 2026-11-01: 조심 글이 많으면 계정이 무섭게 느껴진다)
+                ng = [k for j, k in negs if i - j < 7]
+                if len(ng) >= 2 or (c.key.startswith(("jone-", "jstem-")) and "one" in ng):
+                    return False
+            if c.key.startswith(("jone-", "jstem-")) and c.kind in [k for j, k in onekinds if i - j < 3]:
+                return False   # 한 장 글은 같은 주제를 사흘 안에 다시 쓰지 않는다 (같은 틀이 되풀이되지 않게)
             if c.topic and c.topic in [x for j, x in topics if i - j < 7]:
                 return False
             return True
@@ -1109,6 +1131,10 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
                 ones.append((i, e.facts[0][0]))
             if e.topic:
                 topics.append((i, e.topic))
+            if e.style == "jangin" and _negative(e):
+                negs.append((i, "one" if e.key.startswith(("jone-", "jstem-")) else "list"))
+            if e.key.startswith(("jone-", "jstem-")):
+                onekinds.append((i, e.kind))
             for subj, pk, kind, sign in e.facts:
                 facts.setdefault((subj, pk), []).append((kind, sign))
                 today.add(subj)
@@ -1119,6 +1145,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         out.append(Day(d, m, ths))
     _teasers(out)
     _follow_all(out)
+    _vary_lines(out)
     return out
 
 
@@ -1168,8 +1195,8 @@ def _teasers(days: list[Day]) -> None:
         e0.pages[-1] = last + [f"다음엔 {what} 올려요", LB["follow"][j % len(LB["follow"])]]
 
 
-FOLLOW_END = {"jangin": ["이런 이야기 계속 올려요", "놓치기 싫으면 팔로우 해 두세요"],
-              "dohwa": ["🫨 이런 사주 팁 계속 올려요", "놓치기 싫으면 팔로우 해 두세요"],
+FOLLOW_END = {"jangin": ["이런 이야기 계속 올려요", "팔로우 해 두시면 놓치지 않아요"],
+              "dohwa": ["🫨 이런 사주 팁 계속 올려요", "놓치기 싫으면 팔로우 해 두시라"],
               "salgu": ["🍀 다음 탄도 곧 올려요", "다음 탄 놓치기 싫으면 팔로우 해 두세요🧚🏻‍♀️"]}
 
 
@@ -1183,6 +1210,102 @@ def _follow_all(days: list[Day]) -> None:
         for _, _, e in d.threads:
             if not has_follow(e):
                 e.pages[-1] = e.pages[-1] + ["", *FOLLOW_END[e.style]]
+
+
+def _periods_of(days: list[Day]) -> list[Period]:
+    ps: dict[str, Period] = {}
+    for d in days:
+        for p in [*_month_periods(d.date), month_period(*target_month(d.date))]:
+            ps[p.key] = p
+    return list(ps.values())
+
+
+def _groups(days: list[Day]) -> list[list[tuple[str, ...]]]:
+    """뜻이 같은 줄 묶음 (한 줄 또는 여러 줄). 한 주 안에서 같은 말이 되풀이되지 않게 돌려 쓴다 (심사 2026-11-01 '사람 말투').
+    묶음 안의 말은 엔진 사실(절기 날짜·간지·오행)이 같고 말투만 다르다 (제1조항)."""
+    g: list[list[tuple[str, ...]]] = []
+    for p in _periods_of(days):
+        g.append([tuple(period_intro(p, k)) for k in range(len(LB["intro"]))])
+        d = start_label(p)
+        for k in ("세", "네"):
+            g.append([(fill(h, d=d, k=k),) for h in LB["do_head"]])
+        g.append([(f"※ 왜 {d}부터일까",), (f"※ {d}부터 뭐가 달라질까",), (f"※ 왜 하필 {d}부터일까",)])
+        g.append([(f"※ 왜 {d}부터 천천히 가야 할까",), (f"※ {d}부터 왜 속도를 줄여야 할까",)])
+    g += [[tuple(x) for x in B["salgu_end"]], [tuple(x) for x in B["dohwa_reply"]], [tuple(x) for x in LB["find_me"]]]
+    for s in [LB["close"], LB["follow"], LB["sign_head"], LB["sign_head_bad"], LB["next_keep"], LB["next_go"], *B["vary"]]:
+        g.append([(x,) for x in s])
+    for k, v in B["heart_hooks"].items():
+        for gb in v.values():
+            g.append([tuple(x) for x in gb])
+    return g
+
+
+def _pools() -> list[list[str]]:
+    """서로 바꿔 써도 되는 줄 모음 (같은 주제의 신호·할 일). 한 글 안에서는 겹치지 않게 고른다."""
+    out = [v for k in B["signals"] for v in B["signals"][k].values()]
+    out += [v for v in LB["signals"].values()] + [v for v in LB["actions"].values()] + [v for v in LB["bad_actions"].values()]
+    return out
+
+
+def _vary_lines(days: list[Day]) -> None:
+    """같은 뜻 묶음 안에서 지금까지 가장 덜 쓴 말로 바꾼다 (같은 줄이 한 주에 세 번 넘게 나오지 않게)."""
+    groups = _groups(days)
+    index: dict[str, list[tuple[list, tuple]]] = {}
+    for grp in groups:
+        for v in grp:
+            index.setdefault(v[0], []).append((grp, v))
+    used: dict[tuple[str, ...], int] = {}
+    last: dict[tuple[str, ...], int] = {}   # 마지막으로 쓴 글 번호: 같은 횟수면 오래전에 쓴 말을 고른다
+    pos = 0
+    for d in days:
+        for _, _, e in d.threads:
+            pos += 1
+            body = "\n".join(x for pg in e.pages for x in pg)   # 같은 글 안에 이미 있는 말은 고르지 않는다
+            for pi, pg in enumerate(e.pages):
+                out, i = [], 0
+                while i < len(pg):
+                    hit = next(((grp, v) for grp, v in index.get(pg[i], []) if tuple(pg[i:i + len(v)]) == v), None)
+                    if not hit:
+                        out.append(pg[i]); i += 1
+                        continue
+                    grp, v = hit
+                    best = min(grp, key=lambda w: (w != v and any(x in body for x in w if len(x) > 6), used.get(w, 0), last.get(w, -99), w != v))
+                    used[best] = used.get(best, 0) + 1
+                    last[best] = pos
+                    out += list(best); i += len(v)
+                e.pages[pi] = out
+    # 한 장 글 첫 줄 끝말 ('11월 ○○띠는 통장 숫자가 달라져요'): 같은 뜻의 다른 말로
+    tails = {x: grp for grp in B["one_tail_vary"] for x in grp}
+    tcnt: dict[str, int] = {}
+    for d in days:
+        for _, _, e in d.threads:
+            if not e.key.startswith(("jone-", "jstem-")):
+                continue
+            p1 = e.pages[0]
+            for i, x in enumerate(p1):
+                m = re.match(r"^(\d+월 .+?[은는] )(.+)$", x)
+                if m and m.group(2) in tails:
+                    best = min(tails[m.group(2)], key=lambda y: (tcnt.get(y, 0), y != m.group(2)))
+                    tcnt[best] = tcnt.get(best, 0) + 1
+                    p1[i] = m.group(1) + best
+    # 신호·할 일 줄: 같은 모음 안에서 이번 주에 덜 쓴 줄로 (한 글 안에서 겹치지 않게)
+    pools = _pools()
+    where = {x: pl for pl in pools for x in pl}
+    cnt: dict[str, int] = {}
+    for d in days:
+        for _, _, e in d.threads:
+            for pi, pg in enumerate(e.pages):
+                taken = set(pg)
+                new = []
+                for x in pg:
+                    pl = where.get(x)
+                    if pl:
+                        best = min((y for y in pl if y == x or y not in taken), key=lambda y: (cnt.get(y, 0), y != x))
+                        taken.add(best)
+                        cnt[best] = cnt.get(best, 0) + 1
+                        x = best
+                    new.append(x)
+                e.pages[pi] = new
 
 
 def all_text(m: Morning, *es: Evening) -> str:

@@ -1,5 +1,6 @@
 """SNS 게시물 공식 (사장님 2026-11-01 "전부 공식으로, 무한 발행"): 날짜만 넣으면 겹치지 않는 글이 엔진 계산대로 나온다."""
 
+import collections
 import datetime as dt
 import itertools
 import json
@@ -212,8 +213,11 @@ def test_reason_short(plan90):
 # ── 심사원 30명 + 상위 레퍼런스 90개 (사주장인·도화도르·살구, 사장님 2026-11-01) ──
 def test_judges_rubric_fixed():
     J = RULES["judges"]
-    assert J["pass"] == 95 and J["per_criterion"] == 5
-    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference"]
+    assert J["pass"] == 97 and J["per_criterion"] == 5   # 사장님 2026-11-01: 50명, 10항목, 97점, 냉정하게
+    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference", "expert", "easy", "concrete", "comment"]
+    assert all(c["name"] and c["minus"] for c in J["criteria"])
+    assert len(J["criteria"]) * J["per_criterion"] == 50
+    assert any("냉정" in s for s in J["strict"]) and any("이유" in s for s in J["strict"])
     assert [r["id"] for r in RULES["reference_rules"]] == ["question_heads", "term_date", "year_pain", "next_year", "ending",
                                                            "teaser", "week_variety", "dohwa_voice", "salgu_long", "follow_all"]
 
@@ -314,3 +318,22 @@ def test_follow_everywhere(plan90):
             assert "팔로우" in mt[ch]["캡션"]
         assert "프로필 링크" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
         assert "매일" not in json.dumps(mt, ensure_ascii=False) + json.dumps(m.data, ensure_ascii=False)
+
+
+def test_no_line_more_than_three_times_a_week():
+    """judges.strict (사장님 2026-11-01 '냉정하게'): 고정 틀을 뺀 같은 줄이 7일 안에 세 번 넘게 나오지 않는다 (사람 말투).
+    11/1~11/8 심사한 묶음 기준. 다음 주는 만들 때 같은 검사로 다시 본다."""
+    frame = re.compile(r"^(같은 .+(라도|이라도)|나머지 .+ 글자에 따라|- 천간|- 지지|.+ 달라요|.*따로 봐야 알아요|흥미로운 사주 이야기들.*"
+                       r"|태어난 해는 여덟 글자 중 두 글자예요|겹경사인 이유|태어난 해 두 글자와|둘 다 좋게 만나요|\d\. .*)$")
+    P = T.plan(dt.date(2026, 11, 1), 8)
+    for w in range(2):
+        c = collections.Counter(x for d in P[w:w + 7] for _, _, e in d.threads for pg in e.pages for x in pg if x.strip() and not frame.match(x))
+        assert not [(k, v) for k, v in c.items() if v > 3], [(k, v) for k, v in c.most_common(5)]
+
+
+def test_negative_posts_limited():
+    """조심 글은 7일에 두 번까지, 한 장 조심 글은 한 번까지 (심사 2026-11-01)."""
+    P = T.plan(dt.date(2026, 11, 1), 8)
+    for w in range(2):
+        neg = [e for d in P[w:w + 7] for _, _, e in d.threads if e.style == "jangin" and T._negative(e)]
+        assert len(neg) <= 2 and sum(e.key.startswith(("jone-", "jstem-")) for e in neg) <= 1
