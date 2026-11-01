@@ -700,8 +700,13 @@ def jangin_stem(kind: str, p: Period, n: int) -> Evening | None:
     return list_post(f"jangin-stem-{kind}-{p.key}", kind, p, n, "일간", items, [(STEMS[r.stem], p.key, kind, sign) for r in rows])
 
 
-DOUBLE_GOOD = ["계약서에 도장이 찍히기 쉬워요", "기다리던 답이 오기 쉬워요", "도와주는 사람이 생기기 쉬워요",
-               "문서와 합격 소식이 오기 쉬워요", "가족에게 반가운 소식이 오기 쉬워요", "직함이 오르고 인정받기 쉬워요"]
+# 겹경사 카드의 좋은 일 두 줄은 들어오는 위 글자가 그 해 천간에게 무슨 십신인지로 고른다 (사주 검수원 2026-11-01:
+# 정(丁)이 무(戊)를 생하면 인성이라 '문서·도움'이 맞고 '직함'(관성)은 틀림). sipsin_fact 의 십신 뜻 표와 같다.
+DOUBLE_GOOD = {"인성": ["문서와 합격 소식이 오기 쉬워요", "도와주는 사람이 생기기 쉬워요", "배우던 일이 자격으로 남기 쉬워요"],
+               "관성": ["직함이 오르고 인정받기 쉬워요", "맡은 자리에서 이름이 불리기 쉬워요", "미뤄진 결정에 답이 나오기 쉬워요"],
+               "재성": ["계약서에 도장이 찍히기 쉬워요", "받을 돈이 들어오기 쉬워요", "가족에게 반가운 소식이 오기 쉬워요"],
+               "식상": ["준비한 일이 결과물로 나오기 쉬워요", "하고 싶던 말을 꺼내기 쉬워요", "가족에게 반가운 소식이 오기 쉬워요"],
+               "비겁": ["같이 뛰어 줄 사람이 생기기 쉬워요", "가족에게 반가운 소식이 오기 쉬워요", "오래 못 본 친구가 힘이 되기 쉬워요"]}
 
 
 def double_years(p: Period) -> list[dict]:
@@ -723,6 +728,7 @@ def double_years(p: Period) -> list[dict]:
         if not hit:
             continue
         out.append({"year": y, "ddi": ZODIAC_ANIMALS[b], "gz": f"{STEMS[s]}{BRANCHES[b]}", "stem": stem_txt,
+                    "god": _god(STEM_ELEMENT[s], STEM_ELEMENT[p.stem]),
                     "branch": f"{josa(_branch(p.branch), '과', '와')} {_branch(b)}{'이' if _batchim(BRANCHES[b]) else '가'} {hit}이에요",
                     "both": score == 2, "score": score + (1 if hit == "육합" else 0)})
     out.sort(key=lambda d: (-d["score"], -d["year"]))
@@ -743,7 +749,7 @@ def double(p: Period, n: int) -> Evening | None:
     p2 = ["겹경사인 이유", "", f"{d}부터 들어오는 {gz} 두 글자가", "태어난 해 두 글자와", "둘 다 좋게 만나요"]   # reason_short
     cards = []
     for i, x in enumerate(ys):
-        g = _rot(DOUBLE_GOOD, n + i * 2)[:2]
+        g = _rot(DOUBLE_GOOD[x["god"]], n + i)[:2]
         cards.append([f"{x['year']}년생 {ddi(x['ddi'])} - {x['gz']}년생", "", "- 천간", x["stem"], "", "- 지지", x["branch"], "",
                       *(["위 글자도 손잡고, 아래 글자도 손잡아요", "이걸 천합지합이라고 해요. 겹경사 중에서도 제일 센 자리예요"] if x["both"] else
                         ["위 글자는 내 쪽으로 힘을 보태 주고, 아래 글자는 손을 잡아요", "생(生)은 기운을 보태 준다는 뜻이에요"]), "",
@@ -782,7 +788,7 @@ def _dohwa_tip_why(topic: str, p: Period, E: str, els: dict, n: int) -> list[str
     elif topic == "lack":
         ls = [month, f"태어날 때 받은 여덟 글자 안에 없던 {E}({EL_HANJA[E]}) 기운이 이 달엔 바깥에서 들어와요", "모자란 걸 채워 주니까 머리가 맑아지고 결정이 쉬워져요"]
     elif topic == "much":
-        ls = [month, f"원래 많은 {E}({EL_HANJA[E]})에 바깥에서 들어오는 {E}({EL_HANJA[E]})가 더해져요", "내가 잘하는 쪽 기운이 더 세지니까 자신감이 붙어요"]
+        ls = [month, f"원래 많은 {E}({EL_HANJA[E]})에 바깥에서 들어오는 {E}({EL_HANJA[E]})가 더해져요", "그 기운이 가진 장점이 더 크게 드러나요"]
     elif topic == "good":
         ls = [month, "용신은 내 사주의 균형을 맞춰 주는 기운이에요", f"그 {E}({EL_HANJA[E]})가 이 달엔 바깥에서 들어오니까 막혔던 일이 풀려요"]
     elif topic == "jeol":
@@ -806,10 +812,11 @@ def dohwa_list(day: dt.date, x: int, n: int) -> Evening:
     g = _god(x, ei)
     acts = B["dohwa_acts"][g]
     pick = [acts[(n + k) % len(acts)] for k in range(5)]
-    body = [f"사주에 {X}({EL_HANJA[X]}) 많은 분들 주목", f"{p.label}처럼 {E}({EL_HANJA[E]}) 기운 센 달에 해 두면 좋은 것들(리마인드용)🟡",
+    # 사주 검수원 2026-11-01: 십신은 일간 기준이다. '사주에 토 많은 분'에게 수가 재성이라고 하면 틀린다 → 일간으로 콕 집는다.
+    body = [f"{X}({B['elements'][X]['stems']}) 일간 분들 주목", f"{p.label}처럼 {E}({EL_HANJA[E]}) 기운 센 달에 해 두면 좋은 것들(리마인드용)🟡",
             *[f"{NUMS[k]} {a}" for k, a in enumerate(pick)], "",
-            (f"같은 {E}({EL_HANJA[E]})끼리라 {copula(f'{g}({GH[g]})')}" if E == X else
-             f"{E}({EL_HANJA[E]})는 {X}({EL_HANJA[X]})에게 {copula(f'{g}({GH[g]})')}".replace(f"{E}({EL_HANJA[E]})는", josa(f"{E}({EL_HANJA[E]})", "은", "는"))),
+            (f"같은 {E}({EL_HANJA[E]})끼리라 {X}({B['elements'][X]['stems']}) 일간에게 {copula(f'{g}({GH[g]})')}" if E == X else
+             f"{E}({EL_HANJA[E]})는 {X}({B['elements'][X]['stems']}) 일간에게 {copula(f'{g}({GH[g]})')}".replace(f"{E}({EL_HANJA[E]})는", josa(f"{E}({EL_HANJA[E]})", "은", "는"))),
             GOD_PLAIN[g][n % 2]]
     reply = [fill(r, p=p.label) for r in B["dohwa_reply"][n % len(B["dohwa_reply"])]]
     return Evening(f"dohwa-list-{X}-{p.key}", "dohwa", [body, reply], topic=f"list-{X}")

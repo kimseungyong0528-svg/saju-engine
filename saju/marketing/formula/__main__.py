@@ -79,8 +79,41 @@ def shift_threads(manifest: dict, frm: str) -> int:
     return len(moved)
 
 
+def move_items(manifest: dict, moves: str) -> int:
+    """게시물 하나를 다른 날·칸으로 옮긴다 (사장님 2026-11-01 "내일 3탄 올릴 시간에 ... 못올리는거 그 중에서 괜찮은거 하나로 대체해").
+
+    moves 는 '11-01_점심-threads=2026-11-02 저녁' 처럼 '번호=날짜 칸', 여러 개는 쉼표로. 번호(id)는 그대로라 승인·올림 표시가 남는다.
+    그 칸에 있던 글은 지우지 않는다. 이미 올라간 글은 올림 표시가 있어 다시 올라가지 않는다. 옮긴 글 수를 돌려준다.
+    """
+    slots = dict(TH_SLOTS)
+    n = 0
+    for mv in filter(None, (x.strip() for x in moves.split(","))):
+        iid, where = mv.split("=")
+        date, slot = where.split()
+        it = None
+        for day in manifest["days"]:
+            for x in day["items"]:
+                if x["id"] == iid:
+                    it = x
+            if it is not None and it in day["items"]:
+                day["items"].remove(it)
+                break
+        if it is None:
+            raise SystemExit(f"옮길 게시물이 없어요: {iid}")
+        it["slot"], it["time"] = slot, slots[slot]
+        day = next((d for d in manifest["days"] if d["date"] == date), None)
+        if day is None:
+            nd = dt.date.fromisoformat(date)
+            day = {"date": date, "weekday": WEEKDAYS[nd.weekday()], "items": []}
+            manifest["days"].append(day)
+        day["items"].append(it)
+        day["items"].sort(key=lambda x: x["time"])
+        n += 1
+    return n
+
+
 def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, video: bool = True, shift: str = "",
-          approve_threads: bool = False) -> dict:
+          approve_threads: bool = False, move: str = "") -> dict:
     week = out / start.isoformat()
     (week / "유튜브").mkdir(parents=True, exist_ok=True)
     (week / "인스타").mkdir(parents=True, exist_ok=True)
@@ -153,6 +186,9 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
         print(f"스레드 글 {n}개 클로드 승인 (심사 통과)")
     if shift:
         print(f"스레드 글 {shift_threads(manifest, shift)}개를 한 칸씩 미뤘어요 ({shift}부터)")
+    if move:
+        print(f"게시물 {move_items(manifest, move)}개를 옮겼어요 ({move})")
+    if shift or move:
         rows = [[f"{d['date']} {it['time']}", CHANNEL_NAMES[it["channel"]], it["format"], it["title"], it["id"]]
                 for d in manifest["days"] for it in d["items"]]
     with open(week / "일정표.csv", "w", newline="", encoding="utf-8-sig") as f:
@@ -174,6 +210,7 @@ def main(argv=None) -> int:
     ap.add_argument("--no-video", action="store_true")
     ap.add_argument("--approve-threads", action="store_true", help="심사 통과한 주: 스레드 글을 클로드가 한 번에 승인")
     ap.add_argument("--shift-threads", default="", help="'2026-11-01 늦은밤' 처럼: 그 칸부터 스레드 글을 한 칸씩 미룬다")
+    ap.add_argument("--move", default="", help="'11-01_점심-threads=2026-11-02 저녁' 처럼: 게시물 하나를 다른 날·칸으로 옮긴다 (미루기 뒤에)")
     a = ap.parse_args(argv)
     start = dt.date.fromisoformat(a.start)
     used = set(filter(None, a.used.split(",")))
@@ -182,7 +219,7 @@ def main(argv=None) -> int:
         publish.status(start.isoformat(), "running", "만드는 중")
         used |= publish.used_keys(before=start.isoformat())
     try:
-        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads)
+        r = build(start, a.days, Path(a.out), used, video=not a.no_video, shift=a.shift_threads, approve_threads=a.approve_threads, move=a.move)
     except Exception as e:
         if a.publish:
             publish.status(start.isoformat(), "failed", f"만들기 실패: {type(e).__name__}")

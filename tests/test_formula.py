@@ -139,7 +139,51 @@ def _threads(plan90):
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
                                                      "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
-                                                     "long_list_spacing", "emoji_marks", "weekly_popular_topics"]
+                                                     "long_list_spacing", "emoji_marks", "weekly_popular_topics",
+                                                     "sipsin_fact"]
+
+
+# 1탄 댓글에서 잡힌 실수(인성·식상 뒤바뀜) 같은 짝을 문장 재료 전체에서 막는다 (sipsin_fact).
+SIPSIN_WRONG = [("인성", ("연하", "챙겨 주는 걸 좋아", "베풀")), ("식상", ("연상", "보살핌을 받")),
+                ("편인", ("연하", "챙겨 주는 걸 좋아")), ("정인", ("연하", "챙겨 주는 걸 좋아"))]
+
+
+def _bank_lines(x):
+    if isinstance(x, str):
+        yield x
+    elif isinstance(x, dict):
+        for v in x.values():
+            yield from _bank_lines(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _bank_lines(v)
+
+
+def test_sipsin_fact():
+    banks = json.loads((Path(T.__file__).parent / "banks.json").read_text())
+    for line in _bank_lines(banks):
+        for s in line.replace("...", ".").split(". "):
+            for star, bad in SIPSIN_WRONG:
+                assert not (star in s and any(b in s for b in bad)), line
+
+
+def test_double_good_follows_sipsin():
+    """사주 검수원 2026-11-01: 겹경사 카드의 좋은 일은 들어오는 위 글자가 그 해 천간에게 무슨 십신인지와 맞아야 한다."""
+    from saju.marketing.ranking import month_period, year_period
+    for p in (month_period(2026, 12), year_period(2027)):
+        for x in T.double_years(p):
+            want = T._god(T.STEM_ELEMENT["갑을병정무기경신임계".index(x["gz"][0])], T.STEM_ELEMENT[p.stem])
+            assert x["god"] == want
+    assert T.double_years(month_period(2026, 12))[0]["god"] == "관성"   # 경(庚)은 을(乙)에게 정관
+    assert T.double_years(year_period(2027))[0]["god"] == "재성"      # 정(丁)은 임(壬)에게 정재
+    assert "직함" not in " ".join(T.DOUBLE_GOOD["인성"])
+
+
+def test_dohwa_list_uses_day_stem():
+    """사주 검수원 2026-11-01: 십신은 일간 기준. 목록 글은 '사주에 토 많은 분'이 아니라 '토(무·기) 일간'으로 콕 집는다."""
+    for x in range(5):
+        e = T.dohwa_list(dt.date(2026, 11, 4), x, 0)
+        assert "일간 분들 주목" in e.pages[0][0] and "일간에게" in e.pages[0][-2]
 
 
 def test_heart_first(plan90):
@@ -226,9 +270,9 @@ def test_reason_short(plan90):
 def test_judges_rubric_fixed():
     J = RULES["judges"]
     assert J["pass"] == 100 and J["per_criterion"] == 5   # 사장님 2026-11-01: 50명, 10항목, 100점(처음 97점), 냉정하게
-    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference", "expert", "easy", "concrete", "comment"]
+    assert [c["id"] for c in J["criteria"]] == ["natural", "hook", "click", "trust", "follow", "reference", "expert", "easy", "concrete", "comment", "saju_fact"]
     assert all(c["name"] and c["minus"] for c in J["criteria"])
-    assert len(J["criteria"]) * J["per_criterion"] == 50
+    assert len(J["criteria"]) * J["per_criterion"] == 55   # 사장님 2026-11-01: 사주 검수원 5명 추가
     assert any("냉정" in s for s in J["strict"]) and any("이유" in s for s in J["strict"])
     assert [r["id"] for r in RULES["reference_rules"]] == ["question_heads", "term_date", "year_pain", "next_year", "ending",
                                                            "teaser", "week_variety", "dohwa_voice", "salgu_long", "follow_all"]
@@ -387,6 +431,7 @@ def test_judge_model_top_priority_pinned():
     assert j["pass"] == 100
     assert "무조건" in j["authority"]["_must"] and "올리지 않는다" in j["authority"]["_must"]
     assert any("0부터" in s for s in j["strict"])
+    assert any("글 하나하나" in s for s in j["strict"]) and any("사주 검수원 5명" in s for s in j["strict"])
     md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
     assert "제2조항: 심사원 모델 1순위" in md and "상위90-원문.txt" in md
 
@@ -411,6 +456,18 @@ def test_shift_threads_one_slot():
     assert where["x3"] == ("2026-11-02", "점심", "12:00")
     assert where["x4"] == ("2026-11-03", "오전", "07:30")
     assert where["r"][0] == "2026-11-01"
+
+
+def test_move_one_item():
+    """사장님 2026-11-01 '지우지 말고 내일 3탄 올릴 시간에 ... 못올리는거 그 중에서 괜찮은거 하나로 대체해'."""
+    from saju.marketing.formula.__main__ import move_items
+    man = {"days": [{"date": "2026-11-01", "weekday": "일", "items": [{"id": "a", "channel": "threads", "slot": "점심", "time": "12:00"}]},
+                    {"date": "2026-11-02", "weekday": "월", "items": [{"id": "b", "channel": "threads", "slot": "저녁", "time": "18:00"}]}]}
+    assert move_items(man, "a=2026-11-02 저녁") == 1
+    assert man["days"][0]["items"] == []
+    assert sorted((x["id"], x["time"]) for x in man["days"][1]["items"]) == [("a", "18:00"), ("b", "18:00")]   # 있던 글은 지우지 않는다
+    with pytest.raises(SystemExit):
+        move_items(man, "없음=2026-11-02 저녁")
 
 
 def test_long_list_spacing():

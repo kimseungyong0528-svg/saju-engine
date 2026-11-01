@@ -22,6 +22,10 @@ on:
         description: 스레드 글 한 칸씩 미루기 시작 칸 (예 "2026-11-01 늦은밤", 비우면 안 미룸)
         required: false
         default: ""
+      move:
+        description: 게시물 옮기기 (예 "11-01_점심-threads=2026-11-02 저녁", 비우면 안 옮김)
+        required: false
+        default: ""
       approve:
         description: 심사원 50명 심사를 통과한 주면 true (스레드 글을 클로드가 한 번에 승인)
         required: false
@@ -42,6 +46,7 @@ jobs:
       START: ${{ github.event.client_payload.start || inputs.start }}
       DAYS: ${{ github.event.client_payload.days || inputs.days || 7 }}
       SHIFT: ${{ inputs.shift || '' }}
+      MOVE: ${{ inputs.move || '' }}
       APPROVE: ${{ inputs.approve || 'false' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
       WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
@@ -93,7 +98,7 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
         # 공식(사장님 2026-11-01): 아침 영상 5형식 + 저녁 스레드 이어 쓰기. 배경 영상은 처음 한 번 받아서 캐시에 둔다.
-        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish --shift-threads "$SHIFT" $([ "$APPROVE" = "true" ] && echo --approve-threads)
+        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish --shift-threads "$SHIFT" --move "$MOVE" $([ "$APPROVE" = "true" ] && echo --approve-threads)
       - name: 실패하면 관리 사이트에 알리기
         if: failure()
         run: |
