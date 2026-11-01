@@ -15,6 +15,7 @@ import argparse
 import csv
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -22,6 +23,7 @@ from pathlib import Path
 from ..__main__ import CHANNEL_NAMES, WEEKDAYS
 from ..content import SITE_URL
 from . import text as T
+from .script import script
 
 FMT_NAMES = {"tier": "천복식 띠 순위", "hidden": "가림식 띠 순위", "sinbi": "띠별 운세 표", "forceteller": "오행 그림",
              "solo": "풍경 2줄 제목"}
@@ -140,6 +142,8 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
             vid, thumb = f"유튜브/{tag}_오전_{m.key}.mp4", f"유튜브/{tag}_오전_{m.key}_표지.jpg"
             if R:
                 R.morning(m, week / vid, seed=i * 2 + 1)
+                if os.environ.get("TYPECAST_API_KEY"):
+                    R.voiceover(week / vid, script(m), seed=i * 2 + 1)
                 _thumb(week / vid, 2.5, week / thumb)
             mt = m.texts()
             title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
@@ -163,6 +167,8 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
             if R and m2:
                 vid2, thumb2 = f"유튜브/{tag}_저녁_{m2.key}.mp4", f"유튜브/{tag}_저녁_{m2.key}_표지.jpg"
                 R.morning(m2, week / vid2, seed=i * 2 + 2)
+                if os.environ.get("TYPECAST_API_KEY"):
+                    R.voiceover(week / vid2, script(m2), seed=i * 2 + 2)
                 _thumb(week / vid2, 2.5, week / thumb2)
                 mt2 = m2.texts()
                 title2 = " ".join(m2.title).replace("“", "").replace("”", "") if m2.title else mt2["youtube"]["제목"]

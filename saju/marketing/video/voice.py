@@ -63,6 +63,9 @@ def _silence(path: Path, sec: float) -> None:
 
 TYPECAST = "https://api.typecast.ai/v1/text-to-speech"
 TC_MODEL = os.environ.get("TYPECAST_MODEL", "ssfm-v31")
+# 사장님 2026-11-01 견본 8개 중 "3번으로 ㄱㄱ" → 스카일러 (20~30대 여성, 쇼츠·대화용). 견본과 같은 빠르기 1.0.
+TC_VOICE = os.environ.get("TYPECAST_VOICE") or "tc_67512e8b0b5984173fa04685"
+TC_TEMPO = float(os.environ.get("TYPECAST_TEMPO", "1.0"))
 
 
 def typecast(text: str, path: Path, voice_id: str = "", prev: str = "", nxt: str = "", tempo: float = 0.0) -> Path:
@@ -72,8 +75,8 @@ def typecast(text: str, path: Path, voice_id: str = "", prev: str = "", nxt: str
         prompt["previous_text"] = prev
     if nxt:
         prompt["next_text"] = nxt
-    body = {"text": text, "model": TC_MODEL, "voice_id": voice_id or os.environ["TYPECAST_VOICE"], "prompt": prompt,
-            "output": {"audio_format": "wav", "target_lufs": -14.0, "audio_tempo": tempo or SPEED}}
+    body = {"text": text, "model": TC_MODEL, "voice_id": voice_id or TC_VOICE, "prompt": prompt,
+            "output": {"audio_format": "wav", "target_lufs": -14.0, "audio_tempo": tempo or TC_TEMPO}}
     req = urllib.request.Request(TYPECAST, data=json.dumps(body, ensure_ascii=False).encode(), method="POST",
                                  headers={"X-API-KEY": os.environ["TYPECAST_API_KEY"], "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=120) as r:
@@ -90,7 +93,7 @@ def typecast_voices(model: str = "") -> list[dict]:
 
 def speak(text: str, path: Path, prev: str = "", nxt: str = "") -> Path:
     said = clean(text)
-    if os.environ.get("TYPECAST_API_KEY") and os.environ.get("TYPECAST_VOICE"):
+    if os.environ.get("TYPECAST_API_KEY"):
         return typecast(said, path, prev=clean(prev), nxt=clean(nxt))
     tts = _engine()
     if tts is None:

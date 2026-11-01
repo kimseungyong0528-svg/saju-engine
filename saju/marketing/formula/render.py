@@ -145,6 +145,31 @@ class Renderer:
             "-c:v", "libx264", "-c:a", "aac", "-shortest", str(out))
         return out
 
+    def voiceover(self, video: Path, lines: list[str], seed: int = 1) -> Path:
+        """대본(formula/script.py)을 타입캐스트로 읽어 영상에 입힌다 (사장님 2026-11-01).
+        목소리가 영상보다 길면 마지막 장면을 그대로 두고 늘린다. 배경음악은 목소리 밑으로 작게 깐다."""
+        from ..video import voice
+        parts = []
+        for i, line in enumerate(lines):
+            w = self.work / f"vo-{video.stem}-{i:02d}.wav"
+            voice.speak(line, w, prev=lines[i - 1] if i else "", nxt=lines[i + 1] if i + 1 < len(lines) else "")
+            parts.append(w)
+        narr = self.work / f"vo-{video.stem}.wav"
+        ins = sum((["-i", str(w)] for w in parts), [])
+        gaps = "".join(f"[{i}:a]aresample=44100,aformat=channel_layouts=mono,apad=pad_dur=0.25[a{i}];" for i in range(len(parts)))
+        _ff(*ins, "-filter_complex", gaps + "".join(f"[a{i}]" for i in range(len(parts))) + f"concat=n={len(parts)}:v=0:a=1[o]",
+            "-map", "[o]", str(narr))
+        nd = _dur(narr)
+        total = max(_dur(video), nd + 1.0)
+        bgm = music.bgm(total + 1, self.work / f"bgm-vo-{video.stem}.wav", seed=seed)
+        tmp = video.with_name(video.stem + "-목소리.mp4")
+        _ff("-i", str(video), "-i", str(narr), "-i", str(bgm), "-filter_complex",
+            f"[0:v]tpad=stop_mode=clone:stop_duration={total:.2f}[v];[1:a]adelay=300|300,volume=1.0[n];"
+            "[2:a]volume=0.16[b];[n][b]amix=inputs=2:duration=longest:normalize=0[a]",
+            "-map", "[v]", "-map", "[a]", "-t", f"{total:.2f}", "-c:v", "libx264", "-crf", "20", "-c:a", "aac", str(tmp))
+        tmp.replace(video)
+        return video
+
     # ── 아침 ──
     def morning(self, m: Morning, out: Path, seed: int = 1) -> Path:
         return {"tier": self.tier, "hidden": self.hidden, "sinbi": self.sinbi, "forceteller": self.forceteller,
@@ -364,6 +389,12 @@ class Renderer:
         finally:
             self.pg.set_viewport_size({"width": 1080, "height": 1920})
         return out
+
+
+def _dur(f: Path) -> float:
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(f)],
+                       capture_output=True, text=True, check=True)
+    return float(r.stdout.strip())
 
 
 def _esc(s: str) -> str:
