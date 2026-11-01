@@ -81,7 +81,9 @@ export function makeStudio({ store, services, env }) {
       if (m === 'GET' && parts[2] === 'used') {
         const keys = [];
         // 하루치 묶음도 한 줄이라 넉넉히 3주치를 본다
-        for (const w of (await index(store)).slice(0, 21)) {
+        // before=시작일: 같은 주를 다시 만들 때는 그 주와 뒤 묶음의 재료를 빼고 본다 (심사한 글이 그대로 다시 나오게)
+        const before = url.searchParams.get('before') || '';
+        for (const w of (await index(store)).filter(w => !before || w.week < before).slice(0, 21)) {
           const man = await store.get(`manifest/${w.week}`);
           if (man?.used) keys.push(...man.used);
         }

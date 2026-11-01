@@ -37,9 +37,11 @@ def status(week: str, value: str, note: str = "") -> None:
         print(f"상태 보내기 실패: {value} {e}")
 
 
-def used_keys() -> set[str]:
+def used_keys(before: str = "") -> set[str]:
+    """이미 쓴 재료. before(시작일)를 주면 그 날보다 앞 묶음만 본다: 같은 주를 다시 만들어도 심사한 글이 그대로 나온다."""
     try:
-        return set(_call("GET", "/api/internal/studio/used").get("keys", []))
+        q = f"?before={urllib.parse.quote(before)}" if before else ""
+        return set(_call("GET", f"/api/internal/studio/used{q}").get("keys", []))
     except urllib.error.URLError as e:
         print(f"쓴 재료 목록 받기 실패: {e}")
         return set()
