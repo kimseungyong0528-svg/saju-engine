@@ -527,7 +527,7 @@ def dohwa(day: dt.date, t: int) -> Evening:
     kw = {"p": p.label, "E": E, "EH": EL_HANJA[E], "Ew": B["elements"][E]["word"], "M": M, "C": C, "CS": st(C), "K": K, "KS": st(K), "P2": P2,
               "P2S": st(P2), "B": BRANCHES[p.branch], "BH": BRANCHES_HANJA[p.branch], "Ega": josa(E, "이", "가"), "EEHga": josa(f"{E}({EL_HANJA[E]})", "이", "가"), "Creul": josa(C, "을", "를"), "jeol": f"{B['jeolgi'][str(m)]}"}
     body = [fill(x, **kw) for x in B["dohwa"][t]]
-    body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")) for x in body]
+    body = [x.replace(f"{p.label}은", josa(p.label, "은", "는")).replace(f"{p.label}이 ", josa(p.label, "이", "가") + " ") for x in body]
     reply = [fill(x, p=p.label) for x in B["dohwa_reply"][t % len(B["dohwa_reply"])]]
     return Evening(f"dohwa-{t}-{p.key}", "dohwa", [body, reply])
 
@@ -666,21 +666,6 @@ def salgu_tan(day: dt.date, n_tan: int) -> Evening:
     return Evening(f"salgu-{n_tan}", "salgu", [p1, B["salgu_end"][n_tan % len(B["salgu_end"])]], dark=False)
 
 
-def salgu_month(day: dt.date, n: int) -> Evening | None:
-    """살구식 '이달 일간편': 그달 엔진 계산으로 오행(일간 두 개씩)마다 한 줄."""
-    p = _month_periods(day)[0]
-    lines = []
-    for k, el in enumerate(range(5), 1):
-        gods = list(dict.fromkeys([_god(el, STEM_ELEMENT[p.stem]), _god(el, BRANCH_ELEMENT[p.branch])]))
-        a, b = (s for s in range(10) if STEM_ELEMENT[s] == el)
-        names = f"{STEM_NAMES[a].split('(')[0]}·{STEM_NAMES[b].split('(')[0]}"
-        got = "과 ".join(f"{g}({GH[g]})" for g in gods) if len(gods) > 1 else f"{gods[0]}({GH[gods[0]]})"
-        txt = ", ".join([B["salgu_god2"][g] for g in gods[:-1]] + [B["salgu_god3"][gods[-1]]])
-        lines.append(f"{k}. {names} 일간은 {got}이 들어온다. {txt} 달.")
-    p1 = [f"흥미로운 사주 이야기들 - {p.label} 일간편", "", f"{josa(p.label, '은', '는')} {copula(p.ganzhi)}", ""] + lines
-    return Evening(f"salgu-month-{p.key}", "salgu", [p1, B["salgu_end"][n % 2]], dark=False)
-
-
 def jangin_pool(day: dt.date):
     n = day.toordinal()
     ps = periods(day)
@@ -729,11 +714,6 @@ def dohwa_pool(day: dt.date, off: int = 0):
 
 
 def salgu_pool(day: dt.date, used: set[str]):
-    n = day.toordinal()
-    if day.day <= 3 or n % 15 == 0:
-        ev = salgu_month(day, n)
-        if ev:
-            yield ev
     yield salgu_tan(day, sum(1 for k in used if k.startswith("salgu-") and k.split("-")[1].isdigit()) + 1)
 
 
