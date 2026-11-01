@@ -216,6 +216,12 @@ fetch('/studio/rules.json').then(r => r.json()).then(R => {
     b.append(el('ul', {}, g.items.map(it => el('li', {},
       el('a', { href: it.url, target: '_blank', rel: 'noopener' }, it.name), ` · ${it.stat} · ${it.why}`))));
   }
+  const W = R.evening_writing;
+  if (W) {
+    b.append(el('h4', {}, '저녁 스레드 글 쓰는 법 (잘 터진 계정 분석)'));
+    for (const [k, lab] of [['first_line', '첫 줄'], ['structure', '구조'], ['topics', '소재'], ['tone', '말투'], ['never', '안 쓰는 것']])
+      b.append(el('ul', {}, el('li', {}, el('b', {}, lab + ': '), W[k].join(' · '))));
+  }
 }).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });
 const AUTO_TIP = '승인하면 정해진 시각에 자동으로 올라가요. 토스 정식 결제 전에는 사이트 주소 줄은 빼고 올라가요.';
 const isDone = it => CH[it.channel]?.auto ? Boolean(S.data.posted?.[it.id]?.ok) : Boolean(S.data.done[it.id]);
