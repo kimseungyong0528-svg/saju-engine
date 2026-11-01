@@ -138,7 +138,8 @@ def _threads(plan90):
 
 def test_thread_rules_fixed():
     assert [r["id"] for r in RULES["feedback"]] == ["heart_first", "no_scary_tag", "dohwa_short_good", "short_phrase",
-                                                     "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis"]
+                                                     "salgu_one_theme", "salgu_no_memo", "reason_short", "keep_basis",
+                                                     "long_list_spacing"]
 
 
 def test_heart_first(plan90):
@@ -410,3 +411,16 @@ def test_shift_threads_one_slot():
     assert where["x3"] == ("2026-11-02", "점심", "12:00")
     assert where["x4"] == ("2026-11-03", "오전", "07:30")
     assert where["r"][0] == "2026-11-01"
+
+
+def test_long_list_spacing():
+    """사장님 2026-11-01: 긴 번호 목록은 번호 사이에 빈 줄, 짧은 번호 목록은 붙여 둔다. 만든 글 전부 검사."""
+    spaced = 0
+    for dd in T.plan(dt.date(2026, 11, 1), 8):
+        for _, _, e in dd.threads:
+            for raw, part in zip(["\n".join(p).strip() for p in e.pages], e.parts):
+                assert T.space_long_lists(part) == part and part.replace("\n\n", "\n") == raw.replace("\n\n", "\n"), e.key
+                spaced += part != raw
+    assert spaced >= 14  # 살구식 '흥미로운 사주 이야기들' 탄은 전부 띄운다
+    assert "\n\n2." in T.space_long_lists("1. " + "가" * 40 + "\n2. " + "나" * 40)
+    assert T.space_long_lists("1. 1985년생 소띠\n2. 1973년생 소띠") == "1. 1985년생 소띠\n2. 1973년생 소띠"

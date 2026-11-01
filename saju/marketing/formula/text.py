@@ -353,13 +353,40 @@ class Evening:
     @property
     def parts(self) -> list[str]:
         """스레드에 올릴 글: 첫 장은 본글, 나머지는 내 댓글로 이어 쓴다."""
-        return ["\n".join(p).strip() for p in self.pages]
+        return [space_long_lists("\n".join(p).strip()) for p in self.pages]
 
     def texts(self) -> dict[str, dict]:
         n = len(self.parts)
         th = {f"{i}/{n}": t for i, t in enumerate(self.parts, 1)}
         cap = "\n\n".join(self.parts) + "\n\n#사주 #운세 #띠별운세 #사주스레드 #운명서재"
         return {"threads": th, "instagram-reel": {"캡션": cap[:2100]}}
+
+
+NUM_LINE = re.compile(r"^(\d+\.|[❶❷❸❹❺❻❼❽❾❿])\s")
+LONG_ITEM = 40  # 번호 줄의 평균 글자 수가 이보다 길면 '긴 글'이다 (사장님 2026-11-01 "존나 긴 글만")
+
+
+def space_long_lists(text: str) -> str:
+    """긴 번호 목록은 번호 사이에 빈 줄을 하나씩 넣는다 (사장님 2026-11-01 "각 번호 사이에 엔터 한번").
+    '1. 1985년생 소띠' 처럼 짧은 번호 목록은 붙여 둔다 ("번호가 짧은건 여백 주지 말고 존나 긴 글만")."""
+    lines = text.split("\n")
+    out, i = [], 0
+    while i < len(lines):
+        if not NUM_LINE.match(lines[i]):
+            out.append(lines[i])
+            i += 1
+            continue
+        j = i
+        while j < len(lines) and NUM_LINE.match(lines[j]):
+            j += 1
+        run = lines[i:j]
+        if sum(map(len, run)) / len(run) > LONG_ITEM:
+            for k, x in enumerate(run):
+                out += ([""] if k else []) + [x]
+        else:
+            out += run
+        i = j
+    return "\n".join(out)
 
 
 def _branch(i: int) -> str:
