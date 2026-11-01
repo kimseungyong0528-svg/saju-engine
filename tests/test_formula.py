@@ -394,3 +394,19 @@ def test_video_fits_studio_upload():
     """넷리파이 함수는 6MB까지 받고, 영상은 글자(base64)로 바뀌어 4/3배가 된다. 2026-11-01 5MB 영상이 413으로 막혔다."""
     from saju.marketing.formula import render
     assert render.MAX_VIDEO * 4 / 3 < 5_000_000
+
+
+def test_shift_threads_one_slot():
+    """사장님 2026-11-01 '2탄은 내일 아침 7시반으로, 스레드는 한개씩 미루자': 번호는 그대로, 칸만 한 칸씩."""
+    from saju.marketing.formula.__main__ import shift_threads
+    def th(i, slot):
+        return {"id": f"x{i}", "channel": "threads", "slot": slot, "time": "", "title": str(i)}
+    man = {"days": [{"date": "2026-11-01", "weekday": "일", "items": [th(1, "오후"), th(2, "늦은밤"), {"id": "r", "channel": "youtube", "slot": "오전", "time": "07:00"}]},
+                    {"date": "2026-11-02", "weekday": "월", "items": [th(3, "오전"), th(4, "늦은밤")]}]}
+    assert shift_threads(man, "2026-11-01 늦은밤") == 3
+    where = {it["id"]: (d["date"], it["slot"], it["time"]) for d in man["days"] for it in d["items"]}
+    assert where["x1"] == ("2026-11-01", "오후", "")
+    assert where["x2"] == ("2026-11-02", "오전", "07:30")
+    assert where["x3"] == ("2026-11-02", "점심", "12:00")
+    assert where["x4"] == ("2026-11-03", "오전", "07:30")
+    assert where["r"][0] == "2026-11-01"

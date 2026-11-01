@@ -18,6 +18,10 @@ on:
         description: 며칠치 (1~14, 보통 7)
         required: false
         default: "7"
+      shift:
+        description: 스레드 글 한 칸씩 미루기 시작 칸 (예 "2026-11-01 늦은밤", 비우면 안 미룸)
+        required: false
+        default: ""
 
 concurrency:
   group: studio-${{ github.event.client_payload.start || inputs.start || 'daily' }}
@@ -33,6 +37,7 @@ jobs:
     env:
       START: ${{ github.event.client_payload.start || inputs.start }}
       DAYS: ${{ github.event.client_payload.days || inputs.days || 7 }}
+      SHIFT: ${{ inputs.shift || '' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
       WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
       SAJU_VOICE: ${{ vars.SAJU_VOICE || 'F2' }}
@@ -83,7 +88,7 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
         # 공식(사장님 2026-11-01): 아침 영상 5형식 + 저녁 스레드 이어 쓰기. 배경 영상은 처음 한 번 받아서 캐시에 둔다.
-        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish
+        run: python -m saju.marketing.formula --start "$START" --days "$DAYS" --out 게시물 --publish --shift-threads "$SHIFT"
       - name: 실패하면 관리 사이트에 알리기
         if: failure()
         run: |
