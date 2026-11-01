@@ -80,6 +80,8 @@ def build(date: dt.date, src: Path, out: Path, today: dict, posts: list[dict] | 
     vids = _videos(None, week, d.morning, tag, "오전", "아침영상", VIDEO_AM, 1, src=src)
     if d.video2:
         vids += _videos(None, week, d.video2, tag, "저녁", "저녁영상", VIDEO_PM, 2, src=src)
+    # 유튜브는 아직 계정이 없어서 넣지 않는다 (사장님 2026-11-01 "유튜브는 아직 계정 안만들었으니까 올리지말고 인스타 페북만")
+    vids = [it for it in vids if it["channel"] != "youtube"]
     for it in vids:
         it["approved_by"] = "claude"
     keep = [it for it in today.get("items", []) if it["channel"] == "threads"]

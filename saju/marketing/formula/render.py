@@ -338,26 +338,48 @@ class Renderer:
         durs = [7 / len(pngs)] * len(pngs)   # 영상은 7초 (사장님 2026-11-01)
         return self.slides(pngs, durs, out, seed)
 
+    def overlay(self, html: str, name: str, sec: float, fps: int = 30) -> Path:
+        """CSS 움직임을 투명 배경 사진 여러 장으로 찍는다 (풍경 영상 위에 얹는다)."""
+        self._load(html, name)
+        fr = self.work / f"_ov-{name}"
+        shutil.rmtree(fr, ignore_errors=True)
+        fr.mkdir()
+        self.pg.evaluate("document.getAnimations().forEach(a=>a.pause())")
+        for k in range(int(sec * fps)):
+            self.pg.evaluate(f"document.getAnimations().forEach(a=>a.currentTime={k * 1000 / fps})")
+            self.pg.screenshot(path=str(fr / f"{k:04d}.png"), omit_background=True)
+        return fr
+
     def solo(self, m: Morning, out: Path, seed: int) -> Path:
-        """솔로사주식: 예쁜 풍경 영상 + 가운데 검은 상자 2줄 제목(흰 줄 + 빨간 줄)."""
+        """솔로사주식: 예쁜 풍경 영상 + 검은 상자 2줄 제목(흰 줄 + 빨간 줄).
+        사장님 2026-11-01: 제목이 화면 한가운데 먼저 나오고 → 위로 올라간 뒤 → 1·2·3위가 하나씩 나온다.
+        순위마다 밑에 자극적인 한 줄 두 개 (banks.json solo_hype, 엔진 순위 종류와 같은 방향)."""
         l1, l2 = m.data["lines"]
-        # 띠 3개를 화면에 바로 보여 준다 (사장님 2026-11-01 "더보기 말고 사진으로 보여줘")
-        top3 = "".join(f"<div class=k><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>" for r in m.rows[:3])
+        hype = B["solo_hype"][m.kind]
+        top3 = "".join(
+            f"<div class='k' style='animation-delay:{2.3 + i * 1.1:.1f}s'><div class=h><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>"
+            f"<div class=s>{hype[i][0]}<br>{hype[i][1]}</div></div>" for i, r in enumerate(m.rows[:3]))
         html = f"""<style>body{{background:transparent;font-family:'Noto Sans KR'}}
-        .w{{position:absolute;top:640px;width:100%;display:flex;flex-direction:column;align-items:center}}
-        .t3{{margin-top:44px;background:rgba(0,0,0,.78);border-radius:22px;padding:26px 40px 10px}}
-        .k{{color:#fff;font-weight:900;font-size:64px;line-height:1;margin-bottom:24px;white-space:nowrap;letter-spacing:-2px}}
-        .k b{{color:#ffd23f}} .k i{{font-style:normal;font-size:46px;color:#eee;font-weight:700}}
+        .w{{position:absolute;left:0;right:0;top:960px;display:flex;flex-direction:column;align-items:center;transform:translateY(-50%);animation:up .7s ease-in-out 1.5s both}}
+        @keyframes up{{to{{top:150px;transform:translateY(0)}}}}
         .l,.r{{background:#000;font-weight:900;font-size:96px;line-height:1.18;letter-spacing:-3px;white-space:nowrap}}
         .l{{color:#fff;padding:10px 34px 14px;border-radius:18px 18px 0 0}}
         .r{{color:#ff1f1f;padding:0 34px 16px;border-radius:0 0 18px 18px}}
-        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div><div class='t3 fitbox' data-w=980>{top3}</div></div></body>"""
-        ov = self.shot(html, f"{out.stem}-제목", transparent=True)
+        .list{{position:absolute;top:520px;left:50px;right:50px}}
+        .k{{background:rgba(0,0,0,.74);border-radius:24px;padding:22px 30px 24px;margin-bottom:30px;opacity:0;animation:pop .45s ease-out both}}
+        @keyframes pop{{from{{opacity:0;transform:translateY(40px)}}to{{opacity:1;transform:none}}}}
+        .h{{color:#fff;font-weight:900;font-size:68px;line-height:1.1;white-space:nowrap;letter-spacing:-2px}}
+        .h b{{color:#ffd23f}} .h i{{font-style:normal;font-size:44px;color:#eee;font-weight:700}}
+        .s{{color:#ffe9a8;font-weight:800;font-size:50px;line-height:1.3;margin-top:12px;letter-spacing:-1.5px;word-break:keep-all}}
+        </style><body><div class=w><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div>
+        <div class=list>{top3}</div></body>"""
+        fr = self.overlay(html, f"{out.stem}-제목", 7)
         clip = media(m.data["bg"])
         bgm = music.bgm(8, self.work / f"bgm-{out.stem}.wav", seed=seed)
-        _ff("-stream_loop", "-1", "-i", str(clip), "-i", str(ov), "-i", str(bgm), "-filter_complex",
-            "[0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];[bg][1]overlay=0:0,format=yuv420p[v]",
+        _ff("-stream_loop", "-1", "-i", str(clip), "-framerate", "30", "-i", str(fr / "%04d.png"), "-i", str(bgm), "-filter_complex",
+            "[0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];[bg][1]overlay=0:0:eof_action=repeat,format=yuv420p[v]",
             "-map", "[v]", "-map", "2", "-t", "7", "-c:v", "libx264", "-c:a", "aac", str(out))
+        shutil.rmtree(fr, ignore_errors=True)
         return out
 
     # ── 저녁: 스레드 글 캡처 ──
