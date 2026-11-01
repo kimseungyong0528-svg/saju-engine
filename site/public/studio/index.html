@@ -219,7 +219,7 @@ fetch('/studio/rules.json').then(r => r.json()).then(R => {
   const W = R.evening_writing;
   if (W) {
     b.append(el('h4', {}, '저녁 스레드 글 쓰는 법 (잘 터진 계정 분석)'));
-    for (const [k, lab] of [['first_line', '첫 줄'], ['structure', '구조'], ['topics', '소재'], ['tone', '말투'], ['never', '안 쓰는 것']])
+    for (const [k, lab] of [['first_line', '첫 줄'], ['structure', '구조'], ['topics', '소재'], ['reply_chain', '댓글로 이어 쓰기'], ['endings', '끝맺음'], ['tone', '말투'], ['never', '안 쓰는 것']])
       b.append(el('ul', {}, el('li', {}, el('b', {}, lab + ': '), W[k].join(' · '))));
   }
 }).catch(() => { document.getElementById('rulesBody').textContent = '규칙 파일을 못 읽었어요: /studio/rules.json'; });

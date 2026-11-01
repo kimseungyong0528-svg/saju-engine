@@ -169,3 +169,4 @@ def test_evening_writing_rules():
     w = rules.load()["evening_writing"]
     assert len(w["first_line"]) >= 5 and any("1장" in x for x in w["structure"])
     assert any("엔진" in x for x in w["never"])
+    assert any("3장" in x for x in w["structure"]) and len(w["reply_chain"]) >= 3 and w["endings"]
