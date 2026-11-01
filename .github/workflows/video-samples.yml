@@ -1,0 +1,61 @@
+# 영상 견본 (사장님 2026-11-01): 하루치 영상 2개를 대본 + 타입캐스트 목소리로 만들어 video-samples 브랜치에 올린다.
+# 관리 사이트(/studio)에는 올리지 않는다. 손으로만 돌린다.
+name: 영상 견본
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: 첫날 (예 2026-11-09)
+        required: true
+      days:
+        description: 며칠치
+        required: false
+        default: "1"
+permissions:
+  contents: write
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      TYPECAST_API_KEY: ${{ secrets.TYPECAST_API_KEY }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/ms-playwright
+            ~/.cache/saju-media
+          key: shorts-tools-v2
+      - name: 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils ffmpeg fonts-noto-color-emoji > /dev/null
+          pip install -q -e ".[report,video]"
+          python -m playwright install --with-deps chromium
+      - run: python -m saju.marketing.formula --start "${{ inputs.start }}" --days "${{ inputs.days }}" --out 견본 --no-cards
+      - name: 견본 올리기
+        run: |
+          mkdir -p video-samples && cp 견본/*/유튜브/*.mp4 video-samples/
+          python - <<'PY'
+          import datetime as dt, json, pathlib
+          from saju.marketing.formula import text as T, script as S
+          out = {}
+          for d in T.plan(dt.date.fromisoformat("${{ inputs.start }}"), int("${{ inputs.days }}"), set()):
+              for m in (d.morning, d.video2):
+                  out[m.key] = S.script(m)
+          pathlib.Path("video-samples/대본.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+          PY
+          git config user.name "video-bot"; git config user.email "video-bot@users.noreply.github.com"
+          git checkout --orphan video-samples-tmp
+          git rm -rfq --cached . >/dev/null
+          git add video-samples
+          git commit -qm "영상 견본 ${{ inputs.start }}"
+          git push -f origin HEAD:video-samples

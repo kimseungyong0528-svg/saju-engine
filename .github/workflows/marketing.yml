@@ -63,6 +63,7 @@ jobs:
       SAJU_VOICE: ${{ vars.SAJU_VOICE || 'F2' }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      TYPECAST_API_KEY: ${{ secrets.TYPECAST_API_KEY }}   # 영상 대본을 타입캐스트(스카일러)로 읽는다
     steps:
       - name: 날짜 확인
         run: |
