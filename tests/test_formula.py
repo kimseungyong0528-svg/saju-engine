@@ -672,3 +672,14 @@ def test_videos_only_this_month():
         for m in (d.morning, d.video2):
             if m.period is not None:
                 assert m.period.key == f"{d.date:%Y-%m}", m.key
+
+
+def test_solo_background_fits_season():
+    """심사 2026-11-03: 11월 영상에 벚꽃 풍경이 나오면 안 된다. 계절 표시(months)가 있는 풍경은 그 달에만 쓴다."""
+    for start in (dt.date(2026, 11, 3), dt.date(2027, 1, 5), dt.date(2027, 7, 1)):
+        for d in T.plan(start, 14):
+            for m in (d.morning, d.video2):
+                if m.fmt == "solo":
+                    assert d.date.month in m.data["bg"].get("months", range(1, 13)), (d.date, m.data["bg"])
+    from saju.marketing.formula import script as S
+    assert "설명란" not in "".join(S.script(m)[0] for d in T.plan(dt.date(2026, 11, 3), 7) for m in (d.morning, d.video2))

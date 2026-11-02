@@ -260,7 +260,7 @@
     "들어오는"
    ],
    "solo": [
-    "{p}부터 이사운,이직운",
+    "{p}부터 이사운, 이직운",
     "들어오는 띠 3개"
    ],
    "hooks": [
@@ -1366,14 +1366,17 @@
   },
   {
    "file": "cherry-blossom-0.mp4",
+   "months": [3, 4, 5],
    "src": "https://assets.mixkit.co/videos/48755/48755-720.mp4"
   },
   {
    "file": "beach-1.mp4",
+   "months": [6, 7, 8],
    "src": "https://assets.mixkit.co/videos/44496/44496-1080.mp4"
   },
   {
    "file": "snow-0.mp4",
+   "months": [12, 1, 2],
    "src": "https://assets.mixkit.co/videos/28844/28844-720.mp4"
   },
   {
@@ -1382,6 +1385,7 @@
   },
   {
    "file": "flowers-3.mp4",
+   "months": [4, 5, 6],
    "src": "https://assets.mixkit.co/videos/48889/48889-720.mp4"
   },
   {
@@ -3051,7 +3055,7 @@
    ],
    [
     "사소한 다툼이 크게 번지기 쉬워요",
-    "오늘 할 말은 내일로 미뤄 두세요"
+    "화가 난 날엔 한 번 참고 넘기세요"
    ]
   ]
  }

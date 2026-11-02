@@ -48,7 +48,7 @@ def top_title(m) -> str:
         d = dt.date.fromisoformat(m.data["date"])
         return f"{d.month}월 {d.day}일 띠별 운세"
     if m.fmt == "solo":
-        return " ".join(_plain(x) for x in m.data["lines"]).replace(",", ", ")
+        return " ".join(_plain(x) for x in m.data["lines"]).replace(", ", ",").replace(",", ", ")
     if m.fmt == "forceteller":
         h1, h2 = (_plain(x) for x in m.data["head"])
         return f"{h1} {h2}"
@@ -75,13 +75,13 @@ def script(m) -> list[str]:
         h1, h2 = (_spoken(_plain(x), m) for x in m.data["head"])
         # 화면은 7초라 앞 두 장만 보이고 나머지 풀이는 설명란에 있다 (render.forceteller)
         if h2.endswith("이렇게"):        # '11월, 수의 달 / 수 없는 사주는 이렇게'
-            return [f"{h1.replace(',', '은')}! {h2[:-3]}어떻게 해야 할까요? 설명란에서 끝까지 확인하세요!"]
+            return [f"{h1.replace(',', '은')}! {h2[:-3]}어떻게 해야 할까요? 본문에서 끝까지 확인하세요!"]
         if h2.endswith("만나면"):        # '수 많은 사람과 / 목 많은 사람이 만나면'
-            return [f"{h1} {h2} 어떻게 될까요? 설명란에서 끝까지 확인하세요!"]
-        return [f"{h1} {h2}, 설명란에서 끝까지 확인하세요!"]
+            return [f"{h1} {h2} 어떻게 될까요? 본문에서 끝까지 확인하세요!"]
+        return [f"{h1} {h2}, 본문에서 끝까지 확인하세요!"]
     if m.fmt == "hidden":
         # 화면에서 1~3위는 ???? 로 가려져 있고 설명란 맨 아래에 있다 → '10초 만에'라 하면 거짓 (신뢰 심사)
-        return [f"{top_title(m)}, 1위부터 3위는 설명란에서 확인하세요!"]
+        return [f"{top_title(m)}, 1위부터 3위는 본문에서 확인하세요!"]
     if m.fmt == "solo":
         # 띠 3개가 화면에 바로 나온다 (사장님 2026-11-01 "더보기 말고 사진으로 보여줘")
         return [f"{top_title(m)}, 지금 바로 확인하세요!"]
