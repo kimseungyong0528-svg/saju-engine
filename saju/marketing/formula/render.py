@@ -326,18 +326,18 @@ class Renderer:
         pngs = []
         for i, t in enumerate(D["say"][:2]):   # 7초엔 두 장까지만 읽힌다. 나머지 풀이는 설명란 (사장님 2026-11-01 7초)
             html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
-            .t{{height:600px;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:70px;text-align:center;font-weight:900;font-size:104px;line-height:1.22;color:#fff;letter-spacing:-3px}}
+            .t{{height:{460 if cta else 600}px;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:70px;text-align:center;font-weight:900;font-size:104px;line-height:1.22;color:#fff;letter-spacing:-3px}}
             .t div{{white-space:nowrap}} .t em{{font-style:normal;color:#ffd23f}}
-            .art{{position:absolute;top:600px;left:0;right:0;bottom:0;background:#f7f4ef;overflow:hidden}}
+            .art{{position:absolute;top:{460 if cta else 600}px;left:0;right:0;bottom:0;background:#f7f4ef;overflow:hidden}}
             .o{{position:absolute;width:{2 * R}px;height:{2 * R}px;border-radius:50%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Nanum Myeongjo';font-weight:800;font-size:76px;line-height:1;box-shadow:0 6px 14px rgba(0,0,0,.08)}}
             .o span{{font-family:'Noto Sans KR';font-size:24px;font-weight:500;margin-top:6px}}
             .o.on{{box-shadow:0 0 0 16px color-mix(in srgb,var(--c) 25%,transparent),0 0 50px var(--c)}}
             svg.ar{{position:absolute;left:0;top:0;z-index:2}}
-            .say{{position:absolute;left:70px;right:70px;bottom:{290 if cta else 110}px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
+            .say{{position:absolute;left:70px;right:70px;bottom:{215 if cta else 110}px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
             </style><body><div class=t><div class=fit data-w=1020>{h1}</div><div class=fit data-w=1020>{h2}</div></div>
             <div class=art>{wc}<svg class=ar width=1080 height=1320><defs>{marks}</defs>{outer}{inner}</svg>
             {circles}<div class=say>{t}</div></div>
-            <style>.cta{{position:absolute;z-index:5;bottom:50px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:66px;line-height:1.18;color:#5b1d8a;text-shadow:0 0 10px #fff,0 0 4px #fff}}</style>{_cta_box(cta)}</body>"""
+            <style>.cta{{position:absolute;z-index:5;bottom:34px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:62px;line-height:1.18;color:#5b1d8a;text-shadow:0 0 10px #fff,0 0 4px #fff}}</style>{_cta_box(cta)}</body>"""
             pngs.append(self.shot(html, f"{out.stem}-{i}"))
         durs = [7 / len(pngs)] * len(pngs)   # 영상은 7초 (사장님 2026-11-01)
         return self.slides(pngs, durs, out, seed)
