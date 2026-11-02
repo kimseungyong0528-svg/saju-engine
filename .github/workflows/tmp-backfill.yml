@@ -13,4 +13,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q -e ".[report]"
-      - run: python -m saju.marketing.backfill_link
+      - run: python -m saju.marketing.backfill_link --go

@@ -306,6 +306,9 @@ async function loadWeek(week) {
   // 다음 주 승인도 이번 주 안에 해야 해서 뒤에 만든 묶음도 읽어 둔다 (사장님 2026-11-01)
   S.more = await Promise.all(S.weeks.filter(w => w.status === 'ready' && w.week > week).slice(0, 2)
     .map(w => api('weeks/' + w.week).catch(() => null))).then(a => a.filter(Boolean));
+  // 같은 주에 묶음이 여러 개일 수 있다(한 주치 묶음 + 그날 영상 묶음). 현황은 앞 묶음까지 합쳐서 센다 (사장님 2026-11-02 '7 / 42개 왜 이래').
+  S.prev = await Promise.all(S.weeks.filter(w => w.status === 'ready' && w.week < week).sort((a, b) => b.week.localeCompare(a.week)).slice(0, 2)
+    .map(w => api('weeks/' + w.week).catch(() => null))).then(a => a.filter(Boolean));
   const days = S.data.manifest?.days || [];
   S.day = (days.find(d => d.date === todayIso()) || days[0] || {}).date;
   render();
@@ -381,9 +384,16 @@ const STAT = {
 };
 function viewStatus() {
   const c = STAT[S.ch] || STAT.threads, ch = STAT[S.ch] ? S.ch : 'threads', need = c.per * 7;
-  const m = S.data?.manifest;
-  if (!m) return el('div', {}, el('h2', { class: 'sec' }, '현황'), needWeek());
-  const posted = S.data.posted || {}, appr = S.data.approved || {};
+  if (!S.data?.manifest) return el('div', {}, el('h2', { class: 'sec' }, '현황'), needWeek());
+  // 앞 묶음 + 고른 묶음을 날짜별로 합친다. 같은 글(id)은 한 번만 센다.
+  const packs = [...(S.prev || []).slice().reverse(), S.data].filter(x => x?.manifest);
+  const posted = Object.assign({}, ...packs.map(x => x.posted || {})), appr = Object.assign({}, ...packs.map(x => x.approved || {}));
+  const byDate = new Map();
+  for (const x of packs) for (const d of x.manifest.days || []) {
+    const cur = byDate.get(d.date) || { ...d, items: [] }, ids = new Set(cur.items.map(i => i.id));
+    cur.items = cur.items.concat((d.items || []).filter(i => !ids.has(i.id))); byDate.set(d.date, cur);
+  }
+  const m = { week: packs.map(x => x.manifest.week).sort()[0], days: [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)) };
   // 월~일 7일만 보여 준다 (사장님 2026-11-01). 오늘이 든 주, 묶음이 그보다 뒤에 시작하면 묶음의 첫 월요일 주.
   const iso = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
   const monOf = s => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
@@ -412,7 +422,7 @@ function viewStatus() {
   // 다음 주 줄은 다음 주 묶음만 센다. 이번 주에서 밀려난 글은 세지 않는다 (사장님 2026-11-01 "여기서만 미루고 만거지").
   const apprLine = (a, b, next) => {
     const seen = new Map();
-    for (const dt of next ? (S.more || []) : [S.data]) for (const d of dt.manifest?.days || []) if (d.date >= a && d.date <= b)
+    for (const dt of next ? (S.more || []) : packs) for (const d of dt.manifest?.days || []) if (d.date >= a && d.date <= b)
       for (const i of d.items) if (c.chans.includes(i.channel)) seen.set(i.id, { i, ok: i.approved_by === 'claude' || (dt.approved || {})[i.id] });
     const v = [...seen.values()], n = v.length, ok = v.filter(x => x.ok).length;
     if (!n) return { t: '아직 준비 전', cls: 'bad' };
