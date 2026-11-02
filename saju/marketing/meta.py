@@ -214,10 +214,10 @@ FOLLOW_LINK = "운명서재에서 정확한 내 사주 보기 👉 https://unmye
 
 
 def with_link(parts: list[str]) -> list[str]:
-    """토스 정식 결제가 연결되면(SNS_SITE_LINK=on) 마지막 장 팔로우 말 뒤에 사이트 주소 한 줄을 붙인다 (사장님 2026-11-01)."""
+    """토스 정식 결제가 연결되면(SNS_SITE_LINK=on) 마지막 장 팔로우 말 뒤에 사이트 주소 한 줄을 빈 줄 하나 띄우고 붙인다 (사장님 2026-11-01, 11-02)."""
     if os.environ.get("SNS_SITE_LINK") != "on" or not parts or "unmyeong-saju.com" in parts[-1]:
         return parts
-    return parts[:-1] + [parts[-1].rstrip() + "\n" + FOLLOW_LINK]
+    return parts[:-1] + [parts[-1].rstrip() + "\n\n" + FOLLOW_LINK]  # 위 줄과 빈 줄 하나 띄움 (사장님 2026-11-02)
 
 
 def threads(week: str, it: dict) -> str:
