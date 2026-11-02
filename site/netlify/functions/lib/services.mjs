@@ -84,6 +84,19 @@ export function realServices(env, fetcher = fetch) {
   return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
 }
 
+// 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.
+// 결제위젯 키(gck/gsk)를 넣었거나, 클라이언트·시크릿 키가 하나는 시험(test_)·하나는 정식(live_)이면
+// 결제가 토스에서 실패하므로 아예 결제를 열지 않고 이유를 알려 준다.
+export function tossKeyMode(env) {
+  const c = String(env.TOSS_CLIENT_KEY || '').trim(), s = String(env.TOSS_SECRET_KEY || '').trim();
+  if (!c || !s) return { mode: '', problem: 'TOSS_KEY_MISSING' };
+  if (/^(live|test)_g(c|s)k/.test(c) || /^(live|test)_g(c|s)k/.test(s)) return { mode: '', problem: 'TOSS_WIDGET_KEY' };
+  const cm = (c.match(/^(live|test)_ck/) || [])[1], sm = (s.match(/^(live|test)_sk/) || [])[1];
+  if (!cm || !sm) return { mode: '', problem: 'TOSS_KEY_FORMAT' };
+  if (cm !== sm) return { mode: '', problem: 'TOSS_KEY_MIXED' };
+  return { mode: cm, problem: '' };
+}
+
 export function ready(env) {
-  return Boolean(env.TOSS_CLIENT_KEY && env.TOSS_SECRET_KEY && env.GH_DISPATCH_TOKEN && env.WORKER_SECRET && env.RESEND_API_KEY);
+  return Boolean(tossKeyMode(env).mode && env.GH_DISPATCH_TOKEN && env.WORKER_SECRET && env.RESEND_API_KEY);
 }

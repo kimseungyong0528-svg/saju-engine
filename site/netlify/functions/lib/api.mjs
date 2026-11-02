@@ -4,7 +4,7 @@ import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
 } from './orders.mjs';
-import { ready } from './services.mjs';
+import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
 
@@ -30,7 +30,9 @@ export function makeApi({ store, services, env, studioStore = store }) {
       if (parts[0] === 'studio' || (parts[0] === 'internal' && parts[1] === 'studio')) return await studio(req, parts);
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
-          customerAnalysisReady: ready(env), clientKey: ready(env) ? env.TOSS_CLIENT_KEY : '',
+          customerAnalysisReady: ready(env), clientKey: ready(env) ? String(env.TOSS_CLIENT_KEY).trim() : '',
+          // 정식(live)·시험(test) 어느 키로 도는지와 키 문제(있으면). 키 값 자체는 클라이언트 키만 내보낸다.
+          paymentMode: tossKeyMode(env).mode, keyProblem: tossKeyMode(env).problem,
           productNames: Object.fromEntries(PRODUCTS.map(p => [p.id, p.name])),
         });
       }
@@ -49,7 +51,7 @@ export function makeApi({ store, services, env, studioStore = store }) {
         const body = await readJson(req);
         // 토스 시험 키(test_)를 쓰는 동안 사장님 이메일이 아닌 주문은 시험 결제창까지만 연다(토스·카드사 심사용).
         // 시험 결제는 돈이 안 나가지만 결과 작성은 API 비용이 나가므로, 이런 주문은 결제가 끝나도 결과를 만들지 않는다.
-        const testOnly = String(env.TOSS_CLIENT_KEY).startsWith('test_')
+        const testOnly = tossKeyMode(env).mode === 'test'
           && String(body.email || '').trim().toLowerCase() !== String(env.OWNER_EMAIL || '').trim().toLowerCase();
         return json(await createOrder(store, body, req.headers.get('idempotency-key'), new Date(), { testOnly }), 201);
       }
