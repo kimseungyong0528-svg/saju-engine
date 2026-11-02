@@ -889,8 +889,10 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .cover-menu{color:#fff}.cover-menu .icon{width:24px;height:24px;color:#fff}
 .scene-flow.is-cover .cover-copy{display:flex;position:absolute;z-index:5;left:0;right:0;bottom:calc(102px + env(safe-area-inset-bottom));flex-direction:column;align-items:center;text-align:center;padding:0 20px;pointer-events:none;animation:modal-in .65s ease-out}
 .cover-name{font:400 30px/1 'Cover Brush','Nanum Brush Script',serif;color:#fff;letter-spacing:.04em;text-shadow:0 2px 10px #000a}
-.cover-title{margin:4px 0 16px;font-family:'Cover Brush','Nanum Brush Script',serif;font-weight:400;line-height:1.02;letter-spacing:-.03em;white-space:nowrap;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--accent) 75%,transparent),0 0 34px color-mix(in srgb,var(--accent) 45%,transparent),0 3px 8px #000c}
+.cover-title{font-size:calc(var(--fs) * var(--k,1));margin:4px 0 16px;font-family:'Cover Brush','Nanum Brush Script',serif;font-weight:400;line-height:1.02;letter-spacing:-.03em;white-space:nowrap;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--accent) 75%,transparent),0 0 34px color-mix(in srgb,var(--accent) 45%,transparent),0 3px 8px #000c}
 .cover-title small{display:block;font-size:.46em;line-height:1;margin-bottom:2px;letter-spacing:.04em}
+.scene-flow.is-cover .cover-copy{--k:1}
+@media (max-height:700px){.scene-flow.is-cover .cover-copy{--k:.8}.cover-name{font-size:25px}.cover-title{margin-bottom:13px}.cover-quote{font-size:18px!important}}
 .cover-quote{margin:0;font:700 20px/1.35 'Gowun Batang',serif;color:#f1f1f4;letter-spacing:-.01em;text-shadow:0 1px 6px #000c;word-break:keep-all}
 .scene-flow.is-cover .flow-bottom{padding-left:20px;padding-right:20px}
 .scene-flow.is-cover .next-btn{flex:1;width:100%;height:56px;min-height:56px;border-radius:9px;background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--accent) 22%,#fff) 100%);color:#1b2240;font-size:19px;font-weight:800;border:1px solid #ffffffcc;box-shadow:0 4px 18px #0006}
@@ -5956,7 +5958,7 @@ const COVER_QUOTES={lifetime:'당신 인생의 모든 비밀이 이 곳에',newy
 function coverMarkup(p,escape){
  const first=FLOWS[p.id]?.[0]||{},full=p.short||p.name,lead=(full.match(/^(\d+)\s+/)||[])[1]||'',title=lead?full.slice(full.indexOf(' ')+1):full,units=[...title].reduce((n,c)=>n+(c==='·'?.38:c===' '?.3:/\d/.test(c)?.6:.97),0),size=Math.min(96,Math.round(362/Math.max(3.6,units)));
  return `<div class="cover-top"><a class="cover-logo" href="#/" aria-label="${escape(BRAND.name)} 홈으로"><i aria-hidden="true">運命<br>書齋</i><b>${escape(BRAND.name)}</b></a><button class="icon-btn cover-menu" data-action="menu" aria-label="메뉴 열기">${icon('menu')}</button></div>
- <div class="cover-copy"><span class="cover-name">${escape(p.guide)}</span><h1 class="cover-title" style="font-size:${size}px">${lead?`<small>${escape(lead)}</small>`:''}${escape(title)}</h1><p class="cover-quote">“ ${escape(COVER_QUOTES[p.id]||(first.title||'').replace(/\n/g,' '))} ”</p></div>`;
+ <div class="cover-copy"><span class="cover-name">${escape(p.guide)}</span><h1 class="cover-title" style="--fs:${size}px">${lead?`<small>${escape(lead)}</small>`:''}${escape(title)}</h1><p class="cover-quote">“ ${escape(COVER_QUOTES[p.id]||(first.title||'').replace(/\n/g,' '))} ”</p></div>`;
 }
 
 function storyMarkup(p,s,escape){
