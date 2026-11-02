@@ -647,8 +647,7 @@ def test_video_scripts_follow_engine(plan90):
             assert c["youtube"].startswith("나의 ") and c["youtube"].endswith("더 자세히 알고 싶다면 구독!")
             assert c["facebook-reel"] == c["youtube"].replace("구독!", "팔로우!")
             # 인스타는 무조건 댓글 (사장님 2026-11-03), 올리는 곳은 인스타 릴스만
-            assert c["instagram-reel"].startswith("더 자세한 나의 ") and c["instagram-reel"].endswith("댓글을 달아 주세요!")
-            assert "팔로우" not in c["instagram-reel"]
+            assert c["instagram-reel"] == c["youtube"].replace("구독!", "팔로우!")   # 사장님 2026-11-03 "일단 팔로우로"
             assert not any("미리 알고" in x for x in c.values())
     keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
     assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다
