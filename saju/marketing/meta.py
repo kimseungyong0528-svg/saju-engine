@@ -282,6 +282,8 @@ def run(slot: str, date: str, dry: bool = False) -> int:
             print(f"실패: {it['id']} → {e}")
         publish._call("POST", f"/api/internal/studio/{week}/posted",
                       json.dumps({"id": it["id"], **result}, ensure_ascii=False).encode())
+        # 같은 칸에 스레드 글이 두 개여도 한 번에 둘 다 올리지 않게, 방금 올린 것도 바로 셈에 넣는다 (2026-11-02 18:00 사고)
+        posted[it["id"]] = {**result, "at": dt.datetime.now(dt.timezone.utc).isoformat()}
     return 1 if fails else 0
 
 

@@ -210,3 +210,16 @@ def test_ig_publish_retries_when_media_not_ready(monkeypatch):
     monkeypatch.setattr(meta, "_http", fake)
     monkeypatch.setattr(meta.time, "sleep", lambda s: None)
     assert meta._ig_publish("c1", "t") == "https://www.instagram.com/p/x/"
+
+
+def test_same_slot_two_threads_posts_only_one(monkeypatch):
+    """2026-11-02 18:00: 같은 칸에 스레드 글이 두 개라 한 번에 둘 다 올라갔다. 하나만 올라가야 한다."""
+    from saju.marketing import meta, publish
+    plan = {"week": "w", "approved": {}, "posted": {}, "items": [
+        {"id": "a", "channel": "threads", "slot": "저녁", "title": "", "approved_by": "claude"},
+        {"id": "b", "channel": "threads", "slot": "저녁", "title": "", "approved_by": "claude"}]}
+    sent = []
+    monkeypatch.setattr(publish, "_call", lambda m, path, body=None: plan if m == "GET" else {})
+    monkeypatch.setitem(meta.POSTERS, "threads", lambda week, it: sent.append(it["id"]) or "u")
+    assert meta.run("저녁", "2026-11-02") == 0
+    assert sent == ["a"]
