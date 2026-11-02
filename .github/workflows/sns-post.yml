@@ -16,6 +16,8 @@ on:
     - cron: "47 9 * * *"    # 한국 18:47 → 저녁영상
     - cron: "47 11 * * *"   # 한국 20:47 → 밤 + 밤글
     - cron: "47 13 * * *"   # 한국 22:47 → 늦은밤
+  repository_dispatch:
+    types: [sns]   # 넷리파이 sns-clock 이 제시간에 시킨다 (깃허브 예약 실행이 몇 시간씩 늦어서, 2026-11-02)
   workflow_dispatch:
     inputs:
       slot:
@@ -59,6 +61,7 @@ jobs:
       - name: 올리기
         run: |
           SLOT="${{ inputs.slot }}"
+          [ "${{ github.event_name }}" = "repository_dispatch" ] && SLOT="${{ github.event.client_payload.slot }}"
           if [ "${{ github.event_name }}" = "schedule" ]; then
             case "${{ github.event.schedule }}" in
               "17 22 * * *") SLOT=오전 ;;
@@ -75,7 +78,7 @@ jobs:
           RC=0
           for S in $SLOT; do
             ARGS=(--slot "$S")
-            [ "${{ github.event_name }}" = "schedule" ] && ARGS+=(--scheduled)
+            [ "${{ github.event_name }}" != "workflow_dispatch" ] && ARGS+=(--scheduled)
             [ -n "${{ inputs.date }}" ] && ARGS+=(--date "${{ inputs.date }}")
             [ "${{ inputs.dry }}" = "true" ] && ARGS+=(--dry)
             python -m saju.marketing.meta "${ARGS[@]}" || RC=1

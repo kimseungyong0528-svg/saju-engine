@@ -42,6 +42,7 @@ SLOT_TIME = {"오전": "07:30", "아침영상": "08:00", "점심": "12:00", "점
              "저녁영상": "19:00", "밤": "21:00", "밤글": "21:00", "늦은밤": "23:00"}
 PICK_SLOTS = {"점심글": 0, "밤글": 1}   # 전날 반응 1등은 12:30, 2등은 21:00 (formula/pick.py)
 LATE_MIN = 60   # 예약 실행이 이보다 늦게 시작하면 올리지 않는다
+THREAD_GAP_MIN = 90   # 스레드 글은 이 시간 안에 두 개 올리지 않는다 (사장님 2026-11-02 "스레드 두개 한번에올리지마")
 
 
 def scheduled_date(slot: str, now: dt.datetime) -> tuple[str, int]:
@@ -224,6 +225,18 @@ def threads(week: str, it: dict) -> str:
 POSTERS = {"instagram-reel": ig_reel, "instagram-cards": ig_cards, "facebook-reel": fb_reel, "facebook-post": fb_post, "threads": threads}
 
 
+def _thread_gap(plan: dict, posted: dict, now: dt.datetime | None = None) -> int | None:
+    """THREAD_GAP_MIN 안에 올라간 스레드 글이 있으면 몇 분 전인지 돌려준다."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    ids = {it["id"] for it in plan.get("items", []) if it["channel"] == "threads"}
+    for pid, p in posted.items():
+        if pid in ids and p.get("ok") and p.get("at"):
+            ago = (now - dt.datetime.fromisoformat(p["at"].replace("Z", "+00:00"))).total_seconds() / 60
+            if 0 <= ago < THREAD_GAP_MIN:
+                return int(ago)
+    return None
+
+
 def run(slot: str, date: str, dry: bool = False) -> int:
     plan = publish._call("GET", f"/api/internal/studio/today?date={date}")
     if slot in PICK_SLOTS and not any(it["slot"] == slot for it in plan.get("items", [])):
@@ -244,6 +257,9 @@ def run(slot: str, date: str, dry: bool = False) -> int:
             continue
         if posted.get(it["id"], {}).get("ok"):
             print(f"건너뜀 (이미 올림): {it['id']}")
+            continue
+        if it["channel"] == "threads" and (gap := _thread_gap(plan, posted)) is not None:
+            print(f"건너뜀 (스레드 글이 {gap}분 전에 올라가서, 한 번에 두 개 안 올림): {it['id']}")
             continue
         if dry:
             print(f"올릴 것: {it['id']} {it['title']}")
