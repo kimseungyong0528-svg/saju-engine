@@ -262,8 +262,11 @@ def morning_candidates(fmt: str, day: dt.date):
             m = Morning(f"{fmt}-{kind}-{p.key}", fmt, kind, p, ts[n % len(ts)], rows)
             if fmt == "hidden":
                 used: set[str] = set()
+                # 한 영상 안에서 같은 줄이 두 번 나오지 않게, 이유별 말을 다 쓰면 점수 방향에 맞는 말로 채운다 (심사 2026-11-03)
+                ex = B["hidden_extra"][kind]
                 m.data["phrase"] = {r.ddi: pick_unique(
-                    [s for _, t in (main_whys(r) if r.score > 0 else sorted(r.why)) for s in why_bank(kind, t)["short"]] or ["평소처럼 흘러가요"], used) for r in rows}
+                    [s for _, t in (main_whys(r) if r.score > 0 else sorted(r.why)) for s in why_bank(kind, t)["short"]]
+                    + ex["up" if r.score > 0 else "down"] + ["평소처럼 흘러가요"], used) for r in rows}
             if fmt == "solo":
                 # 계절에 안 맞는 풍경은 빼고 고른다 (11월에 벚꽃이 나오면 안 됨, 심사 2026-11-03)
                 bgs = [b for b in B["backgrounds"] if day.month in b.get("months", range(1, 13))]

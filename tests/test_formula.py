@@ -686,3 +686,11 @@ def test_solo_background_fits_season():
                     assert d.date.month in m.data["bg"].get("months", range(1, 13)), (d.date, m.data["bg"])
     from saju.marketing.formula import script as S
     assert "설명란" not in "".join(S.script(m)[0] for d in T.plan(dt.date(2026, 11, 3), 7) for m in (d.morning, d.video2))
+
+
+def test_hidden_lines_not_repeated():
+    """심사 2026-11-03: 가림식 한 영상 안에서 같은 한 줄('내 편이 생겨요')이 두 번 나오면 성의 없어 보인다."""
+    for mon in ((2026, 11), (2026, 12), (2027, 1), (2027, 2), (2027, 6)):
+        for m in T.morning_candidates("hidden", dt.date(*mon, 10)):
+            ph = list(m.data["phrase"].values())
+            assert len(ph) == len(set(ph)), (m.key, ph)
