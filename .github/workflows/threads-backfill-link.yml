@@ -1,0 +1,23 @@
+name: 스레드 지난 글에 링크 달기
+# 사이트 링크가 붙기 전에 올라간 스레드 글에 링크 줄을 내 댓글로 단다 (사장님 2026-11-02). go=false 면 목록만 본다.
+on:
+  workflow_dispatch:
+    inputs:
+      go:
+        description: "true 면 실제로 단다"
+        default: "false"
+jobs:
+  link:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
+      WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+      THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -e .
+      - run: |
+          if [ "${{ inputs.go }}" = "true" ]; then python -m saju.marketing.backfill_link --go; else python -m saju.marketing.backfill_link; fi

@@ -1,0 +1,16 @@
+name: tmp-backfill
+on: push
+jobs:
+  link:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
+      WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+      THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -e .
+      - run: python -m saju.marketing.backfill_link
