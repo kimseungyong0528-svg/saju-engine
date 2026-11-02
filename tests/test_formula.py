@@ -544,7 +544,7 @@ def test_threads_only_without_video(tmp_path):
 def test_claude_approves_videos_only_when_asked(monkeypatch):
     """사장님 2026-11-01: 릴스·유튜브도 1주치씩. --approve-videos 를 준 주만 영상에 클로드 승인 표시가 붙는다."""
     from saju.marketing.formula import __main__ as fm
-    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel", "facebook-reel", "youtube"}
+    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel"}   # 사장님 2026-11-03 인스타만
     src = Path(fm.__file__).read_text(encoding="utf-8")
     assert "if approve_videos:" in src and "--approve-videos" in src
     wf = (Path(__file__).parent.parent / ".github/workflows/marketing.yml").read_text(encoding="utf-8")
@@ -634,6 +634,8 @@ def test_video_scripts_follow_engine(plan90):
     """영상 (사장님 2026-11-01 "레퍼런스 그대로"): 7초, 대사는 화면 위 제목 한 줄 + '~ 알아보세요!/확인하세요!',
     밑에 글은 유튜브 구독 · 인스타 댓글 · 페북 팔로우로 곳마다 다르고 '나의 ○○' 로 내 이야기가 된다."""
     from saju.marketing.formula import script as S
+    from saju.marketing.formula import __main__ as fm
+    assert fm.VIDEO_CHANNELS == ("instagram-reel",)   # 사장님 2026-11-03 "페북은 운영하지 말자 인스타만 해"
     assert S.SECONDS == 7
     for d in plan90[:14]:
         for m in (d.morning, d.video2):
@@ -644,7 +646,9 @@ def test_video_scripts_follow_engine(plan90):
             c = S.cta(m)
             assert c["youtube"].startswith("나의 ") and c["youtube"].endswith("더 자세히 알고 싶다면 구독!")
             assert c["facebook-reel"] == c["youtube"].replace("구독!", "팔로우!")
-            assert c["instagram-reel"] == c["facebook-reel"]   # 인스타도 팔로우 (사장님 2026-11-01)
+            # 인스타는 무조건 댓글 (사장님 2026-11-03), 올리는 곳은 인스타 릴스만
+            assert c["instagram-reel"].startswith("더 자세한 나의 ") and c["instagram-reel"].endswith("댓글을 달아 주세요!")
+            assert "팔로우" not in c["instagram-reel"]
             assert not any("미리 알고" in x for x in c.values())
     keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
     assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다

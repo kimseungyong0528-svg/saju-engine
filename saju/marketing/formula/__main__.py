@@ -114,9 +114,6 @@ def move_items(manifest: dict, moves: str) -> int:
     return n
 
 
-VIDEO_CHANNELS = ("instagram-reel", "facebook-reel", "youtube")
-
-
 SFX = {"instagram-reel": "reel", "facebook-reel": "fbreel", "youtube": "youtube"}
 
 
@@ -137,6 +134,10 @@ def _with_cta(texts: dict, line: str) -> dict:
     return out
 
 
+# 영상 올리는 곳: 인스타 릴스만 (사장님 2026-11-03 "페북은 운영하지 말자 인스타만 해", 유튜브는 계정 없음)
+VIDEO_CHANNELS = ("instagram-reel",)
+
+
 def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: int, src: Path | None = None) -> list[dict]:
     """영상 7초 하나를 세 곳에 (사장님 2026-11-01). 가림식은 레퍼런스처럼 화면 밑 글이 곳마다 달라서 영상도 세 개.
     src: 이미 만들어 사장님께 보여 드린 영상 폴더 (video-samples). 주면 다시 만들지 않고 그 파일을 그대로 쓴다."""
@@ -146,7 +147,7 @@ def _videos(R, week: Path, m, tag: str, part: str, slot: str, time: str, seed: i
     title = " ".join(m.title).replace("“", "").replace("”", "") if m.title else mt["youtube"]["제목"]
     made: dict[str, tuple[str, str]] = {}
     items = []
-    for ch in ("instagram-reel", "facebook-reel", "youtube"):
+    for ch in VIDEO_CHANNELS:
         own = m.fmt in S.ON_SCREEN_CTA
         key = ch if own else "all"
         if key not in made:

@@ -284,7 +284,7 @@ def morning(day: dt.date, used: set[str], fmt: str = "", avoid: set[str] | froze
     seen = {_topic(k) for k in used}
     # 영상은 그 달 순위만 쓰므로 달 끝에는 순위 주제가 떨어진다. 그때는 오행 이야기·띠별 운세 표로 채운다
     # (2026-11-02 결정 카드 추천안: 같은 순위를 형식만 바꿔 다시 내지 않는다). avoid: 같은 날·전날 형식은 피한다.
-    order = [fmt] + [f for f in ("forceteller", "sinbi") if f != fmt and f not in avoid]
+    order = ([fmt] if fmt not in hard else []) + [f for f in ("forceteller", "sinbi") if f != fmt and f not in avoid | hard]
     # 저녁 7시에 그날 띠 운세는 늦다 → 저녁에 채우는 띠별 운세 표는 다음 날 것 (영상 심사 2026-11-01)
     def cands(f: str):
         return morning_candidates(f, day + dt.timedelta(days=1) if evening and f == "sinbi" and fmt != "sinbi" else day)
@@ -298,11 +298,12 @@ def morning(day: dt.date, used: set[str], fmt: str = "", avoid: set[str] | froze
         fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen), None)
         if fresh:
             return fresh
+    order += [f for f in ("forceteller", "sinbi", "tier", "solo", "hidden") if f not in order and f not in hard]
     for f in order:
         fresh = next((c for c in cands(f) if c.key not in used), None)
         if fresh:
             return fresh
-    return next(cands(fmt))
+    return next(cands(order[0] if order else fmt))
 
 
 def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
