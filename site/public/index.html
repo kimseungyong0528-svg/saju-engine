@@ -6004,7 +6004,8 @@ function startStory(stage,{product,scene,advance,preload=[],resume}={}){
  async function update(p,s,{advance:nextAdvance,preload:nextPreload=[]}={}){
   const token=++revision,m=STORY_MEDIA[p.id+'.'+s.id];if(!m||disposed)return;
   cancelUI();leaving=false;activeAdvance=nextAdvance;currentScene=s;
-  button.disabled=true;back.setAttribute('aria-disabled','true');shell.classList.remove('story-is-leaving');
+  // 장면이 바뀌는 동안에도 버튼은 늘 눌린다(사장님 2026-11-02 '터치해도 잘 안 넘어감'). 누르면 바로 다음 장면으로 간다.
+  button.disabled=false;back.removeAttribute('aria-disabled');shell.classList.remove('story-is-leaving');
   stage.classList.remove('story-dialogue-visible');copy.setAttribute('aria-hidden','true');stage.setAttribute('aria-busy','true');phase('transition');stage.dataset.artKey=p.id+'.'+s.id;
   const current=background.lastElementChild,changed=current?.dataset.background!==m.background;
   const loaded=changed?await loadImage(m.background):true;
@@ -6018,15 +6019,15 @@ function startStory(stage,{product,scene,advance,preload=[],resume}={}){
   }else if(background.children.length>1){later(()=>{if(token===revision){for(const layer of [...background.children])if(layer!==current)layer.remove()}},reduced()?0:900,true)}
   // A failed replacement keeps the previous loaded backdrop, so navigation stays usable.
   later(()=>{if(token!==revision)return;copy.querySelector('h1').innerHTML=s.title.replaceAll('\n','<br>');copy.querySelector('.scene-dialog').innerHTML=s.text;},reduced()?0:170,true);
-  later(()=>{if(token===revision)reveal()},duration,true);preloadScenes(nextPreload);
+  later(()=>{if(token===revision)reveal()},Math.min(duration,260),true);preloadScenes(nextPreload);
  }
  const leave=(callback=activeAdvance)=>{
-  if(disposed||leaving||button.disabled)return;leaving=true;button.disabled=true;back.setAttribute('aria-disabled','true');phase('leaving');
+  if(disposed||leaving)return;leaving=true;button.disabled=true;back.setAttribute('aria-disabled','true');phase('leaving');
   stage.classList.remove('story-dialogue-visible');copy.setAttribute('aria-hidden','true');shell.classList.add('story-is-leaving');
   // The portrait and its ongoing blink clock deliberately remain untouched.
   if(reduced())callback?.();else later(()=>callback?.(),170,true);
  };
- button.disabled=true;button.onclick=()=>leave();listen(back,'click',e=>{e.preventDefault();leave(()=>{location.hash=back.getAttribute('href')})});
+ button.disabled=false;button.onclick=()=>leave();listen(back,'click',e=>{e.preventDefault();leave(()=>{location.hash=back.getAttribute('href')})});
  listen(motionButton,'click',()=>{storyStopped=!reduced();synchronizeMotion()});listen(document,'visibilitychange',synchronizeMotion);
  if(query?.addEventListener){query.addEventListener('change',synchronizeMotion);cleanups.push(()=>query.removeEventListener('change',synchronizeMotion))}
  let showFace=()=>{};const initial=STORY_MEDIA[stage.dataset.artKey],face=STORY_FACES[stage.dataset.product];
