@@ -185,13 +185,13 @@ def test_late_schedule_keeps_order():
 
 
 def test_threads_not_two_at_once():
-    """사장님 2026-11-02 "스레드 두개 한번에올리지마": 90분 안에 올라간 스레드 글이 있으면 다음 스레드 글은 올리지 않는다."""
+    """사장님 2026-11-02 "스레드 두개 한번에올리지마": 60분 안에 올라간 스레드 글이 있으면 다음 스레드 글은 올리지 않는다."""
     import datetime as dt
     from saju.marketing import meta
     plan = {"items": [{"id": "a", "channel": "threads"}, {"id": "v", "channel": "instagram-reel"}]}
     now = dt.datetime(2026, 11, 2, 3, 30, tzinfo=dt.timezone.utc)
-    assert meta.THREAD_GAP_MIN >= 90
+    assert meta.THREAD_GAP_MIN >= 60
     assert meta._thread_gap(plan, {"a": {"ok": True, "at": "2026-11-02T03:07:44.000Z"}}, now) == 22
-    assert meta._thread_gap(plan, {"a": {"ok": True, "at": "2026-11-02T01:00:00.000Z"}}, now) is None
+    assert meta._thread_gap(plan, {"a": {"ok": True, "at": "2026-11-02T02:00:00.000Z"}}, now) is None
     assert meta._thread_gap(plan, {"v": {"ok": True, "at": "2026-11-02T03:20:00.000Z"}}, now) is None
     assert meta._thread_gap(plan, {"a": {"ok": False, "at": "2026-11-02T03:20:00.000Z"}}, now) is None
