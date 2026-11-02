@@ -52,7 +52,7 @@ jobs:
           import datetime as dt, json, pathlib
           from saju.marketing.formula import text as T, script as S
           out = {}
-          for d in T.plan(dt.date.fromisoformat("${{ inputs.start }}"), int("${{ inputs.days }}"), set(filter(None, "${{ inputs.used }}".split(","))))):
+          for d in T.plan(dt.date.fromisoformat("${{ inputs.start }}"), int("${{ inputs.days }}"), set(filter(None, "${{ inputs.used }}".split(",")))):
               for m in (d.morning, d.video2):
                   out[m.key] = S.script(m)
           pathlib.Path("video-samples/대본.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
