@@ -71,8 +71,11 @@ def pick_items(C, week: Path, date: dt.date, posts: list[dict]) -> list[dict]:
     return out
 
 
-def build(date: dt.date, src: Path, out: Path, today: dict, posts: list[dict] | None = None) -> dict:
-    d = T.plan(date, 1, set())[0]      # 영상 견본과 같은 계산 (video-samples.yml: plan(start, days, set()))
+def build(date: dt.date, src: Path, out: Path, today: dict, posts: list[dict] | None = None,
+          start: dt.date | None = None, used: set[str] | None = None) -> dict:
+    # 영상 견본과 같은 계산: video-samples.yml 의 plan(start, days, used) 에서 그날 것을 꺼낸다
+    start = start or date
+    d = T.plan(start, (date - start).days + 1, set(used or ()))[-1]
     tag = f"{date:%m-%d}"
     week = out / date.isoformat()
     shutil.rmtree(week, ignore_errors=True)
@@ -80,8 +83,8 @@ def build(date: dt.date, src: Path, out: Path, today: dict, posts: list[dict] | 
     vids = _videos(None, week, d.morning, tag, "오전", "아침영상", VIDEO_AM, 1, src=src)
     if d.video2:
         vids += _videos(None, week, d.video2, tag, "저녁", "저녁영상", VIDEO_PM, 2, src=src)
-    # 유튜브는 아직 계정이 없어서 넣지 않는다 (사장님 2026-11-01 "유튜브는 아직 계정 안만들었으니까 올리지말고 인스타 페북만")
-    vids = [it for it in vids if it["channel"] != "youtube"]
+    # 영상은 인스타 릴스만 (사장님 2026-11-03 "페북은 운영하지 말자 인스타만 해", 유튜브는 계정 없음)
+    vids = [it for it in vids if it["channel"] == "instagram-reel"]
     for it in vids:
         it["approved_by"] = "claude"
     keep = [it for it in today.get("items", []) if it["channel"] == "threads"]
@@ -105,16 +108,26 @@ def main(argv=None) -> int:
     ap.add_argument("--src", required=True)
     ap.add_argument("--out", default="오늘영상")
     ap.add_argument("--picks", default="", help="인스타 캡처·페북 글로 올릴 스레드 글 표시 (예 '1탄,2탄': 12:30, 21:00 순서)")
+    ap.add_argument("--days", type=int, default=1, help="--date 부터 며칠치 (하루 묶음을 날마다 하나씩 올린다)")
+    ap.add_argument("--start", default="", help="영상 견본을 만든 시작 날짜 (video-samples.yml start)")
+    ap.add_argument("--used", default="", help="영상 견본을 만들 때 준 used (쉼표로)")
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args(argv)
-    date = dt.date.fromisoformat(a.date)
+    first = dt.date.fromisoformat(a.date)
+    for k in range(a.days):
+        one(a, first + dt.timedelta(days=k))
+    return 0
+
+
+def one(a, date: dt.date) -> None:
     get = lambda d: publish._call("GET", f"/api/internal/studio/today?date={d.isoformat()}")
     today = {"items": []} if a.dry else get(date)
     posts = []
     if a.picks and not a.dry:
         plans = [get(date - dt.timedelta(days=1)), today]
         posts = [find_post(plans, x.strip()) for x in a.picks.split(",")]
-    man = build(date, Path(a.src), Path(a.out), today, posts)
+    man = build(date, Path(a.src), Path(a.out), today, posts,
+                start=dt.date.fromisoformat(a.start) if a.start else None, used=set(filter(None, a.used.split(","))))
     folder = Path(a.out) / man["week"]
     (folder / "manifest.json").write_text(json.dumps(man, ensure_ascii=False, indent=1), encoding="utf-8")
     its = man["days"][0]["items"]
@@ -126,7 +139,6 @@ def main(argv=None) -> int:
         if th == 0:
             raise SystemExit("그날 스레드 글을 못 찾았어요. 스레드가 빠지면 안 되므로 올리지 않아요.")
         publish.upload_week(folder)
-    return 0
 
 
 if __name__ == "__main__":

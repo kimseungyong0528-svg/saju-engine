@@ -11,6 +11,10 @@ on:
         description: 며칠치
         required: false
         default: "1"
+      used:
+        description: 이미 올린 영상 재료 (쉼표로, 예 sinbi-2026-11-02,solo-money-2026-11)
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
@@ -40,7 +44,7 @@ jobs:
           sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils ffmpeg fonts-noto-color-emoji > /dev/null
           pip install -q -e ".[report,video]"
           python -m playwright install --with-deps chromium
-      - run: python -m saju.marketing.formula --start "${{ inputs.start }}" --days "${{ inputs.days }}" --out 견본 --no-cards
+      - run: python -m saju.marketing.formula --start "${{ inputs.start }}" --days "${{ inputs.days }}" --out 견본 --no-cards --used "${{ inputs.used }}"
       - name: 견본 올리기
         run: |
           mkdir -p video-samples && cp 견본/*/유튜브/*.mp4 video-samples/
@@ -48,7 +52,7 @@ jobs:
           import datetime as dt, json, pathlib
           from saju.marketing.formula import text as T, script as S
           out = {}
-          for d in T.plan(dt.date.fromisoformat("${{ inputs.start }}"), int("${{ inputs.days }}"), set()):
+          for d in T.plan(dt.date.fromisoformat("${{ inputs.start }}"), int("${{ inputs.days }}"), set(filter(None, "${{ inputs.used }}".split(",")))):
               for m in (d.morning, d.video2):
                   out[m.key] = S.script(m)
           pathlib.Path("video-samples/대본.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")

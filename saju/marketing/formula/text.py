@@ -165,7 +165,7 @@ class Morning:
 def _forceteller_variants() -> list[tuple[str, str, str]]:
     out = []
     for e in ELEMENTS:
-        out += [("lack", e, ""), ("much", e, ""), ("pair", e, ELEMENTS[(ELEMENTS.index(e) + 1) % 5])]
+        out += [("much", e, ""), ("pair", e, ELEMENTS[(ELEMENTS.index(e) + 1) % 5])]   # 'lack'(없는 사주)은 영상에서 뺌 (사장님 2026-11-03)
     out += [("stem", STEMS[i], "") for i in range(10)]
     return out
 
@@ -237,30 +237,39 @@ def sinbi_data(day: dt.date) -> dict:
     return {"date": day.isoformat(), "ganzhi": f"{STEMS[p.stem]}{BRANCHES[p.branch]}", "text": txt}
 
 
+def video_periods(day: dt.date) -> list[Period]:
+    """영상은 그 달 이야기만 한다 (사장님 2026-11-01 "12월껀 12월에 해"). 스레드 글은 periods() 그대로."""
+    return [month_period(day.year, day.month)]
+
+
 def morning_candidates(fmt: str, day: dt.date):
     n = day.toordinal()
     if fmt == "sinbi":
         yield Morning(f"sinbi-{day.isoformat()}", fmt, data=sinbi_data(day))
         return
     if fmt == "forceteller":
-        p = periods(day)[0]
-        for tpl in ("mlack", "mmuch"):
+        p = video_periods(day)[0]
+        for tpl in ("mmuch",):   # '○ 없는 사주' 영상은 버린다 (사장님 2026-11-03 "수없는 사주 형식은 버리고")
             yield Morning(f"forceteller-{tpl}-{p.key}", fmt, period=p, data=forceteller_month(tpl, p))
         for tpl, e, c in _rot(_forceteller_variants(), n // 5):
             data = forceteller_stem(e) if tpl == "stem" else forceteller_data(tpl, e, c, p)
             yield Morning(f"forceteller-{tpl}-{e}", fmt, period=p, data=data)
         return
     for kind in dict.fromkeys(_rot(KIND_ROT, n // 5)):
-        for p in periods(day):
+        for p in video_periods(day):
             rows = rank(kind, p)
             ts = titles(kind, p)
             m = Morning(f"{fmt}-{kind}-{p.key}", fmt, kind, p, ts[n % len(ts)], rows)
             if fmt == "hidden":
                 used: set[str] = set()
+                # 한 영상 안에서 같은 줄이 두 번 나오지 않게, 이유별 말을 다 쓰면 점수 방향에 맞는 말로 채운다 (심사 2026-11-03)
+                ex = B["hidden_extra"][kind]
                 m.data["phrase"] = {r.ddi: pick_unique(
-                    [s for _, t in (main_whys(r) if r.score > 0 else sorted(r.why)) for s in why_bank(kind, t)["short"]] or ["평소처럼 흘러가요"], used) for r in rows}
+                    [s for _, t in (main_whys(r) if r.score > 0 else sorted(r.why)) for s in why_bank(kind, t)["short"]]
+                    + ex["up" if r.score > 0 else "down"] + ["평소처럼 흘러가요"], used) for r in rows}
             if fmt == "solo":
-                bgs = B["backgrounds"]
+                # 계절에 안 맞는 풍경은 빼고 고른다 (11월에 벚꽃이 나오면 안 됨, 심사 2026-11-03)
+                bgs = [b for b in B["backgrounds"] if day.month in b.get("months", range(1, 13))]
                 m.data["bg"] = bgs[(n // 5) % len(bgs)]
                 m.data["lines"] = [fill(x, p=p.label) for x in B["kinds"][kind]["solo"]]
             yield m
@@ -271,14 +280,34 @@ def _topic(key: str) -> str:
     return key.split("-", 1)[1] if "-" in key else key
 
 
-def morning(day: dt.date, used: set[str], fmt: str = "") -> Morning:
+def morning(day: dt.date, used: set[str], fmt: str = "", avoid: set[str] | frozenset = frozenset(),
+            hard: set[str] | frozenset = frozenset(), evening: bool = False) -> Morning:
     """영상 심사(2026-11-01): 형식만 바꿔 같은 순위를 한 주에 세 번 내면 보는 사람이 '또 이거네' 한다.
     형식이 달라도 이미 쓴 순위(주제+기간)는 다시 고르지 않는다."""
     fmt = fmt or rules.morning_format(day)
-    cands = list(morning_candidates(fmt, day))
     seen = {_topic(k) for k in used}
-    return next((c for c in cands if c.key not in used and _topic(c.key) not in seen),
-                next((c for c in cands if c.key not in used), cands[0]))
+    # 영상은 그 달 순위만 쓰므로 달 끝에는 순위 주제가 떨어진다. 그때는 오행 이야기·띠별 운세 표로 채운다
+    # (2026-11-02 결정 카드 추천안: 같은 순위를 형식만 바꿔 다시 내지 않는다). avoid: 같은 날·전날 형식은 피한다.
+    order = ([fmt] if fmt not in hard else []) + [f for f in ("forceteller", "sinbi") if f != fmt and f not in avoid | hard]
+    # 저녁 7시에 그날 띠 운세는 늦다 → 저녁에 채우는 띠별 운세 표는 다음 날 것 (영상 심사 2026-11-01)
+    def cands(f: str):
+        return morning_candidates(f, day + dt.timedelta(days=1) if evening and f == "sinbi" and fmt != "sinbi" else day)
+    for f in order:
+        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen), None)
+        if fresh:
+            return fresh
+    # 그래도 없으면 전날 형식이라도 쓴다 (같은 날 형식만은 피한다). 같은 영상을 다시 내는 것보다 낫다.
+    order += [f for f in ("forceteller", "sinbi") if f not in order and f not in hard]
+    for f in order:
+        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen), None)
+        if fresh:
+            return fresh
+    order += [f for f in ("forceteller", "sinbi", "tier", "solo", "hidden") if f not in order and f not in hard]
+    for f in order:
+        fresh = next((c for c in cands(f) if c.key not in used), None)
+        if fresh:
+            return fresh
+    return next(cands(order[0] if order else fmt))
 
 
 def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
@@ -1269,6 +1298,9 @@ def _negative(e: Evening) -> bool:
     return e.kind == "care" or any(sign == "-" for _, _, _, sign in e.facts[:1]) and e.key.startswith(("jone-", "jstem-"))
 
 
+EVENING_FORMATS = ("tier", "solo", "forceteller", "hidden")   # 저녁 영상 형식 (사장님 2026-11-03)
+
+
 def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     """며칠치를 한 번에 고른다. 앞에서 고른 재료는 뒤에서 다시 쓰지 않는다.
     한 주 안에 같은 대상을 좋다·조심 양쪽으로 쓰지 않고, 같은 날 같은 띠·일간을 두 번 쓰지 않고,
@@ -1305,15 +1337,16 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
             return True
         return f
 
+    prev: tuple = ()
     for i in range(days):
         d = start + dt.timedelta(days=i)
-        m = morning(d, used)
+        # 사장님 2026-11-03: 아침 8시는 무조건 그날 띠별 운세. 저녁은 띠 순위(천복식·가림식)·분야별 띠 3개(풍경식)·'○ 많은 사주'(오행 그림)를 돌린다.
+        m = Morning(f"sinbi-{d.isoformat()}", "sinbi", data=sinbi_data(d))
         used.add(m.key)
-        # 저녁 영상은 아침과 다른 형식. 두 칸 뒤 형식을 쓰면 아침·저녁·다음 날 아침이 서로 겹치지 않는다.
-        f2 = rules.morning_format(d + dt.timedelta(days=2))
-        # 저녁 7시에 그날 띠 운세는 늦다 (영상 심사 신뢰 항목 2026-11-01) → 저녁 띠별 운세 표는 다음 날 것
-        m2 = morning(d + dt.timedelta(days=1) if f2 == "sinbi" else d, used, fmt=f2)
+        f2 = EVENING_FORMATS[d.toordinal() % len(EVENING_FORMATS)]
+        m2 = morning(d, used, fmt=f2, avoid={x.fmt for x in prev[1:]}, hard={"sinbi", *(x.fmt for x in prev[1:])}, evening=True)
         used.add(m2.key)
+        prev = (m, m2)
         ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다
             avoid = {frames[s]} if s in frames and _st == "jangin" else set()

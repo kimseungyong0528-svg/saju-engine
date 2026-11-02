@@ -22,17 +22,25 @@ def plan90():
 
 
 def test_formats_rotate(plan90):
-    fmts = [m.fmt for _, m, _ in plan90]
+    # 사장님 2026-11-03: 아침 8시는 무조건 그날 띠별 운세, 저녁은 띠 순위·분야별 띠 3개·많은 사주를 돌린다
+    assert all(d.morning.fmt == "sinbi" and d.morning.data["date"] == d.date.isoformat() for d in plan90)
+    fmts = [d.video2.fmt for d in plan90]
     assert all(a != b for a, b in itertools.pairwise(fmts))
-    assert set(fmts) == {f["key"] for f in rules.slot("아침")["formats"]}
+    assert set(fmts) == set(T.EVENING_FORMATS)
+    assert not any(d.video2.key.startswith(("forceteller-lack", "forceteller-mlack")) for d in plan90)   # '없는 사주' 버림
     styles = [e.style for d in plan90 for _, _, e in d.threads]
     assert {"jangin", "salgu", "dohwa"} <= set(styles)
 
 
 def test_no_repeat_for_60_days(plan90):
     """두 달 동안 같은 재료를 다시 쓰지 않는다 (스레드 하루 6개 포함). 첫 장(본글)은 석 달 동안 겹치지 않는다."""
-    keys = [m.key for _, m, _ in plan90[:60]] + [e.key for d in plan90[:60] for _, _, e in d.threads]
+    keys = [e.key for d in plan90[:60] for _, _, e in d.threads]
     assert len(keys) == len(set(keys))
+    # 영상은 그 달 순위만 쓰므로(사장님 "12월껀 12월에 해") 두 달이 아니라 한 주 안에서 겹치지 않는다
+    # 12월 재료는 아직 모자라서(사장님께 알림, 2026-11-03) 지금은 11월 네 주만 본다. 12월 재료를 늘리면 56으로 되돌린다.
+    for i in range(0, 28, 7):
+        week = [m.key for d in plan90[i:i + 7] for m in (d.morning, d.video2)]
+        assert len(week) == len(set(week)), week
     firsts = [e.parts[0] for d in plan90 for _, _, e in d.threads]
     assert len(firsts) == len(set(firsts))
     firsts = [e.parts[0] for _, _, e in plan90[:60]]
@@ -41,9 +49,9 @@ def test_no_repeat_for_60_days(plan90):
 
 def test_used_keys_are_skipped():
     day = START + dt.timedelta(days=1)   # 띠별 운세 표(날짜마다 새것)가 아닌 날
-    _d, m, e = T.plan(day, 1)[0]
-    _d2, m2, e2 = T.plan(day, 1, used={m.key, e.key})[0]
-    assert m2.key != m.key and e2.key != e.key
+    d1 = T.plan(day, 1)[0]
+    d2 = T.plan(day, 1, used={d1.video2.key, d1.evening.key})[0]
+    assert d2.video2.key != d1.video2.key and d2.evening.key != d1.evening.key
 
 
 def test_rankings_come_from_engine(plan90):
@@ -539,7 +547,7 @@ def test_threads_only_without_video(tmp_path):
 def test_claude_approves_videos_only_when_asked(monkeypatch):
     """사장님 2026-11-01: 릴스·유튜브도 1주치씩. --approve-videos 를 준 주만 영상에 클로드 승인 표시가 붙는다."""
     from saju.marketing.formula import __main__ as fm
-    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel", "facebook-reel", "youtube"}
+    assert set(fm.VIDEO_CHANNELS) == {"instagram-reel"}   # 사장님 2026-11-03 인스타만
     src = Path(fm.__file__).read_text(encoding="utf-8")
     assert "if approve_videos:" in src and "--approve-videos" in src
     wf = (Path(__file__).parent.parent / ".github/workflows/marketing.yml").read_text(encoding="utf-8")
@@ -629,6 +637,8 @@ def test_video_scripts_follow_engine(plan90):
     """영상 (사장님 2026-11-01 "레퍼런스 그대로"): 7초, 대사는 화면 위 제목 한 줄 + '~ 알아보세요!/확인하세요!',
     밑에 글은 유튜브 구독 · 인스타 댓글 · 페북 팔로우로 곳마다 다르고 '나의 ○○' 로 내 이야기가 된다."""
     from saju.marketing.formula import script as S
+    from saju.marketing.formula import __main__ as fm
+    assert fm.VIDEO_CHANNELS == ("instagram-reel",)   # 사장님 2026-11-03 "페북은 운영하지 말자 인스타만 해"
     assert S.SECONDS == 7
     for d in plan90[:14]:
         for m in (d.morning, d.video2):
@@ -639,7 +649,8 @@ def test_video_scripts_follow_engine(plan90):
             c = S.cta(m)
             assert c["youtube"].startswith("나의 ") and c["youtube"].endswith("더 자세히 알고 싶다면 구독!")
             assert c["facebook-reel"] == c["youtube"].replace("구독!", "팔로우!")
-            assert c["instagram-reel"] == c["facebook-reel"]   # 인스타도 팔로우 (사장님 2026-11-01)
+            # 인스타는 무조건 댓글 (사장님 2026-11-03), 올리는 곳은 인스타 릴스만
+            assert c["instagram-reel"] == c["youtube"].replace("구독!", "팔로우!")   # 사장님 2026-11-03 "일단 팔로우로"
             assert not any("미리 알고" in x for x in c.values())
     keys = [T._topic(m.key) for d in plan90[:7] for m in (d.morning, d.video2) if m.rows]
     assert len(keys) == len(set(keys))   # 같은 순위를 형식만 바꿔 한 주에 두 번 내지 않는다
@@ -656,3 +667,30 @@ def test_video_judges_pinned():
     md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
     first = md.split("## 제2조항")[0]
     assert "영상도 스레드와 같은 심사" in first and "행동 유도 심사원 5명" in first
+
+
+def test_videos_only_this_month():
+    """사장님 2026-11-01 "12월껀 12월에 해": 영상 순위·운세는 올리는 달 것만 (스레드 글은 따로)."""
+    for d in T.plan(dt.date(2026, 11, 20), 7, set()):
+        for m in (d.morning, d.video2):
+            if m.period is not None:
+                assert m.period.key == f"{d.date:%Y-%m}", m.key
+
+
+def test_solo_background_fits_season():
+    """심사 2026-11-03: 11월 영상에 벚꽃 풍경이 나오면 안 된다. 계절 표시(months)가 있는 풍경은 그 달에만 쓴다."""
+    for start in (dt.date(2026, 11, 3), dt.date(2027, 1, 5), dt.date(2027, 7, 1)):
+        for d in T.plan(start, 14):
+            for m in (d.morning, d.video2):
+                if m.fmt == "solo":
+                    assert d.date.month in m.data["bg"].get("months", range(1, 13)), (d.date, m.data["bg"])
+    from saju.marketing.formula import script as S
+    assert "설명란" not in "".join(S.script(m)[0] for d in T.plan(dt.date(2026, 11, 3), 7) for m in (d.morning, d.video2))
+
+
+def test_hidden_lines_not_repeated():
+    """심사 2026-11-03: 가림식 한 영상 안에서 같은 한 줄('내 편이 생겨요')이 두 번 나오면 성의 없어 보인다."""
+    for mon in ((2026, 11), (2026, 12), (2027, 1), (2027, 2), (2027, 6)):
+        for m in T.morning_candidates("hidden", dt.date(*mon, 10)):
+            ph = list(m.data["phrase"].values())
+            assert len(ph) == len(set(ph)), (m.key, ph)
