@@ -5951,7 +5951,7 @@ function portraitMarkup(p,m,escape){
 
 // Quote line under the big title (Mr KIM 2026-11-02, his exact words).
 const coverCta=p=>`내 ${({intimate:'궁합'})[p.id]||p.short||p.name} 바로 확인하기`;
-const COVER_QUOTES={lifetime:'당신 인생의 모든 비밀이 이 곳에',newyear:'2027년, 내가 마주할 운명은 과연?',romance:'당신에게 찾아 올 인연은 과연?',reunion:'그리운 그 사람과의 운명은 과연?',intimate:'우리 관계의 운명적인 비밀은 과연?',wealth:'당신에게 들어올 큰 돈은 언제/얼마나?',career:'당신에게 맞는 직장/직급은 언제?',business:'당신의 사업이 마주할 성공 운명은?',health:'당신의 몸이 바뀌게 될 비밀은?'};
+const COVER_QUOTES={lifetime:'당신 인생의 모든 비밀이 이 곳에',newyear:'2027년, 내가 마주할 운명은 과연?',romance:'당신에게 찾아 올 인연은 과연?',reunion:'그리운 그 사람과의 운명은 과연?',intimate:'우리 관계의 운명적인 비밀은 과연?',wealth:'당신에게 들어올 큰 돈은 언제/얼마나?',career:'당신의 운명적인 직장/직급은 언제?',business:'당신의 사업이 마주할 운명은?',health:'당신의 몸이 맞이할 운명은?'};
 // First scene of every product: logo + menu on top, big portrait, name · big title · one quote line, one wide button.
 function coverMarkup(p,escape){
  const first=FLOWS[p.id]?.[0]||{},full=p.short||p.name,lead=(full.match(/^(\d+)\s+/)||[])[1]||'',title=lead?full.slice(full.indexOf(' ')+1):full,units=[...title].reduce((n,c)=>n+(c==='·'?.38:c===' '?.3:/\d/.test(c)?.6:.97),0),size=Math.min(96,Math.round(362/Math.max(3.6,units)));
