@@ -116,8 +116,16 @@ def _ig_wait(cid: str, tok: str, tries: int = 40) -> None:
     raise MetaError("인스타가 영상 처리를 끝내지 못했어요 (7분 넘음)")
 
 
-def _ig_publish(cid: str, tok: str) -> str:
-    mid = _http("POST", f"{G}/{IG_USER_ID}/media_publish", {"creation_id": cid, "access_token": tok})["id"]
+def _ig_publish(cid: str, tok: str, tries: int = 8) -> str:
+    # 상태가 FINISHED 여도 인스타가 잠깐 "Media ID is not available"(2207027)로 막을 때가 있다 (2026-11-02 12:30 게시글). 기다렸다 다시 한다.
+    for n in range(tries):
+        try:
+            mid = _http("POST", f"{G}/{IG_USER_ID}/media_publish", {"creation_id": cid, "access_token": tok})["id"]
+            break
+        except MetaError as e:
+            if "2207027" not in str(e) and "not available" not in str(e) or n == tries - 1:
+                raise
+            time.sleep(15)
     return _http("GET", f"{G}/{mid}?fields=permalink&access_token={tok}").get("permalink", "")
 
 

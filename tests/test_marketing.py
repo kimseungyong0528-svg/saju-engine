@@ -195,3 +195,18 @@ def test_threads_not_two_at_once():
     assert meta._thread_gap(plan, {"a": {"ok": True, "at": "2026-11-02T02:00:00.000Z"}}, now) is None
     assert meta._thread_gap(plan, {"v": {"ok": True, "at": "2026-11-02T03:20:00.000Z"}}, now) is None
     assert meta._thread_gap(plan, {"a": {"ok": False, "at": "2026-11-02T03:20:00.000Z"}}, now) is None
+
+
+def test_ig_publish_retries_when_media_not_ready(monkeypatch):
+    """2026-11-02 12:30: 인스타가 'Media ID is not available'(2207027)로 막으면 기다렸다 다시 올린다."""
+    from saju.marketing import meta
+    calls = []
+
+    def fake(method, url, data=None, headers=None, timeout=120):
+        calls.append(url)
+        if "media_publish" in url and len(calls) < 3:
+            raise meta.MetaError('400: {"error":{"message":"Media ID is not available","code":9007,"error_subcode":2207027}}')
+        return {"id": "m1", "permalink": "https://www.instagram.com/p/x/"}
+    monkeypatch.setattr(meta, "_http", fake)
+    monkeypatch.setattr(meta.time, "sleep", lambda s: None)
+    assert meta._ig_publish("c1", "t") == "https://www.instagram.com/p/x/"
