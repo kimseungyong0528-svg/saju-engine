@@ -25,7 +25,7 @@ import re
 from .text import josa
 
 SECONDS = 7
-ON_SCREEN_CTA = {"hidden"}           # 레퍼런스 화면에 밑에 글이 있는 형식
+ON_SCREEN_CTA = {"hidden", "tier", "sinbi", "forceteller", "solo"}   # 사장님 2026-11-03 "팔로우 문구 넣으랬자나": 모든 영상 화면 밑에
 CHANNELS = ("youtube", "instagram-reel", "facebook-reel")
 # '나의 ○○' 에 들어갈 말 (순위 종류마다)
 TOPIC = {"money": "재물운", "love": "연애운", "work": "승진운", "help": "귀인운", "study": "합격운",

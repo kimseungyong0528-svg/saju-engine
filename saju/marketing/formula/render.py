@@ -178,12 +178,11 @@ class Renderer:
     # ── 아침 ──
     def morning(self, m: Morning, out: Path, seed: int = 1, cta: str = "") -> Path:
         """영상은 모두 7초 (사장님 2026-11-01, 레퍼런스 5~9초). cta = 화면 밑에 넣는 글 (가림식만, formula/script.py)."""
-        if m.fmt == "hidden":
-            return self.hidden(m, out, seed, cta)
-        return {"tier": self.tier, "sinbi": self.sinbi, "forceteller": self.forceteller,
-                "solo": self.solo}[m.fmt](m, out, seed)
+        # 팔로우 말은 모든 영상 화면 밑에 (사장님 2026-11-03 "팔로우 문구 넣으랬자나")
+        return {"tier": self.tier, "sinbi": self.sinbi, "forceteller": self.forceteller, "solo": self.solo,
+                "hidden": self.hidden}[m.fmt](m, out, seed, cta)
 
-    def tier(self, m: Morning, out: Path, seed: int) -> Path:
+    def tier(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """천복식 (456만회 레퍼런스): 황금 빛 배경 + 도는 고리 + 육각 빛망울, 남색·빨강 명조 3줄 제목, 1~12위 출생연도."""
         bokeh = "".join(
             f"<b class=hex style='left:{x}px;top:{y}px;width:{w}px;height:{w * .87:.0f}px;opacity:{o};animation-delay:-{d}s'></b>"
@@ -216,11 +215,14 @@ class Renderer:
         .r{{font-weight:800;font-size:60px;line-height:1;margin:0 0 24px;white-space:nowrap}}
         .n{{display:inline-block;width:136px;color:#0a1640}} .d{{display:inline-block;width:186px;color:#d10000}} .y{{color:#0a1640}}
         .t .y,.t .n{{color:#d10000}}
-        .f{{position:absolute;bottom:70px;width:100%;text-align:center;font-family:'Noto Sans KR';font-weight:700;font-size:30px;color:#5a3a08}}
+        .f{{position:absolute;bottom:24px;width:100%;text-align:center;font-family:'Noto Sans KR';font-weight:700;font-size:26px;color:#5a3a08}}
+        .cta{{position:absolute;bottom:80px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:66px;line-height:1.18;color:#0a1640;text-shadow:0 0 12px rgba(255,250,230,.9)}}
+        .cta div:last-child{{color:#d10000}}
         </style><body>{rings}{bokeh}<div class=vig></div>
         <div class=h><div class='h1 s fit' data-w=1020>{t1}</div><div class='h2 s fit' data-w=1020>{t2}</div><div class='h3 s fit' data-w=1020>{t3}</div></div>
         <div class=list>{li}</div>
         <div class=f>운명서재 · 사주 엔진 계산 · {m.period.long} {m.period.ganzhi} 기준</div>
+        {_cta_box(cta)}
         <script>document.fonts.ready.then(()=>{{const L=document.querySelector('.list');L.style.left='0';L.style.width='max-content';
           const rs=[...document.querySelectorAll('.r')];let fs=parseFloat(getComputedStyle(rs[0]).fontSize);
           for(let k=0;k<4;k++){{const w=L.getBoundingClientRect().width;fs*=960/w;rs.forEach(r=>r.style.fontSize=fs+'px');
@@ -262,7 +264,7 @@ class Renderer:
         <div class=cta>{_cta_html(cta or "1위가 궁금하면 댓글에 내 띠 남기기♥")}</div></body>"""
         return self.animated(html, out, 7, seed)
 
-    def sinbi(self, m: Morning, out: Path, seed: int) -> Path:
+    def sinbi(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """신비사주식: 흰 표, 날짜 제목 + 계정, 12띠 그림 + 두 줄 글."""
         import datetime as dt
         d = dt.date.fromisoformat(m.data["date"])
@@ -271,17 +273,18 @@ class Renderer:
         cell = lambda a: (f"<div class=c><div class=l><b>{ddi(a)}</b><img src='{(Z / (a + '.png')).as_uri()}'></div><p>{txt[a]}</p></div>")
         rows = "".join(f"<div class=row>{cell(ORDER[i])}{cell(ORDER[i + 6])}</div>" for i in range(6))
         html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
-        .sheet{{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;background:#fff;padding:0 0 30px}}
+        .sheet{{position:absolute;top:{'44%' if cta else '50%'};transform:translateY(-50%);left:0;right:0;background:#fff;padding:0 0 30px}}
+        .cta{{position:absolute;bottom:40px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:64px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
         .hd{{display:flex;align-items:center;justify-content:center;height:150px;border-bottom:3px solid #ddd;position:relative}}
         .hd h1{{margin:0;font-weight:700;font-size:56px;color:#111}} .hd i{{position:absolute;right:22px;bottom:18px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
         .row{{display:flex;border-bottom:2px solid #e6e3ef}} .c{{background:linear-gradient(90deg,#fff 0%,#fbfaff 55%,#eeeaf8 100%)}}
         .c{{flex:1;display:flex;gap:14px;padding:16px 18px 18px;min-height:212px;align-items:center}} .c:first-child{{border-right:2px solid #e3e3e3}}
         .l{{width:168px;flex:none}} .l b{{display:block;color:#222;font-weight:500;font-size:32px;margin-bottom:6px}} .l img{{width:150px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}}
         .c p{{margin:30px 0 0;font-size:31px;line-height:1.5;color:#222;font-weight:400;word-break:keep-all}}
-        </style><body><div class=sheet><div class=hd><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div></body>"""
+        </style><body><div class=sheet><div class=hd><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div>{_cta_box(cta)}</body>"""
         return self.still(self.shot(html, out.stem), out, 7, seed)
 
-    def forceteller(self, m: Morning, out: Path, seed: int) -> Path:
+    def forceteller(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """포스텔러식: 위 검은 띠 큰 2줄 제목 + 아래 수채화 오행 그림, 아래 설명이 바뀐다."""
         D = m.data
         on = {D["el"]} | ({D["pair"]} if D["tpl"] == "pair" else set())
@@ -330,10 +333,11 @@ class Renderer:
             .o span{{font-family:'Noto Sans KR';font-size:24px;font-weight:500;margin-top:6px}}
             .o.on{{box-shadow:0 0 0 16px color-mix(in srgb,var(--c) 25%,transparent),0 0 50px var(--c)}}
             svg.ar{{position:absolute;left:0;top:0;z-index:2}}
-            .say{{position:absolute;left:70px;right:70px;bottom:110px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
+            .say{{position:absolute;left:70px;right:70px;bottom:{290 if cta else 110}px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
             </style><body><div class=t><div class=fit data-w=1020>{h1}</div><div class=fit data-w=1020>{h2}</div></div>
             <div class=art>{wc}<svg class=ar width=1080 height=1320><defs>{marks}</defs>{outer}{inner}</svg>
-            {circles}<div class=say>{t}</div></div></body>"""
+            {circles}<div class=say>{t}</div></div>
+            <style>.cta{{position:absolute;z-index:5;bottom:50px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:66px;line-height:1.18;color:#5b1d8a;text-shadow:0 0 10px #fff,0 0 4px #fff}}</style>{_cta_box(cta)}</body>"""
             pngs.append(self.shot(html, f"{out.stem}-{i}"))
         durs = [7 / len(pngs)] * len(pngs)   # 영상은 7초 (사장님 2026-11-01)
         return self.slides(pngs, durs, out, seed)
@@ -350,7 +354,7 @@ class Renderer:
             self.pg.screenshot(path=str(fr / f"{k:04d}.png"), omit_background=True)
         return fr
 
-    def solo(self, m: Morning, out: Path, seed: int) -> Path:
+    def solo(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """솔로사주식: 예쁜 풍경 영상 + 검은 상자 2줄 제목(흰 줄 + 빨간 줄).
         사장님 2026-11-01: 제목이 화면 한가운데 먼저 나오고 → 위로 올라간 뒤 → 1·2·3위가 하나씩 나온다.
         순위마다 밑에 자극적인 한 줄 두 개 (banks.json solo_hype, 엔진 순위 종류와 같은 방향)."""
@@ -374,7 +378,8 @@ class Renderer:
         .h{{color:#fff;font-weight:900;font-size:68px;line-height:1.1;white-space:nowrap;letter-spacing:-2px}}
         .h b{{color:#ffd23f}} .h i{{font-style:normal;font-size:44px;color:#eee;font-weight:700}}
         .s{{color:#ffe9a8;font-weight:800;font-size:50px;line-height:1.3;margin-top:12px;letter-spacing:-1.5px;word-break:keep-all}}
-        </style><body><div class='c a'>{title}</div><div class='c b'>{title}<div class=list>{top3}</div></div></body>"""
+        .cta{{position:absolute;bottom:90px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:70px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55,0 0 18px rgba(0,0,0,.8)}}
+        </style><body><div class='c a'>{title}</div><div class='c b'>{title}<div class=list>{top3}</div></div>{_cta_box(cta)}</body>"""
         fr = self.overlay(html, f"{out.stem}-제목", 7)
         clip = media(m.data["bg"])
         bgm = music.bgm(8, self.work / f"bgm-{out.stem}.wav", seed=seed)
@@ -442,6 +447,11 @@ def _cta_html(t: str) -> str:
         if sep:
             return f"<div class=fit data-w=1000>{a}{sep.strip()}</div><div class=fit data-w=1000>{b}</div>"
     return f"<div class=fit data-w=1000>{t}</div>"
+
+
+def _cta_box(t: str) -> str:
+    """화면 밑 팔로우 말 상자 (없으면 빈 글)."""
+    return f"<div class=cta>{_cta_html(t)}</div>" if t else ""
 
 
 def _esc(s: str) -> str:

@@ -165,7 +165,7 @@ class Morning:
 def _forceteller_variants() -> list[tuple[str, str, str]]:
     out = []
     for e in ELEMENTS:
-        out += [("lack", e, ""), ("much", e, ""), ("pair", e, ELEMENTS[(ELEMENTS.index(e) + 1) % 5])]
+        out += [("much", e, ""), ("pair", e, ELEMENTS[(ELEMENTS.index(e) + 1) % 5])]   # 'lack'(없는 사주)은 영상에서 뺌 (사장님 2026-11-03)
     out += [("stem", STEMS[i], "") for i in range(10)]
     return out
 
@@ -249,7 +249,7 @@ def morning_candidates(fmt: str, day: dt.date):
         return
     if fmt == "forceteller":
         p = video_periods(day)[0]
-        for tpl in ("mlack", "mmuch"):
+        for tpl in ("mmuch",):   # '○ 없는 사주' 영상은 버린다 (사장님 2026-11-03 "수없는 사주 형식은 버리고")
             yield Morning(f"forceteller-{tpl}-{p.key}", fmt, period=p, data=forceteller_month(tpl, p))
         for tpl, e, c in _rot(_forceteller_variants(), n // 5):
             data = forceteller_stem(e) if tpl == "stem" else forceteller_data(tpl, e, c, p)
@@ -1295,6 +1295,9 @@ def _negative(e: Evening) -> bool:
     return e.kind == "care" or any(sign == "-" for _, _, _, sign in e.facts[:1]) and e.key.startswith(("jone-", "jstem-"))
 
 
+EVENING_FORMATS = ("tier", "solo", "forceteller", "hidden")   # 저녁 영상 형식 (사장님 2026-11-03)
+
+
 def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     """며칠치를 한 번에 고른다. 앞에서 고른 재료는 뒤에서 다시 쓰지 않는다.
     한 주 안에 같은 대상을 좋다·조심 양쪽으로 쓰지 않고, 같은 날 같은 띠·일간을 두 번 쓰지 않고,
@@ -1334,12 +1337,11 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     prev: tuple = ()
     for i in range(days):
         d = start + dt.timedelta(days=i)
-        m = morning(d, used, avoid={x.fmt for x in prev}, hard={prev[0].fmt} if prev else set())
+        # 사장님 2026-11-03: 아침 8시는 무조건 그날 띠별 운세. 저녁은 띠 순위(천복식·가림식)·분야별 띠 3개(풍경식)·'○ 많은 사주'(오행 그림)를 돌린다.
+        m = Morning(f"sinbi-{d.isoformat()}", "sinbi", data=sinbi_data(d))
         used.add(m.key)
-        # 저녁 영상은 아침과 다른 형식. 두 칸 뒤 형식을 쓰면 아침·저녁·다음 날 아침이 서로 겹치지 않는다.
-        f2 = rules.morning_format(d + dt.timedelta(days=2))
-        # 저녁 7시에 그날 띠 운세는 늦다 (영상 심사 신뢰 항목 2026-11-01) → 저녁 띠별 운세 표는 다음 날 것
-        m2 = morning(d + dt.timedelta(days=1) if f2 == "sinbi" else d, used, fmt=f2, avoid={m.fmt, *(x.fmt for x in prev)}, hard={m.fmt}, evening=True)
+        f2 = EVENING_FORMATS[d.toordinal() % len(EVENING_FORMATS)]
+        m2 = morning(d, used, fmt=f2, avoid={x.fmt for x in prev[1:]}, hard={"sinbi", *(x.fmt for x in prev[1:])}, evening=True)
         used.add(m2.key)
         prev = (m, m2)
         ths, today, new_frames = [], set(), {}

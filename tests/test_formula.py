@@ -22,9 +22,12 @@ def plan90():
 
 
 def test_formats_rotate(plan90):
-    fmts = [m.fmt for _, m, _ in plan90]
+    # 사장님 2026-11-03: 아침 8시는 무조건 그날 띠별 운세, 저녁은 띠 순위·분야별 띠 3개·많은 사주를 돌린다
+    assert all(d.morning.fmt == "sinbi" and d.morning.data["date"] == d.date.isoformat() for d in plan90)
+    fmts = [d.video2.fmt for d in plan90]
     assert all(a != b for a, b in itertools.pairwise(fmts))
-    assert set(fmts) == {f["key"] for f in rules.slot("아침")["formats"]}
+    assert set(fmts) == set(T.EVENING_FORMATS)
+    assert not any(d.video2.key.startswith(("forceteller-lack", "forceteller-mlack")) for d in plan90)   # '없는 사주' 버림
     styles = [e.style for d in plan90 for _, _, e in d.threads]
     assert {"jangin", "salgu", "dohwa"} <= set(styles)
 
@@ -46,9 +49,9 @@ def test_no_repeat_for_60_days(plan90):
 
 def test_used_keys_are_skipped():
     day = START + dt.timedelta(days=1)   # 띠별 운세 표(날짜마다 새것)가 아닌 날
-    _d, m, e = T.plan(day, 1)[0]
-    _d2, m2, e2 = T.plan(day, 1, used={m.key, e.key})[0]
-    assert m2.key != m.key and e2.key != e.key
+    d1 = T.plan(day, 1)[0]
+    d2 = T.plan(day, 1, used={d1.video2.key, d1.evening.key})[0]
+    assert d2.video2.key != d1.video2.key and d2.evening.key != d1.evening.key
 
 
 def test_rankings_come_from_engine(plan90):
