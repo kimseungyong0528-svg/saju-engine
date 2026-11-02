@@ -31,8 +31,13 @@ def test_formats_rotate(plan90):
 
 def test_no_repeat_for_60_days(plan90):
     """두 달 동안 같은 재료를 다시 쓰지 않는다 (스레드 하루 6개 포함). 첫 장(본글)은 석 달 동안 겹치지 않는다."""
-    keys = [m.key for _, m, _ in plan90[:60]] + [e.key for d in plan90[:60] for _, _, e in d.threads]
+    keys = [e.key for d in plan90[:60] for _, _, e in d.threads]
     assert len(keys) == len(set(keys))
+    # 영상은 그 달 순위만 쓰므로(사장님 "12월껀 12월에 해") 두 달이 아니라 한 주 안에서 겹치지 않는다
+    # 12월 재료는 아직 모자라서(사장님께 알림, 2026-11-03) 지금은 11월 네 주만 본다. 12월 재료를 늘리면 56으로 되돌린다.
+    for i in range(0, 28, 7):
+        week = [m.key for d in plan90[i:i + 7] for m in (d.morning, d.video2)]
+        assert len(week) == len(set(week)), week
     firsts = [e.parts[0] for d in plan90 for _, _, e in d.threads]
     assert len(firsts) == len(set(firsts))
     firsts = [e.parts[0] for _, _, e in plan90[:60]]
@@ -656,3 +661,11 @@ def test_video_judges_pinned():
     md = (Path(T.__file__).parents[3] / "CLAUDE.md").read_text(encoding="utf-8")
     first = md.split("## 제2조항")[0]
     assert "영상도 스레드와 같은 심사" in first and "행동 유도 심사원 5명" in first
+
+
+def test_videos_only_this_month():
+    """사장님 2026-11-01 "12월껀 12월에 해": 영상 순위·운세는 올리는 달 것만 (스레드 글은 따로)."""
+    for d in T.plan(dt.date(2026, 11, 20), 7, set()):
+        for m in (d.morning, d.video2):
+            if m.period is not None:
+                assert m.period.key == f"{d.date:%Y-%m}", m.key
