@@ -1,0 +1,19 @@
+name: 결제 상태 확인
+# 실제 사이트가 토스 정식(live) 키로 도는지 본다. 키 값은 보여 주지 않는다(클라이언트 키 앞부분만).
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 사이트 결제 설정 읽기
+        run: |
+          curl -fsS https://unmyeong-saju.com/api/payment-config -o cfg.json
+          python3 - <<'PY'
+          import json
+          c = json.load(open("cfg.json"))
+          print("결제 열림:", c.get("customerAnalysisReady"))
+          print("모드:", c.get("paymentMode") or "(없음)")
+          print("키 문제:", c.get("keyProblem") or "없음")
+          print("클라이언트 키 앞부분:", (c.get("clientKey") or "")[:8])
+          PY

@@ -54,6 +54,17 @@ test('payment-config: 키가 다 있어야 결제가 열린다', async () => {
   assert.equal(c.customerAnalysisReady, false); assert.equal(c.clientKey, '');
 });
 
+test('payment-config: 정식 키는 live, 위젯 키·섞인 키는 결제를 열지 않는다', async () => {
+  const cfg = async env => (await (await setup({ env: { ...ENV, ...env } }).call('GET', '/api/payment-config')).json());
+  let c = await cfg({ TOSS_CLIENT_KEY: 'live_ck_abc ', TOSS_SECRET_KEY: 'live_sk_abc' });
+  assert.equal(c.customerAnalysisReady, true); assert.equal(c.paymentMode, 'live'); assert.equal(c.clientKey, 'live_ck_abc');
+  assert.ok(!JSON.stringify(c).includes('live_sk'));
+  c = await cfg({ TOSS_CLIENT_KEY: 'live_gck_abc', TOSS_SECRET_KEY: 'live_gsk_abc' });
+  assert.equal(c.customerAnalysisReady, false); assert.equal(c.keyProblem, 'TOSS_WIDGET_KEY');
+  c = await cfg({ TOSS_CLIENT_KEY: 'live_ck_abc', TOSS_SECRET_KEY: 'test_sk_abc' });
+  assert.equal(c.customerAnalysisReady, false); assert.equal(c.keyProblem, 'TOSS_KEY_MIXED');
+});
+
 test('접수 확인: 바른 입력은 결제 허용, 사이트와 같은 기준 버전', async () => {
   const t = setup();
   const d = await (await t.call('POST', '/api/intake/assess', { body: { ...draft, productId: 'lifetime' } })).json();
@@ -74,7 +85,7 @@ test('접수 확인: 두 사람 상품은 상대방 생일이 없으면 막는�
 });
 
 test('주문: 금액은 서버 가격, 없는 할인 코드·이메일 오류는 거절, 같은 키는 같은 주문', async () => {
-  const t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck' } });
+  const t = setup({ env: { ...ENV, TOSS_CLIENT_KEY: 'live_ck', TOSS_SECRET_KEY: 'live_sk' } });
   const { r, body } = await order(t);
   assert.equal(r.status, 201); assert.equal(body.amount, 49800); assert.match(body.orderId, /^[a-f0-9-]{36}$/);
   assert.equal((await order(t, { discount: 5000 })).body.amount, 49800);   // 화면이 보낸 할인값은 무시
