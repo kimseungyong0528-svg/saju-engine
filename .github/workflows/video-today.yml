@@ -7,6 +7,18 @@ on:
       date:
         description: 날짜 (예 2026-11-02)
         required: true
+      days:
+        description: 며칠치 (date 부터)
+        required: false
+        default: "1"
+      start:
+        description: 영상 견본 만든 시작 날짜 (비우면 date)
+        required: false
+        default: ""
+      used:
+        description: 영상 견본 만들 때 준 used (쉼표로)
+        required: false
+        default: ""
       picks:
         description: 인스타 캡처·페북 글로 올릴 스레드 글 표시 (12:30, 21:00 순서, 예 1탄,2탄)
         required: false
@@ -36,4 +48,4 @@ jobs:
         run: |
           git fetch -q origin video-samples
           git archive FETCH_HEAD video-samples | tar -x
-      - run: python -m saju.marketing.formula.today_videos --date "${{ inputs.date }}" --src video-samples --picks "${{ inputs.picks }}"
+      - run: python -m saju.marketing.formula.today_videos --date "${{ inputs.date }}" --src video-samples --picks "${{ inputs.picks }}" --days "${{ inputs.days }}" --start "${{ inputs.start }}" --used "${{ inputs.used }}"
