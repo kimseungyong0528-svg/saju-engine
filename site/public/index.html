@@ -887,11 +887,11 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .cover-logo i{display:grid;place-items:center;width:22px;height:22px;border-radius:3px;background:#c8282e;color:#fff;font:700 7px/1.05 'Noto Serif KR',serif;font-style:normal;text-align:center;letter-spacing:0}
 .cover-logo b{font:700 19px/1 'Song Myung','Noto Serif KR',serif;letter-spacing:.02em;color:#fff;text-shadow:0 1px 4px #0008}
 .cover-menu{color:#fff}.cover-menu .icon{width:24px;height:24px;color:#fff}
-.scene-flow.is-cover .cover-copy{display:flex;position:absolute;z-index:5;left:0;right:0;bottom:calc(98px + env(safe-area-inset-bottom));flex-direction:column;align-items:center;text-align:center;padding:0 20px;pointer-events:none;animation:modal-in .65s ease-out}
+.scene-flow.is-cover .cover-copy{display:flex;position:absolute;z-index:5;left:0;right:0;bottom:calc(150px + env(safe-area-inset-bottom));flex-direction:column;align-items:center;text-align:center;padding:0 20px;pointer-events:none;animation:modal-in .65s ease-out}
 .cover-name{font:400 30px/1 'Cover Brush','Nanum Brush Script',serif;color:#fff;letter-spacing:.04em;text-shadow:0 2px 10px #000a}
-.cover-title{margin:6px 0 10px;font-family:'Cover Brush','Nanum Brush Script',serif;font-weight:400;line-height:1.05;letter-spacing:-.03em;white-space:nowrap;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--accent) 75%,transparent),0 0 34px color-mix(in srgb,var(--accent) 45%,transparent),0 3px 8px #000c}
-.cover-title small{display:block;font-size:.46em;line-height:1;margin-bottom:2px;letter-spacing:.04em}
-.cover-quote{margin:0;font:600 17px/1.5 'Gowun Batang',serif;color:#f1f1f4;letter-spacing:-.01em;text-shadow:0 1px 6px #000c;word-break:keep-all}
+.cover-title{margin:14px 0 20px;font-family:'Cover Brush','Nanum Brush Script',serif;font-weight:400;line-height:1.12;letter-spacing:-.03em;white-space:nowrap;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--accent) 75%,transparent),0 0 34px color-mix(in srgb,var(--accent) 45%,transparent),0 3px 8px #000c}
+.cover-title small{display:block;font-size:.46em;line-height:1;margin-bottom:8px;letter-spacing:.04em}
+.cover-quote{margin:0;font:600 17px/1.6 'Gowun Batang',serif;color:#f1f1f4;letter-spacing:-.01em;text-shadow:0 1px 6px #000c;word-break:keep-all}
 .scene-flow.is-cover .flow-bottom{padding-left:20px;padding-right:20px}
 .scene-flow.is-cover .next-btn{flex:1;width:100%;height:52px;min-height:52px;border-radius:9px;background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--accent) 22%,#fff) 100%);color:#1b2240;font-size:17px;font-weight:700;border:1px solid #ffffffcc;box-shadow:0 4px 18px #0006}
 </style>
@@ -5949,11 +5949,14 @@ function portraitMarkup(p,m,escape){
  </svg>`;
 }
 
+// Quote line under the big title (Mr KIM 2026-11-02, his exact words).
+const coverCta=p=>`내 ${({intimate:'궁합'})[p.id]||p.short||p.name} 바로 확인하기`;
+const COVER_QUOTES={lifetime:'당신 인생의 모든 비밀이 이 곳에',newyear:'2027년, 내가 마주할 운명은 과연?',romance:'당신에게 찾아 올 인연은 과연?',reunion:'그리운 그 사람과의 운명은 과연?',intimate:'우리 관계의 운명적인 비밀은 과연?',wealth:'당신에게 들어올 큰 돈은 언제/얼마나?',career:'당신에게 맞는 직장/직급은 언제?',business:'당신의 사업이 마주할 성공 운명은?',health:'당신의 몸이 바뀌게 될 비밀은?'};
 // First scene of every product: logo + menu on top, big portrait, name · big title · one quote line, one wide button.
 function coverMarkup(p,escape){
  const first=FLOWS[p.id]?.[0]||{},full=p.short||p.name,lead=(full.match(/^(\d+)\s+/)||[])[1]||'',title=lead?full.slice(full.indexOf(' ')+1):full,units=[...title].reduce((n,c)=>n+(c==='·'?.38:c===' '?.3:/\d/.test(c)?.6:.97),0),size=Math.min(96,Math.round(362/Math.max(3.6,units)));
  return `<div class="cover-top"><a class="cover-logo" href="#/" aria-label="${escape(BRAND.name)} 홈으로"><i aria-hidden="true">運命<br>書齋</i><b>${escape(BRAND.name)}</b></a><button class="icon-btn cover-menu" data-action="menu" aria-label="메뉴 열기">${icon('menu')}</button></div>
- <div class="cover-copy"><span class="cover-name">${escape(p.guide)}</span><h1 class="cover-title" style="font-size:${size}px">${lead?`<small>${escape(lead)}</small>`:''}${escape(title)}</h1><p class="cover-quote">“ ${escape((first.title||'').replace(/\n/g,' '))} ”</p></div>`;
+ <div class="cover-copy"><span class="cover-name">${escape(p.guide)}</span><h1 class="cover-title" style="font-size:${size}px">${lead?`<small>${escape(lead)}</small>`:''}${escape(title)}</h1><p class="cover-quote">“ ${escape(COVER_QUOTES[p.id]||(first.title||'').replace(/\n/g,' '))} ”</p></div>`;
 }
 
 function storyMarkup(p,s,escape){
@@ -6113,7 +6116,7 @@ function flow(id,stepId){if(id==='compatibility'){go('/f/intimate/intro');return
 if(s.type==='sales')return salesPage(p,i);if(s.type==='reveal')return revealPage(p,i);if(s.type==='checkout')return checkoutPage(p,i);
 if(s.type==='scene'&&storyController?.isConnected&&storyController.productId===p.id){
  const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
- next.closest('.scene-flow')?.classList.toggle('is-cover',i===0);next.textContent=s.cta||'다음으로';next.dataset.next=i;back.setAttribute('href','#'+(i?pathFor(p,i-1):'/'));
+ next.closest('.scene-flow')?.classList.toggle('is-cover',i===0);next.textContent=i===0?coverCta(p):s.cta||'다음으로';next.dataset.next=i;back.setAttribute('href','#'+(i?pathFor(p,i-1):'/'));
  storyController.update(p,s,{advance:()=>advance(p,i),preload:flow.slice(i+1).filter(x=>x.type==='scene').slice(0,1).map(x=>p.id+'.'+x.id)});return;
 }
 
@@ -6121,7 +6124,7 @@ let body='';if(s.type==='scene')body=storyMarkup(p,s,esc);
 else if(s.type==='info')body=`<div class="flow-content birth-info-page" data-birth-tone="${p.id}">${guideStrip(p)}<span class="eyebrow">${s.who==='partner'?'OUR STORY':'YOUR STORY'}</span><h1>${s.who==='self'&&isGift(p.id)?'선물 받을 분의<br>이야기를 알려주세요':s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>${s.who==='self'?giftBox(p.id):''}<form id="person-form" novalidate>${s.who==='self'&&!isGift(p.id)?reuseBox(d.self,'reuse-me'):''}${personFields(s.who,d[s.who])}</form><p class="local-note">입력은 이 브라우저에 임시 저장돼요. 접수 확인 시 동의 후 서버에서 검사해요.</p></div>`;
 else if(s.type==='choice')body=`<div class="flow-content">${guideStrip(p)}<span class="eyebrow">A LITTLE MORE ABOUT YOU</span><h1>${s.title}</h1><p class="muted">${isGift(p.id)?'선물 받을 분의 입장에서 골라 주세요. ':''}${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p><div class="choices" role="radiogroup" aria-label="${s.title}">${s.options.map((o,n)=>`<label class="choice"><input type="radio" name="answer" value="${n}" ${d.answers[s.id]===o?'checked':''}><span>${o}</span><i></i></label>`).join('')}</div>${!s.required?'<button class="text-button" data-action="clear-choice">선택 지우기</button>':''}</div>`;
 else body=`<div class="flow-content">${guideStrip(p)}<span class="eyebrow">YOUR QUESTION</span><h1>${isGift(p.id)?s.title.replace(/^나의 /,'받는 분의 '):s.title}</h1><p class="muted">${s.text}</p><textarea id="question" maxlength="1000" rows="8" placeholder="지금 가장 궁금한 이야기를 남겨주세요.">${esc(d.question)}</textarea><div class="char-count"><span id="count">${d.question.length}</span> / 1,000</div><p class="local-note">작성하지 않고 다음 단계로 이동할 수 있어요.</p></div>`;
-app.innerHTML=`<div class="shell flow ${s.type==='scene'?'scene-flow':''}${s.type==='scene'&&i===0?' is-cover':''}" style="--accent:${p.color}">${progress(p,i)}<main id="main">${body}</main>${bottom(p,i,s.cta||(s.type==='question'?'이야기 이어가기':'다음으로'))}</div>`;
+app.innerHTML=`<div class="shell flow ${s.type==='scene'?'scene-flow':''}${s.type==='scene'&&i===0?' is-cover':''}" style="--accent:${p.color}">${progress(p,i)}<main id="main">${body}</main>${bottom(p,i,s.type==='scene'&&i===0?coverCta(p):s.cta||(s.type==='question'?'이야기 이어가기':'다음으로'))}</div>`;
 const next=document.querySelector('[data-next]');next.onclick=()=>{if(s.type==='info'){const form=document.querySelector('#person-form');const v=readPerson(form);if(!personValid(v)||!form.checkValidity()){form.reportValidity();return}d[s.who]=v}if(s.type==='choice'&&s.required&&!d.answers[s.id])return;if(s.type==='question')d.question=document.querySelector('#question').value;advance(p,i)};
 if(s.type==='scene')storyController=startStory(document.querySelector('.layered-story'),{product:p,scene:s,resume:storyResume?.productId===p.id?storyResume.state:undefined,advance:()=>advance(p,i),preload:flow.slice(i+1).filter(x=>x.type==='scene').slice(0,1).map(x=>p.id+'.'+x.id)});
 if(s.type==='info')bindPerson(document.querySelector('#person-form'),(v,valid)=>{d[s.who]=v;next.disabled=!valid;if(valid&&s.who==='self'&&!isGift(p.id))rememberMe(v);save()});if(s.type==='info'&&s.who==='self'){bindReuse('reuse-me',v=>{d.self=v;save()});bindGift(p.id,d,save)}
