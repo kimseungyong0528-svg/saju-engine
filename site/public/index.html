@@ -6356,6 +6356,7 @@ function entryPopup(){
  // 재구매 링크로 온 손님에게는 이벤트 팝업 대신 '재구매 할인 적용' 안내를 먼저 보여 준다.
  if(savedCoupon()){try{if(sessionStorage.getItem('unmyeong.rebuyNote'))return;sessionStorage.setItem('unmyeong.rebuyNote','1')}catch{}
   setTimeout(()=>toast('재구매 할인 10%가 적용돼요. 어떤 리포트를 고르셔도 결제할 때 저절로 깎여요.'),300);return}
+ return; // 신년운세 첫 화면 팝업은 띄우지 않는다(사장님 2026-11-03 "첨 들어오면 뜨는 신년운세 팝업창 없애"). 재구매 안내는 위에서 그대로.
  const today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
  try{if(sessionStorage.getItem('unmyeong.entry')||localStorage.getItem('unmyeong.entryHide')===today)return;sessionStorage.setItem('unmyeong.entry','1')}catch{}
  const p=pById('newyear');
