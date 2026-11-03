@@ -224,3 +224,21 @@ test('결제 승인은 접근 열쇠 없이도 된다(브라우저 저장값이 
   assert.equal(v.status, 'queued'); assert.equal(v.amount, undefined); assert.equal(t.calls.dispatch.length, 1);
   assert.equal((await t.call('GET', `/api/orders/${o.orderId}`)).status, 403);
 });
+
+test('들어온 곳(from): 주문에 저장하고, 결제되면 달마다 들어온 곳별로 센다', async () => {
+  const t = setup();
+  const pay = async extra => {
+    const { body } = await order(t, extra);
+    await t.call('POST', `/api/orders/${body.orderId}/confirm`, { body: { paymentKey: 'pk', amount: body.amount }, headers: { Authorization: 'Bearer ' + body.accessToken } });
+    return t.store.get(`orders/${body.orderId}`);
+  };
+  const a = await pay({ from: 'dn' });
+  assert.equal(a.source, 'dn');
+  const b = await pay({ from: 'BAD value!<script>' });
+  assert.equal(b.source, undefined);
+  await pay({ from: 'dn' });
+  const month = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 7);
+  const stats = await t.store.get(`stats/sources/${month}`);
+  assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount * 2);
+  assert.equal(stats.direct.orders, 1);
+});

@@ -71,6 +71,12 @@ export function assess(body) {
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 
+// 손님이 들어온 곳(짧은 주소 /d, ?from= 꼬리표). 채널 이름만 받고 이상한 값은 버린다.
+export function sourceOf(body) {
+  const f = String(body?.from || '').toLowerCase();
+  return /^[a-z0-9-]{1,24}$/.test(f) ? f : '';
+}
+
 export async function createOrder(store, body, idempotencyKey, now = new Date(), { testOnly = false } = {}) {
   if (!idempotencyKey || !/^[\w-]{8,80}$/.test(idempotencyKey)) throw new ApiError(400, 'IDEMPOTENCY_KEY_REQUIRED');
   const seen = await store.get(`idem/${idempotencyKey}`);
@@ -100,7 +106,7 @@ export async function createOrder(store, body, idempotencyKey, now = new Date(),
     ...(price.discount ? { discount: price.discount } : {}), ...(bundle.length ? { bundle } : {}),
     tokenHash: sha256(accessToken), payload: decision.payload, disclosures: decision.disclosures || [],
     createdAt: now.toISOString(), updatedAt: now.toISOString(), history: [{ status: 'awaiting_payment', at: now.toISOString() }],
-    resends: 0, ...(testOnly ? { testOnly: true } : {}),
+    resends: 0, ...(testOnly ? { testOnly: true } : {}), ...(sourceOf(body) ? { source: sourceOf(body) } : {}),
   };
   await store.set(`orders/${id}`, order);
   await store.set(`idem/${idempotencyKey}`, { orderId: id, accessToken });

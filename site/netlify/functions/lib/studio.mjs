@@ -69,7 +69,7 @@ async function tooMany(store, now = new Date()) {
   return { blocked: n >= 20, bump: () => store.set(key, n + 1) };
 }
 
-export function makeStudio({ store, services, env }) {
+export function makeStudio({ store, services, env, orderStore = store }) {
   return async function handle(req, parts) {
     const m = req.method;
     const url = new URL(req.url);
@@ -168,6 +168,17 @@ export function makeStudio({ store, services, env }) {
 
     // ── 로그인한 사장님만 ──
     if (route === 'studio/weeks' && m === 'GET') return json({ weeks: await index(store) });
+    // 손님이 온 곳별 결제 수(사장님 2026-11-03). 최근 3달.
+    if (route === 'studio/sources' && m === 'GET') {
+      const months = [];
+      const kst = new Date(Date.now() + 9 * 3600_000);
+      for (let i = 0; i < 3; i++) {
+        const d = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth() - i, 1));
+        const month = d.toISOString().slice(0, 7);
+        months.push({ month, sources: (await orderStore.get(`stats/sources/${month}`)) || {} });
+      }
+      return json({ months });
+    }
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;

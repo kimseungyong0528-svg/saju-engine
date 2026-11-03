@@ -23,3 +23,38 @@
     X-Robots-Tag = "noindex, nofollow"
     Cache-Control = "no-store"
     X-Frame-Options = "DENY"
+
+# 손님이 어디서 왔는지 남기는 짧은 주소(사장님 2026-11-03 "링크 못생겨져").
+# 사이트가 ?from= 을 30일 기억했다가 주문에 같이 저장하고, 주소창에서는 바로 지운다. ?go= 는 그 상품 첫 화면.
+[[redirects]]
+  from = "/d"
+  to = "/?from=d"
+  status = 302
+[[redirects]]
+  from = "/dn"
+  to = "/?from=dn&go=newyear"
+  status = 302
+[[redirects]]
+  from = "/dr"
+  to = "/?from=dr&go=romance"
+  status = 302
+[[redirects]]
+  from = "/dw"
+  to = "/?from=dw&go=wealth"
+  status = 302
+[[redirects]]
+  from = "/t"
+  to = "/?from=t"
+  status = 302
+[[redirects]]
+  from = "/i"
+  to = "/?from=i"
+  status = 302
+[[redirects]]
+  from = "/f"
+  to = "/?from=f"
+  status = 302
+[[redirects]]
+  from = "/y"
+  to = "/?from=y"
+  status = 302
