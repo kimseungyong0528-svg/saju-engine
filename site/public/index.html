@@ -6676,7 +6676,7 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  ${toc[0]?`<div class="rv-ch open"><span class="tp-no">${esc(String(toc[0][0]))}</span><div><b>${esc(toc[0][1])}</b><p>${esc(c.items[0].text)}</p>${c.items[4]?`<p>${esc(c.items[4].text)}</p>`:''}<p>${esc(c.items[3].text.replace(/^.*?점수입니다\.\s*/,''))}</p><p class="rv-fade" aria-hidden="true">${esc(RV_FILL[0])}</p><p class="rv-more">여기까지는 1장의 첫머리예요. 리포트에서 1장은 사주 근거, 생활 장면, 실천법까지 여러 쪽에 걸쳐 이어집니다.</p></div></div>`:''}
  ${toc.slice(1).map(t=>`<div class="rv-ch"><span class="tp-no">${esc(String(t[0]))}</span><div><b>${esc(t[1])}</b><p class="rv-blur" aria-hidden="true">${esc(t[2]||`${v.name} 님 사주로 풀어 드리는 이 장의 내용`)}</p><p class="rv-blur rv-blur-more" aria-hidden="true">${esc(RV_FILL[1])}</p></div>${icon('lock')}</div>`).join('')}
  </div></div>
- <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>결제하면 PDF로 써서 이메일로 보내드려요.</p>
+ <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
  <!-- 가격 안내는 결제 화면에만 (사장님 2026-11-03) -->
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
