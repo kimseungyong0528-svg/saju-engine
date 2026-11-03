@@ -1015,6 +1015,15 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .bundle-partner{border:0!important;border-radius:16px;background:#121013!important;color:#f3efe9!important;padding:18px 14px!important;margin:2px 0 4px}
 .co2 .bundle-partner .bundle-partner-title{color:#fff!important;font-size:18px;font-weight:800;margin:0 0 4px}
 .co2 .bundle-partner .bundle-partner-sub{color:#cfc8d2!important;font-size:14px;line-height:1.6;margin:0 0 14px}
+.co2 .co-rest{margin-top:10px}
+.co2 .co-more-btn{display:block;margin:8px auto 0;border:0;background:none;font-size:15px;color:#4d4652;padding:10px 4px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;font-family:inherit}
+.co2 .co-more-btn:after{content:'\00a0⌄'}.co2 .co-more-btn[aria-expanded=true]:after{content:'\00a0⌃'}
+.co2 .bundle-partner.quick-info{position:static;min-height:0!important;overflow:visible;background:#121013!important;--qg:18px;--qp:10px}
+.co2 .co-rest[hidden]{display:none}
+.co2 .bundle-x .bundle-partner.quick-info{display:none}
+.co2 .bundle-x:has(input[value=reunion]:checked) .bundle-partner.quick-info,.co2 .bundle-x:has(input[value=intimate]:checked) .bundle-partner.quick-info{display:block}
+.co2 .bundle-partner .co-qf{display:flex;flex-direction:column;gap:var(--qg)}
+.co2 .bundle-partner .qi-sex-btns span{height:50px}
 .co2 .co-more{margin-top:10px;border:0!important;background:none!important;padding:0!important}
 .co2 .co-more>summary{display:block;list-style:none;cursor:pointer;text-align:center;font-size:15px;color:#4d4652;padding:10px 0;text-decoration:underline;text-underline-offset:4px}
 .co2 .co-more>summary::-webkit-details-marker{display:none}
@@ -1066,6 +1075,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .price-box .qb-disc{background:none!important;border:0!important;padding:0!important;margin:12px 0!important}
 .co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:#2f6fd6!important}
 .co2 .bundle-name{min-width:0}.co2 .bundle-name small{overflow-wrap:anywhere}.co2 .bundle-price{flex:0 0 auto}
+.co2 .qb-final{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.co2 .qb-was{display:flex;align-items:baseline;gap:6px}.co2 .qb-was s{font-size:14px!important;color:#a39ca6!important}
 .co2 .co-was{display:flex!important;justify-content:flex-end;align-items:baseline;gap:5px;font-size:13px!important;font-weight:400!important}
 .co2 .co-was em{font-style:normal;font-weight:800;color:#d4313b;font-size:13px}
 .co2 .bundle-x.no-first .co-was em{display:none}
@@ -6357,7 +6367,9 @@ if(s.type==='question')document.querySelector('#question').oninput=e=>{d.questio
 }
 function personSummary(v={},title){const uncertain=v.timeAccuracy?v.timeAccuracy!=='exact':v.unknown;return `<div class="person-summary"><span>${title}</span><strong>${esc(v.name||'이름을 입력해주세요')}</strong><small>${personBirthSummary(v)}</small></div>`}
 function salesPanel(p,index,title,body,extra=''){return `<section class="sales-panel art ${p.tone} has-art" data-art-key="${p.id}.sales.${index}" style="--accent:${p.color}">${MEDIA[`${p.id}.sales.${index}`]?.image?`<img class="sales-image" src="${esc(MEDIA[`${p.id}.sales.${index}`].image)}" alt="${esc(MEDIA[`${p.id}.sales.${index}`].alt)}" loading="lazy" decoding="async">`:`<span class="sales-number">${String(index).padStart(2,'0')}</span>`}<div class="sales-copy"><h2>${title.replaceAll('\n','<br>')}</h2><p>${body}</p>${extra}</div></section>`}
-function priceBox(p,discount=0){const final=Math.max(0,p.price-discount);return `<div class="price-box"><div><span>정가</span><s>${money(p.original)}</s></div><div><span>상품 할인 <em class="discount-rate" aria-label="약 ${discountPercent(p)}% 할인">${discountPercent(p)}%</em></span><strong>−${money(p.original-p.price)}</strong></div>${discount?`<div><span>쿠폰 할인</span><strong>−${money(discount)}</strong></div>`:''}<div class="price-total"><span>최종 금액</span><strong>${money(final)}</strong></div></div>`}
+function priceBox(p,discount=0){const final=Math.max(0,p.price-discount);return `<div class="price-box"><div><span>정가</span><s>${money(p.original)}</s></div><div><span>상품 할인 <em class="discount-rate" aria-label="약 ${discountPercent(p)}% 할인">${discountPercent(p)}%</em></span><strong>−${money(p.original-p.price)}</strong></div>${discount?`<div><span>쿠폰 할인</span><strong>−${money(discount)}</strong></div>`:''}<div class="price-total"><span>최종 금액</span>${finalPrice(p.original,final)}</div></div>`}
+// 최종 금액: 정가에 가운데 줄, 정가 기준 전체 할인율을 빨갛게(사장님 2026-11-03).
+const finalPrice=(orig,amount,extra='')=>`<span class="qb-final"><span class="qb-was"><s>${money(orig)}</s>${orig>amount?`<em class="qb-pct">${Math.round((orig-amount)/orig*100)}%</em>`:''}</span><strong>${money(amount)}</strong>${extra}</span>`;
 function salesPage(p,i){return checkoutPage(p,i)}
 function detailBlocks(p){return (DETAIL_BLOCKS[p.id]||[]).map(([id,title,text,type],i)=>{
 const key=p.id+'.detail.'+id,m=MEDIA[key];
@@ -6554,13 +6566,14 @@ function bundleBlock(p,d){
   return `<label class="bundle-ask"><span>${esc(st.title)}</span><select data-extra-q="${x.id}" data-step="${st.id}"><option value="">선택해주세요</option>${st.options.map(o=>`<option${o===cur?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`}).join('');
  // 재회·깊은궁합은 상대방 정보가 필요하다. 주 주문에서 상대방 정보를 받지 않았으면, 둘 중 하나를 고를 때 바로 아래에 상대방 입력칸을 펼친다(2026-10-27 사장님).
  const lastPair=[...others].reverse().find(x=>PAIR_IDS.includes(x.id))?.id;
- const partnerForm=`<form class="bundle-partner" data-bundle-partner novalidate><p class="bundle-partner-title">상대방 정보</p><p class="bundle-partner-sub">재회사주·깊은 궁합은 상대방의 출생 정보로 두 사람을 함께 봐요. 둘 다 고르면 같은 상대방으로 봐요.</p>${personFields('bundle-partner',d.partner||{}).replace('나의 이야기 준비하기','상대방 정보 준비하기')}</form>`;
+ // 상대방 칸도 첫 입력 화면과 같은 짧은 양식(이름·생년월일·태어난 시간·성별)으로 받는다(사장님 2026-11-03).
+ const partnerForm=`<form class="bundle-partner quick-info" data-bundle-partner novalidate autocomplete="off"><p class="bundle-partner-title">상대방 정보</p><p class="bundle-partner-sub">재회사주·깊은 궁합은 상대방의 출생 정보로 두 사람을 함께 봐요. 둘 다 고르면 같은 상대방으로 봐요.</p><div class="co-qf">${quickFields('bundle-partner',d.partner||{})}</div><p class="qi-err" data-qi-err hidden aria-live="polite"></p></form>`;
  // 재구매 링크로 온 손님: 재구매 할인 10%가 붙고 묶음 할인과는 겹치지 않는다(한 주문에 할인 하나). 첫 구매 상자 대신 한 줄로 알려 준다.
  if(d.coupon||savedCoupon())return `<p class="bundle-rebuy">재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.</p>`;
  // 함께 받아 보기 (사장님 2026-11-03): 손님이 직접 고르는 목록. 셋은 보이고, 나머지는 '더 보기'에 접어 둔다.
  const order=[...others].sort((x,y)=>(CO_TOP.indexOf(x.id)+1||99)-(CO_TOP.indexOf(y.id)+1||99)),top=order.slice(0,3),rest=order.slice(3);
  const row=x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><i class="co-check" aria-hidden="true"></i><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}<small>${esc(CO_SUB[x.id]||'')}</small></span><span class="bundle-price"><span class="co-was"><s>${money(x.price)}</s><em>10%</em></span><span>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`};
- return `<section class="bundle-x co-bundle"><h2 class="co-h">함께 받아 보기</h2><p class="co-bundle-sub">처음 구매하실 때 하나 이상 더 고르면<br><b>전부 10% 더 할인</b>돼요. 직접 골라 주세요.</p><div class="bundle-list">${top.map(row).join('')}</div>${rest.length?`<details class="bundle-more co-more"${rest.some(x=>on.has(x.id))?' open':''}><summary>다른 상품 ${rest.length}개 더 보기</summary><div class="bundle-list">${rest.map(row).join('')}</div></details>`:''}<p class="co-bundle-note">리포트는 한 권씩 따로 보내드려요.</p></section>`;
+ return `<section class="bundle-x co-bundle"><h2 class="co-h">함께 받아 보기</h2><p class="co-bundle-sub">처음 구매하실 때 하나 이상 더 고르면<br><b>전부 10% 더 할인</b>돼요. 직접 골라 주세요.</p><div class="bundle-list">${top.map(row).join('')}</div>${rest.length?`<div class="bundle-list co-rest"${rest.some(x=>on.has(x.id))?'':' hidden'}>${rest.map(row).join('')}</div><button type="button" class="co-more-btn" data-co-more="${rest.length}" aria-expanded="${rest.some(x=>on.has(x.id))}">${rest.some(x=>on.has(x.id))?'접기':`다른 상품 ${rest.length}개 더 보기`}</button>`:''}<p class="co-bundle-note">리포트는 한 권씩 따로 보내드려요.</p></section>`;
 }
 const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워야 결제할 수 있어요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
@@ -6576,11 +6589,14 @@ function quoteBox(p,q){
  // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
  const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
  const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워야 결제할 수 있어요.`:QUOTE_NOTES[n]}</p>`).join('');
- return `<div class="price-box">${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:wait?`<span class="qb-final"><strong>${money(q.amount)}</strong><small>첫 구매라면 <b>${money(q.base-cut)}</b></small></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
+ return `<div class="price-box">${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${finalPrice(orig,q.amount,wait?`<small>첫 구매라면 <b>${money(q.base-cut)}</b></small>`:'')}</div></div>${notes}`;
 }
 // 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
+// '더 보기' 단추는 목록 맨 아래에 둔다(사장님 2026-11-03: 펼치면 8개 밑으로).
+function coMore(open){const b=document.querySelector('[data-co-more]'),r=document.querySelector('.co-rest');if(!b||!r)return;if(open===undefined)open=r.hidden;r.hidden=!open;b.setAttribute('aria-expanded',String(open));b.textContent=open?'접기':`다른 상품 ${b.dataset.coMore}개 더 보기`}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-co-more]'))coMore()});
 function showBundleGap(){
- const det=document.querySelector('.bundle-more');if(det)det.open=true;
+ const det=document.querySelector('.bundle-more');if(det)det.open=true;coMore(true);
  const rows=[...document.querySelectorAll('.bundle-row')].filter(r=>r.querySelector('input[name=extra]:checked'));
  const el=rows.map(r=>r.querySelector('select[data-extra-q]:not([data-ok])')).find(x=>x&&!x.value)||document.querySelector('[data-bundle-partner] input:invalid, [data-bundle-partner] select:invalid')||rows[0];
  if(el){el.scrollIntoView({block:'center',behavior:'smooth'});try{el.focus({preventScroll:true})}catch{}}
@@ -6618,7 +6634,7 @@ function bindDiscounts(p,d){
  document.querySelectorAll('.bundle-x input[name=extra]').forEach(b=>b.onchange=()=>{d.extras=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].map(x=>x.value);save();placePartner();refreshQuote(p,d)});
  placePartner();
  const pf=document.querySelector('[data-bundle-partner]');
- if(pf){let pt;bindPerson(pf,(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
+ if(pf){let pt;bindQuick(pf,d.partner||{},(v,valid)=>{d.partner=v;save();clearTimeout(pt);pt=setTimeout(()=>refreshQuote(p,d),400)})}
  document.querySelectorAll('[data-extra-q]').forEach(sel=>sel.onchange=()=>{const ea=d.extraAnswers||(d.extraAnswers={});(ea[sel.dataset.extraQ]||(ea[sel.dataset.extraQ]={}))[sel.dataset.step]=sel.value;save();refreshQuote(p,d)});
  let t;form.elements.email.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>refreshQuote(p,d),600);emailHintShow(form)});
  form.elements.email.addEventListener('blur',()=>emailHintShow(form,true));
