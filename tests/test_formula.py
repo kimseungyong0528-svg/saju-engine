@@ -530,10 +530,10 @@ def test_follow_link_only_after_toss(monkeypatch):
     monkeypatch.delenv("SNS_SITE_LINK", raising=False)
     assert meta.with_link(["본글", "팔로우 해 두세요!"]) == ["본글", "팔로우 해 두세요!"]
     monkeypatch.setenv("SNS_SITE_LINK", "on")
-    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1].endswith("https://unmyeong-saju.com")
+    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1].endswith("https://unmyeong-saju.com/t")
     # 사장님 2026-11-02: 링크 문구는 '운명서재에서 정확한 내 사주 보기'
-    assert "운명서재에서 정확한 내 사주 보기 👉 https://unmyeong-saju.com" in meta.with_link(["본글", "팔로우 해 두세요!"])[-1]
-    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1] == "팔로우 해 두세요!\n\n운명서재에서 정확한 내 사주 보기 👉 https://unmyeong-saju.com"
+    assert "운명서재에서 정확한 내 사주 보기 👉 https://unmyeong-saju.com/t" in meta.with_link(["본글", "팔로우 해 두세요!"])[-1]
+    assert meta.with_link(["본글", "팔로우 해 두세요!"])[-1] == "팔로우 해 두세요!\n\n운명서재에서 정확한 내 사주 보기 👉 https://unmyeong-saju.com/t"
 
 
 def test_threads_only_without_video(tmp_path):
