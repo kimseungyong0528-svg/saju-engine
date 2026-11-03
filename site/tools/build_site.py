@@ -687,7 +687,7 @@ def extras_data() -> dict:
 
 REVEAL_CSS = (
     ".rv-score-help{margin:0 0 14px;color:#cfc6b8;font-size:14px;line-height:1.6;word-break:keep-all}"
-    ".reveal-flow .rv-body{padding-bottom:110px}.reveal-flow h1{font-size:28px;line-height:1.4;margin:8px 0 16px}"
+    ".reveal-flow .rv-body{padding-bottom:110px}.rv-portrait{position:relative;margin:0 -22px 26px;height:min(165vw,700px);overflow:hidden}.rv-sec:first-child .rv-portrait{margin-top:-10px}.rv-portrait-bg{position:absolute;inset:0}.rv-portrait-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%}.rv-portrait-bg .rv-person{top:58px;height:auto;object-fit:initial}.rv-portrait-bg i{position:absolute;inset:0;background:linear-gradient(180deg,#0000 0%,#0000 52%,#0008 66%,#000d 80%,#000 100%)}.rv-portrait-quote{position:absolute;left:0;right:0;bottom:22px;margin:0;padding:0 22px;text-align:center;font:700 min(19px,4.8vw)/1.6 'Gowun Batang','Noto Serif CJK KR',serif;color:#fff;word-break:keep-all;text-shadow:0 2px 8px #000d}.rv-portrait-quote:before{content:'“ '}.rv-portrait-quote:after{content:' ”'}.rv-sec+.rv-sec{margin-top:40px;padding-top:30px;border-top:1px solid #ffffff1f}.reveal-flow h1{font-size:28px;line-height:1.4;margin:8px 0 16px}"
     ".rv-dots{display:flex;gap:6px;justify-content:center;padding:4px 0 2px}.rv-dots i{width:26px;height:4px;border-radius:2px;background:#ffffff26}.rv-dots i.on{background:#d8bb78}"
     ".rv-guide{display:flex;gap:12px;align-items:flex-start;margin:6px 0 22px;padding:14px;border-radius:14px;border:1px solid #d8bb7859;background:#17130c}"
     ".rv-guide img{width:54px;height:54px;flex:0 0 54px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:1px solid #d8bb78}"
