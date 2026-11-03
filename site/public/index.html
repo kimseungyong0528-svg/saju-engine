@@ -6568,11 +6568,13 @@ function bundleBlock(p,d){
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
  const others=BUNDLE_IDS.filter(id=>id!==p.id).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
  const ea=d.extraAnswers||(d.extraAnswers={});
- const qs=x=>FLOWS[x.id].filter(st=>st.type==='choice').map(st=>{
+ // 질문은 객관식 한 화면(survey)의 줄을 그대로 쓴다(PR #127 뒤로 'choice' 단계가 없어져 질문 칸이 사라졌었다). 값은 예전 선택지 글자 그대로 저장한다(제1조항).
+ const asks=x=>FLOWS[x.id].flatMap(st=>st.type==='choice'?[{id:st.id,title:st.title,options:st.options,texts:st.options}]:st.type==='survey'?st.lines.map(l=>({id:l.id,title:l.ph,options:l.options,texts:l.options.map((o,n)=>{const lb=l.labels?.[n]||o,post=l.post||'';return [l.pre,lb].filter(Boolean).join(' ')+(post?(/^부터/.test(post)?'':' ')+post:'')})})):[]);
+ const qs=x=>asks(x).map(st=>{
   // 같은 질문(같은 이름)에 이미 답했으면 그 답을 미리 채운다(다시 묻지 않게)
   const mine=d.answers?.[st.id]||Object.values(ea).map(a=>a?.[st.id]).find(Boolean);if(!ea[x.id]?.[st.id]&&mine&&st.options.includes(mine))(ea[x.id]||(ea[x.id]={}))[st.id]=mine;
   const cur=ea[x.id]?.[st.id]||'';
-  return `<label class="bundle-ask"><span>${esc(st.title)}</span><select data-extra-q="${x.id}" data-step="${st.id}"><option value="">선택해주세요</option>${st.options.map(o=>`<option${o===cur?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`}).join('');
+  return `<label class="bundle-ask"><span>${esc(st.title)}</span><select data-extra-q="${x.id}" data-step="${st.id}"><option value="">선택해주세요</option>${st.options.map((o,n)=>`<option value="${esc(o)}"${o===cur?' selected':''}>${esc(st.texts[n])}</option>`).join('')}</select></label>`}).join('');
  // 재회·깊은궁합은 상대방 정보가 필요하다. 주 주문에서 상대방 정보를 받지 않았으면, 둘 중 하나를 고를 때 바로 아래에 상대방 입력칸을 펼친다(2026-10-27 사장님).
  const lastPair=[...others].reverse().find(x=>PAIR_IDS.includes(x.id))?.id;
  // 상대방 칸도 첫 입력 화면과 같은 짧은 양식(이름·생년월일·태어난 시간·성별)으로 받는다(사장님 2026-11-03).
