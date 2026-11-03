@@ -10,11 +10,11 @@ function tasterChart(r){const c=r.chart;
 function tasterPage(){
  document.title='무료 사주 · '+BRAND.name;
  const r=tasterState.result;
- // 입력 화면은 상품 입력 화면과 같은 한 화면 양식(사장님 2026-11-03): 배경은 금월선녀 평생사주 사진, 위 글과 '맛보기' 제목은 뺀다.
+ // 입력 화면은 상품 입력 화면과 같은 한 화면 양식(사장님 2026-11-03): 배경은 사람 없는 밤 궁궐 연못, 글씨는 금월선녀 멘트와 같은 Gowun Batang, '맛보기' 제목은 뺀다.
  if(!r){
   if(!tasterState.person.name&&!tasterState.person.birth){const me=savedMe();if(me)tasterState.person={...me}}
-  const lp=pById('lifetime'),m=STORY_MEDIA['lifetime.name']||STORY_MEDIA['lifetime.intro']||{},bg=m.originalImage||m.background?storyAsset(m.originalImage||m.background):(MEDIA['lifetime.cover']?.image||'');
-  app.innerHTML=`<div class="shell flow quick-info taster-quick" style="--accent:${lp.color}"><div class="qi-bg" aria-hidden="true">${m.character&&m.background?`<img src="${esc(storyAsset(m.background))}" alt="" decoding="async"><img class="qi-person" src="${esc(storyAsset(m.character))}" alt="" decoding="async">`:`<img src="${esc(bg)}" alt="" decoding="async">`}</div>
+  const lp=pById('lifetime');
+  app.innerHTML=`<div class="shell flow quick-info taster-quick" style="--accent:${lp.color}"><div class="qi-bg" aria-hidden="true"><img src="assets/geumwol/palace-garden.webp" alt="" decoding="async"></div>
 <header class="qi-top"><a class="qi-back" href="#/" aria-label="홈으로">${icon('back')}</a></header>
 <main id="main" class="qi-main"><div class="taster-intro"><h1>내 사주에서<br>좋은 운 3개, 조심할 운 3개</h1><p>생년월일과 태어난 시간을 넣으면<br>연애·결혼·재회·돈·직장·사업·건강·2027년<br>여덟 가지 운 중 좋은 운 3개, 조심할 운 3개를<br>바로 보여드려요. 무료입니다.</p></div><form id="taster-form" novalidate autocomplete="off">${quickFields('taster',tasterState.person)}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p></main>
 <div class="qi-bottom"><button class="qi-next" id="taster-submit" type="button" disabled>무료로 내 운 보기</button></div></div>`;
