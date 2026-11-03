@@ -141,3 +141,14 @@ test('스레드 열쇠를 저장하고 꺼낸다 (작업 비밀 열쇠로만)', 
   const j = await (await t.call('GET', '/api/internal/studio/meta/threads-token', { headers: t.worker })).json();
   assert.equal(j.refreshedAt, '2026-11-01T00:00:00Z');
 });
+
+test('손님이 온 곳: 로그인한 사장님만 최근 3달 결제 수를 본다', async () => {
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/studio/sources')).status, 401);
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  const month = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 7);
+  await t.store.set(`stats/sources/${month}`, { d: { orders: 2, amount: 59600 } });
+  const j = await (await t.call('GET', '/api/studio/sources')).json();
+  assert.equal(j.months.length, 3); assert.equal(j.months[0].month, month);
+  assert.deepEqual(j.months[0].sources.d, { orders: 2, amount: 59600 });
+});

@@ -75,6 +75,13 @@ export async function afterPaid(store, order, now = new Date()) {
     const c = await store.get(`coupons/${d.code}`);
     if (c) await store.set(`coupons/${d.code}`, { ...c, uses: (c.uses || 0) + 1, lastUsedAt: now.toISOString() });
   }
+  // 들어온 곳별 결제 수(달마다, 한국 시간). 스튜디오 '손님이 온 곳'에 보인다. 묶음은 결제 한 번으로 센다.
+  const month = new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 7);
+  const key = `stats/sources/${month}`, src = order.source || 'direct';
+  const stats = (await store.get(key)) || {};
+  const row = stats[src] || { orders: 0, amount: 0 };
+  stats[src] = { orders: row.orders + 1, amount: row.amount + (order.amount || 0) };
+  await store.set(key, stats);
 }
 
 export async function issueCoupon(store, kind, now = new Date()) {

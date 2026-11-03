@@ -21,7 +21,7 @@ async function readJson(req, limit = 65_536) {
 const bearer = req => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || '';
 
 export function makeApi({ store, services, env, studioStore = store }) {
-  const studio = makeStudio({ store: studioStore, services, env });
+  const studio = makeStudio({ store: studioStore, orderStore: store, services, env });
   return async function handle(req) {
     const url = new URL(req.url);
     const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);

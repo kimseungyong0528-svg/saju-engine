@@ -100,12 +100,15 @@ details.tx summary .pre { color: var(--ink2); overflow: hidden; text-overflow: e
 details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-family: inherit; font-size: 14.5px; line-height: 1.65; border-top: 1px dashed var(--line); max-height: 360px; overflow: auto; }
 .copy { flex: none; border: 1px solid var(--line); background: var(--paper); border-radius: 7px; padding: 3px 9px; font-size: 13px; cursor: pointer; }
 .copy.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
-#rules { margin: 12px 14px 0; background: var(--paper); border: 2px solid #a8262b; border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--ink2); }
-#rules summary { font-weight: 700; color: #a8262b; cursor: pointer; }
+#rules, #sources { margin: 12px 14px 0; background: var(--paper); border: 2px solid #a8262b; border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--ink2); }
+#rules summary, #sources summary { font-weight: 700; color: #a8262b; cursor: pointer; }
 #rules h4 { margin: 10px 0 4px; font-size: 15px; color: inherit; }
 #rules ul { margin: 4px 0 6px; padding-left: 18px; }
 #rules li { margin: 2px 0; }
 #rules a { color: #a8262b; text-decoration: underline; }
+#sources table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; }
+#sources th, #sources td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #e5ddd0; }
+#sources td.n { text-align: right; }
 .tip { margin: 0 14px 0 18px; font-size: 13px; color: var(--ink2); background: var(--paper); border-radius: 8px; padding: 7px 10px; }
 .post-foot { margin-top: auto; display: flex; gap: 8px; padding: 12px 14px 14px 18px; flex-wrap: wrap; }
 .toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px 6px 8px; background: #fff; font-size: 14px; }
@@ -206,6 +209,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
     </nav>
   </header>
   <details id="rules"><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
+  <details id="sources" class="rules-like"><summary>손님이 온 곳 (결제 수)</summary><div id="sourcesBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -289,7 +293,25 @@ async function boot() {
   const me = await fetch('/api/studio/me').then(r => r.json()).catch(() => ({}));
   if (!me.loggedIn) return show('login');
   show('app');
+  loadSources();
   await loadWeeks();
+}
+// 손님이 온 곳: 짧은 주소(/d, /dn …)나 ?from= 꼬리표로 들어와 결제한 수(사장님 2026-11-03)
+const SOURCE_NAMES = { d: '당근 소식 링크 (/d)', dn: '당근 광고 신년운세 (/dn)', dr: '당근 광고 연애사주 (/dr)', dw: '당근 광고 재물운 (/dw)',
+  t: '스레드 (/t)', i: '인스타 (/i)', f: '페북 (/f)', y: '유튜브 (/y)', direct: '꼬리표 없이 들어옴' };
+async function loadSources() {
+  const box = $('#sourcesBody');
+  try {
+    const { months } = await api('sources');
+    box.replaceChildren(...months.map(({ month, sources }) => {
+      const rows = Object.entries(sources).sort((a, b) => b[1].orders - a[1].orders);
+      const wrap = el('div', {}, el('h4', {}, `${month.slice(0, 4)}년 ${Number(month.slice(5))}월`));
+      if (!rows.length) { wrap.append(el('p', {}, '아직 결제가 없어요.')); return wrap; }
+      const t = el('table', {}, el('tr', {}, el('th', {}, '들어온 곳'), el('th', {}, '결제'), el('th', {}, '금액')));
+      for (const [k, v] of rows) t.append(el('tr', {}, el('td', {}, SOURCE_NAMES[k] || k), el('td', { class: 'n' }, v.orders + '건'), el('td', { class: 'n' }, v.amount.toLocaleString('ko-KR') + '원')));
+      wrap.append(t); return wrap;
+    }));
+  } catch { box.textContent = '불러오지 못했어요.'; }
 }
 async function loadWeeks(keep) {
   S.weeks = (await api('weeks')).weeks;
