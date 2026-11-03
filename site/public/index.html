@@ -6173,7 +6173,7 @@ for(const [id,from] of Object.entries(NAME_SCENE_FROM))STORY_MEDIA[id+'.name']=S
 // 객관식 한 화면 (사장님 2026-11-03 레퍼런스): 정보 입력 뒤 객관식들을 한 화면에 '지금은 [연애 여부 ▾] 상태예요.'처럼 문장 한 줄씩으로 고른다.
 // 글로 쓰는 질문 칸은 없앤다. 고른 값은 예전 보기 글자 그대로 answers[id]에 넣어서 리포트·서버 검사가 그대로 이어진다(제1조항).
 const SURVEY={
- lifetime:{quote:'좋아요, 몇 가지만 더 물어볼게요!\n요즘 어떻게 지내고 계세요?',lines:[
+ lifetime:{quote:'좋아요, 마지막으로 이것만 더 물어볼게요!\n요즘 어떻게 지내고 계세요?',lines:[
   {id:'occupation',pre:'요즘은',ph:'하는 일',post:'지내요.',labels:['직장 다니며','사업하며','프리랜서로 일하며','공부하며','잠시 쉬며']},
   {id:'relationship',pre:'지금은',ph:'내 상태',post:'상태예요.',labels:['혼자인','연애 중인','결혼한','이혼·사별한']}]}
 };
