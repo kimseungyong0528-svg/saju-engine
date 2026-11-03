@@ -1020,8 +1020,8 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .co-more-btn:after{content:'\00a0⌄'}.co2 .co-more-btn[aria-expanded=true]:after{content:'\00a0⌃'}
 .co2 .bundle-partner.quick-info{position:static;min-height:0!important;overflow:visible;background:#121013!important;--qg:18px;--qp:10px}
 .co2 .co-rest[hidden]{display:none}
-.co2 .bundle-x .bundle-partner.quick-info{display:none}
-.co2 .bundle-x:has(input[value=reunion]:checked) .bundle-partner.quick-info,.co2 .bundle-x:has(input[value=intimate]:checked) .bundle-partner.quick-info{display:block}
+.co2 .bundle-partner.quick-info{display:none}
+.co2:has(.bundle-x input[value=reunion]:checked) .bundle-partner.quick-info,.co2:has(.bundle-x input[value=intimate]:checked) .bundle-partner.quick-info{display:block;margin:-12px 0 26px}
 .co2 .bundle-partner .co-qf{display:flex;flex-direction:column;gap:var(--qg)}
 .co2 .bundle-partner .qi-sex-btns span{height:50px}
 .co2 .co-more{margin-top:10px;border:0!important;background:none!important;padding:0!important}
@@ -6630,7 +6630,7 @@ function bindDiscounts(p,d){
  if(!d.coupon&&savedCoupon())d.coupon=savedCoupon();
  delete d.discount;
  // 상대방 입력칸은 체크한 재회사주·깊은 궁합 바로 밑에 연다(손님 테스트: 깊은 궁합을 골랐는데 재회사주 밑에 열림).
- const placePartner=()=>{const f=document.querySelector('[data-bundle-partner]'),b=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].find(x=>PAIR_IDS.includes(x.value));if(f&&b)b.closest('.bundle-row').after(f)};
+ const placePartner=()=>{const f=document.querySelector('[data-bundle-partner]'),who=document.querySelector('.co2 .co-who');if(f&&who){who.after(f);const t=f.querySelector('.bundle-partner-title'),names=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].filter(x=>PAIR_IDS.includes(x.value)).map(x=>PRODUCTS.find(y=>y.id===x.value)?.short).filter(Boolean);if(t)t.textContent='상대방 정보'+(names.length?` (${names.join('·')})`:'');return}const b=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].find(x=>PAIR_IDS.includes(x.value));if(f&&b)b.closest('.bundle-row').after(f)};   // 새 결제 페이지는 '나의 정보' 상자 밑에(사장님 2026-11-03)
  document.querySelectorAll('.bundle-x input[name=extra]').forEach(b=>b.onchange=()=>{d.extras=[...document.querySelectorAll('.bundle-x input[name=extra]:checked')].map(x=>x.value);save();placePartner();refreshQuote(p,d)});
  placePartner();
  const pf=document.querySelector('[data-bundle-partner]');
