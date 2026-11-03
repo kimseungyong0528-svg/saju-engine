@@ -8,18 +8,26 @@ function tasterChart(r){const c=r.chart;
  return `<div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div><p class="taster-note">${esc(r.name)} 님이 태어난 해·달·날·시를 여덟 글자로 바꾼 것이 사주팔자입니다. ${esc(r.name)} 님은 ${esc(c.zodiac)}띠입니다.${c.columns[0].hanja?'':' 태어난 시간을 몰라서 시 자리는 비워 두었습니다.'}</p>
  <section class="taster-box"><h3>${esc(r.name)} 님 사주 한눈에 보기</h3>${c.items.map(it=>`<div class="tb-item"><strong>${esc(it.head)}</strong><p>${esc(it.text)}</p></div>`).join('')}<div class="tb-bars">${c.elements.map(e=>`<div class="tb-bar ${e.status}"><span>${esc(e.word)}</span><i><b style="width:${Math.min(100,e.pct*2)}%"></b></i><em>${e.pct}%</em></div>`).join('')}</div></section>`}
 function tasterPage(){
- document.title='무료 사주 맛보기 · '+BRAND.name;
+ document.title='무료 사주 · '+BRAND.name;
  const r=tasterState.result;
- if(!r){layout('무료 사주 맛보기',`<div class="flow-content birth-info-page taster-form" data-birth-tone="lifetime"><span class="eyebrow">FREE SAJU</span><h1>내 사주에서<br>좋은 운 3개, 조심할 운 3개</h1><p class="muted">생년월일과 태어난 시간을 넣으면, 연애·결혼·헤어진 인연·돈·직장·사업·건강·2027년, 여덟 가지 운 가운데 가장 좋은 운 3개와 가장 조심할 운 3개를 바로 보여드려요. 무료입니다.</p><form id="taster-form" novalidate>${reuseBox(tasterState.person,'reuse-me')}${personFields('taster',tasterState.person)}<button class="primary taster-submit" id="taster-submit" type="submit" disabled>무료로 내 운 보기</button></form><p class="local-note">입력한 정보는 이 화면에서만 계산하고 서버에 보내지 않아요.</p></div>`);
-  const f=document.querySelector('#taster-form'),btn=document.querySelector('#taster-submit');
-  bindPerson(f,(v,valid)=>{tasterState.person=v;btn.disabled=!valid});
-  bindReuse('reuse-me',v=>{tasterState.person=v});
-  f.onsubmit=async e=>{e.preventDefault();const v=readPerson(f);if(!personValid(v)||!f.checkValidity()){f.reportValidity();return}
+ // 입력 화면은 상품 입력 화면과 같은 한 화면 양식(사장님 2026-11-03): 배경은 금월선녀 평생사주 사진, 위 글과 '맛보기' 제목은 뺀다.
+ if(!r){
+  if(!tasterState.person.name&&!tasterState.person.birth){const me=savedMe();if(me)tasterState.person={...me}}
+  const lp=pById('lifetime'),m=STORY_MEDIA['lifetime.name']||STORY_MEDIA['lifetime.intro']||{},bg=m.originalImage||m.background?storyAsset(m.originalImage||m.background):(MEDIA['lifetime.cover']?.image||'');
+  app.innerHTML=`<div class="shell flow quick-info taster-quick" style="--accent:${lp.color}"><div class="qi-bg" aria-hidden="true">${m.character&&m.background?`<img src="${esc(storyAsset(m.background))}" alt="" decoding="async"><img class="qi-person" src="${esc(storyAsset(m.character))}" alt="" decoding="async">`:`<img src="${esc(bg)}" alt="" decoding="async">`}</div>
+<header class="qi-top"><a class="qi-back" href="#/" aria-label="홈으로">${icon('back')}</a></header>
+<main id="main" class="qi-main"><form id="taster-form" novalidate autocomplete="off">${quickFields('taster',tasterState.person)}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p></main>
+<div class="qi-bottom"><button class="qi-next" id="taster-submit" type="button" disabled>무료로 내 운 보기</button></div></div>`;
+  const f=document.querySelector('#taster-form'),btn=document.querySelector('#taster-submit'),prev=tasterState.person;
+  bindQuick(f,prev,(v,valid)=>{tasterState.person=v;btn.disabled=!valid});
+  f.addEventListener('focusin',e=>{const el=e.target;if(!el.matches('input:not([type=radio]):not([type=checkbox])'))return;setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),320)});
+  f.onsubmit=e=>{e.preventDefault();btn.click()};
+  btn.onclick=async()=>{const v=readQuick(f,prev);if(!personValid(v))return;
    btn.disabled=true;btn.textContent='사주를 계산하고 있어요';
    try{const {eng,tst,data,texts}=await tasterLoad();const date=validateBirthDate(v);const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);rememberMe(v);tasterState={person:v,result:tst.reading(fp,v,texts)};tasterPage();window.scrollTo({top:0,behavior:'instant'})}
    catch(err){console.error(err);btn.disabled=false;btn.textContent='무료로 내 운 보기';toast('계산하지 못했어요. 잠시 뒤 다시 눌러 주세요.')}};
   return}
- layout('무료 사주 맛보기',`<div class="page-pad taster-result"><span class="eyebrow">FREE SAJU</span><h1>${esc(r.name)} 님의<br>좋은 운과 조심할 운</h1>${tasterChart(r)}<h2 class="taster-head good">좋은 운 TOP 3</h2>${r.good.map((a,i)=>tasterItem(a,'good',i)).join('')}<h2 class="taster-head bad">조심할 운 TOP 3</h2>${r.bad.map((a,i)=>tasterItem(a,'bad',i)).join('')}<a class="taster-lifetime" href="#/f/lifetime/intro" data-taster-product="lifetime"><span class="eyebrow">내 사주 전체</span><strong>내 사주 전체를<br>한 권으로 보고 싶다면</strong><span>${esc(pById('lifetime').name)} 자세히 알아보기 →</span></a><div class="taster-all"><p>다른 운도 자세히 보기</p>${['newyear','romance','reunion','intimate','wealth','career','business','health'].map(id=>`<a href="#/f/${id}/intro" data-taster-product="${id}">${esc(pById(id).short)}</a>`).join('')}</div><button type="button" class="taster-redo" id="taster-redo">입력한 정보 고쳐서 다시 보기</button></div>`);
+ layout('무료 사주',`<div class="page-pad taster-result"><span class="eyebrow">FREE SAJU</span><h1>${esc(r.name)} 님의<br>좋은 운과 조심할 운</h1>${tasterChart(r)}<h2 class="taster-head good">좋은 운 TOP 3</h2>${r.good.map((a,i)=>tasterItem(a,'good',i)).join('')}<h2 class="taster-head bad">조심할 운 TOP 3</h2>${r.bad.map((a,i)=>tasterItem(a,'bad',i)).join('')}<a class="taster-lifetime" href="#/f/lifetime/intro" data-taster-product="lifetime"><span class="eyebrow">내 사주 전체</span><strong>내 사주 전체를<br>한 권으로 보고 싶다면</strong><span>${esc(pById('lifetime').name)} 자세히 알아보기 →</span></a><div class="taster-all"><p>다른 운도 자세히 보기</p>${['newyear','romance','reunion','intimate','wealth','career','business','health'].map(id=>`<a href="#/f/${id}/intro" data-taster-product="${id}">${esc(pById(id).short)}</a>`).join('')}</div><button type="button" class="taster-redo" id="taster-redo">입력한 정보 고쳐서 다시 보기</button></div>`);
  // 잘못 넣었을 수 있으니, 넣었던 정보를 그대로 채운 입력 화면으로 돌아간다.
  document.querySelector('#taster-redo').onclick=()=>{tasterState.result=null;tasterPage();window.scrollTo({top:0,behavior:'instant'})};
  // '자세히 알아보기'로 간 상품에는 방금 넣은 출생 정보를 미리 채워 둔다.
