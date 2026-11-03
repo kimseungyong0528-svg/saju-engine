@@ -34,7 +34,11 @@ function revealPair(p,d,lib,fp){
  const {eng,data,rv}=lib,o=d.partner,od=validateBirthDate(o);
  return {...rv.pairScore(fp,eng.chartFromPerson(data,o,o.calendar==='lunar'?od.solarDate:o.birth)),name:(o.name||'').trim()||'그 사람'};
 }
-function revealSpeech(p,text){return `<div class="rv-guide"><img src="${esc(MEDIA[p.id+'.cover'].image)}" alt="금월선녀" decoding="async"><div><strong>금월선녀</strong><p>${esc(text)}</p></div></div>`}
+function revealSpeech(p,text){
+ // 한 페이지 (사장님 2026-11-03): 중간 말풍선은 둘째 장면처럼 인물 사진 위 가운데 따옴표 글로 보여 준다.
+ if(REVEAL_ONE_PAGE&&typeof STORY_MEDIA!=='undefined'){const m=STORY_MEDIA[p.id+'.name']||STORY_MEDIA[p.id+'.intro']||{};const bg=m.character&&m.background?`<img src="${esc(storyAsset(m.background))}" alt="" decoding="async" loading="lazy"><img class="rv-person" src="${esc(storyAsset(m.character))}" alt="" decoding="async" loading="lazy">`:`<img src="${esc(m.originalImage?storyAsset(m.originalImage):MEDIA[p.id+'.cover'].image)}" alt="" decoding="async" loading="lazy">`;
+  return `<div class="rv-portrait"><div class="rv-portrait-bg" aria-hidden="true">${bg}<i></i></div><p class="rv-portrait-quote">${esc(text)}</p></div>`}
+ return `<div class="rv-guide"><img src="${esc(MEDIA[p.id+'.cover'].image)}" alt="금월선녀" decoding="async"><div><strong>금월선녀</strong><p>${esc(text)}</p></div></div>`}
 function revealLocks(items){return `<div class="rv-locks">${items.map(t=>`<div>${icon('lock')}<span>${esc(t)}</span><i>리포트에서 공개</i></div>`).join('')}</div>`}
 // 1. 내 사주 펼치기: 사주팔자 네 기둥, 나를 뜻하는 글자, 타고난 큰 방향, 다섯 기운
 // 타고난 큰 방향(격국) 설명은 돈·일과 이어지는 말이라, 돈·일·평생을 보는 상품에서만 보여 준다(손님 테스트: 건강운인데 '월급처럼 들어오는 돈').
