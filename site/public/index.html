@@ -6274,27 +6274,24 @@ function giftBox(pid){const g=isGift(pid);return `<div class="gift-pick"><p>누�
 function bindGift(pid,d,save){document.querySelectorAll('[name=gift-pick]').forEach(el=>el.onchange=()=>{const on=el.value==='gift';setGift(pid,on);const me=savedMe();if(on&&me&&meKey(d.self)===meKey(me))d.self={};save();render()})}
 // 정보 입력 한 화면 (사장님 2026-11-03 레퍼런스): 이름·생년월일(양력/음력/윤달)·태어난 시간(시간 모름)·태어난 곳(시·도 한 줄, 지역 모름)·성별을 스크롤 없이 한 화면에.
 // 배경은 바로 앞 장면 그림을 흐리게. 만드는 값은 예전 입력칸(readPerson)과 같은 모양이라 맛보기·결제 전 화면·리포트 계산이 그대로 이어진다(제1조항).
-// 태어난 곳은 시·도까지만 받는다 → 그 시·도 대표 경도로 푼다(모르면 대한민국 대표 경도). 예전에 시·군·구까지 넣은 손님이 같은 시·도를 두면 그 값을 그대로 둔다.
+// 태어난 곳은 받지 않는다(사장님 2026-11-03 "태어난 곳 빼") → 대한민국 대표 경도로 푼다. 예전에 태어난 곳을 넣어 저장된 손님은 그 값을 그대로 쓴다.
 function quickDigits(v,n){return String(v||'').replace(/\D/g,'').slice(0,n)}
 function quickDate(v){const d=quickDigits(v,8);return d.length>6?d.slice(0,4)+'.'+d.slice(4,6)+'.'+d.slice(6):d.length>4?d.slice(0,4)+'.'+d.slice(4):d}
 function quickTime(v){const d=quickDigits(v,4);return d.length>2?d.slice(0,2)+':'+d.slice(2):d}
 function quickFields(who,v={}){
  const e=birthEscape,lunar=v.calendar==='lunar',cal=lunar?(v.leap===true?'leap':'lunar'):'solar';
  const acc=birthPrecision(v),tUnknown=acc==='unknown',time=acc==='exact'?v.time||'':'';
- const pl=v.birthPlace||{},pUnknown=pl.status==='unknown',reg=pl.countryCode==='KR'||!pl.countryCode?resolveBirthRegion(pl).region:null;
  const opt=(type,name,value,on,label)=>`<label class="qi-opt"><input type="${type}" name="${name}" value="${value}" ${on?'checked':''}><i aria-hidden="true"></i>${label}</label>`;
  return `<div class="qi-row"><div class="qi-head"><label for="${who}-qi-name">이름</label></div><input id="${who}-qi-name" name="name" maxlength="30" autocomplete="off" value="${e(v.name||'')}" placeholder="이름을 입력해 주세요."></div>
 <div class="qi-row"><div class="qi-head"><label for="${who}-qi-birth">생년월일</label><div class="qi-opts" role="radiogroup" aria-label="양력 음력">${opt('radio','cal','solar',cal==='solar','양력')}${opt('radio','cal','lunar',cal==='lunar','음력')}${opt('radio','cal','leap',cal==='leap','윤달')}</div></div><input id="${who}-qi-birth" name="birth" inputmode="numeric" autocomplete="off" maxlength="10" value="${e(v.birth?String(v.birth).replace(/-/g,'.'):'')}" placeholder="0000.00.00"></div>
 <div class="qi-row"><div class="qi-head"><label for="${who}-qi-time">태어난 시간</label>${opt('checkbox','timeUnknown','1',tUnknown,'시간 모름')}</div><input id="${who}-qi-time" name="time" inputmode="numeric" autocomplete="off" maxlength="5" value="${e(time)}" placeholder="태어난 시간 입력 (예: 13:20)" ${tUnknown?'disabled':''}></div>
-<div class="qi-row"><div class="qi-head"><label for="${who}-qi-place">태어난 곳</label>${opt('checkbox','placeUnknown','1',pUnknown,'지역 모름')}</div><select id="${who}-qi-place" name="region" class="${reg&&!pUnknown?'':'is-empty'}" ${pUnknown?'disabled':''}><option value="">태어난 지역 선택 (시·도)</option>${plainRegions().map(r=>`<option value="${r.id}" ${reg?.id===r.id&&!pUnknown?'selected':''}>${e(REGION_PLAIN[r.name])}</option>`).join('')}</select></div>
 <div class="qi-row qi-sex"><div class="qi-head"><span>성별</span></div><div class="qi-sex-btns" role="radiogroup" aria-label="성별">${[['male','남성'],['female','여성']].map(([k,t])=>`<label><input type="radio" name="sex" value="${k}" ${v.sex===k?'checked':''}><span>${t}</span></label>`).join('')}</div></div>`;
 }
 function readQuick(form,prev={}){
  const f=new FormData(form),str=n=>String(f.get(n)||'').trim(),cal=str('cal')||'solar',lunar=cal!=='solar';
  const dd=quickDigits(str('birth'),8),birth=dd.length===8?dd.slice(0,4)+'-'+dd.slice(4,6)+'-'+dd.slice(6):'';
  const tUnknown=!!f.get('timeUnknown'),td=quickDigits(str('time'),4),tt=td.length===4?td.slice(0,2)+':'+td.slice(2):'',time=!tUnknown&&birthTimeMinutes(tt)!==null?tt:'';
- const pUnknown=!!f.get('placeUnknown'),region=pUnknown?null:KOREA_REGIONS.find(r=>r.id===str('region')),old=prev.birthPlace;
- const place=!pUnknown&&region&&old&&old.regionChoice===region.id&&birthPlaceValid(old)?old:{status:pUnknown?'unknown':'region-only',countryCode:'KR',countryName:'대한민국',regionChoice:region?.id||null,regionCode:region?.code||null,regionName:region?.name||null,districtCode:null,city:null,inputMode:null,originalCity:null,listVersion:pUnknown?null:KOREA_REGIONS_VERSION,referenceEra:'unknown',referenceDate:null};
+ const old=prev.birthPlace,place=old&&birthPlaceValid(old)?old:{status:'unknown',countryCode:'KR',countryName:'대한민국',regionChoice:null,regionCode:null,regionName:null,districtCode:null,city:null,inputMode:null,originalCity:null,listVersion:null,referenceEra:'unknown',referenceDate:null};
  const value={schemaVersion:3,name:str('name'),birth,calendar:lunar?'lunar':'solar',leap:lunar?cal==='leap':false,leapStatus:lunar?(cal==='leap'?'intercalary':'regular'):'not_applicable',lunarDraft:null,solarDraft:null,
   timeAccuracy:tUnknown?'unknown':'exact',time,unknown:tUnknown,timeRange:null,timeDraft:null,birthPlace:place,sex:str('sex')};
  const date=validateBirthDate(value);value.solarDate=date.valid?date.solarDate:null;value.analysisInput=birthAnalysisInput(value);return value;
@@ -6308,8 +6305,7 @@ function quickError(form,v){
 function bindQuick(form,prev,callback){
  const f=form.elements,err=document.querySelector('[data-qi-err]');
  const update=()=>{
-  const t=f.namedItem('time'),r=f.namedItem('region');t.disabled=f.namedItem('timeUnknown').checked;if(t.disabled)t.value='';
-  r.disabled=f.namedItem('placeUnknown').checked;if(r.disabled)r.value='';r.classList.toggle('is-empty',!r.value);
+  const t=f.namedItem('time');t.disabled=f.namedItem('timeUnknown').checked;if(t.disabled)t.value='';
   const v=readQuick(form,prev),msg=quickError(form,v);err.textContent=msg;err.hidden=!msg;callback(v,personValid(v));
  };
  const fmt=(el,fn)=>el.addEventListener('input',()=>{const end=el.selectionEnd===el.value.length;el.value=fn(el.value);if(end)el.setSelectionRange(el.value.length,el.value.length);update()});
