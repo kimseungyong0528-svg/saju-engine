@@ -6563,13 +6563,14 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 const CO_TOP=['newyear','romance','reunion','intimate','wealth','career','business','health','lifetime'];   // 사장님 2026-11-03 순서
 const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 인연은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'잘 맞는 일과 이직/승진할 때',business:'잘 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
+const CO_ASK={romance:{experience:'연애 횟수'}};   // 결제 페이지 질문 이름만 바꾼다(사장님 2026-11-03). 객관식 화면 문장은 그대로.
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
  const others=BUNDLE_IDS.filter(id=>id!==p.id).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean),on=new Set(d.extras||[]);
  const ea=d.extraAnswers||(d.extraAnswers={});
  // 질문은 객관식 한 화면(survey)의 줄을 그대로 쓴다(PR #127 뒤로 'choice' 단계가 없어져 질문 칸이 사라졌었다). 값은 예전 선택지 글자 그대로 저장한다(제1조항).
- const asks=x=>FLOWS[x.id].flatMap(st=>st.type==='choice'?[{id:st.id,title:st.title,options:st.options,texts:st.options}]:st.type==='survey'?st.lines.map(l=>({id:l.id,title:l.ph,options:l.options,texts:l.options.map((o,n)=>{const lb=l.labels?.[n]||o,post=l.post||'';return [l.pre,lb].filter(Boolean).join(' ')+(post?(/^부터/.test(post)?'':' ')+post:'')})})):[]);
+ const asks=x=>FLOWS[x.id].flatMap(st=>st.type==='choice'?[{id:st.id,title:st.title,options:st.options,texts:st.options}]:st.type==='survey'?st.lines.map(l=>({id:l.id,title:(CO_ASK[x.id]||{})[l.id]||l.ph,options:l.options,texts:l.options.map((o,n)=>{const lb=l.labels?.[n]||o,post=l.post||'';return [l.pre,lb].filter(Boolean).join(' ')+(post?(/^부터/.test(post)?'':' ')+post:'')})})):[]);
  const qs=x=>asks(x).map(st=>{
   // 같은 질문(같은 이름)에 이미 답했으면 그 답을 미리 채운다(다시 묻지 않게)
   const mine=d.answers?.[st.id]||Object.values(ea).map(a=>a?.[st.id]).find(Boolean);if(!ea[x.id]?.[st.id]&&mine&&st.options.includes(mine))(ea[x.id]||(ea[x.id]={}))[st.id]=mine;
