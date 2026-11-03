@@ -308,8 +308,8 @@ def add_newyear(s: str) -> str:
         "for(const k of ['cover','intro','year','ready','sales.1','sales.2','sales.3','sales.4','sales.5','detail.summary','detail.samjae','detail.months'])MEDIA['newyear.'+k]=NY;"
         "for(const k of ['intro','year','ready'])STORY_MEDIA['newyear.'+k]={background:NY.image,backgroundAlt:NY.alt,character:'assets/geumwol/blank.png',width:112,top:68,"
         "originalImage:NY.image,interlude:false,identityReference:'assets/geumwol/master.jpg'};"
-        "STORY_FACES.newyear={...STORY_FACES.lifetime,neural:{...STORY_FACES.lifetime.neural,atlas:'assets/geumwol/none.png'},"
-        "smile:{...STORY_FACES.lifetime.smile,atlas:'assets/geumwol/none.png'}};}\n"
+        "STORY_FACES.newyear={...STORY_FACES.lifetime,neural:{...STORY_FACES.lifetime.neural,atlas:'assets/geumwol/blank.png'},"
+        "smile:{...STORY_FACES.lifetime.smile,atlas:'assets/geumwol/blank.png'}};}\n"
         "function home(){"))
     # 상단 카테고리: 인생총운 → 운세/평생운. 신년운세와 평생사주가 이 탭에 들어가고 신년운세가 첫 번째.
     s = _swap(s, 'const CATEGORIES=["전체","연애","재회","금전","건강","인생총운"];', 'const CATEGORIES=["전체","연애","재회","금전","건강","운세/평생운"];')
