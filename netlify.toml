@@ -58,3 +58,7 @@
   from = "/y"
   to = "/?from=y"
   status = 302
+[[redirects]]
+  from = "/m"
+  to = "/?from=m"
+  status = 302
