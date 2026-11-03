@@ -954,7 +954,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .sv-bg{position:absolute;inset:0;overflow:hidden;z-index:0}
 .sv-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
 .sv-bg .qi-person{position:absolute;z-index:1;left:0;top:58px;width:100%;height:auto;object-fit:initial}
-.sv-bg .sv-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,#0003 0%,transparent 18%,#0000 30%,#0005 44%,#000a 56%,#000d 68%,#000f 100%)}
+.sv-bg .sv-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,#0003 0%,transparent 12%,#0000 20%,#0005 34%,#000a 46%,#000d 58%,#000f 100%)}
 .sv-main{position:relative;z-index:1;flex:1 0 auto;display:flex;flex-direction:column;align-items:center;padding:0 22px;text-align:center}
 .sv-main>:first-child{margin-top:auto}
 .sv-quote{margin:0;font:700 23px/1.55 'Gowun Batang','Noto Serif CJK KR',serif!important;color:#fff;text-shadow:0 2px 12px #000,0 0 18px #ffffff40;word-break:keep-all}
@@ -6175,7 +6175,7 @@ for(const [id,from] of Object.entries(NAME_SCENE_FROM))STORY_MEDIA[id+'.name']=S
 const SURVEY={
  lifetime:{quote:'좋아요, 몇 가지만 더 물어볼게요!\n요즘 어떻게 지내고 계세요?',lines:[
   {id:'occupation',pre:'요즘은',ph:'하는 일',post:'지내요.',labels:['직장 다니며','사업하며','프리랜서로 일하며','공부하며','잠시 쉬며']},
-  {id:'relationship',pre:'지금은',ph:'연애 여부',post:'상태예요.',labels:['혼자인','연애 중인','결혼한','이혼·사별한']}]}
+  {id:'relationship',pre:'지금은',ph:'내 상태',post:'상태예요.',labels:['혼자인','연애 중인','결혼한','이혼·사별한']}]}
 };
 for(const [id,cfg] of Object.entries(SURVEY)){const f=FLOWS[id];if(!f)continue;const qs=cfg.lines.map(l=>({...l,step:f.find(s=>s.type==='choice'&&s.id===l.id)})).filter(l=>l.step);if(!qs.length)continue;const at=f.findIndex(s=>s===qs[0].step);const step={id:'ask',type:'survey',quote:cfg.quote,lines:qs.map(l=>({id:l.id,pre:l.pre,ph:l.ph,post:l.post,labels:l.labels,options:l.step.options,required:!!l.step.required}))};FLOWS[id]=f.flatMap((s,k)=>k===at?[step]:(qs.some(l=>l.step===s)||s.type==='question')?[]:[s])}
 function surveyPage(p,i,s,d){
