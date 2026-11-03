@@ -911,7 +911,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 <style id="quick-info">
 .quick-info{position:relative;height:100vh;height:100dvh;min-height:0!important;padding:0!important;display:flex;flex-direction:column;overflow:hidden;background:#05070c;color:#fff}
 .qi-bg{position:absolute;inset:0;overflow:hidden;z-index:0}
-.qi-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;filter:blur(10px) brightness(.7);transform:scale(1.12)}
+.qi-bg{filter:blur(10px) brightness(.7);transform:scale(1.08)}.qi-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}.qi-bg .qi-person{position:absolute;left:0;top:58px;width:100%;height:auto;object-fit:initial}
 .qi-bg:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0000 0%,#0002 30%,#0006 55%,#000a 100%)}
 .qi-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px 0 8px;flex:0 0 auto}
 .qi-back{display:grid;place-items:center;width:44px;height:44px;color:#fff}
@@ -6320,8 +6320,8 @@ function quickInfoPage(p,i,s,d){
  const gift=s.who==='self'&&isGift(p.id);
  if(s.who==='self'&&!gift&&!d.self.name&&!d.self.birth){const me=savedMe();if(me)d.self={...me}}
  const m=STORY_MEDIA[p.id+'.name']||STORY_MEDIA[p.id+'.intro']||{},bg=m.originalImage||m.background?storyAsset(m.originalImage||m.background):(MEDIA[p.id+'.cover']?.image||'');
- const lead=s.who==='partner'?'그 사람의 정보를 알려 주세요':gift?'선물 받을 분의 정보를 알려 주세요':'';
- app.innerHTML=`<div class="shell flow quick-info" style="--accent:${p.color}"><div class="qi-bg" aria-hidden="true"><img src="${esc(bg)}" alt="" decoding="async"></div>
+ const lead=s.who==='partner'?'이번엔, 그 사람의 정보를 알려 주세요':gift?'선물 받을 분의 정보를 알려 주세요':'';
+ app.innerHTML=`<div class="shell flow quick-info" style="--accent:${p.color}"><div class="qi-bg" aria-hidden="true">${m.character&&m.background?`<img src="${esc(storyAsset(m.background))}" alt="" decoding="async"><img class="qi-person" src="${esc(storyAsset(m.character))}" alt="" decoding="async">`:`<img src="${esc(bg)}" alt="" decoding="async">`}</div>
 <header class="qi-top"><a class="qi-back" href="#${esc(pathFor(p,i-1))}" aria-label="이전 장면">${icon('back')}</a>${s.who==='self'?`<label class="qi-gift"><input type="checkbox" name="gift-pick" ${gift?'checked':''}>선물하기</label>`:''}</header>
 <main id="main" class="qi-main">${lead?`<p class="qi-lead">${lead}</p>`:''}<form id="person-form" novalidate autocomplete="off">${quickFields(s.who,d[s.who])}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p>${gift?'<p class="qi-note">결과 PDF는 주문하시는 분 이메일로 보내드려요.</p>':''}</main>
 <div class="qi-bottom"><button class="qi-next" data-next="${i}" disabled>다음으로</button></div></div>`;
