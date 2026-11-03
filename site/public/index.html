@@ -5002,7 +5002,7 @@ FLOWS.business=[
  scene('direction','내 사업운 점수부터\n바로 볼까요','생년월일 넣고 질문 두 개만 답하면, 키울 해와 지킬 해가 12년 지도로 나와요.','지금 바로 확인하기'),
  info,
  choice('stage','지금 사업의 어느 단계에 있나요?',['창업을 준비하고 있어요','처음 사업을 시작했어요','부업으로 하고 있어요','사업을 운영하고 있어요','매출이 줄어 고민이에요','새로운 확장을 고민해요','방향을 다시 정리하고 싶어요'],true),
- choice('priority','어떤 이야기를 먼저 살펴볼까요?',['나에게 맞는 사업 방식','함께 일하는 사람과의 호흡','운영과 확장 사이의 선택','나만의 강점을 찾는 일','지금의 계획을 돌아보는 일'],true),
+ choice('priority','어떤 이야기를 먼저 살펴볼까요?',['나에게 맞는 사업 방식','함께 일하는 사람과의 호흡','운영과 확장 사이의 선택','나만의 강점을 찾는 일','지금의 계획을 돌아보는 일','사업이 잘 풀리는 시기'],true),
  {...question,title:'사업에 관해 남기고 싶은 이야기가 있나요?',text:'준비하거나 운영 중인 일과 현재 고민을 편하게 적어주세요.'},
  scene('ready','당신의 사업 이야기를\n한 권으로 모았어요','지금의 계획을 돌아보고 다음 질문을 찾아보세요.','사업운 리포트 살펴보기'),
  sales,checkout
@@ -6315,7 +6315,7 @@ const SURVEY={
   {id:'occupation',pre:'요즘은',ph:'하는 일',post:'지내요.',labels:['직장 다니며','프리랜서로 일하며','사업하며','나아지길 기다리며','잠시 쉬며']}]},
  business:{quote:'좋아요, 마지막으로 이것만 물어볼게요!\n사업은 지금 어디쯤 와 있나요?',lines:[
   {id:'stage',pre:'지금은',ph:'사업 단계',post:'단계예요.',labels:['창업을 준비하는','막 시작한','부업으로 하는','운영 중인','매출이 줄어 고민인','확장을 고민하는','방향을 다시 잡는']},
-  {id:'priority',pre:'먼저',ph:'궁금한 것',post:'부터 볼래요.',labels:['나에게 맞는 방식','함께할 사람','운영과 확장','나의 강점','지금 계획']}]},
+  {id:'priority',pre:'먼저',ph:'궁금한 것',post:'부터 볼래요.',labels:['나에게 맞는 방식','함께할 사람','운영과 확장','나의 강점','지금 계획','사업이 잘 풀리는 시기']}]},
  health:{quote:'좋아요, 마지막으로 이것만 물어볼게요!\n요즘 하루는 어떻게 흘러가요?',lines:[
   {id:'rhythm',pre:'요즘 하루는',ph:'생활 리듬',post:'편이에요.',labels:['대체로 규칙적인','일정이 자주 바뀌는','쉴 틈이 부족한','나를 돌볼 틈이 없는','종잡을 수 없는']},
   {id:'focus',pre:'특히',ph:'건강 습관',post:'부터 볼래요.',labels:['잠자는 리듬','스트레스와 휴식','활동과 휴식','꾸준한 돌봄','일상 전반']}]},
@@ -6563,7 +6563,7 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 const CO_TOP=['newyear','romance','reunion','intimate','wealth','career','business','health','lifetime'];   // 사장님 2026-11-03 순서
 const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 인연은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'잘 맞는 일과 이직/승진할 때',business:'잘 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
-const CO_ASK={lifetime:{occupation:'요즘 하는 일',relationship:'연애·결혼 상태'},romance:{status:'지금 연애 상태',experience:'연애 횟수'},reunion:{breakup:'헤어진 기간'},intimate:{status:'지금 우리 사이',duration:'알고 지낸 기간'},career:{concern:'요즘 일 고민'},wealth:{occupation:'요즘 하는 일'},business:{stage:'지금 사업 단계',priority:'가장 궁금한 것'},health:{rhythm:'요즘 생활 리듬',focus:'먼저 볼 건강 습관'},newyear:{focus:'궁금한 분야'}};   // 결제 페이지 질문 이름만 바꾼다(사장님 2026-11-03). 객관식 화면 문장은 그대로.
+const CO_ASK={newyear:{focus:'궁금한 분야'},lifetime:{occupation:'요즘 하는 일',relationship:'연애·결혼 상태'},romance:{status:'지금 연애 상태',experience:'연애 횟수'},reunion:{breakup:'헤어진 기간'},intimate:{status:'지금 우리 사이',duration:'사귄 기간'},wealth:{occupation:'요즘 하는 일'},career:{concern:'직장 고민'},business:{stage:'현재 사업 단계',priority:'가장 궁금한 것'},health:{rhythm:'요즘 생활 리듬',focus:'가장 궁금한 습관'}};   // 결제 페이지 질문 이름만 바꾼다(사장님 2026-11-03). 객관식 화면 문장은 그대로.
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
