@@ -6562,7 +6562,7 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 const CO_TOP=['newyear','romance','reunion','intimate','wealth','career','business','health','lifetime'];   // 사장님 2026-11-03 순서
-const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 연인은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'잘 맞는 일과 이직/승진할 때',business:'잘 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
+const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 인연은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'잘 맞는 일과 이직/승진할 때',business:'잘 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
