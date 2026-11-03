@@ -908,6 +908,47 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .scene-flow.is-cover .flow-bottom,.scene-flow.is-second .flow-bottom{padding-left:20px;padding-right:20px}
 .scene-flow.is-cover .next-btn,.scene-flow.is-second .next-btn{flex:1;width:100%;height:56px;min-height:56px;border-radius:9px;background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--accent) 22%,#fff) 100%);color:#1b2240;font-size:19px;font-weight:800;border:1px solid #ffffffcc;box-shadow:0 4px 18px #0006}
 </style>
+<style id="quick-info">
+.quick-info{position:relative;height:100vh;height:100dvh;min-height:0!important;padding:0!important;display:flex;flex-direction:column;overflow:hidden;background:#05070c;color:#fff}
+.qi-bg{position:absolute;inset:0;overflow:hidden;z-index:0}
+.qi-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;filter:blur(10px) brightness(.7);transform:scale(1.12)}
+.qi-bg:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0000 0%,#0002 30%,#0006 55%,#000a 100%)}
+.qi-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px 0 8px;flex:0 0 auto}
+.qi-back{display:grid;place-items:center;width:44px;height:44px;color:#fff}
+.qi-back .icon{width:28px;height:28px;stroke-width:2.2}
+.qi-gift{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ffffff55;border-radius:999px;font-size:14px;font-weight:700;color:#fff;background:#0004}
+.qi-gift input{width:16px;height:16px;margin:0;accent-color:#fff}
+.qi-main{position:relative;z-index:1;flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 4px}
+.qi-lead{margin:0 0 14px;font-size:18px;font-weight:800;color:#fff}
+.quick-info form{display:flex;flex-direction:column;gap:clamp(14px,3.2dvh,28px)}
+.qi-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.qi-head label,.qi-head>span{font-size:17px;font-weight:800;color:#fff}
+.qi-opts{display:flex;gap:12px}
+.qi-opt{display:inline-flex!important;align-items:center;gap:5px;font-size:15px!important;font-weight:600!important;color:#ffffffb3!important;cursor:pointer;white-space:nowrap}
+.qi-opt input{position:absolute;opacity:0;width:1px;height:1px}
+.qi-opt i{width:18px;height:18px;border-radius:50%;border:1.6px solid #ffffffb3;display:grid;place-items:center}
+.qi-opt:has(input:checked){color:#fff!important}
+.qi-opt input:checked+i{background:#fff;border-color:#fff}
+.qi-opt input:checked+i:after{content:'';width:8px;height:4px;border:solid #111;border-width:0 0 2px 2px;transform:translateY(-1px) rotate(-45deg)}
+.quick-info .qi-row input:not([type=radio]):not([type=checkbox]),.quick-info .qi-row select{width:100%;min-height:44px!important;height:44px;padding:0 4px!important;border:0!important;border-bottom:1px solid #ffffff80!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#fff!important;font-size:17px!important;-webkit-appearance:none;appearance:none}
+.quick-info .qi-row input::placeholder{color:#ffffff8c}
+.quick-info .qi-row input:disabled{opacity:.45}
+.quick-info .qi-row select{background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffffa0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 4px center/18px no-repeat!important}
+.quick-info .qi-row select.is-empty{color:#ffffff8c!important}
+.quick-info .qi-row select option{color:#111;background:#fff}
+.quick-info .qi-row input:focus,.quick-info .qi-row select:focus{border-bottom-color:#fff!important}
+.qi-sex-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.qi-sex-btns label{position:relative}
+.qi-sex-btns input{position:absolute;opacity:0;inset:0}
+.qi-sex-btns span{display:flex;align-items:center;justify-content:center;height:clamp(48px,7dvh,60px);border:1px solid #ffffffcc;border-radius:12px;font-size:17px;font-weight:700;color:#fff;cursor:pointer}
+.qi-sex-btns input:checked+span{background:#fff;color:#111}
+.qi-sex-btns input:focus-visible+span{outline:2px solid #fff;outline-offset:2px}
+.qi-err{margin:10px 0 0;font-size:14px;color:#ffb3b3}
+.qi-note{margin:8px 0 0;font-size:14px;color:#ffffffb3}
+.qi-bottom{position:relative;z-index:1;flex:0 0 auto;padding:clamp(14px,3dvh,26px) 24px calc(18px + env(safe-area-inset-bottom))}
+.qi-next{width:100%;height:56px;border:0;border-radius:12px;background:linear-gradient(90deg,#fff 0%,var(--accent) 100%);color:#111;font-size:19px;font-weight:800}
+.qi-next:disabled{background:#ffffff38;color:#ffffff8c}
+</style>
 <style id="hook-shade">.scene-flow .layered-story .story-shade{background:linear-gradient(180deg,#0003 0%,transparent 18%,#0000 26%,#0007 38%,#000b 48%,#000d 62%,#000e 78%,#000 100%)}</style>
 </head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
@@ -6138,6 +6179,7 @@ if(s.type==='scene'&&storyController?.isConnected&&storyController.productId===p
  storyController.update(p,s,{advance:()=>advance(p,i),preload:flow.slice(i+1).filter(x=>x.type==='scene').slice(0,1).map(x=>p.id+'.'+x.id)});return;
 }
 
+if(s.type==='info')return quickInfoPage(p,i,s,d);
 let body='';if(s.type==='scene')body=storyMarkup(p,s,esc);
 else if(s.type==='info')body=`<div class="flow-content birth-info-page" data-birth-tone="${p.id}">${guideStrip(p)}<span class="eyebrow">${s.who==='partner'?'OUR STORY':'YOUR STORY'}</span><h1>${s.who==='self'&&isGift(p.id)?'선물 받을 분의<br>이야기를 알려주세요':s.title}</h1><p class="muted">기억나는 만큼, 편하게 알려주세요.</p>${s.who==='self'?giftBox(p.id):''}<form id="person-form" novalidate>${s.who==='self'&&!isGift(p.id)?reuseBox(d.self,'reuse-me'):''}${personFields(s.who,d[s.who])}</form><p class="local-note">입력은 이 브라우저에 임시 저장돼요. 접수 확인 시 동의 후 서버에서 검사해요.</p></div>`;
 else if(s.type==='choice')body=`<div class="flow-content">${guideStrip(p)}<span class="eyebrow">A LITTLE MORE ABOUT YOU</span><h1>${s.title}</h1><p class="muted">${isGift(p.id)?'선물 받을 분의 입장에서 골라 주세요. ':''}${s.required?'가장 가까운 항목을 하나 골라주세요.':'편하게 골라주세요. 선택하지 않아도 괜찮아요.'}</p><div class="choices" role="radiogroup" aria-label="${s.title}">${s.options.map((o,n)=>`<label class="choice"><input type="radio" name="answer" value="${n}" ${d.answers[s.id]===o?'checked':''}><span>${o}</span><i></i></label>`).join('')}</div>${!s.required?'<button class="text-button" data-action="clear-choice">선택 지우기</button>':''}</div>`;
@@ -6230,6 +6272,64 @@ function isGift(pid=curPid()){try{return sessionStorage.getItem(GIFT_KEY+pid)===
 function setGift(pid,on){try{on?sessionStorage.setItem(GIFT_KEY+pid,'1'):sessionStorage.removeItem(GIFT_KEY+pid)}catch{}}
 function giftBox(pid){const g=isGift(pid);return `<div class="gift-pick"><p>누구의 사주인가요?</p><div class="segmented" role="group" aria-label="누구의 사주인가요"><label><input type="radio" name="gift-pick" value="me" ${g?'':'checked'}><span>내 사주</span></label><label><input type="radio" name="gift-pick" value="gift" ${g?'checked':''}><span>다른 사람 사주(선물)</span></label></div>${g?'<small>선물 받을 분의 정보를 넣어 주세요. 결과 PDF는 주문하시는 분 이메일로 보내드려요.</small>':''}</div>`}
 function bindGift(pid,d,save){document.querySelectorAll('[name=gift-pick]').forEach(el=>el.onchange=()=>{const on=el.value==='gift';setGift(pid,on);const me=savedMe();if(on&&me&&meKey(d.self)===meKey(me))d.self={};save();render()})}
+// 정보 입력 한 화면 (사장님 2026-11-03 레퍼런스): 이름·생년월일(양력/음력/윤달)·태어난 시간(시간 모름)·태어난 곳(시·도 한 줄, 지역 모름)·성별을 스크롤 없이 한 화면에.
+// 배경은 바로 앞 장면 그림을 흐리게. 만드는 값은 예전 입력칸(readPerson)과 같은 모양이라 맛보기·결제 전 화면·리포트 계산이 그대로 이어진다(제1조항).
+// 태어난 곳은 시·도까지만 받는다 → 그 시·도 대표 경도로 푼다(모르면 대한민국 대표 경도). 예전에 시·군·구까지 넣은 손님이 같은 시·도를 두면 그 값을 그대로 둔다.
+function quickDigits(v,n){return String(v||'').replace(/\D/g,'').slice(0,n)}
+function quickDate(v){const d=quickDigits(v,8);return d.length>6?d.slice(0,4)+'.'+d.slice(4,6)+'.'+d.slice(6):d.length>4?d.slice(0,4)+'.'+d.slice(4):d}
+function quickTime(v){const d=quickDigits(v,4);return d.length>2?d.slice(0,2)+':'+d.slice(2):d}
+function quickFields(who,v={}){
+ const e=birthEscape,lunar=v.calendar==='lunar',cal=lunar?(v.leap===true?'leap':'lunar'):'solar';
+ const acc=birthPrecision(v),tUnknown=acc==='unknown',time=acc==='exact'?v.time||'':'';
+ const pl=v.birthPlace||{},pUnknown=pl.status==='unknown',reg=pl.countryCode==='KR'||!pl.countryCode?resolveBirthRegion(pl).region:null;
+ const opt=(type,name,value,on,label)=>`<label class="qi-opt"><input type="${type}" name="${name}" value="${value}" ${on?'checked':''}><i aria-hidden="true"></i>${label}</label>`;
+ return `<div class="qi-row"><div class="qi-head"><label for="${who}-qi-name">이름</label></div><input id="${who}-qi-name" name="name" maxlength="30" autocomplete="off" value="${e(v.name||'')}" placeholder="이름을 입력해 주세요."></div>
+<div class="qi-row"><div class="qi-head"><label for="${who}-qi-birth">생년월일</label><div class="qi-opts" role="radiogroup" aria-label="양력 음력">${opt('radio','cal','solar',cal==='solar','양력')}${opt('radio','cal','lunar',cal==='lunar','음력')}${opt('radio','cal','leap',cal==='leap','윤달')}</div></div><input id="${who}-qi-birth" name="birth" inputmode="numeric" autocomplete="off" maxlength="10" value="${e(v.birth?String(v.birth).replace(/-/g,'.'):'')}" placeholder="0000.00.00"></div>
+<div class="qi-row"><div class="qi-head"><label for="${who}-qi-time">태어난 시간</label>${opt('checkbox','timeUnknown','1',tUnknown,'시간 모름')}</div><input id="${who}-qi-time" name="time" inputmode="numeric" autocomplete="off" maxlength="5" value="${e(time)}" placeholder="태어난 시간 입력 (예: 13:20)" ${tUnknown?'disabled':''}></div>
+<div class="qi-row"><div class="qi-head"><label for="${who}-qi-place">태어난 곳</label>${opt('checkbox','placeUnknown','1',pUnknown,'지역 모름')}</div><select id="${who}-qi-place" name="region" class="${reg&&!pUnknown?'':'is-empty'}" ${pUnknown?'disabled':''}><option value="">태어난 지역 선택 (시·도)</option>${plainRegions().map(r=>`<option value="${r.id}" ${reg?.id===r.id&&!pUnknown?'selected':''}>${e(REGION_PLAIN[r.name])}</option>`).join('')}</select></div>
+<div class="qi-row qi-sex"><div class="qi-head"><span>성별</span></div><div class="qi-sex-btns" role="radiogroup" aria-label="성별">${[['male','남성'],['female','여성']].map(([k,t])=>`<label><input type="radio" name="sex" value="${k}" ${v.sex===k?'checked':''}><span>${t}</span></label>`).join('')}</div></div>`;
+}
+function readQuick(form,prev={}){
+ const f=new FormData(form),str=n=>String(f.get(n)||'').trim(),cal=str('cal')||'solar',lunar=cal!=='solar';
+ const dd=quickDigits(str('birth'),8),birth=dd.length===8?dd.slice(0,4)+'-'+dd.slice(4,6)+'-'+dd.slice(6):'';
+ const tUnknown=!!f.get('timeUnknown'),td=quickDigits(str('time'),4),tt=td.length===4?td.slice(0,2)+':'+td.slice(2):'',time=!tUnknown&&birthTimeMinutes(tt)!==null?tt:'';
+ const pUnknown=!!f.get('placeUnknown'),region=pUnknown?null:KOREA_REGIONS.find(r=>r.id===str('region')),old=prev.birthPlace;
+ const place=!pUnknown&&region&&old&&old.regionChoice===region.id&&birthPlaceValid(old)?old:{status:pUnknown?'unknown':'region-only',countryCode:'KR',countryName:'대한민국',regionChoice:region?.id||null,regionCode:region?.code||null,regionName:region?.name||null,districtCode:null,city:null,inputMode:null,originalCity:null,listVersion:pUnknown?null:KOREA_REGIONS_VERSION,referenceEra:'unknown',referenceDate:null};
+ const value={schemaVersion:3,name:str('name'),birth,calendar:lunar?'lunar':'solar',leap:lunar?cal==='leap':false,leapStatus:lunar?(cal==='leap'?'intercalary':'regular'):'not_applicable',lunarDraft:null,solarDraft:null,
+  timeAccuracy:tUnknown?'unknown':'exact',time,unknown:tUnknown,timeRange:null,timeDraft:null,birthPlace:place,sex:str('sex')};
+ const date=validateBirthDate(value);value.solarDate=date.valid?date.solarDate:null;value.analysisInput=birthAnalysisInput(value);return value;
+}
+function quickError(form,v){
+ const f=form.elements,dd=quickDigits(f.namedItem('birth').value,8),td=quickDigits(f.namedItem('time').value,4);
+ if(dd.length===8){const r=validateBirthDate(v);if(!r.valid)return r.message}
+ if(!f.namedItem('timeUnknown').checked&&td.length===4&&!v.time)return '태어난 시간을 00:00 ~ 23:59 사이로 넣어 주세요.';
+ return '';
+}
+function bindQuick(form,prev,callback){
+ const f=form.elements,err=document.querySelector('[data-qi-err]');
+ const update=()=>{
+  const t=f.namedItem('time'),r=f.namedItem('region');t.disabled=f.namedItem('timeUnknown').checked;if(t.disabled)t.value='';
+  r.disabled=f.namedItem('placeUnknown').checked;if(r.disabled)r.value='';r.classList.toggle('is-empty',!r.value);
+  const v=readQuick(form,prev),msg=quickError(form,v);err.textContent=msg;err.hidden=!msg;callback(v,personValid(v));
+ };
+ const fmt=(el,fn)=>el.addEventListener('input',()=>{const end=el.selectionEnd===el.value.length;el.value=fn(el.value);if(end)el.setSelectionRange(el.value.length,el.value.length);update()});
+ fmt(f.namedItem('birth'),quickDate);fmt(f.namedItem('time'),quickTime);
+ form.addEventListener('input',update);form.addEventListener('change',update);update();
+}
+function quickInfoPage(p,i,s,d){
+ const gift=s.who==='self'&&isGift(p.id);
+ if(s.who==='self'&&!gift&&!d.self.name&&!d.self.birth){const me=savedMe();if(me)d.self={...me}}
+ const m=STORY_MEDIA[p.id+'.name']||STORY_MEDIA[p.id+'.intro']||{},bg=m.originalImage||m.background?storyAsset(m.originalImage||m.background):(MEDIA[p.id+'.cover']?.image||'');
+ const lead=s.who==='partner'?'그 사람의 정보를 알려 주세요':gift?'선물 받을 분의 정보를 알려 주세요':'';
+ app.innerHTML=`<div class="shell flow quick-info" style="--accent:${p.color}"><div class="qi-bg" aria-hidden="true"><img src="${esc(bg)}" alt="" decoding="async"></div>
+<header class="qi-top"><a class="qi-back" href="#${esc(pathFor(p,i-1))}" aria-label="이전 장면">${icon('back')}</a>${s.who==='self'?`<label class="qi-gift"><input type="checkbox" name="gift-pick" ${gift?'checked':''}>선물하기</label>`:''}</header>
+<main id="main" class="qi-main">${lead?`<p class="qi-lead">${lead}</p>`:''}<form id="person-form" novalidate autocomplete="off">${quickFields(s.who,d[s.who])}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p>${gift?'<p class="qi-note">결과 PDF는 주문하시는 분 이메일로 보내드려요.</p>':''}</main>
+<div class="qi-bottom"><button class="qi-next" data-next="${i}" disabled>다음으로</button></div></div>`;
+ const form=document.querySelector('#person-form'),next=document.querySelector('[data-next]'),prev=d[s.who]||{};
+ bindQuick(form,prev,(v,valid)=>{d[s.who]=v;next.disabled=!valid;if(valid&&s.who==='self'&&!isGift(p.id))rememberMe(v);save()});
+ next.onclick=()=>{const v=readQuick(form,prev);if(!personValid(v))return;d[s.who]=v;advance(p,i)};
+ const g=document.querySelector('.qi-gift input');if(g)g.onchange=()=>{setGift(p.id,g.checked);const me=savedMe();if(g.checked&&me&&meKey(d.self)===meKey(me))d.self={};save();render()};
+}
 const EXTRA_DATA={"toc":{"lifetime":[["1","내 사주 한눈에 보기","사주와 오행, 나의 사주표"],["2","타고난 기질과 사주의 구성","오행, 십신, 신살"],["3","나는 어떤 사람일까?","성격의 장점과 단점, 겉모습과 속마음"],["4","나도 모르게 반복하는 행동","반복되는 생각과 행동 패턴"],["5","나에게 잘 맞는 직업과 이직 시기","어울리는 직업, 커리어 변화"],["6","재물운이 언제 어떻게 들어올까","돈 버는 방식, 재물운이 드는 시기"],["7","연애와 결혼, 나의 인연","배우자의 특징, 결혼 시기"],["8","가족과 사람들 사이에서","가족운과 인간관계"],["9","건강을 위해 살펴볼 점","건강 흐름과 주의할 점"],["10","앞으로 10년씩 달라지는 운","10년 단위 대운"],["11","해마다 살펴보는 운세","앞으로 6년의 연도별 흐름"],["12","12개월 운세 달력","한 달씩 보는 올해의 흐름"],["13","내가 남긴 질문에 대한 답",""],["14","나에게 좋은 색·숫자·방향",""],["15","문제 해결 방법과 마지막 조언",""]],"romance":[["1","내 사주 한눈에 보기","나의 사주표와 연애에서 보이는 운명"],["2","한눈에 보는 나의 인연","운명의 시기, 사람, 만나는 곳"],["3","연애할 때 나는 어떤 사람일까","나의 첫인상, 매력, 이성이 보는 내 모습"],["4","내 연애는 왜 엇갈릴까","나도 몰랐던 나의 연애 패턴"],["5","다음 연인은 어떤 사람일까","배우자 자리로 보는 그 사람"],["6","잘 맞는 사람과 조심할 사람","사주로 보는 궁합"],["7","다음 연인은 언제 올까","나의 월별 연애운, 올해 연애운, 연도별 연애운"],["8","짝사랑, 고백, 지난 인연",""],["9","결혼운","나의 운명의 상대에 대한 모든 것"],["10","인연을 찾는 방법과 마지막 조언",""]],"reunion":[["1","내 사주 한눈에 보기","두 사람의 사주표"],["2","한눈에 보는 우리의 재회","재회 가능성, 시기, 방법"],["3","우리는 왜 헤어졌을까","우리가 헤어진 진짜 이유"],["4","나도 몰랐던 나의 이별 패턴","연애할 때 내가 반복하는 모습"],["5","그 사람은 어떤 사람이었을까","성격, 연애 방식, 지금의 마음"],["6","우리 두 사람의 궁합","끌림과 부딪힘"],["7","다시 만날 수 있을까","재회의 가능성과 조건"],["8","연락은 언제, 어떻게","나의 월별 재회운, 첫 연락 방법"],["9","다가갈까, 기다릴까","나에게 맞는 선택"],["10","앞으로의 흐름","연도별 재회운, 다시 만난 뒤"],["11","내가 남긴 질문에 대한 답",""],["12","다시 시작하는 방법과 마지막 조언",""]],"intimate":[["1","두 사람 사주 한눈에 보기","나와 그 사람의 사주표"],["2","한눈에 보는 우리의 궁합","우리의 궁합 점수와 핵심"],["3","그 사람 눈에 보이는 나","그 사람이 느끼는 나의 매력과 단점"],["4","내가 몰랐던 그 사람","성격, 속마음, 사랑 표현"],["5","우리가 서로 끌리는 이유","오행으로 보는 매력과 궁합"],["6","우리가 자주 다투는 이유","다툼이 반복되는 이유와 화해법"],["7","우리가 가까워지는 속도와 거리","친밀함과 혼자만의 시간"],["8","돈과 일상","돈 쓰는 방식, 생활 습관, 가족"],["9","우리 관계의 흐름","월별 궁합운, 연도별 궁합운"],["10","결혼과 그 이후 우리","우리의 결혼 시기와 부부가 된 모습"],["11","지금 우리 사이와 질문에 대한 답",""],["12","우리가 오랫동안 함께하는 방법","마지막 조언"]],"wealth":[["1","내 사주 한눈에 보기","나의 사주표와 재물의 운명"],["2","한눈에 보는 나의 재물운","재물 그릇, 돈 버는 방식, 좋은 해"],["3","나의 재물 그릇","타고난 돈복의 크기와 모양"],["4","내가 돈을 버는 방식","직장, 사업, 재능"],["5","돈이 빠져나가는 곳","나도 몰랐던 나의 소비 습관과 손실"],["6","내가 몰랐던 돈이 들어오는 방법","투자와 부업, 나에게 맞는 돈 불리기"],["7","나이별 재물운","10년마다 달라지는 돈의 흐름"],["8","연도별 재물운","앞으로 12년, 큰돈이 오가는 해"],["9","월별 재물운","앞으로 12개월, 돈을 쓸 달과 아낄 달"],["10","집과 노후","집 장만, 가족과 돈, 말년의 재물"],["11","지금 내 상황에 맞는 돈 전략","자주 묻는 질문"],["12","재물운을 키우는 방법과 마지막 조언",""]],"career":[["1","내 사주 한눈에 보기","나의 사주표와 일의 운명"],["2","한눈에 보는 나의 직업운","나에게 맞는 일, 이직해야 할 때"],["3","나는 어떻게 일하는 사람일까","나의 일하는 스타일과 강점"],["4","나에게 맞는 일","어울리는 직무와 분야"],["5","나는 어떤 곳에서 일하게 될까","회사, 공공기관, 프리랜서, 창업"],["6","함께 일하는 사람들","상사, 동료, 후배"],["7","이직과 움직일 때","연도별 직업운, 월별 직업운"],["8","승진과 인정","실력이 빛나는 시기와 연봉"],["9","공부와 자격","나를 키우는 배움"],["10","나이별 직업운","10년마다 달라지는 커리어"],["11","지금 나의 고민과 질문에 대한 답",""],["12","나의 다음 선택과 마지막 조언",""]],"business":[["1","내 사주 한눈에 보기","나의 사주표와 사업의 운명"],["2","한눈에 보는 나의 사업운","나의 사업 체질, 맞는 방식, 좋은 시기"],["3","일을 시작하고 키우는 성향","구체적인 나의 사업 체질과 흐름"],["4","나에게 맞는 사업","분야, 운영 방식, 장소"],["5","혼자 또는 함께 일하는 방식","동업, 직원, 거래처"],["6","손님과 돈","고객을 모으고 이익을 남기는 법"],["7","돈이 크게 들어오는 시기","재물운이 함께 들어오는 때와 나가는 때"],["8","운영과 확장 사이","넓힐 때와 유지할 때"],["9","연도별 사업운","앞으로 12년, 올해의 사업운"],["10","월별 사업운","앞으로 12개월, 계약과 오픈에 좋은 달"],["11","나이별 사업운","10년마다 달라지는 사업의 흐름"],["12","현재 나의 단계와 질문에 대한 답",""],["13","나의 사업 계획 점검표와 마지막 조언",""]],"health":[["1","내 사주 한눈에 보기","나의 사주표와 오행 균형"],["2","한눈에 보는 나의 건강운","체질, 위험한 곳, 조심할 때"],["3","타고난 체질과 기운","오행으로 보는 나의 몸"],["4","오행별로 조심할 곳","생활 속 신호와 습관"],["5","지금의 생활 리듬","하루와 일주일, 일과 활동의 균형"],["6","잠과 휴식","수면과 쉬어 가는 시간"],["7","마음 돌보기","스트레스와 감정 습관"],["8","먹고 움직이기","음식과 운동"],["9","계절과 나이별 건강운","계절 돌봄, 10년 흐름"],["10","연도별·월별 건강운","조심할 해와 달"],["11","지금의 건강 습관과 질문에 대한 답",""],["12","한 주 실천표와 마지막 조언",""]],"newyear":[["1","내 사주 한눈에 보기","나의 2027년 운명과 사주표"],["2","한눈에 보는 나의 2027년","한마디 요약, 전체 점수, 좋은 운과 나쁜 운 정리"],["3","2027년 정미년과 내 사주","새해 기운과의 궁합, 대운과 삼재 확인"],["4","일과 직장운","평가와 승진, 이직과 새 일 시작하기 좋은 시기"],["5","재물운","큰 돈이 들어오는 시기와 빠져 나가는 시기, 투자는 해야할까?"],["6","사업·부업운과 문서운","새로운 일, 계약, 집과 부동산을 시작할 때"],["7","연애운과 결혼운","새로운 사랑이 찾아오는 시기, 부부 관계"],["8","사람운과 조심할 일","나를 도와줄 은인은 누구일까, 구설·손재·관재"],["9","건강운","조심할 질병과 위험한 시기"],["10","이사·여행·시험운","움직이기 좋은 시기, 공부와 자격증"],["11","1월~12월 월별 운세","월별 해야할 일, 나에게 가장 좋은 달과 조심할 달"],["12","2027년 실천 계획과 마지막 조언","행운의 색·방향·숫자, 꼭 해야 할 일과 피할 일, 놓치면 안되는 연초 계획"]]},"header":{"lifetime":"平生四柱","romance":"戀愛四柱","reunion":"再會四柱","intimate":"宮合","wealth":"財物運","career":"職業運","business":"事業運","health":"健康運","newyear":"丁未年 新年運勢"},"event":{"start":"2026-10-27","end":"2027-02-28","label":"한정 풀이 마감까지"},"bundle":true};
 // 사이트 추가 기능 (2026-10-27 사장님 선택): 리포트 목차, 신년 이벤트 남은 날짜와 첫 화면 팝업, 할인.
 // build_site.py 가 EXTRA_DATA 와 함께 사이트 코드 안에 넣는다.
