@@ -1092,6 +1092,13 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:var(--co-ink)!important}
 .co2 .consents>div{min-height:0}.co2 .consents>div .check-line{margin:2px 0!important;min-height:38px}.co2 .consents>div button{padding:6px 0}
 </style><style>.co2 .email-hint{color:#8a8590}.co2 .email-hint b{color:#111}.co2 .email-fix{display:table;margin:6px 0 0;border-color:#111;color:#111;font-weight:600}
+</style><style>.rv-edit.rv-edit-top{margin:0;white-space:nowrap;font-size:13px;padding:5px 11px}
+.reveal-flow .flow-top{background:#000}
+.reveal-flow .rv-body{padding-top:0}
+.reveal-flow .rv-sec:first-child .rv-portrait{margin-top:0}
+.reveal-flow .rv-sec+.rv-sec .rv-portrait{height:min(110vw,470px)}
+.reveal-flow .rv-sec+.rv-sec .rv-portrait-bg{top:calc(-1*min(15vw,64px));bottom:auto;height:min(165vw,700px)}
+.reveal-flow .rv-sec+.rv-sec .rv-portrait-bg i{top:min(15vw,64px);bottom:auto;height:min(110vw,470px)}
 </style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
 MIT License
@@ -6354,7 +6361,7 @@ function draft(id){return drafts[id]||(drafts[id]={self:{},partner:{},answers:{}
 function pathFor(p,index){return `/f/${p.id}/${FLOWS[p.id][Math.max(0,index)].id}`}
 function advance(p,index){save();let back=null;try{back=sessionStorage.getItem('unmyeong.editBack');}catch{}const st=FLOWS[p.id][index];if(back===p.id&&st&&(st.type==='info'||st.who==='partner')){try{sessionStorage.removeItem('unmyeong.editBack')}catch{}const seen=typeof revealState!=='undefined'&&revealState.key===revealKey(p,draft(p.id));const c=FLOWS[p.id].findIndex(x=>x.type===(seen?'checkout':'reveal'));if(c>=0)return go(pathFor(p,c))}go(pathFor(p,index+1))}
 function bottom(p,index,label,disabled=false){return `<div class="flow-bottom"><a class="back-square" href="#${index?pathFor(p,index-1):'/'}" aria-label="이전 단계">${icon('back')}</a><button class="primary next-btn" ${disabled?'disabled':''} data-next="${index}">${label}</button></div>`}
-function progress(p,index){if(FLOWS[p.id][index]?.type==='scene')return `<div class="flow-top"><a class="icon-btn" href="#/" aria-label="홈으로">${icon('close')}</a><span>${p.name}</span><button class="icon-btn" data-story-motion aria-label="움직임 멈추기" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div>`;return `<div class="flow-top"><a class="icon-btn" href="#/" aria-label="홈으로">${icon('close')}</a><span>${p.name}</span><button class="icon-btn" data-action="sound" aria-label="${muted?'소리 켜기':'소리 끄기'}">${icon('sound')}${muted?'<i class="mute-slash"></i>':''}</button></div>`}
+function progress(p,index,right){if(FLOWS[p.id][index]?.type==='scene')return `<div class="flow-top"><a class="icon-btn" href="#/" aria-label="홈으로">${icon('close')}</a><span>${p.name}</span><button class="icon-btn" data-story-motion aria-label="움직임 멈추기" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div>`;return `<div class="flow-top"><a class="icon-btn" href="#/" aria-label="홈으로">${icon('close')}</a><span>${p.name}</span>${right||'<span class="icon-btn" aria-hidden="true"></span>'}</div>`}
 function flow(id,stepId){if(id==='compatibility'){go('/f/intimate/intro');return}const p=pById(id);if(!p)return notFound();const flow=FLOWS[id];let i=flow.findIndex(s=>s.id===stepId);if(i<0){go(pathFor(p,0));return}const s=flow[i],d=draft(id);document.title=p.name+' · '+BRAND.name;
 if(s.type==='sales')return salesPage(p,i);if(s.type==='reveal')return revealPage(p,i);if(s.type==='checkout')return checkoutPage(p,i);
 if(s.type==='scene'&&storyController?.isConnected&&storyController.productId===p.id){
@@ -6846,7 +6853,7 @@ function revealPage(p,i){
   if(REVEAL_ONE_PAGE)revealState.scene=n=REVEAL_SCENES-1;
   const body=REVEAL_ONE_PAGE?[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4].map((f,k)=>`<section class="rv-sec" id="rv-sec-${k}">${f(p,v)}</section>`).join(''):[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
   const cta=n===REVEAL_SCENES-1?`${({intimate:'깊은 궁합'})[p.id]||p.short||p.name} 지금 받아보기`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
-  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}${REVEAL_ONE_PAGE?'':`<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div>`}<main id="main"><div class="flow-content rv-body"><button type="button" class="rv-edit" data-rv-edit>입력한 정보 고치기</button>${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
+  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i,'<button type="button" class="rv-edit rv-edit-top" data-rv-edit>입력한 정보 고치기</button>')}${REVEAL_ONE_PAGE?'':`<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div>`}<main id="main"><div class="flow-content rv-body">${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
   document.activeElement?.blur?.();
   const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
   // 장면마다 브라우저 기록을 하나씩 남겨, 휴대폰 '뒤로'를 누르면 한 장면씩 돌아간다(질문 화면까지 한꺼번에 가지 않게).
