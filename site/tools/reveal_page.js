@@ -52,7 +52,7 @@ function rvScene1(p,v){const items=rvConfirmItems(v),ans=revealState.confirm,don
  return `${revealSpeech(p,`제가 사주로 본 ${v.name} 님은 이런 사람이에요. 맞는지 하나씩 눌러 주세요.`)}
  <span class="eyebrow">STEP 2 · 이거 맞죠?</span><h1>${esc(v.name)} 님,<br>이거 맞죠?</h1>
  ${items.map((it,n)=>`<div class="rv-card rv-confirm"><small>${esc(it.head)}</small><p>${esc(it.text)}</p><div class="rv-yesno" role="group"><button type="button" data-confirm="${n}" data-v="yes" class="${ans[n]==='yes'?'on':''}">맞아요</button><button type="button" data-confirm="${n}" data-v="no" class="${ans[n]==='no'?'on':''}">아니에요</button></div>${ans[n]==='no'?`<p class="rv-no">그렇게 느끼실 수 있어요. 사주는 타고난 바탕이라, 자라온 환경과 지금까지의 노력에 따라 다르게 드러나기도 해요. 리포트에서 이 부분이 ${esc(v.name)} 님에게 어떻게 드러나는지 더 자세히 풀어 드릴게요.</p>`:''}</div>`).join('')}
- <p class="rv-skip-note">눌러 보지 않아도 아래 버튼으로 다음 이야기로 넘어갈 수 있어요.</p>
+ <p class="rv-skip-note">${REVEAL_ONE_PAGE?"눌러 보지 않아도 아래로 계속 읽을 수 있어요.":"눌러 보지 않아도 아래 버튼으로 다음 이야기로 넘어갈 수 있어요."}</p>
  ${done?`<p class="rv-result">${esc(v.fill(yes>=2?v.R.CONFIRM_MANY:v.R.CONFIRM_FEW,{name:v.name,n:String(yes)}))}</p>`:''}`}
 // 3. 내 점수: 이 상품의 운 점수와 근거(맛보기와 같은 글) + 다른 운 점수까지 모두 공개
 // 막대 색과 이름은 아래 카드·무료 풀이와 같게: 무료 풀이 '좋은 운 TOP3'는 초록, '조심할 운 TOP3'는 빨강, 나머지는 보통(제1조항).
@@ -127,6 +127,7 @@ const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는
 // 결제 화면으로 넘어갈 때(주소 #만 바뀜)도 popstate가 오므로, 이야기 화면 주소 그대로일 때만 장면을 바꾼다(손님 테스트 3차: 결제 화면에서 뒤로 가면 STEP 1).
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view||location.hash!==revealState.hash)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;
+const REVEAL_ONE_PAGE=true;
 function revealPage(p,i){
  const d=draft(p.id);
  if(!personValid(d.self)){go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));return}
@@ -139,10 +140,12 @@ function revealPage(p,i){
  revealState.hash=location.hash;
  const paint=()=>{
   try{sessionStorage.setItem(SK,JSON.stringify({key,scene:revealState.scene}))}catch{}
-  const v=revealState.view,n=revealState.scene,rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
-  const body=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
+  const v=revealState.view;let n=revealState.scene;const rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
+  // 한 페이지 (사장님 2026-11-03): 다섯 장면을 줄이지 않고 그대로 위에서 아래로 이어 붙인다. 버튼은 마지막(결제) 하나.
+  if(REVEAL_ONE_PAGE)revealState.scene=n=REVEAL_SCENES-1;
+  const body=REVEAL_ONE_PAGE?[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4].map((f,k)=>`<section class="rv-sec" id="rv-sec-${k}">${f(p,v)}</section>`).join(''):[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
   const cta=n===REVEAL_SCENES-1?`전체 풀이 받기 · ${money(p.price)}`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
-  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div><main id="main"><div class="flow-content rv-body"><button type="button" class="rv-edit" data-rv-edit>입력한 정보 고치기</button>${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
+  app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i)}${REVEAL_ONE_PAGE?'':`<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div>`}<main id="main"><div class="flow-content rv-body"><button type="button" class="rv-edit" data-rv-edit>입력한 정보 고치기</button>${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${bottom(p,i,cta)}</div>`;
   document.activeElement?.blur?.();
   const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
   // 장면마다 브라우저 기록을 하나씩 남겨, 휴대폰 '뒤로'를 누르면 한 장면씩 돌아간다(질문 화면까지 한꺼번에 가지 않게).
