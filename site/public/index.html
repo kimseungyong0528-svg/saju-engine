@@ -1015,7 +1015,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .bundle-partner{border:1.5px solid var(--co-line)!important;border-radius:14px;background:#faf9fb!important;color:var(--co-ink)!important;padding:16px!important}
 .co2 .bundle-partner *{color:inherit}
 .co2 .co-more{margin-top:10px;border:0!important;background:none!important;padding:0!important}
-.co2 .co-more>summary{display:block;list-style:none;cursor:pointer;text-align:center;font-size:15px;color:#6c6570;padding:10px 0}
+.co2 .co-more>summary{display:block;list-style:none;cursor:pointer;text-align:center;font-size:15px;color:#4d4652;padding:10px 0;text-decoration:underline;text-underline-offset:4px}
 .co2 .co-more>summary::-webkit-details-marker{display:none}
 .co2 .co-more>summary:after{content:'⌄';margin-left:6px}
 .co2 .co-more[open]>summary:after{content:'⌃'}
@@ -1062,7 +1062,15 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .consents .check-line input{accent-color:#17141a;width:21px;height:21px;flex:0 0 21px}
 .co2 .consents>div button{color:#77707c!important}
 .co2 .price-box .qb-disc{background:none!important;border:0!important;padding:0!important;margin:12px 0!important}
-.co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:#2f6fd6!important}</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
+.co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:#2f6fd6!important}
+.co2 .bundle-name{min-width:0}.co2 .bundle-name small{overflow-wrap:anywhere}.co2 .bundle-price{flex:0 0 auto}
+.co2 .co-was{display:flex!important;justify-content:flex-end;align-items:baseline;gap:5px;font-size:13px!important;font-weight:400!important}
+.co2 .co-was em{font-style:normal;font-weight:800;color:#d4313b;font-size:13px}
+.co2 .bundle-x.no-first .co-was em{display:none}
+.co2 .price-box em,.co2 .price-box .qb-pct{border:0!important;padding:0!important;margin-left:4px!important;font-size:14px!important;font-weight:800;color:#d4313b!important;background:none!important}
+.co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:var(--co-ink)!important}
+.co2 .consents>div{min-height:0}.co2 .consents>div .check-line{margin:2px 0!important;min-height:38px}.co2 .consents>div button{padding:6px 0}
+</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
 MIT License
 
@@ -3811,7 +3819,7 @@ function personBirthSummary(value={}){
  const leap=value.calendar==='lunar'?(value.leap===true?' · 윤달':value.leap===false?' · 평달':' · 평달·윤달 미확인'):'';
  const date=validateBirthDate(value);
  const locationEra=place?.referenceEra==='current'?'입력 당시 지역명 · '+place.referenceDate:place?.referenceEra==='at_birth'?'출생 당시 지역명':'지역명 기준 미상';
- return e(value.birth||'생년월일 미입력')+' · '+calendar+leap+(value.calendar==='lunar'&&date.valid?'<br>양력 '+e(date.solarDate):'')+'<br>'+e(time)+'<br>'+e(location);
+ return e(value.birth||'생년월일 미입력')+' · '+calendar+leap+(value.calendar==='lunar'&&date.valid?'<br>양력 '+e(date.solarDate):'')+'<br>'+e(time)+(!place||place.status==='unknown'?'':'<br>'+e(location));
 }
 
 
@@ -6530,7 +6538,7 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 (()=>{try{const cp=new URLSearchParams(location.search).get('coupon');
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
-const CO_TOP=['lifetime','wealth','romance','newyear','career','reunion','intimate','business','health'];
+const CO_TOP=['newyear','romance','reunion','intimate','wealth','career','business','health','lifetime'];   // 사장님 2026-11-03 순서
 const CO_SUB={lifetime:'타고난 성향과 평생의 흐름',newyear:'2027년 열두 달의 흐름',romance:'다음 인연이 오는 때',reunion:'그 사람과 다시 이어질 수 있는지',intimate:'두 사람이 깊이 맞는지',wealth:'돈이 들어오는 해와 나가는 해',career:'옮기기 좋은 때와 맞는 일',business:'사업을 키울 때와 조심할 때',health:'몸이 약해지기 쉬운 때와 습관'};
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
@@ -6549,8 +6557,8 @@ function bundleBlock(p,d){
  if(d.coupon||savedCoupon())return `<p class="bundle-rebuy">재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.</p>`;
  // 함께 받아 보기 (사장님 2026-11-03): 손님이 직접 고르는 목록. 셋은 보이고, 나머지는 '더 보기'에 접어 둔다.
  const order=[...others].sort((x,y)=>(CO_TOP.indexOf(x.id)+1||99)-(CO_TOP.indexOf(y.id)+1||99)),top=order.slice(0,3),rest=order.slice(3);
- const row=x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><i class="co-check" aria-hidden="true"></i><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}<small>${esc(CO_SUB[x.id]||'')}</small></span><span class="bundle-price"><s>${money(x.price)}</s><span>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`};
- return `<section class="bundle-x co-bundle"><h2 class="co-h">함께 받아 보기</h2><p class="co-bundle-sub">처음 구매하실 때 하나 이상 더 고르면 <b>전부 10% 더 할인</b>돼요. 직접 골라 주세요.</p><div class="bundle-list">${top.map(row).join('')}</div>${rest.length?`<details class="bundle-more co-more"${rest.some(x=>on.has(x.id))?' open':''}><summary>다른 상품 ${rest.length}개 더 보기</summary><div class="bundle-list">${rest.map(row).join('')}</div></details>`:''}<p class="co-bundle-note">리포트는 한 권씩 따로 보내드려요.</p></section>`;
+ const row=x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><i class="co-check" aria-hidden="true"></i><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}<small>${esc(CO_SUB[x.id]||'')}</small></span><span class="bundle-price"><span class="co-was"><s>${money(x.price)}</s><em>10%</em></span><span>${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`};
+ return `<section class="bundle-x co-bundle"><h2 class="co-h">함께 받아 보기</h2><p class="co-bundle-sub">처음 구매하실 때 하나 이상 더 고르면<br><b>전부 10% 더 할인</b>돼요. 직접 골라 주세요.</p><div class="bundle-list">${top.map(row).join('')}</div>${rest.length?`<details class="bundle-more co-more"${rest.some(x=>on.has(x.id))?' open':''}><summary>다른 상품 ${rest.length}개 더 보기</summary><div class="bundle-list">${rest.map(row).join('')}</div></details>`:''}<p class="co-bundle-note">리포트는 한 권씩 따로 보내드려요.</p></section>`;
 }
 const QUOTE_NOTES={EXTRA_ANSWERS:'함께 살 리포트의 질문과 상대방 정보를 채워야 결제할 수 있어요.',BUNDLE_FIRST_ONLY:'묶음 할인은 첫 구매 때만 돼요. 이 이메일로 구매하신 적이 있어요.',EMAIL_FOR_DISCOUNT:'이메일을 넣으면 첫 구매인지 확인해서 묶음 할인을 적용해 드려요.'};
 function quoteBox(p,q){
@@ -6566,7 +6574,7 @@ function quoteBox(p,q){
  // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
  const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
  const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워야 결제할 수 있어요.`:QUOTE_NOTES[n]}</p>`).join('');
- return `<div class="price-box">${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인</span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:wait?`<span class="qb-final"><strong>${money(q.amount)}</strong><small>첫 구매라면 <b>${money(q.base-cut)}</b></small></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
+ return `<div class="price-box">${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>최종 금액</span>${q.discount?`<span class="qb-final"><s>${money(q.base)}</s><strong>${money(q.amount)}</strong></span>`:wait?`<span class="qb-final"><strong>${money(q.amount)}</strong><small>첫 구매라면 <b>${money(q.base-cut)}</b></small></span>`:`<strong>${money(q.amount)}</strong>`}</div></div>${notes}`;
 }
 // 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
 function showBundleGap(){
