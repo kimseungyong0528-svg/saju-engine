@@ -43,8 +43,8 @@
   to = "/?from=dw&go=wealth"
   status = 302
 [[redirects]]
-  from = "/ds"
-  to = "/?from=ds&go=taster"
+  from = "/df"
+  to = "/?from=df&go=taster"
   status = 302
 [[redirects]]
   from = "/t"
