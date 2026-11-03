@@ -16,7 +16,7 @@ function tasterPage(){
   const lp=pById('lifetime'),m=STORY_MEDIA['lifetime.name']||STORY_MEDIA['lifetime.intro']||{},bg=m.originalImage||m.background?storyAsset(m.originalImage||m.background):(MEDIA['lifetime.cover']?.image||'');
   app.innerHTML=`<div class="shell flow quick-info taster-quick" style="--accent:${lp.color}"><div class="qi-bg" aria-hidden="true">${m.character&&m.background?`<img src="${esc(storyAsset(m.background))}" alt="" decoding="async"><img class="qi-person" src="${esc(storyAsset(m.character))}" alt="" decoding="async">`:`<img src="${esc(bg)}" alt="" decoding="async">`}</div>
 <header class="qi-top"><a class="qi-back" href="#/" aria-label="홈으로">${icon('back')}</a></header>
-<main id="main" class="qi-main"><form id="taster-form" novalidate autocomplete="off">${quickFields('taster',tasterState.person)}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p></main>
+<main id="main" class="qi-main"><div class="taster-intro"><h1>내 사주에서<br>좋은 운 3개, 조심할 운 3개</h1><p>생년월일과 태어난 시간을 넣으면<br>연애·결혼·재회·돈·직장·사업·건강·2027년<br>여덟 가지 운 중 좋은 운 3개, 조심할 운 3개를<br>바로 보여드려요. 무료입니다.</p></div><form id="taster-form" novalidate autocomplete="off">${quickFields('taster',tasterState.person)}</form><p class="qi-err" data-qi-err hidden aria-live="polite"></p></main>
 <div class="qi-bottom"><button class="qi-next" id="taster-submit" type="button" disabled>무료로 내 운 보기</button></div></div>`;
   const f=document.querySelector('#taster-form'),btn=document.querySelector('#taster-submit'),prev=tasterState.person;
   bindQuick(f,prev,(v,valid)=>{tasterState.person=v;btn.disabled=!valid});
