@@ -1096,10 +1096,13 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .reveal-flow .flow-top{background:#000}
 .reveal-flow .rv-body{padding-top:0}
 .reveal-flow .rv-sec:first-child .rv-portrait{margin-top:0}
-.reveal-flow .rv-sec+.rv-sec .rv-portrait{height:min(110vw,470px)}
-.reveal-flow .rv-sec+.rv-sec .rv-portrait-bg{top:calc(-1*min(15vw,64px));bottom:auto;height:min(165vw,700px)}
-.reveal-flow .rv-sec+.rv-sec .rv-portrait-bg i{top:min(15vw,64px);bottom:auto;height:min(110vw,470px)}
-</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
+/* 멘트 시작 위치를 모든 사진에서 같게(사장님 2026-11-03): 인물 기준 가슴 조금 아래(--q)에서 멘트가 시작하고, 사진은 멘트 끝에서 자른다 */
+.reveal-flow .rv-portrait{--shift:0px;--q:min(100vw,427px);height:auto;background:#000;padding:calc(var(--q) - var(--shift)) 0 22px}
+.reveal-flow .rv-sec+.rv-sec .rv-portrait{--shift:min(15vw,64px)}
+.reveal-flow .rv-portrait-bg{top:calc(-1*var(--shift));bottom:auto;height:min(165vw,700px)}
+.reveal-flow .rv-portrait-bg i{background:linear-gradient(180deg,#0000 0,#0000 calc(var(--q) - 170px),#0009 calc(var(--q) - 60px),#000e calc(var(--q) + 10px),#000 calc(var(--q) + 60px))}
+.reveal-flow .rv-portrait-quote{position:relative;bottom:auto}
+</style><style>.reveal-flow .rv-faq{padding-top:14.5px;padding-bottom:0}</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
 MIT License
 
@@ -6828,7 +6831,7 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  ${toc[0]?`<div class="rv-ch open"><span class="tp-no">${esc(String(toc[0][0]))}</span><div><b>${esc(toc[0][1])}</b><p>${esc(c.items[0].text)}</p>${c.items[4]?`<p>${esc(c.items[4].text)}</p>`:''}<p>${esc(c.items[3].text.replace(/^.*?점수입니다\.\s*/,''))}</p><p class="rv-fade" aria-hidden="true">${esc(RV_FILL[0])}</p><p class="rv-more">여기까지는 1장의 첫머리예요. 리포트에서 1장은 사주 근거, 생활 장면, 실천법까지 여러 쪽에 걸쳐 이어집니다.</p></div></div>`:''}
  ${toc.slice(1).map(t=>`<div class="rv-ch"><span class="tp-no">${esc(String(t[0]))}</span><div><b>${esc(t[1])}</b><p class="rv-blur" aria-hidden="true">${esc(t[2]||`${v.name} 님 사주로 풀어 드리는 이 장의 내용`)}</p><p class="rv-blur rv-blur-more" aria-hidden="true">${esc(RV_FILL[1])}</p></div>${icon('lock')}</div>`).join('')}
  </div></div>
- <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
+ <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의<br>${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 ${p.id==='lifetime'?100:50}장 이상 분량으로 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
  <!-- 가격 안내는 결제 화면에만 (사장님 2026-11-03) -->
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
