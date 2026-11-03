@@ -1083,10 +1083,10 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co2 .consents>div button{color:#77707c!important}
 .co2 .price-box .qb-disc{background:none!important;border:0!important;padding:0!important;margin:12px 0!important}
 .co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:#2f6fd6!important}
-.co2 .bundle-name{min-width:0;padding-right:4px}.co2 .bundle-name small{white-space:normal;word-break:keep-all}.co2 .bundle-name small{overflow-wrap:anywhere}.co2 .bundle-price{flex:0 0 auto}
+.co2 .bundle-name{min-width:0;padding-right:4px}.co2 .bundle-name small{white-space:nowrap;letter-spacing:-.03em;font-size:min(14px,3.45vw)!important}.co2 .bundle-item{gap:10px!important;padding:16px 14px!important}.co2 .bundle-name small{overflow-wrap:anywhere}.co2 .bundle-price{flex:0 0 auto}
 .co2 .qb-final{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.co2 .qb-was{display:flex;align-items:baseline;gap:6px}.co2 .qb-was s{font-size:14px!important;color:#a39ca6!important}
 .co2 .co-was{display:flex!important;justify-content:flex-end;align-items:baseline;gap:5px;font-size:13px!important;font-weight:400!important}
-.co2 .co-was em{font-style:normal;font-weight:800;color:#d4313b;font-size:13px}
+.co2 .co-was em{margin:0!important;font-style:normal;font-weight:800;color:#d4313b;font-size:13px}
 .co2 .bundle-x.no-first .co-was em{display:none}
 .co2 .price-box em,.co2 .price-box .qb-pct{border:0!important;padding:0!important;margin-left:4px!important;font-size:14px!important;font-weight:800;color:#d4313b!important;background:none!important}
 .co2 .price-box .qb-disc span,.co2 .price-box .qb-disc strong{color:var(--co-ink)!important}
@@ -6562,7 +6562,7 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
 const CO_TOP=['newyear','romance','reunion','intimate','wealth','career','business','health','lifetime'];   // 사장님 2026-11-03 순서
-const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 연인은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'나에게 맞는 일과 이직/\u2060승진할 때',business:'나에게 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
+const CO_SUB={newyear:'2027년 열두 달의 흐름',romance:'다음 연인은 언제, 어떤 사람',reunion:'그 사람과 다시 만날 수 있을까',intimate:'우리의 인연과 궁합',wealth:'돈이 들어오는 때와 나가는 때',career:'잘 맞는 일과 이직/승진할 때',business:'잘 맞는 사업과 돈이 오는 시기',health:'타고난 체질과 위험할 때',lifetime:'돈·일·연애·건강 평생의 흐름'};   // 사장님 2026-11-03 고름
 function bundleBlock(p,d){
  if(!EXTRA_DATA.bundle)return '';
  const pair=FLOWS[p.id].some(st=>st.who==='partner');
