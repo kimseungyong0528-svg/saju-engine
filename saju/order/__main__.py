@@ -39,26 +39,34 @@ def writer():
     return ClaudeWriter()
 
 
+TRIES = 4  # 검사를 통과할 때까지 처음부터 다시 쓴다(한 번에 AI 비용 약 500원). 4번 다 막히면 보류하고 사장님께 알린다.
+
+
 def build(job: dict) -> tuple[bytes | None, str]:
-    """PDF를 만든다. 실패하면 한 번만 다시 만든다(다시 만들면 API 비용이 또 든다)."""
+    """PDF를 만든다. 글 검사에서 막히거나 작성이 실패하면 통과할 때까지 다시 만든다(최대 TRIES번).
+
+    사장님 2026-11-04: "보내질 때까지 계속 검수하고 스스로 고치고 하게 해".
+    """
     last = ""
-    for attempt in (1, 2):
+    for attempt in range(1, TRIES + 1):
         try:
             with tempfile.TemporaryDirectory() as d:
                 out = Path(d) / "report.pdf"
                 w = writer()
                 r = make_pdf(job, out, w)
                 bad = blocking(r["issues"])
-                print(f"{job['productId']}: {r['pages']}쪽, 검사 문제 {len(r['issues'])}곳(막는 문제 {len(bad)}곳), 글 {type(w).__name__}")
-                if bad:
-                    return None, "글 검사: " + ", ".join(sorted({i['kind'] for i in bad}))
-                return out.read_bytes(), ""
+                print(f"{attempt}번째: {job['productId']} {r['pages']}쪽, 검사 문제 {len(r['issues'])}곳(막는 문제 {len(bad)}곳), 글 {type(w).__name__}")
+                if not bad:
+                    return out.read_bytes(), ""
+                # 개인정보 없이 어떤 검사에 막혔는지만 남긴다
+                last = "글 검사: " + ", ".join(sorted({i['kind'] for i in bad}))
+                print(f"{attempt}번째 막힘 → {last}")
         except Exception as e:  # 개인정보가 섞일 수 있는 내용은 남기지 않고 종류만 남긴다
-            last = type(e).__name__
-            print(f"{attempt}번째 작성 실패: {last}")
-            if attempt == 1:
-                status(job["orderId"], "retry", last)
-    return None, f"PDF 작성 실패: {last}"
+            last = f"PDF 작성 실패: {type(e).__name__}"
+            print(f"{attempt}번째 작성 실패: {type(e).__name__}")
+        if attempt < TRIES:
+            status(job["orderId"], "retry", last)
+    return None, last
 
 
 def run(order_id: str) -> int:
