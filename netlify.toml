@@ -48,7 +48,7 @@
   status = 302
 [[redirects]]
   from = "/t"
-  to = "/?from=t"
+  to = "/?from=t&go=taster"
   status = 302
 [[redirects]]
   from = "/i"

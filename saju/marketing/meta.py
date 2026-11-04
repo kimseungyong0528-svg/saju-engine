@@ -210,7 +210,7 @@ def _th_post(text: str, tok: str, reply_to: str = "") -> str:
     return _http("POST", f"{T}/me/threads_publish", {"creation_id": cid, "access_token": tok})["id"]
 
 
-FOLLOW_LINK = "운명서재에서 정확한 내 사주 보기 👉 https://unmyeong-saju.com/t"  # /t = 스레드에서 온 손님으로 센다 (사장님 2026-11-03)
+FOLLOW_LINK = "운명서재에서 무료로 나의 좋은 운, 나쁜 운 3개씩 알아보기 👉 https://unmyeong-saju.com/t"  # /t = 스레드 손님, 무료 풀이 화면으로 감 (사장님 2026-11-04, 심사 100점)
 
 
 def with_link(parts: list[str]) -> list[str]:
