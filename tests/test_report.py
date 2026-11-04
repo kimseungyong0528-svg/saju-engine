@@ -124,7 +124,11 @@ def test_cross_sell_follows_site_order(facts):
     assert [p["id"] for p in items] == ["newyear", "romance", "intimate", "reunion", "wealth", "career", "business", "health"]
     assert items[1]["url"] == "https://unmyeong.test/#/f/romance/intro"
     assert all(p["hook"] for p in items)
-    assert items[1]["original_text"] == "55,000원" and items[1]["discount"] == 46 and items[1]["price_text"] == "29,800원"
+    assert items[1]["price_text"] == "29,800원"
+    # 판 적 없는 정가·할인율은 리포트에 보이지 않는다(표시광고법, P-12·P-16, 11-05)
+    from pathlib import Path
+    tpl = (Path(__file__).resolve().parents[1] / "saju/report/templates/report.html.j2").read_text(encoding="utf-8")
+    assert "original_text" not in tpl and "p.discount" not in tpl
     assert "재성이 없어서" in next(p for p in items if p["id"] == "wealth")["hook"]
     # 재구매 할인 링크: 리포트 끝 링크로 들어가야만 10% 할인되므로 모든 상품 링크에 코드가 붙는다.
     coupon = cross_sell(facts, site="https://unmyeong.test", coupon="UNM-ABC234")

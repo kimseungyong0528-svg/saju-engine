@@ -224,7 +224,7 @@
   {% if f.rebuy %}<p class="more-rebuy">아래 리포트도 마찬가지로, 이 책 안의 링크로 들어가면 10% 추가로 할인해 드려요.</p>{% endif %}
   {% for p in more %}
   <div class="product">
-    <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="price"><s>{{ p.original_text }}</s> <em>{{ p.discount }}%</em> <strong>{{ p.price_text }}</strong>{% if p.rebuy_text %}<br><span class="rebuy-price">10% 추가 할인 <strong>{{ p.rebuy_text }}</strong></span>{% endif %}</span></div>
+    <div class="product-head"><a href="{{ p.url }}"><b class="han">{{ p.name }}</b></a><span class="price"><strong>{{ p.price_text }}</strong>{% if p.rebuy_text %}<br><span class="rebuy-price">10% 추가 할인 <strong>{{ p.rebuy_text }}</strong></span>{% endif %}</span></div>
     <p class="product-line">{{ p.line }}</p>
     <p class="hook">{{ p.hook }}<a class="go" href="{{ p.url }}">바로 보기{% if p.rebuy_text %} (10% 추가 할인){% endif %} →</a></p>
   </div>{% endfor %}
