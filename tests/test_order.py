@@ -36,6 +36,11 @@ def test_blocking_only_fact_errors():
     assert blocking(issues) == [{"kind": "점수"}]
 
 
+def test_shown_year_missing_blocks_sending():
+    """손님이 결제 전 화면에서 본 해·달이 리포트에 빠지면 보내지 않고 다시 쓴다(제1조항, P-29)."""
+    assert blocking([{"kind": "화면 연도"}, {"kind": "반복"}]) == [{"kind": "화면 연도"}]
+
+
 @pytest.mark.parametrize("product,answers,partner", [
     ("lifetime", {"occupation": "직장에 다니고 있어요"}, None),
     ("reunion", {"breakup": "3개월 이내예요"}, PARTNER),
