@@ -188,7 +188,12 @@ test('결제창 앞뒤: 온 곳마다 결제하기 누른 사람·결제·안 �
   await o('f', { source: 'dw', email: 'f@x.kr', testOnly: true, status: 'test_paid', paidAt: 'x' }); // 시험 결제 제외
   await o('g', { source: 'dw', email: 'g@x.kr', status: 'payment_expired', createdAt: '2026-10-01T00:00:00Z' }); // 14일 밖
   const f = await sourceFunnel(t.store, now);
-  assert.equal(f.from, '2026-10-23');
+  assert.equal(f.from, '2026-10-23'); assert.equal(f.to, '2026-11-05');
+  // 기간 고르기: 11-05 하루만 → df 1명만
+  const d5 = await sourceFunnel(t.store, now, 14, { from: '2026-11-05', to: '2026-11-05' });
+  assert.deepEqual(Object.keys(d5.sources), ['df']);
+  // 잘못된 날짜는 무시하고 기본 14일
+  assert.equal((await sourceFunnel(t.store, now, 14, { from: 'x' })).from, '2026-10-23');
   assert.deepEqual(f.sources, {
     dw: { started: 2, paid: 1, unpaid: 1, waiting: 0, amount: 29800 },
     df: { started: 1, paid: 0, unpaid: 0, waiting: 1, amount: 0 },

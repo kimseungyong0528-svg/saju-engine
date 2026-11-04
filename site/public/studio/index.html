@@ -327,7 +327,7 @@ async function loadDaily() {
 async function loadFunnel() {
   const box = $('#funnelBody');
   try {
-    const { from, sources } = await api('funnel');
+    const { from, to, sources } = await api('funnel');
     const rows = Object.entries(sources).sort((a, b) => b[1].started - a[1].started);
     if (!rows.length) { box.textContent = '최근 14일 동안 결제하기를 누른 손님이 없어요.'; return; }
     const t = el('table', {}, el('tr', {}, ...['들어온 곳', '결제하기 누름', '결제함', '결제 안 함', '결제율'].map(h => el('th', {}, h))));
@@ -336,7 +336,7 @@ async function loadFunnel() {
       t.append(el('tr', {}, el('td', {}, SOURCE_NAMES[k] || k), el('td', { class: 'n' }, v.started + '명'), el('td', { class: 'n' }, v.paid + '명'),
         el('td', { class: 'n' }, v.unpaid + (v.waiting ? ` (+ 결제창 열림 ${v.waiting})` : '')), el('td', { class: 'n' }, rate)));
     }
-    box.replaceChildren(t, el('p', { class: 'note' }, `${from}부터. 같은 사람이 같은 날 같은 상품을 여러 번 눌러도 한 명으로 셉니다. 결제창까지 왔다가 결제하지 않은 사람이 많으면 결제창·가격 쪽, 적으면 그 앞(소개·정보 입력) 쪽을 봅니다.`));
+    box.replaceChildren(t, el('p', { class: 'note' }, `${from} ~ ${to}. 기간을 바꿔 보려면 /api/studio/funnel?from=YYYY-MM-DD&to=YYYY-MM-DD. 같은 사람이 같은 날 같은 상품을 여러 번 눌러도 한 명으로 셉니다. 결제창까지 왔다가 결제하지 않은 사람이 많으면 결제창·가격 쪽, 적으면 그 앞(소개·정보 입력) 쪽을 봅니다.`));
   } catch { box.textContent = '불러오지 못했어요.'; }
 }
 async function loadSources() {
