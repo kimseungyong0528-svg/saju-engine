@@ -179,6 +179,8 @@ export function makeStudio({ store, services, env, orderStore = store }) {
       }
       return json({ months });
     }
+    // 일별 주문과 발송 결과(사장님 2026-11-04 "일별 주문 횟수랑 성공실패"). 최근 14일, 한국 날짜 기준.
+    if (route === 'studio/daily' && m === 'GET') return json({ days: await dailyOrders(orderStore) });
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;
@@ -246,4 +248,34 @@ export async function eraseOldWeeks(store, now = Date.now()) {
   }
   if (gone.length) await store.set('weeks', keep);
   return gone.length;
+}
+
+// 결제된 리포트 하나의 결과: 보냄 / 보류(못 보냄) / 만드는 중 / 취소. 개인정보 지우기로 'erased'가 돼도 발송 시각·기록으로 가린다.
+export function outcomeOf(order) {
+  if (order.emailedAt) return 'sent';
+  const last = [...(order.history || [])].reverse().find(h => h.status !== 'erased')?.status || order.status;
+  if (last === 'held') return 'held';
+  if (['queued', 'processing', 'retry'].includes(last)) return 'running';
+  if (['refund_pending', 'refunded', 'payment_adjusted'].includes(last)) return 'canceled';
+  return 'other';
+}
+
+export async function dailyOrders(store, now = new Date(), days = 14) {
+  const kstDay = t => new Date(new Date(t).getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+  const out = {};
+  for (let i = 0; i < days; i++) out[kstDay(now.getTime() - i * 86_400_000)] = { orders: 0, amount: 0, books: 0, sent: 0, held: 0, running: 0, canceled: 0, late: 0 };
+  for (const key of await store.list('orders/')) {
+    const o = await store.get(key);
+    // 묶음으로 함께 산 책(parentId)은 결제 승인 때 만들어지므로 만든 시각이 결제 시각이다
+    const paid = o?.paidAt || (o?.parentId && o.createdAt);
+    if (!paid || o.testOnly) continue;
+    const row = out[kstDay(paid)];
+    if (!row) continue;
+    if (!o.parentId) { row.orders += 1; row.amount += o.amount || 0; }
+    row.books += 1;
+    const r = outcomeOf(o);
+    if (r in row) row[r] += 1;
+    if (r === 'sent' && (o.history || []).some(h => h.status === 'held')) row.late += 1;
+  }
+  return Object.entries(out).map(([date, v]) => ({ date, ...v }));
 }

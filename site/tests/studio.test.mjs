@@ -152,3 +152,23 @@ test('손님이 온 곳: 로그인한 사장님만 최근 3달 결제 수를 본
   assert.equal(j.months.length, 3); assert.equal(j.months[0].month, month);
   assert.deepEqual(j.months[0].sources.d, { orders: 2, amount: 59600 });
 });
+
+test('일별 주문: 결제·보냄·보류·만드는 중을 날짜별로 센다', async () => {
+  const { dailyOrders } = await import('../netlify/functions/lib/studio.mjs');
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/studio/daily')).status, 401);
+  const now = new Date('2026-11-04T07:00:00Z');
+  const h = (...s) => s.map(status => ({ status, at: now.toISOString() }));
+  await t.store.set('orders/a', { id: 'a', paidAt: '2026-11-04T01:54:00Z', amount: 29800, emailedAt: 'x', status: 'erased', history: h('queued', 'held', 'retry', 'email_accepted', 'erased') });
+  await t.store.set('orders/b', { id: 'b', paidAt: '2026-11-04T02:00:00Z', amount: 49800, status: 'held', history: h('queued', 'held'), children: ['c'] });
+  await t.store.set('orders/c', { id: 'c', parentId: 'b', createdAt: '2026-11-04T02:00:00Z', amount: 0, status: 'processing', history: h('queued', 'processing') });
+  await t.store.set('orders/d', { id: 'd', paidAt: '2026-11-03T16:00:00Z', amount: 29800, testOnly: true, status: 'test_paid', history: h('test_paid') });
+  await t.store.set('orders/e', { id: 'e', paidAt: '2026-11-02T05:00:00Z', amount: 29800, status: 'refunded', history: h('queued', 'refunded') });
+  await t.store.set('orders/f', { id: 'f', status: 'payment_expired', history: h('payment_expired') });
+  const days = await dailyOrders(t.store, now);
+  assert.equal(days.length, 14); assert.equal(days[0].date, '2026-11-04');
+  assert.deepEqual(days[0], { date: '2026-11-04', orders: 2, amount: 79600, books: 3, sent: 1, held: 1, running: 1, canceled: 0, late: 1 });
+  assert.equal(days[2].canceled, 1);
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  assert.equal((await (await t.call('GET', '/api/studio/daily')).json()).days.length, 14);
+});
