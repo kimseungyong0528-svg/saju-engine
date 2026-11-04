@@ -180,17 +180,51 @@ test('8개 상품 모두 서버 접수 확인이 된다', async () => {
   }
 });
 
-test('결제 뒤 1시간 넘게 멈춘 주문은 사장님께 한 번만 알림', async () => {
+test('결제 뒤 1시간 넘게 멈춘 주문은 자동으로 한 번 다시 돌리고, 그래도 멈추면 사장님께 한 번만 알림', async () => {
   const t = setup();
   const { body: o } = await order(t);
   const { body: unpaid } = await order(t);
   await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
-  t.calls.owner.length = 0;
-  const services = { notifyOwner: async (ord, note) => { t.calls.owner.push(ord.id); } };
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 30 * 60_000)), 0);
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 2 * 3_600_000)), 1);
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 3 * 3_600_000)), 0);
-  assert.deepEqual(t.calls.owner, [o.orderId]); assert.ok(unpaid.orderId);
+  t.calls.owner.length = 0; t.calls.dispatch.length = 0;
+  const services = { startWorker: async id => { t.calls.dispatch.push(id); }, notifyOwner: async (ord, note) => { t.calls.owner.push(ord.id); } };
+  const at = h => new Date(Date.now() + h * 3_600_000);
+  assert.equal(await flagStuck(t.store, services, at(0.5)), 0);
+  assert.equal(await flagStuck(t.store, services, at(2)), 1); // 자동 재실행 1번
+  assert.deepEqual(t.calls.dispatch, [o.orderId]); assert.deepEqual(t.calls.owner, []);
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  assert.equal(await flagStuck(t.store, services, at(2.5)), 0);
+  assert.equal(await flagStuck(t.store, services, at(3.5)), 1); // 그래도 멈춤 → 알림
+  assert.equal(await flagStuck(t.store, services, at(5)), 0); // 다시 돌리거나 알리지 않음
+  assert.deepEqual(t.calls.dispatch, [o.orderId]); assert.deepEqual(t.calls.owner, [o.orderId]); assert.ok(unpaid.orderId);
+});
+
+test('발송 보류(held)된 주문은 1시간 뒤 자동으로 한 번만 다시 만든다', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const W = { 'X-Worker-Secret': 'worker-secret' };
+  await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'held', note: '글 검사: 점수' }, headers: W });
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'held');
+  t.calls.dispatch.length = 0;
+  const services = { startWorker: async id => { t.calls.dispatch.push(id); }, notifyOwner: async () => {} };
+  const at = h => new Date(Date.now() + h * 3_600_000);
+  assert.equal(await flagStuck(t.store, services, at(2)), 1);
+  assert.deepEqual(t.calls.dispatch, [o.orderId]);
+  // 다시 돌린 작업이 또 보류하면 더는 자동으로 돌리지 않는다(보류 알림은 이미 감)
+  const held = await t.store.get(`orders/${o.orderId}`);
+  held.status = 'held'; held.updatedAt = at(2.2).toISOString(); await t.store.set(`orders/${o.orderId}`, held);
+  assert.equal(await flagStuck(t.store, services, at(5)), 0);
+  assert.deepEqual(t.calls.dispatch, [o.orderId]);
+});
+
+test('작업 시작(dispatch)이 실패해 retry로 남은 주문도 자동으로 다시 시작한다', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const x = await t.store.get(`orders/${o.orderId}`); x.status = 'retry'; await t.store.set(`orders/${o.orderId}`, x);
+  const sent = [];
+  assert.equal(await flagStuck(t.store, { startWorker: async id => { sent.push(id); }, notifyOwner: async () => {} }, new Date(Date.now() + 2 * 3_600_000)), 1);
+  assert.deepEqual(sent, [o.orderId]);
 });
 
 test('개인정보 지우기: 발송 즉시 출생 정보 삭제, PDF는 7일 뒤 삭제, 미결제 주문은 하루 뒤 만료', async () => {

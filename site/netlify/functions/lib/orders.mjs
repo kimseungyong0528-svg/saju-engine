@@ -235,13 +235,30 @@ export async function resend(store, services, order, idempotencyKey, now = new D
 // 멈춘 주문 알림: 결제는 됐는데 1시간이 넘도록 결과 작업이 끝나지 않은 주문(작업 서버가 꺼졌을 때 등)을 사장님 메일로 한 번 알린다.
 const RUNNING = new Set(['queued', 'processing', 'retry']);
 
+// 한 시간마다(cleanup): 결제 뒤 1시간 넘게 끝나지 않았거나 발송 보류된 주문은 결과 작업을 자동으로 한 번 다시 시작하고,
+// 그래도 1시간 넘게 안 끝나면 사장님께 한 번 알린다. (11-04 재물운 주문이 5시간 50분 방치된 일, P-22)
+const AUTO_RETRY = new Set(['queued', 'processing', 'retry', 'held']);
 export async function flagStuck(store, services, now = new Date()) {
   let flagged = 0;
   for (const key of await store.list('orders/')) {
     const order = await store.get(key);
-    if (!order || !RUNNING.has(order.status) || order.stuckNotifiedAt) continue;
+    if (!order || !AUTO_RETRY.has(order.status)) continue;
     if ((now - new Date(order.updatedAt)) / 3_600_000 < 1) continue;
-    await services.notifyOwner?.(order, `결과 작업이 1시간 넘게 끝나지 않았어요 (상태 ${order.status})`, 'stuck').catch(() => {});
+    if (!order.autoRetriedAt && order.payload) {
+      order.autoRetriedAt = now.toISOString();
+      const from = order.status;
+      try {
+        await services.startWorker(order.id);
+        setStatus(order, 'queued', now, `auto retry from ${from}`);
+      } catch {
+        setStatus(order, 'retry', now, 'auto retry dispatch failed');
+      }
+      await store.set(key, order);
+      flagged += 1;
+      continue;
+    }
+    if (!RUNNING.has(order.status) || order.stuckNotifiedAt) continue;
+    await services.notifyOwner?.(order, `결과 작업이 1시간 넘게 끝나지 않았어요 (상태 ${order.status}, 자동 재실행 ${order.autoRetriedAt ? '했음' : '못 함'})`, 'stuck').catch(() => {});
     order.stuckNotifiedAt = now.toISOString();
     await store.set(key, order);
     flagged += 1;
