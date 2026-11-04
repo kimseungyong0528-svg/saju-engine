@@ -1,0 +1,50 @@
+# 자동 합치기 (대표님 2026-11-05 "내가 머지 컨펌 하는거 니가 자동화하는 방법 찾으랬잖아")
+# 이 파일은 대표님이 이 PR을 직접 합쳐야 켜진다. 끄려면 이 파일을 지우거나 저장소 Actions에서 끈다.
+#
+# 언제 합치나: claude/ 로 시작하는 가지의 PR이 '통일성 검사'를 초록불로 통과했을 때.
+# 안 합치는 것:
+#   - 손님 눈에 보이는 화면·글·디자인을 바꾸는 PR (대표님 2026-11-05 "디자인이나 카피라이팅은
+#     저녁 보고 때 허락 받고 진행") → 대표님이 허락한 뒤 '허락됨' 꼬리표가 붙어야 합친다.
+#   - '합치지마' 꼬리표가 붙은 PR, 다른 사람 저장소에서 온 PR.
+name: 자동 합치기
+
+on:
+  workflow_run:
+    workflows: ["통일성 검사"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'claude/') &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: PR 찾기와 조건 확인, 합치기
+        run: |
+          set -euo pipefail
+          pr=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number,headRefOid,labels \
+               --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
+          [ -n "$pr" ] || { echo "열린 PR 없음 또는 검사 뒤 새 커밋이 올라옴 → 건너뜀"; exit 0; }
+          labels=$(gh pr view "$pr" -R "$REPO" --json labels --jq '[.labels[].name]|join(",")')
+          case ",$labels," in *",합치지마,"*) echo "#$pr 합치지마 꼬리표 → 건너뜀"; exit 0;; esac
+          # 손님 눈에 보이는 곳: 사이트 화면, 리포트 글·모양, 풀이 글, 광고·SNS 글
+          visible=$(gh pr diff "$pr" -R "$REPO" --name-only | grep -E '^(site/public/|saju/report/templates/|saju/marketing/video/.*\.html$|saju/marketing/formula/banks\.json|site/public/studio/rules\.json)' || true)
+          if [ -n "$visible" ]; then
+            case ",$labels," in *",허락됨,"*) echo "#$pr 보이는 변경, 대표님 허락됨";;
+              *) echo "#$pr 손님에게 보이는 파일을 바꿈 → 대표님 허락(허락됨 꼬리표) 전까지 안 합침:"; echo "$visible"; exit 0;; esac
+          fi
+          gh pr ready "$pr" -R "$REPO" || true
+          gh pr merge "$pr" -R "$REPO" --merge --match-head-commit "$SHA"
+          echo "#$pr 합침"
