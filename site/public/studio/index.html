@@ -215,6 +215,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
   <details id="rules"><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
   <details id="daily" class="rules-like"><summary id="dailySum">일별 주문 (보냄·못 보냄)</summary><div id="dailyBody">불러오는 중…</div></details>
   <details id="sources" class="rules-like"><summary>손님이 온 곳 (결제 수)</summary><div id="sourcesBody">불러오는 중…</div></details>
+  <details id="funnel" class="rules-like"><summary>결제창 앞뒤 (최근 14일)</summary><div id="funnelBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -298,7 +299,7 @@ async function boot() {
   const me = await fetch('/api/studio/me').then(r => r.json()).catch(() => ({}));
   if (!me.loggedIn) return show('login');
   show('app');
-  loadSources(); loadDaily();
+  loadSources(); loadDaily(); loadFunnel();
   await loadWeeks();
 }
 // 손님이 온 곳: 짧은 주소(/d, /dn …)나 ?from= 꼬리표로 들어와 결제한 수(사장님 2026-11-03)
@@ -321,6 +322,22 @@ async function loadDaily() {
         el('td', { class: 'n' }, d.sent + (d.late ? ` (늦게 ${d.late})` : '')), el('td', { class: 'n' }, String(d.held)), el('td', { class: 'n' }, String(d.running)), el('td', { class: 'n' }, String(d.canceled))));
     }
     box.replaceChildren(t, el('p', { class: 'note' }, "못 보냄 = 글 검사를 4번 다 통과하지 못해 멈춘 리포트예요. 클로드에게 '다시 보내'라고 하면 다시 만들어요. 손님 메일 주소가 틀려 튕긴 건 https://resend.com/emails 에서 보여요."));
+  } catch { box.textContent = '불러오지 못했어요.'; }
+}
+// 결제창 앞뒤(P-30, 11-05): 결제하기를 누른 사람 중 몇 명이 결제했는지, 온 곳마다. 광고 클릭 수는 당근 화면에 있다.
+async function loadFunnel() {
+  const box = $('#funnelBody');
+  try {
+    const { from, to, sources } = await api('funnel');
+    const rows = Object.entries(sources).sort((a, b) => b[1].started - a[1].started);
+    if (!rows.length) { box.textContent = '최근 14일 동안 결제하기를 누른 손님이 없어요.'; return; }
+    const t = el('table', {}, el('tr', {}, ...['들어온 곳', '결제하기 누름', '결제함', '결제 안 함', '결제율'].map(h => el('th', {}, h))));
+    for (const [k, v] of rows) {
+      const rate = v.started ? Math.round(v.paid / v.started * 100) + '%' : '-';
+      t.append(el('tr', {}, el('td', {}, SOURCE_NAMES[k] || k), el('td', { class: 'n' }, v.started + '명'), el('td', { class: 'n' }, v.paid + '명'),
+        el('td', { class: 'n' }, v.unpaid + (v.waiting ? ` (+ 결제창 열림 ${v.waiting})` : '')), el('td', { class: 'n' }, rate)));
+    }
+    box.replaceChildren(t, el('p', { class: 'note' }, `${from} ~ ${to}. 기간을 바꿔 보려면 /api/studio/funnel?from=YYYY-MM-DD&to=YYYY-MM-DD. 같은 사람이 같은 날 같은 상품을 여러 번 눌러도 한 명으로 셉니다. 결제창까지 왔다가 결제하지 않은 사람이 많으면 결제창·가격 쪽, 적으면 그 앞(소개·정보 입력) 쪽을 봅니다.`));
   } catch { box.textContent = '불러오지 못했어요.'; }
 }
 async function loadSources() {
