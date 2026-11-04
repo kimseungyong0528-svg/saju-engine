@@ -1,0 +1,8 @@
+# 검색 노출 기초 (P-26①, 11-05): 손님용 화면은 열고, 관리·주문 확인 화면은 닫는다.
+User-agent: *
+Allow: /
+Disallow: /studio
+Disallow: /order-status.html
+Disallow: /.netlify/
+
+Sitemap: https://unmyeong-saju.com/sitemap.xml
