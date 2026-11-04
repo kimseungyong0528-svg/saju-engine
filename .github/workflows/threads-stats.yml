@@ -1,0 +1,22 @@
+name: 스레드 조회수 분석
+# 스레드 글마다 조회수·반응을 읽어 형식별로 비교한다. 읽기만 한다 (사장님 2026-11-05).
+on:
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 이 날짜부터 (예 2026-11-01)
+        default: "2026-11-01"
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://unmyeong-saju.com' }}
+      WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+      THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -e ".[report]"
+      - run: python -m saju.marketing.threads_stats --since "${{ inputs.since }}"
