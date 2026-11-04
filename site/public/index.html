@@ -6642,9 +6642,10 @@ async function refreshQuote(p,d){
  box.innerHTML=quoteBox(p,q);coMainPrice(p,d,q);
  const amt=document.querySelector('#pay-amount');if(amt)amt.textContent=money(q?q.amount:p.price);
 }
-// 함께 받아 보기를 하나라도 고르면 맨 위 상품 카드도 10% 더 깎인 값과 정가 기준 할인율로 바꾼다(사장님 2026-11-03). 재구매 손님(첫 구매 아님)은 그대로.
+// 함께 받아 보기를 고르면 맨 위 상품 카드도 10% 더 깎인 값과 정가 기준 할인율로 바꾼다(사장님 2026-11-03).
+// 단, 서버가 이 이메일로 첫 구매 묶음 할인을 확인한 뒤에만 바꾼다(P-VC-1, 11-05). 이메일 확인 전이나 재구매 손님은 결제 금액과 같은 값을 보인다.
 function coMainPrice(p,d,q){const pr=document.querySelector('[data-co-price]'),pc=document.querySelector('[data-co-pct]');if(!pr||!pc)return;
- const on=(d.extras||[]).length>0&&!d.coupon&&!(q?.notes||[]).includes('BUNDLE_FIRST_ONLY'),v=on?discounted(p.price):p.price;
+ const on=(d.extras||[]).length>0&&q?.discount?.kind==='bundle',v=on?discounted(p.price):p.price;
  pr.textContent=money(v);pc.textContent=Math.round((p.original-v)/p.original*100)+'%'}
 function bindDiscounts(p,d){
  const form=document.querySelector('#checkout-form');if(!form)return;
