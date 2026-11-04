@@ -3,6 +3,7 @@ import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
+  mailEvent, verifyMailWebhook,
 } from './orders.mjs';
 import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
@@ -28,6 +29,16 @@ export function makeApi({ store, services, env, studioStore = store }) {
     const m = req.method;
     try {
       if (parts[0] === 'studio' || (parts[0] === 'internal' && parts[1] === 'studio')) return await studio(req, parts);
+      // Resend 메일 도착·튕김 알림(P-IT-2). 비밀값(RESEND_WEBHOOK_SECRET)이 없으면 꺼져 있다.
+      if (m === 'POST' && parts.join('/') === 'mail-events') {
+        if (!env.RESEND_WEBHOOK_SECRET) return json({ error: 'NOT_FOUND' }, 404);
+        const text = await req.text();
+        if (text.length > 65_536) return json({ error: 'TOO_LARGE' }, 413);
+        if (!verifyMailWebhook(env.RESEND_WEBHOOK_SECRET, req.headers, text)) return json({ error: 'BAD_SIGNATURE' }, 401);
+        let event; try { event = JSON.parse(text); } catch { return json({ error: 'BAD_JSON' }, 400); }
+        await mailEvent(store, services, event);
+        return json({ ok: true });
+      }
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
           customerAnalysisReady: ready(env), clientKey: ready(env) ? String(env.TOSS_CLIENT_KEY).trim() : '',

@@ -167,7 +167,7 @@ test('일별 주문: 결제·보냄·보류·만드는 중을 날짜별로 센�
   await t.store.set('orders/f', { id: 'f', status: 'payment_expired', history: h('payment_expired') });
   const days = await dailyOrders(t.store, now);
   assert.equal(days.length, 14); assert.equal(days[0].date, '2026-11-04');
-  assert.deepEqual(days[0], { date: '2026-11-04', orders: 2, amount: 79600, books: 3, sent: 1, held: 1, running: 1, canceled: 0, late: 1 });
+  assert.deepEqual(days[0], { date: '2026-11-04', orders: 2, amount: 79600, books: 3, sent: 1, held: 1, running: 1, canceled: 0, late: 1, delivered: 0, bounced: 0 });
   assert.equal(days[2].canceled, 1);
   await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
   assert.equal((await (await t.call('GET', '/api/studio/daily')).json()).days.length, 14);

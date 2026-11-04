@@ -1,5 +1,5 @@
 // 주문 규칙: 접수 확인, 주문 만들기, 상태 바꾸기. 저장소(store)와 바깥 서비스(services)는 밖에서 넣어 준다.
-import { createHash, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { INTAKE_POLICY_VERSION, PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
 import { quote, afterPaid, extraBody } from './discounts.mjs';
 
@@ -207,7 +207,7 @@ export async function deliverPdf(store, services, order, pdf, now = new Date()) 
   if (!['queued', 'processing', 'retry', 'held'].includes(order.status)) throw new ApiError(409, 'ORDER_NOT_PROCESSING');
   if (!pdf?.byteLength || pdf.byteLength > 5_500_000) throw new ApiError(400, 'PDF_REQUIRED');
   await store.setBytes(`pdf/${order.id}`, pdf);
-  await services.sendEmail(order, pdf);
+  await rememberMail(store, order, await services.sendEmail(order, pdf));
   order.emailedAt = now.toISOString();
   setStatus(order, 'email_accepted', now);
   // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF와 받는 분 이름은 다시 보내기를 위해 7일만 둔다.
@@ -224,12 +224,50 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   const pdf = await store.getBytes(`pdf/${order.id}`);
   if (!pdf) throw new ApiError(410, 'PDF_NOT_AVAILABLE');
   // 메일 서비스는 같은 요청 키를 24시간 동안 중복으로 보고 다시 보내지 않으므로 다시 보내기마다 새 번호를 쓴다.
-  await services.sendEmail({ ...order, resends: order.resends + 1 }, pdf);
+  await rememberMail(store, order, await services.sendEmail({ ...order, resends: order.resends + 1 }, pdf));
   order.resends += 1;
   order.lastResendKey = idempotencyKey || null;
   order.updatedAt = now.toISOString();
   await store.set(`orders/${order.id}`, order);
   return order;
+}
+
+// 메일 도착 확인(P-IT-2, 11-05): 보낸 메일 번호를 주문에 붙여 두고, Resend 알림(webhook)이 오면 '도착함/튕김'을 남긴다.
+// 지금까지는 '발송 요청됨'까지만 알았다. 메일 주소가 틀린 손님은 책을 못 받고도 아무도 몰랐다.
+async function rememberMail(store, order, mailId) {
+  if (!mailId || typeof mailId !== 'string') return;
+  order.mailIds = [...(order.mailIds || []), mailId].slice(-5);
+  await store.set(`mail/${mailId}`, { orderId: order.id });
+}
+
+const MAIL_EVENTS = { 'email.delivered': 'delivered', 'email.bounced': 'bounced', 'email.complained': 'complained', 'email.delivery_delayed': 'delayed' };
+
+export async function mailEvent(store, services, event, now = new Date()) {
+  const status = MAIL_EVENTS[event?.type];
+  const mailId = event?.data?.email_id;
+  if (!status || !mailId) return null;
+  const link = await store.get(`mail/${mailId}`);
+  if (!link?.orderId) return null;
+  const order = await store.get(`orders/${link.orderId}`);
+  if (!order) return null;
+  // 나중에 온 '늦어짐'이 이미 받은 '도착함'을 덮지 않는다
+  if (status === 'delayed' && order.mailStatus === 'delivered') return order;
+  order.mailStatus = status;
+  order.mailStatusAt = now.toISOString();
+  await store.set(`orders/${order.id}`, order);
+  if (status === 'bounced' && services.notifyOwner) {
+    await services.notifyOwner(order, '메일 주소가 틀렸거나 받는 쪽에서 거절했어요. 손님께 다른 연락처로 알리거나 주소를 고쳐 다시 보내 주세요.', 'bounced').catch(() => {});
+  }
+  return order;
+}
+
+// Resend 알림 서명 확인(Svix 방식): 'whsec_' 뒤 base64 비밀값으로 `id.시각.본문`을 HMAC-SHA256 한 값이 svix-signature 안에 있어야 한다. 5분 넘은 알림은 받지 않는다.
+export function verifyMailWebhook(secret, headers, body, now = Date.now()) {
+  const id = headers.get('svix-id'), ts = headers.get('svix-timestamp'), sigs = headers.get('svix-signature') || '';
+  if (!secret || !id || !ts || !/^\d+$/.test(ts) || Math.abs(now / 1000 - Number(ts)) > 300) return false;
+  const key = Buffer.from(String(secret).replace(/^whsec_/, ''), 'base64');
+  const want = createHmac('sha256', key).update(`${id}.${ts}.${body}`).digest('base64');
+  return sigs.split(' ').some(s => { const v = s.split(',')[1] || ''; return v.length === want.length && timingSafeEqual(Buffer.from(v), Buffer.from(want)); });
 }
 
 // 멈춘 주문 알림: 결제는 됐는데 1시간이 넘도록 결과 작업이 끝나지 않은 주문(작업 서버가 꺼졌을 때 등)을 사장님 메일로 한 번 알린다.
@@ -264,6 +302,7 @@ export async function eraseOld(store, now = new Date()) {
     } else if (DONE.has(order.status) && age > RETENTION_DAYS) {
       setStatus(order, 'erased', now);
       delete order.payload; delete order.disclosures; delete order.mailName; delete order.bundle;
+      for (const id of order.mailIds || []) await store.delete(`mail/${id}`);
       await store.delete(`pdf/${order.id}`);
       erased += 1;
     } else continue;
