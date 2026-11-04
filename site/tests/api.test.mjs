@@ -11,13 +11,12 @@ const draft = { self, answers: { occupation: '직장에 다니고 있어요' }, 
 
 function setup(overrides = {}) {
   const store = memoryStore();
-  const calls = { confirm: [], dispatch: [], email: [], owner: [], copy: [] };
+  const calls = { confirm: [], dispatch: [], email: [], owner: [] };
   const services = {
     tossConfirm: async a => { calls.confirm.push(a); return overrides.tossFail ? { ok: false, code: 'REJECT_CARD_COMPANY' } : { ok: true }; },
     startWorker: async id => { calls.dispatch.push(id); },
     sendEmail: async (o, pdf) => { calls.email.push({ to: o.email, bytes: pdf.byteLength, n: o.resends || 0, name: o.payload?.self?.name || o.mailName }); },
     notifyOwner: async (o, note) => { calls.owner.push(note); },
-    sendOwnerCopy: async (o, pdf) => { calls.copy.push({ id: o.id, bytes: pdf.byteLength }); },
   };
   const api = makeApi({ store, services, env: overrides.env || ENV });
   const call = (method, path, { body, headers = {}, raw } = {}) => api(new Request('https://x.test' + path, {
@@ -171,30 +170,6 @@ test('메일 첨부 PDF 이름은 "이름님의 상품 - 금월선녀의 운명�
   const svc = realServices({ RESEND_API_KEY: 're' }, async (url, init) => { sent = JSON.parse(init.body); return new Response('{}', { status: 200 }); });
   await svc.sendEmail({ id: 'x', email: 'a@b.c', productId: 'romance', payload: { self: { name: '김민지' } } }, new Uint8Array([1]));
   assert.equal(sent.attachments[0].filename, '김민지님의 연애사주 - 금월선녀의 운명서재.pdf');
-});
-
-test('사장님도 손님 PDF를 숨은 참조로 받는다', async () => {
-  const { realServices } = await import('../netlify/functions/lib/services.mjs');
-  let sent;
-  const svc = realServices({ RESEND_API_KEY: 're', OWNER_EMAIL: 'boss@x.kr' }, async (url, init) => { sent = JSON.parse(init.body); return new Response('{}', { status: 200 }); });
-  await svc.sendEmail({ id: 'x', email: 'a@b.c', productId: 'romance', payload: { self: { name: '김민지' } } }, new Uint8Array([1]));
-  assert.deepEqual(sent.to, ['a@b.c']); assert.deepEqual(sent.bcc, ['boss@x.kr']);
-  await svc.sendEmail({ id: 'y', email: 'BOSS@x.kr', productId: 'romance', payload: { self: { name: '김' } } }, new Uint8Array([1]));
-  assert.equal(sent.bcc, undefined);
-  await svc.sendOwnerCopy({ id: 'z', productId: 'wealth', amount: 29800, mailName: '김' }, new Uint8Array([1, 2]));
-  assert.deepEqual(sent.to, ['boss@x.kr']); assert.equal(sent.attachments.length, 1);
-});
-
-test('관리 작업이 보낸 PDF 사본을 사장님께 보낸다(열쇠 필요)', async () => {
-  const t = setup();
-  const { body: o } = await order(t);
-  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
-  const path = `/api/internal/orders/${o.orderId}/owner-copy`;
-  assert.equal((await t.call('POST', path, { headers: { 'X-Worker-Secret': 'worker-secret' } })).status, 404);
-  await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([1, 2, 3]), headers: { 'X-Worker-Secret': 'worker-secret', 'Content-Type': 'application/pdf' } });
-  assert.equal((await t.call('POST', path, { headers: { 'X-Worker-Secret': 'nope' } })).status, 403);
-  assert.equal((await t.call('POST', path, { headers: { 'X-Worker-Secret': 'worker-secret' } })).status, 200);
-  assert.deepEqual(t.calls.copy, [{ id: o.orderId, bytes: 3 }]);
 });
 
 test('8개 상품 모두 서버 접수 확인이 된다', async () => {

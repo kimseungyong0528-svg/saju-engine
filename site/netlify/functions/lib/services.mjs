@@ -68,20 +68,8 @@ export function realServices(env, fetcher = fetch) {
     await resendEmail({
       to: [order.email], subject: `[운명서재] ${name}님의 ${product} 결과가 도착했어요`, text, html,
       ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}),
-      // 사장님도 손님이 받은 PDF를 똑같이 받는다(숨은 참조, 사장님 2026-11-04)
-      ...(env.OWNER_EMAIL && env.OWNER_EMAIL.toLowerCase() !== String(order.email || '').toLowerCase() ? { bcc: [env.OWNER_EMAIL] } : {}),
       attachments: [{ filename: reportFileName(order), content: Buffer.from(pdf).toString('base64') }],
     }, `pdf-${order.id}-${order.resends || 0}`);
-  }
-
-  // 이미 보낸 손님 PDF를 사장님 메일로 한 번 더 보낸다(관리 작업에서 부름)
-  async function sendOwnerCopy(order, pdf) {
-    if (!env.OWNER_EMAIL) throw Error('no owner email');
-    await resendEmail({
-      to: [env.OWNER_EMAIL], subject: `[운명서재] 손님 리포트 사본 (${productName(order.productId)})`,
-      text: `주문번호 ${order.id}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n손님에게 보낸 PDF와 같은 파일이에요.`,
-      attachments: [{ filename: reportFileName(order), content: Buffer.from(pdf).toString('base64') }],
-    });
   }
 
   async function notifyOwner(order, note, kind = 'held') {
@@ -93,7 +81,7 @@ export function realServices(env, fetcher = fetch) {
     });
   }
 
-  return { tossConfirm, startWorker, startStudio, sendEmail, sendOwnerCopy, notifyOwner };
+  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
 }
 
 // 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.
