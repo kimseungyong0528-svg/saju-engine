@@ -50,6 +50,31 @@
   from = "/t"
   to = "/?from=t&go=taster"
   status = 302
+# 블로그 → 신년운세
+[[redirects]]
+  from = "/bn"
+  to = "/?from=bn&go=newyear"
+  status = 302
+# 블로그 → 재물운
+[[redirects]]
+  from = "/bw"
+  to = "/?from=bw&go=wealth"
+  status = 302
+# 블로그 → 깊은 궁합
+[[redirects]]
+  from = "/bc"
+  to = "/?from=bc&go=intimate"
+  status = 302
+# 블로그 → 무료 맛보기
+[[redirects]]
+  from = "/bf"
+  to = "/?from=bf&go=taster"
+  status = 302
+# 스레드 → 신년운세
+[[redirects]]
+  from = "/tn"
+  to = "/?from=tn&go=newyear"
+  status = 302
 [[redirects]]
   from = "/i"
   to = "/?from=i"
