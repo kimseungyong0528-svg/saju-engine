@@ -18,7 +18,8 @@ KST = timezone(timedelta(hours=9))
 PRODUCTS = ("lifetime", "romance", *THEME_PRODUCTS)
 
 # 이 문제가 남으면 사람이 보기 전에는 보내지 않는다(사주 계산과 다른 내용).
-BLOCKING_KINDS = {"없는 신살", "개수", "점수", "연도", "삼재", "대운"}
+# '화면 연도': 손님이 결제 전 화면에서 본 해·달이 리포트에 빠짐 = 제1조항(화면과 리포트 일치) 위반이라 보내지 않고 다시 쓴다(P-29).
+BLOCKING_KINDS = {"없는 신살", "개수", "점수", "연도", "삼재", "대운", "화면 연도"}
 
 
 def order_date(paid_at: str | None) -> datetime:

@@ -15,6 +15,7 @@ import urllib.request
 from pathlib import Path
 
 from . import blocking, make_pdf
+from ..report.verify import summary
 
 
 def _call(method: str, path: str, body: bytes | None = None, content_type: str = "application/json"):
@@ -56,6 +57,7 @@ def build(job: dict) -> tuple[bytes | None, str]:
                 r = make_pdf(job, out, w)
                 bad = blocking(r["issues"])
                 print(f"{attempt}번째: {job['productId']} {r['pages']}쪽, 검사 문제 {len(r['issues'])}곳(막는 문제 {len(bad)}곳), 글 {type(w).__name__}")
+                print(f"{attempt}번째 남은 문제 종류: {summary(r['issues'])}")  # 종류별 개수만(개인정보 없음), 품질검수 표본용
                 if not bad:
                     return out.read_bytes(), ""
                 # 개인정보 없이 어떤 검사에 막혔는지만 남긴다
