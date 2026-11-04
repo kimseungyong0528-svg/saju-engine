@@ -17,3 +17,12 @@ test('맨 위 상품 가격은 서버가 할인을 확인했을 때만 바뀐다
   assert.match(fn, /q\?\.discount/);
   assert.doesNotMatch(fn, /original/);
 });
+
+test('묶음 10% 목록 위에는 늘 "처음 구매하실 때" 조건 안내가 있다 (법무 PR143 조건 ①)', () => {
+  const block = html.slice(html.indexOf('function bundleBlock'), html.indexOf('function bundleBlock') + 4000);
+  assert.ok(block.includes('처음 구매하실 때'), '조건 안내가 bundleBlock에 있어야 함');
+});
+
+test('지어낸 후기·거짓 체험 할인 코드가 없다 (법무 PR143 조건 ②)', () => {
+  for (const bad of ['DEMO_REVIEWS', 'reviewRail', 'function offer(', 'UNMYEONG5000', '★★★★★']) assert.ok(!html.includes(bad), bad);
+});
