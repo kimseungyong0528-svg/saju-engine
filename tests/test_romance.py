@@ -40,7 +40,7 @@ def test_romance_outline_about_50_pages():
 
 def test_romance_pdf_and_writer_settings(tmp_path):
     r = make_romance_report(analyze_person(SAMPLE, current_year=2026), ORDER, tmp_path / "r.pdf", DraftWriter())
-    assert 48 <= r["pages"] <= 56
+    assert 50 <= r["pages"] <= 56   # 화면 약속 "50장 이상"(P-PD-2)
     # 평생사주 글쓰기 기본값은 그대로
     assert ClaudeWriter.final_section == "15" and "'평생사주'" in ClaudeWriter.style
     assert "'연애사주'" in R.ROMANCE_STYLE and "{name}" in R.ROMANCE_STYLE
