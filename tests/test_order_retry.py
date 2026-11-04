@@ -34,3 +34,14 @@ def test_holds_after_all_tries(monkeypatch):
     pdf, problem = M.build(_job())
     assert pdf is None and len(calls) == M.TRIES >= 4
     assert problem == "글 검사: 연도"
+
+
+def test_usage_line_sums_tokens_by_model():
+    """발송 로그에 모델별 토큰 합을 남긴다(재무 원가 실측, 개인정보 없음)."""
+    line = M.usage_line([
+        {"model": "a", "input": 10, "output": 5, "cache_read": 1, "cache_write": 0},
+        {"model": "a", "input": 2, "output": 1},
+        {"model": "b", "input": 7, "output": 3, "cache_read": 0, "cache_write": 4},
+    ])
+    assert line == "a 호출 2 입력 12 출력 6 캐시읽기 1 캐시쓰기 0 / b 호출 1 입력 7 출력 3 캐시읽기 0 캐시쓰기 4"
+    assert M.usage_line(None) == "없음"
