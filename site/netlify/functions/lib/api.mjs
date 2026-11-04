@@ -108,6 +108,12 @@ export function makeApi({ store, services, env, studioStore = store }) {
           const body = await readJson(req);
           return json(publicView(await workerStatus(store, services, order, body.status, body.note)));
         }
+        if (m === 'POST' && action === 'owner-copy') {
+          const pdf = await store.getBytes(`pdf/${order.id}`);
+          if (!pdf) throw new ApiError(404, 'PDF_NOT_AVAILABLE');
+          await services.sendOwnerCopy(order, pdf);
+          return json({ ok: true });
+        }
         if (m === 'POST' && action === 'result') {
           const pdf = new Uint8Array(await req.arrayBuffer());
           return json(publicView(await deliverPdf(store, services, order, pdf), true));
