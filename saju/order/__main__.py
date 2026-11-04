@@ -102,6 +102,9 @@ def run(order_id: str) -> int:
             print("PDF 보냄, 이메일 발송 요청됨")
             return 0
         except urllib.error.HTTPError as e:
+            if e.code == 409 and b"ORDER_REFUNDED" in (e.read() or b""):
+                print("결제가 취소된 주문이라 보내지 않음")  # P-VC-3: 작업 중 환불됨
+                return 0
             print(f"PDF 보내기 실패: HTTP {e.code}")
             if e.code < 500:
                 break
