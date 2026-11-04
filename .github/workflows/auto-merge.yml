@@ -14,6 +14,9 @@ on:
   workflow_run:
     workflows: ["통일성 검사"]
     types: [completed]
+  # 대표님이 저녁에 '허락됨' 꼬리표를 붙이면 그때 다시 본다
+  pull_request:
+    types: [labeled]
 
 permissions:
   contents: write
@@ -22,18 +25,23 @@ permissions:
 jobs:
   merge:
     if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request' &&
-      startsWith(github.event.workflow_run.head_branch, 'claude/') &&
-      github.event.workflow_run.head_repository.full_name == github.repository
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       startsWith(github.event.workflow_run.head_branch, 'claude/') &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      (github.event_name == 'pull_request' &&
+       github.event.label.name == '허락됨' &&
+       startsWith(github.event.pull_request.head.ref, 'claude/') &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      BRANCH: ${{ github.event.workflow_run.head_branch }}
-      SHA: ${{ github.event.workflow_run.head_sha }}
-      # 손님 눈에 안 보이는 것으로 확인된 곳만 (검수팀 11-05 심사 '고치는 방향')
-      ALLOW: '^(saju/(astro|pillars|luck|timeutil)\.py|saju/marketing/(threads_stats|ranking)\.py|docs/.*|README\.md)$'
+      BRANCH: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
+      # 손님 눈에 안 보이는 것으로 확인된 곳만 (검수팀 11-05 심사. ranking.py는 SNS 글(GOD_TEXT)이 있어 뺌, 재심사 10번)
+      ALLOW: '^(saju/(astro|pillars|luck|timeutil)\.py|saju/marketing/threads_stats\.py|docs/.*|README\.md)$'
     steps:
       - name: PR 찾기와 조건 확인, 합치기
         run: |
@@ -41,6 +49,10 @@ jobs:
           pr=$(gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$BRANCH" \
                --jq ".[] | select(.head.sha==\"$SHA\" and .base.ref==\"main\" and .draft==false) | .number" | head -1)
           [ -n "$pr" ] || { echo "조건 맞는 열린 PR 없음(초안·main 아님·검사 뒤 새 커밋) → 건너뜀"; exit 0; }
+          # 이 커밋의 통일성 검사가 초록불인지 직접 확인 (꼬리표로 깨어난 경우에도)
+          chk=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=check" --jq '[.check_runs[]|select(.app.slug=="github-actions")]|sort_by(.started_at)|last|"\(.conclusion) \(.started_at)"')
+          set -- $chk; conclusion=$1; pushed_at=$2
+          [ "$conclusion" = "success" ] || { echo "#$pr 통일성 검사가 초록불 아님($conclusion) → 건너뜀"; exit 0; }
           labels=$(gh api "repos/$REPO/issues/$pr/labels" --jq '[.[].name]|join(",")')
           case ",$labels," in *",합치지마,"*) echo "#$pr 합치지마 꼬리표 → 건너뜀"; exit 0;; esac
           # 이름 바꾸기는 옛 이름·새 이름 둘 다 본다 (검수팀 심사 8번)
@@ -48,8 +60,13 @@ jobs:
           [ -n "$files" ] || { echo "#$pr 바꾼 파일 목록 비어 있음 → 건너뜀"; exit 0; }
           outside=$(echo "$files" | grep -vE "$ALLOW" || true)
           if [ -n "$outside" ]; then
-            case ",$labels," in *",허락됨,"*) echo "#$pr 허용 목록 밖 파일 있음, 대표님 허락됨";;
-              *) echo "#$pr 허용 목록 밖 파일 → 대표님 허락('허락됨' 꼬리표) 전까지 안 합침:"; echo "$outside"; exit 0;; esac
+            # 대표님 허락으로 인정하는 것: 사람이 웹에서 붙인 '허락됨'(앱·AI가 붙인 것 제외, 재심사 11번),
+            # 그리고 이 커밋 검사 시작(=올라온 시각) 뒤에 붙인 것(허락 뒤 새 커밋 막기, 재심사 12번)
+            ok=$(gh api --paginate "repos/$REPO/issues/$pr/events" --jq \
+              "[.[] | select(.event==\"labeled\" and .label.name==\"허락됨\" and .performed_via_github_app==null and .created_at > \"$pushed_at\")] | length")
+            case ",$labels," in *",허락됨,"*) ;; *) ok=0;; esac
+            if [ "${ok:-0}" -gt 0 ]; then echo "#$pr 허용 목록 밖 파일 있음, 대표님 허락됨(사람, 커밋 뒤)"
+            else echo "#$pr 허용 목록 밖 파일 → 대표님이 이 커밋 뒤에 직접 붙인 '허락됨' 꼬리표 전까지 안 합침:"; echo "$outside"; exit 0; fi
           fi
           gh pr merge "$pr" -R "$REPO" --merge --match-head-commit "$SHA"
           echo "#$pr 합침"
