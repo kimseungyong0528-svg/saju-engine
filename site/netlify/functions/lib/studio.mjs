@@ -181,6 +181,8 @@ export function makeStudio({ store, services, env, orderStore = store }) {
     }
     // 일별 주문과 발송 결과(사장님 2026-11-04 "일별 주문 횟수랑 성공실패"). 최근 14일, 한국 날짜 기준.
     if (route === 'studio/daily' && m === 'GET') return json({ days: await dailyOrders(orderStore) });
+    // 결제창 앞뒤: 온 곳마다 결제하기 누른 사람·결제한 사람·안 한 사람(P-30). 최근 14일.
+    if (route === 'studio/funnel' && m === 'GET') return json(await sourceFunnel(orderStore));
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;
@@ -278,4 +280,33 @@ export async function dailyOrders(store, now = new Date(), days = 14) {
     if (r === 'sent' && (o.history || []).some(h => h.status === 'held')) row.late += 1;
   }
   return Object.entries(out).map(([date, v]) => ({ date, ...v }));
+}
+
+// 결제창 앞뒤(P-30, 11-05): 최근 며칠 동안 손님이 온 곳마다 '결제하기를 누른 사람'과 그중 결제한 사람·안 한 사람.
+// 주문 기록(awaiting_payment → 결제 또는 만료)은 이미 저장되고 있다. 새 개인정보를 모으지 않고, 화면에는 숫자만 보낸다.
+// 같은 사람이 같은 날 여러 번 누르면 한 번으로 센다(이메일·상품·한국 날짜가 같으면 한 사람). 한 번이라도 결제했으면 결제로 본다.
+export async function sourceFunnel(store, now = new Date(), days = 14) {
+  const kstDay = t => new Date(new Date(t).getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+  const from = kstDay(now.getTime() - (days - 1) * 86_400_000);
+  const people = new Map();
+  for (const key of await store.list('orders/')) {
+    const o = await store.get(key);
+    if (!o || o.parentId || o.testOnly || !o.createdAt) continue;
+    const day = kstDay(o.createdAt);
+    if (day < from) continue;
+    const id = `${o.email || o.id}|${o.productId}|${day}`;
+    const p = people.get(id) || { source: o.source || 'direct', paid: false, waiting: false, amount: 0 };
+    if (o.paidAt) { p.paid = true; p.amount += o.amount || 0; }
+    else if (o.status === 'awaiting_payment') p.waiting = true;
+    people.set(id, p);
+  }
+  const out = {};
+  for (const p of people.values()) {
+    const r = out[p.source] ||= { started: 0, paid: 0, unpaid: 0, waiting: 0, amount: 0 };
+    r.started += 1;
+    if (p.paid) { r.paid += 1; r.amount += p.amount; }
+    else if (p.waiting) r.waiting += 1;
+    else r.unpaid += 1;
+  }
+  return { from, days, sources: out };
 }
