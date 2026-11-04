@@ -49,6 +49,8 @@ export function realServices(env, fetcher = fetch) {
       body: JSON.stringify({ from: env.MAIL_FROM || '운명서재 <report@unmyeong-saju.com>', ...message }),
     });
     if (!r.ok) throw Error(`email ${r.status}`);
+    // Resend가 돌려주는 메일 번호. 나중에 '도착함/튕김' 알림(webhook)을 이 주문에 붙일 때 쓴다(P-IT-2).
+    return (await r.json().catch(() => ({})))?.id || null;
   }
 
   async function sendEmail(order, pdf) {
@@ -65,7 +67,7 @@ export function realServices(env, fetcher = fetch) {
       `운명서재 ${site}`,
     ].join('\n');
     const html = text.split('\n').map(l => l ? `<p style="margin:0 0 6px">${esc(l)}</p>` : '<br>').join('');
-    await resendEmail({
+    return await resendEmail({
       to: [order.email], subject: `[운명서재] ${name}님의 ${product} 결과가 도착했어요`, text, html,
       ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}),
       attachments: [{ filename: reportFileName(order), content: Buffer.from(pdf).toString('base64') }],
@@ -74,7 +76,7 @@ export function realServices(env, fetcher = fetch) {
 
   async function notifyOwner(order, note, kind = 'held') {
     if (!env.OWNER_EMAIL) return;
-    const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : '발송 보류된 주문이 있어요';
+    const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : kind === 'bounced' ? '리포트 메일이 손님에게 닿지 않았어요' : '발송 보류된 주문이 있어요';
     await resendEmail({
       to: [env.OWNER_EMAIL], subject: `[운명서재] ${what} (${productName(order.productId)})`,
       text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,

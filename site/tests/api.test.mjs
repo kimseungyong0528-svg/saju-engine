@@ -276,3 +276,43 @@ test('들어온 곳(from): 주문에 저장하고, 결제되면 달마다 들어
   assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount * 2);
   assert.equal(stats.direct.orders, 1);
 });
+
+test('메일 도착 확인: Resend 알림(서명 확인)으로 도착·튕김을 주문에 남기고, 튕기면 사장님께 알림 (P-IT-2)', async () => {
+  const { createHmac } = await import('node:crypto');
+  const secret = 'whsec_' + Buffer.from('test-secret-key-123').toString('base64');
+  const t = setup({ env: { ...ENV, RESEND_WEBHOOK_SECRET: secret } });
+  // 이 시험에서는 보낸 메일 번호를 돌려준다
+  let n = 0;
+  const { body: a } = await order(t);
+  await t.call('POST', `/api/orders/${a.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + a.accessToken } });
+  t.calls.owner.length = 0;
+  // setup의 sendEmail은 번호를 돌려주지 않으므로, 번호를 돌려주는 가짜로 바꿔 끼운다
+  const { deliverPdf, mailEvent, verifyMailWebhook } = await import('../netlify/functions/lib/orders.mjs');
+  const services = { sendEmail: async () => `re_${++n}`, notifyOwner: async (o, note, kind) => { t.calls.owner.push(kind); } };
+  await deliverPdf(t.store, services, await t.store.get(`orders/${a.orderId}`), new Uint8Array([1, 2]));
+  assert.deepEqual((await t.store.get(`orders/${a.orderId}`)).mailIds, ['re_1']);
+  const sign = (body, ts = Math.floor(Date.now() / 1000), id = 'msg_1') => ({
+    'svix-id': id, 'svix-timestamp': String(ts),
+    'svix-signature': 'v1,' + createHmac('sha256', Buffer.from(secret.slice(6), 'base64')).update(`${id}.${ts}.${body}`).digest('base64'),
+  });
+  const ev = type => JSON.stringify({ type, data: { email_id: 're_1' } });
+  // 서명이 틀리거나 오래된 알림은 받지 않는다
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: { ...sign(ev('email.delivered')), 'svix-signature': 'v1,xxxx' } })).status, 401);
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered'), Math.floor(Date.now() / 1000) - 3600) })).status, 401);
+  // 도착함
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered')) })).status, 200);
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'delivered');
+  // 늦게 온 '늦어짐'은 '도착함'을 덮지 않는다
+  await mailEvent(t.store, services, JSON.parse(ev('email.delivery_delayed')));
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'delivered');
+  // 튕김 → 기록 + 사장님 알림
+  await mailEvent(t.store, services, JSON.parse(ev('email.bounced')));
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'bounced');
+  assert.deepEqual(t.calls.owner.concat(), ['bounced']);
+  // 모르는 메일 번호는 무시
+  assert.equal(await mailEvent(t.store, services, { type: 'email.delivered', data: { email_id: 're_x' } }), null);
+  assert.equal(verifyMailWebhook('', new Headers(), ''), false);
+  // 비밀값이 없으면 꺼져 있다
+  const off = setup();
+  assert.equal((await off.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered')) })).status, 404);
+});
