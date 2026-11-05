@@ -215,10 +215,11 @@ def threads(p: Post) -> dict:
 def daangn(week_posts: list[Post]) -> dict:
     """당근 비즈프로필 소식: 한 주에 한 번, 그 주의 띠를 묶어서 올린다."""
     ddis = [p for p in week_posts if p.kind == "ddi"]
-    lines = ["2027년 정미년 띠별 운세 (이번 주)", ""]
+    lines = ["2027년 좋은 달, 띠별로 먼저 보기", "", "올해 끝나기 전에 내년 흐름이 궁금해지죠. 이번 주 띠별 운세부터 가볍게 보세요.", ""]
     for p in ddis:
         lines.append(f"{EMOJI[p.key]} {p.key}띠: {p.sub}")
     lines += ["", "띠는 태어난 해 하나만 본 것이에요.",
               "생년월일과 태어난 시간으로 2027년 12달 흐름, 돈·일·연애·건강을 한 권(PDF 약 60쪽)으로 정리해 드려요.",
-              "2027 신년운세 29,800원", "", f"신청: {SITE_URL}"]
+              "2027 신년운세 29,800원, 리포트를 보내기 전에는 전액 환불",
+              "금월선녀는 운명서재의 AI 안내자예요. 리포트는 AI가 사주 계산으로 작성해요.", "", f"무료로 먼저 보기: {SITE_URL}/d"]
     return {"소식": "\n".join(lines)}

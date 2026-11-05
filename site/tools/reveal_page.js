@@ -90,7 +90,7 @@ function rvScene2(p,v){const s=SALES[p.id];
  const good=(typeof isGift==='function'&&isGift(p.id))||(gs!==bs?gs>bs:pt.score>=50);
  // 제목·말풍선은 무료 풀이에서 이 운을 좋은 운/조심할 운 어느 쪽으로 보여 줬는지(areaView sign)를 따른다(제1조항: 모순 금지).
  const tone=v.area.sign>0,unitW=month?'달':'해';
- const speech=tone?(pt.good?`${word}부터 볼게요. ${pt.good.score>=60&&pt.score>=50?'좋은 점 점수가 높은 편이에요':'좋은 점이 분명히 있는 운이에요'}. 때를 알고 움직이면 더 크게 받을 수 있어요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW==="달"?"달이":"해가"} 정해져 있어요. 그때를 알면 놓치지 않고 받을 수 있어요.`)
+ const speech=v.pair?`먼저 두 사람 궁합 점수를 보고, 이어서 ${word}의 좋은 점과 조심할 점을 볼게요.`:tone?(pt.good?`${word}부터 볼게요. ${pt.good.score>=60&&pt.score>=50?'좋은 점 점수가 높은 편이에요':'좋은 점이 분명히 있는 운이에요'}. 때를 알고 움직이면 더 크게 받을 수 있어요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW==="달"?"달이":"해가"} 정해져 있어요. 그때를 알면 놓치지 않고 받을 수 있어요.`)
   :(good?(badPart?`${word}부터 볼게요. 좋은 점과 조심할 점이 함께 있어요.`:`${word}부터 볼게요. 조심 표시가 붙은 ${unitW==="달"?"달은":"해는"} 없지만, 미리 챙기면 더 편안해요.`):`${word}부터 볼게요. 조심할 점이 있는 운이에요. 언제 조심하면 되는지 알면 충분히 넘길 수 있어요.`);
  const pairCard=v.pair?(()=>{const q=v.pair,ew=e=>({목:'나무',화:'불',토:'흙',금:'쇠',수:'물'})[e]+'('+e+')';
   const palace={조화:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 손을 잡는 사이입니다. 함께 있을수록 마음이 편해집니다.',긴장:'두 사람의 배우자 자리(태어난 날의 지지)가 서로 부딪히는 사이입니다. 가까워질수록 작은 일로 다투기 쉬워, 다투는 때와 푸는 법을 알아 두면 좋습니다.',복합:'두 사람의 배우자 자리(태어난 날의 지지)에 손잡는 면과 부딪히는 면이 함께 있습니다.',중립:'두 사람의 배우자 자리(태어난 날의 지지)는 크게 끌리지도 부딪히지도 않는 담담한 사이입니다.'}[q.palace];
@@ -130,7 +130,7 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  ${rvFocusOrder(p,v,toc.slice(1)).map(t=>`<div class="rv-ch${t.focus?' rv-focus':''}"><span class="tp-no">${esc(String(t[0]))}</span><div>${t.focus?`<small class="rv-focus-tag">${esc(v.name)} 님이 궁금해하신 '${esc(t.focus)}'</small>`:''}<b>${esc(t[1])}</b><p class="${t.focus?'rv-focus-sub':'rv-blur'}"${t.focus?'':' aria-hidden="true"'}>${esc(t[2]||rvChapterLine(t[1],v.name))}</p><p class="rv-blur rv-blur-more" aria-hidden="true">${esc(RV_FILL[1])}</p></div>${icon('lock')}</div>`).join('')}
  </div></div>
  <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
- <section class="rv-trust" aria-label="믿고 받아 보셔도 되는 이유"><h3>믿고 받아 보셔도 되는 이유</h3><ul><li>금월선녀는 운명서재의 AI 안내자예요. 그래서 감으로 풀지 않고, 생년월일 10,000개를 전문 만세력과 대조해 모두 일치한 계산으로 풀어요.</li><li>생일이 다르면 결과도 달라요. 지금 본 점수와 ${v.map.unit==='month'?'달':'해'}는 리포트에도 그대로 이어져요.</li><li>리포트를 보내기 전에는 전액 환불해 드려요.</li>${p.id==='health'?'<li>건강운은 의학적 진단이 아니에요. 생활 리듬과 쉬어야 할 때를 정리한 리포트예요.</li>':''}${['wealth','business'].includes(p.id)?'<li>실제 투자와 계약은 전문가와 함께 정해 주세요. 리포트는 사주로 본 돈의 흐름과 때를 정리해 드려요.</li>':''}</ul></section>
+ <section class="rv-trust" aria-label="믿고 받아 보셔도 되는 이유"><h3>믿고 받아 보셔도 되는 이유</h3><ul><li>금월선녀는 운명서재의 AI 안내자예요. 그래서 감으로 풀지 않고, 생년월일 10,000개를 전문 만세력과 대조해 모두 일치한 계산으로 풀어요.</li><li>생일이 다르면 결과도 달라요. 지금 본 점수와 ${v.map.unit==='month'?'달은':'해는'} 리포트에도 그대로 이어져요.</li><li>리포트를 보내기 전에는 전액 환불해 드려요.</li>${p.id==='health'?'<li>건강운은 의학적 진단이 아니에요. 생활 리듬과 쉬어야 할 때를 정리한 리포트예요.</li>':''}${['wealth','business'].includes(p.id)?'<li>실제 투자와 계약은 전문가와 함께 정해 주세요. 리포트는 사주로 본 돈의 흐름과 때를 정리해 드려요.</li>':''}</ul></section>
  <!-- 가격 안내는 결제 화면에만 (사장님 2026-11-03) -->
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${[...(typeof PRODUCT_FAQ!=='undefined'&&PRODUCT_FAQ[p.id]||[]),...FAQ].map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
 // 신년운세 '궁금한 분야' → 그 분야를 다루는 장(리포트 목차와 같은 번호, 2026-11-05)
