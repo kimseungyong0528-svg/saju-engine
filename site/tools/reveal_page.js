@@ -131,6 +131,8 @@ function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=mon
  ${goods.map(([k,l])=>card(k,l,'good')).join('')}${bads.map(([k,l])=>card(k,l,'bad')).join('')}
  ${revealLocks(re?['가장 좋은 달의 며칠 무렵, 어떤 상황에 연락하면 좋은지','문자·전화·SNS 가운데 나에게 맞는 연락 수단과 첫마디','엇갈리는 달에 피할 말과 다시 연락해도 되는 달']:month?['좋은 달에 시작해야 할 일과 그 방법','조심할 달에 미뤄야 할 일과 막는 방법','열두 달 각각의 돈·일·사람·건강 흐름']:[...(RV_MONTH_LOCK[p.id]?[RV_MONTH_LOCK[p.id]]:[]),'이 해의 몇 월에 들어오는지','그 해에 해야 할 일과 하지 말아야 할 일','조심할 해를 막는 구체적인 방법'])}`}
 // 미리 보기에서 뒤로 글이 더 이어진다는 것을 보이는 흐린 줄(읽히지 않게 흐리게 처리, 2026-10-30 사장님: '각 장이 이 정도로 끝나는 것 같다')
+// 목차 2번부터 흐리게 보이는 줄도 장마다 다르게(2-4 ⑧)
+const RV_FILL_ALT=['사주 근거를 먼저 풀고, 생활에서 겪는 장면과 바로 해 볼 수 있는 실천법까지 여러 쪽에 걸쳐 적어 드립니다.','이 장의 내용이 해마다 어떻게 달라지는지, 좋은 때와 조심할 때를 나눠 정리합니다.','왜 그런지 사주 글자로 먼저 짚고, 비슷한 상황에서 많이 겪는 장면을 예로 들어 풉니다.','지금 바로 해 볼 일과 미뤄야 할 일을 나눠, 이 장 끝에 한눈에 정리해 드립니다.','같은 고민을 가진 분들이 가장 많이 묻는 질문에 사주 근거로 하나씩 답합니다.'];
 const RV_FILL=['이 기운이 실제 생활에서 어떻게 드러나는지, 일과 돈과 사람 사이에서 어떤 장면으로 나타나는지 하나씩 짚어 봅니다.','사주 근거를 먼저 풀고, 생활에서 겪는 장면과 바로 해 볼 수 있는 실천법까지 이 장 안에서 여러 쪽에 걸쳐 자세히 적어 드립니다. 해마다 달라지는 흐름과 조심할 때도 함께 정리합니다.'];
 // 5. 리포트 1장 미리 보기: 실제 리포트 목차. 1장은 지금까지 본 내 사주로 열고, 2장부터는 제목만 보이고 내용은 가린다.
 function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.max(0,toc.length-1);
@@ -166,7 +168,7 @@ function rvChapterLine(title,name){const t=String(title||'');if(/답/.test(t))re
 // 미리 보기 양 시험(A: 지금처럼 다 보여 줌, B: 좋은 달·조심할 달 하나씩만). 한 번 정해지면 이 브라우저에서는 그대로.
 // 결제 전 달력 A/B는 끝냈다(사장님 2026-11-06): 모든 사주 달력은 B. 좋은 표시(초록)는 가장 가까운 1개, 조심할 표시(빨강)는 가장 먼 1개만 보이고 나머지는 '공개 예정'.
 function abPreview(){try{localStorage.setItem('unmyeong.ab.preview','B')}catch{}return 'B'}
-function rvOpen(m){const g=m.cells.find(c=>c.good.length),b=[...m.cells].reverse().find(c=>c.bad.length);return new Set([g&&g.label,b&&b.label].filter(x=>x!=null).map(String))}
+function rvOpen(m){const y27=m.unit==='year'?m.cells.find(c=>String(c.label)==='2027'&&(c.good.length||c.bad.length)):null,g=m.cells.find(c=>c.good.length),b=y27&&y27.bad.length?y27:[...m.cells].reverse().find(c=>c.bad.length);return new Set([g&&g.label,b&&b.label,y27&&y27.label].filter(x=>x!=null).map(String))}
 // 가장 가까운 좋은 때까지 남은 날(사장님 2026-11-06 1-1): 지도에서 열어 둔 가장 가까운 좋은 칸(rvOpen과 같은 칸)이 시작되는 절기 날짜까지 센다.
 // 해는 입춘부터, 달은 그 달의 절기(매달 4~8일 무렵)부터. 날짜는 화면 계산기와 같은 절기 표(saju-data.json jie)에서 읽는다.
 const RV_JIE_NAME=['대설','소한','입춘','경칩','청명','입하','망종','소서','입추','백로','한로','입동'];
