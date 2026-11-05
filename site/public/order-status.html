@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><script async src="https://www.googletagmanager.com/gtag/js?id=G-X371D3S5X7"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-X371D3S5X7',{send_page_view:false});</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="robots" content="noindex">
@@ -75,6 +75,8 @@ function show(view){if(view.fileName)fileName=view.fileName;
   $('amount').textContent=Number(view.amount||0).toLocaleString('ko-KR')+'원';
   $('email').textContent=view.emailHint||'';
   const paid=!['awaiting_payment','payment_failed','payment_expired','payment_adjusted'].includes(view.status);
+  // 결제 완료 측정(2026-11-05): 같은 주문은 한 번만. 시험 결제·환불은 보내지 않는다.
+  try{if(paid&&!['test_paid','refund_pending','refunded','erased','held'].includes(view.status)&&!localStorage.getItem('unmyeong.ga.purchase.'+orderId)){localStorage.setItem('unmyeong.ga.purchase.'+orderId,'1');gtag('event','purchase',{transaction_id:orderId,value:Number(view.amount||0),currency:'KRW',items:[{item_name:String(view.productName||'')}].concat((view.books||[]).map(b=>({item_name:String(b.productName||'')})))})}}catch(e){}
   const sent=view.status==='email_accepted';
   const step=(name,done,now)=>{const li=document.querySelector(`[data-step="${name}"]`);li.className=done?'done':now?'now':'';};
   step('paid',paid,!paid&&view.status==='awaiting_payment');

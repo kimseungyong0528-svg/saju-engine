@@ -26,7 +26,7 @@ function revealCompute(p,d,lib){
  const fp=eng.chartFromPerson(data,v,v.calendar==='lunar'?date.solarDate:v.birth);
  const r=tst.reading(fp,v,texts),R=texts.REVEAL;
  const area=p.id==='lifetime'?null:tst.areaView(fp,v,texts,p.id),parts=p.id==='lifetime'?null:tst.areaParts(fp,v,texts,p.id);
- return {name:r.name,r,R,T:texts,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear(),revealShownStart(p,d,rv)),fill:tst.fill,A:texts.AREAS,pair:revealPair(p,d,lib,fp),boundary:rv.boundaryLines(data,v,v.calendar==='lunar'?date.solarDate:v.birth),note:id=>tst.situationNote(id,d.answers,texts)};
+ return {name:r.name,r,R,T:texts,area,parts,map:rv.luckMap(fp,v.sex,p.id,texts,revealStartYear(),revealShownStart(p,d,rv)),fill:tst.fill,A:texts.AREAS,pair:revealPair(p,d,lib,fp),answers:{...(d.answers||{})},ab:abPreview(),boundary:rv.boundaryLines(data,v,v.calendar==='lunar'?date.solarDate:v.birth),note:id=>tst.situationNote(id,d.answers,texts)};
 }
 // 깊은 궁합·재회사주: 그 사람 사주와 함께 본 '두 사람 궁합 점수'(saju/pair.py pair_score 와 같은 계산, 리포트에 같은 점수가 나온다).
 function revealPair(p,d,lib,fp){
@@ -78,16 +78,16 @@ function rvScene2(p,v){const s=SALES[p.id];
  // 점수: 앞으로 12년(12달) 가운데 그런 해(달)가 몇 번인지로 매긴다(saju/reveal.py side_score 와 같은 식).
  const N=v.map.cells.length,spanW=N===24?'24개월':month?'열두 달':'12년';
  const sideScore=(d,kind)=>{const n=new Set(Object.values(d).flat()).size;return kind==='good'?Math.min(95,50+Math.round(50*n/N)):Math.max(5,50-Math.round(50*n/N))};
- const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=sideScore(d,kind);
+ const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=sideScore(d,kind),lockB=v.ab==='B';
   // 'N번'이라고 했으면 N개를 모두 적는다(표시마다 한 줄). 뜻 풀이는 첫 표시 하나만.
   const ents=Object.entries(d);if(!ents.length)return '';const [k0]=ents[0];
-  return big(kind,sc,`앞으로 ${spanW} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}">${ents.map(([key,ls])=>`<p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`).join('')}<p>${esc(v.fill(M[k0].meaning,vals))}</p><p class="rv-hook">${esc(M[k0].hook)}</p></div>`};
- const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
+  return big(kind,sc,`앞으로 ${spanW} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}">${ents.map(([key,ls],k)=>lockB?(k===0?`<p>${esc(when(ls.slice(0,1)))}${ls.length>1?` 외 ${ls.length-1}번`:''}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`:`<p>${ls.length}번 더 있습니다. 언제인지는 리포트에서 공개해요.</p>`):`<p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`).join('')}<p>${esc(v.fill(M[k0].meaning,vals))}</p><p class="rv-hook">${esc(M[k0].hook)}</p></div>`};
+ const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}${kind==='good'&&v.note(p.id)?' '+esc(v.note(p.id)):''}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
  const goodPart=pt.good?reasonPart(pt.good,'good'):yearsPart(v.map.good,'good');
  const badPart=pt.bad?reasonPart(pt.bad,'bad'):yearsPart(v.map.bad,'bad');
  // 점수가 높은 쪽이 위, 낮은 쪽이 아래(사장님 2026-10-28). 같으면 전체 점수로 정한다.
  const gs=pt.good?pt.good.score:sideScore(v.map.good,'good'),bs=pt.bad?pt.bad.score:sideScore(v.map.bad,'bad');
- const good=gs!==bs?gs>bs:pt.score>=50;
+ const good=(typeof isGift==='function'&&isGift(p.id))||(gs!==bs?gs>bs:pt.score>=50);
  // 제목·말풍선은 무료 풀이에서 이 운을 좋은 운/조심할 운 어느 쪽으로 보여 줬는지(areaView sign)를 따른다(제1조항: 모순 금지).
  const tone=v.area.sign>0,unitW=month?'달':'해';
  const speech=tone?(pt.good?`${word}부터 볼게요. ${pt.good.score>=60&&pt.score>=50?'좋은 점 점수가 높은 편이에요':'좋은 점이 분명히 있는 운이에요'}. 때를 알고 움직이면 더 크게 받을 수 있어요.`:`${word}부터 볼게요. 좋은 운이 들어오는 ${unitW==="달"?"달이":"해가"} 정해져 있어요. 그때를 알면 놓치지 않고 받을 수 있어요.`)
@@ -107,12 +107,15 @@ function rvScene2(p,v){const s=SALES[p.id];
 function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=month?'달':'해',re=p.id==='reunion';
  const vals={name:v.name,weak:m.weak};
  const when=labels=>labels.map(l=>month?l:l+'년').join(' · ');
- const card=(key,labels,kind)=>`<div class="rv-card rv-mark ${kind}"><div class="rv-mark-head"><span class="rv-tag ${kind}">${esc(M[key].tag)}</span><b>${esc(when(labels))}</b></div><p class="rv-mark-line">${esc(v.fill(M[key].line,vals))}</p><p>${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`;
+ const lockB=v.ab==='B',goods0=Object.entries(m.good),bads0=Object.entries(m.bad),open=new Set([goods0[0]?.[1]?.[0],bads0[0]?.[1]?.[0]].filter(x=>x!=null).map(String));
+ const shown=(key,labels,kind)=>{if(!lockB)return esc(when(labels));const firstKey=(kind==='good'?goods0:bads0)[0]?.[0];return key===firstKey?esc(when(labels.slice(0,1)))+(labels.length>1?` <small>외 ${labels.length-1}번 · 리포트에서 공개</small>`:''):`${labels.length}번 <small>· 리포트에서 공개</small>`};
+ const card=(key,labels,kind)=>`<div class="rv-card rv-mark ${kind}"><div class="rv-mark-head"><span class="rv-tag ${kind}">${esc(M[key].tag)}</span><b>${shown(key,labels,kind)}</b></div><p class="rv-mark-line">${esc(v.fill(M[key].line,vals))}</p><p>${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`;
  const goods=Object.entries(m.good),bads=Object.entries(m.bad);
+ const bk=re?(v.answers||{}).breakup:'',bkLine=bk?({'3개월 이내예요':'헤어진 지 석 달이 안 된 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','3~6개월 정도예요':'헤어진 지 3~6개월 된 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','6개월~1년 정도예요':'헤어진 지 반년이 넘은 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','1년 이상 지났어요':'헤어진 지 1년이 넘은 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','아직 헤어지지 않았어요':'아직 헤어지지 않았다면, 아래 지도에서 엇갈리는 달부터 먼저 확인해 두세요.'})[bk]||'':'';
  const first=goods.length===1?M[goods[0][0]].tag:'';
  return `${revealSpeech(p,`이제 가장 중요한 이야기예요.\n사실, ${v.name} 님에게 운이\n들어오는 ${month?'달과':'해와'} 조심해야 할 ${month?'달은':'해는'}\n사주에 이미 정해져 있었어요.`)}
  <span class="eyebrow">STEP 4 · ${re?'앞으로 24개월':month?'2027년 열두 달':'앞으로 12년'}</span><h1>${re?`${esc(v.name)} 님의 앞으로 24개월,<br>다시 이어지기 좋은 달`:month?`${esc(v.name)} 님의<br>2027년 열두 달`:first?`${esc(v.name)} 님의 앞으로 12년,<br>'${esc(first)}' 표시가 붙은 해`:`앞으로 12년,<br>기회의 해와 조심할 해`}</h1>
- <div class="rv-grid">${m.cells.map(c=>{const ym=re&&c.label.match(/^(\d{4})년 (\d+)월$/);return `<div class="rv-cell${c.good.length?' good':''}${c.bad.length?' bad':''}"><b>${esc(ym?ym[2]+'월':c.label)}</b><small>${esc(ym?ym[1]+' '+c.ko:c.ko)}</small>${[...c.good.map(x=>`<span class="g">${esc(M[x].tag)}</span>`),...c.bad.map(x=>`<span class="r">${esc(M[x].tag)}</span>`)].join('')}</div>`}).join('')}</div>
+ ${bkLine?`<p class="rv-situation">${esc(bkLine)}</p>`:''}<div class="rv-grid">${m.cells.map(c=>{const ym=re&&c.label.match(/^(\d{4})년 (\d+)월$/);const marked=c.good.length||c.bad.length,locked=lockB&&marked&&!open.has(String(c.label));return `<div class="rv-cell${!locked&&c.good.length?' good':''}${!locked&&c.bad.length?' bad':''}${locked?' rv-locked':''}"><b>${esc(ym?ym[2]+'월':c.label)}</b><small>${esc(ym?ym[1]+' '+c.ko:c.ko)}</small>${locked?`<span class="l">${icon('lock')}</span>`:[...c.good.map(x=>`<span class="g">${esc(M[x].tag)}</span>`),...c.bad.map(x=>`<span class="r">${esc(M[x].tag)}</span>`)].join('')}</div>`}).join('')}</div>${lockB?`<p class="rv-lock-note">${icon('lock')} 표시가 붙은 나머지 ${month||re?'달':'해'}는 리포트에서 공개해요.</p>`:''}
  <div class="rv-legend"><span class="g">${re?'좋은 달':month?'돕는 달':'좋은 해'}</span><span class="r">조심할 ${unit}</span>${month?'<span>달은 절기 기준(매달 4~8일 무렵 시작)</span>':''}</div>
  ${goods.map(([k,l])=>card(k,l,'good')).join('')}${bads.map(([k,l])=>card(k,l,'bad')).join('')}
  ${revealLocks(re?['가장 좋은 달의 며칠 무렵, 어떤 상황에 연락하면 좋은지','문자·전화·SNS 가운데 나에게 맞는 연락 수단과 첫마디','엇갈리는 달에 피할 말과 다시 연락해도 되는 달']:month?['좋은 달에 시작해야 할 일과 그 방법','조심할 달에 미뤄야 할 일과 막는 방법','열두 달 각각의 돈·일·사람·건강 흐름']:['이 해의 몇 월에 들어오는지','그 해에 해야 할 일과 하지 말아야 할 일','조심할 해를 막는 구체적인 방법'])}`}
@@ -124,15 +127,23 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  <span class="eyebrow">STEP 5 · 리포트 미리 보기</span><h1>${esc(v.name)} 님만의<br>한 권이 준비됐어요</h1>
  <div class="tp-page rv-page"><div class="tp-frame"><div class="tp-head">${esc(EXTRA_DATA.header?.[p.id]||'')}</div>
  ${toc[0]?`<div class="rv-ch open"><span class="tp-no">${esc(String(toc[0][0]))}</span><div><b>${esc(toc[0][1])}</b><p>${esc(c.items[0].text)}</p>${c.items[4]?`<p>${esc(c.items[4].text)}</p>`:''}<p>${esc(c.items[3].text.replace(/^.*?점수입니다\.\s*/,''))}</p><p class="rv-fade" aria-hidden="true">${esc(RV_FILL[0])}</p><p class="rv-more">여기까지는 1장의 첫머리예요. 리포트에서 1장은 사주 근거, 생활 장면, 실천법까지 여러 쪽에 걸쳐 이어집니다.</p></div></div>`:''}
- ${toc.slice(1).map(t=>`<div class="rv-ch"><span class="tp-no">${esc(String(t[0]))}</span><div><b>${esc(t[1])}</b><p class="rv-blur" aria-hidden="true">${esc(t[2]||`${v.name} 님 사주로 풀어 드리는 이 장의 내용`)}</p><p class="rv-blur rv-blur-more" aria-hidden="true">${esc(RV_FILL[1])}</p></div>${icon('lock')}</div>`).join('')}
+ ${rvFocusOrder(p,v,toc.slice(1)).map(t=>`<div class="rv-ch${t.focus?' rv-focus':''}"><span class="tp-no">${esc(String(t[0]))}</span><div>${t.focus?`<small class="rv-focus-tag">${esc(v.name)} 님이 궁금해하신 '${esc(t.focus)}'</small>`:''}<b>${esc(t[1])}</b><p class="${t.focus?'rv-focus-sub':'rv-blur'}"${t.focus?'':' aria-hidden="true"'}>${esc(t[2]||rvChapterLine(t[1],v.name))}</p><p class="rv-blur rv-blur-more" aria-hidden="true">${esc(RV_FILL[1])}</p></div>${icon('lock')}</div>`).join('')}
  </div></div>
  <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
  <!-- 가격 안내는 결제 화면에만 (사장님 2026-11-03) -->
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${FAQ.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}
+// 신년운세 '궁금한 분야' → 그 분야를 다루는 장(리포트 목차와 같은 번호, 2026-11-05)
+const RV_FOCUS={newyear:{'일과 직장':'4','돈과 재물':'5','연애와 결혼':'7','건강':'9','한 해 전체':'2'}};
+function rvFocusOrder(p,v,rest){const pick=(RV_FOCUS[p.id]||{})[(v.answers||{}).focus];if(!pick)return rest;const k=rest.findIndex(t=>String(t[0])===pick);if(k<0)return rest;const t=Object.assign([...rest[k]],{focus:(v.answers||{}).focus});return [t,...rest.slice(0,k),...rest.slice(k+1)]}
+function rvChapterLine(title,name){const t=String(title||'');if(/답/.test(t))return `${name} 님이 고른 상황과 질문에 사주로 하나씩 답해 드립니다`;if(/조언/.test(t))return `앞의 장을 모아 ${name} 님이 지금 할 일을 순서대로 정리합니다`;if(/색|숫자|방향/.test(t))return `${name} 님 사주에 맞는 색·숫자·방향을 골라 드립니다`;return `${name} 님 사주로 이 장의 내용을 풀어 드립니다`}
+// 미리 보기 양 시험(A: 지금처럼 다 보여 줌, B: 좋은 달·조심할 달 하나씩만). 한 번 정해지면 이 브라우저에서는 그대로.
+function abPreview(){try{let v=localStorage.getItem('unmyeong.ab.preview');if(v!=='A'&&v!=='B'){v=Math.random()<.5?'A':'B';localStorage.setItem('unmyeong.ab.preview',v)}return v}catch{return 'A'}}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
 // 결제 화면으로 넘어갈 때(주소 #만 바뀜)도 popstate가 오므로, 이야기 화면 주소 그대로일 때만 장면을 바꾼다(손님 테스트 3차: 결제 화면에서 뒤로 가면 STEP 1).
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view||location.hash!==revealState.hash)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
 let revealRepaint=null;
+// 결제 전 화면을 어디까지 읽었는지(장면 1~5) 한 번씩만 보낸다.
+function rvWatch(p){try{window.uTrack&&uTrack('view_preview',{product:p.id});if(!('IntersectionObserver' in window))return;const seen=new Set();const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const k=e.target.id.replace('rv-sec-','');if(seen.has(k))return;seen.add(k);window.uTrack&&uTrack('preview_section',{product:p.id,section:Number(k)+1})}),{threshold:.35});document.querySelectorAll('.rv-sec').forEach(s=>io.observe(s))}catch{}}
 const REVEAL_ONE_PAGE=true;
 function revealPage(p,i){
  const d=draft(p.id);
@@ -155,7 +166,8 @@ function revealPage(p,i){
   document.activeElement?.blur?.();
   const next=document.querySelector('[data-next]'),back=document.querySelector('.back-square');
   // 장면마다 브라우저 기록을 하나씩 남겨, 휴대폰 '뒤로'를 누르면 한 장면씩 돌아간다(질문 화면까지 한꺼번에 가지 않게).
-  next.onclick=()=>{if(n<REVEAL_SCENES-1){revealState.scene++;try{history.pushState({rvScene:revealState.scene},'')}catch{}paint();window.scrollTo({top:0,behavior:'instant'})}else advance(p,i)};
+  next.onclick=()=>{if(n<REVEAL_SCENES-1){revealState.scene++;try{history.pushState({rvScene:revealState.scene},'')}catch{}paint();window.scrollTo({top:0,behavior:'instant'})}else{window.uTrack&&uTrack('begin_checkout',{product:p.id,currency:'KRW',value:p.price});advance(p,i)}};
+  rvWatch(p);
   back.onclick=e=>{if(n>0){e.preventDefault();if(history.state&&history.state.rvScene===n)history.back();else{revealState.scene--;paint();window.scrollTo({top:0,behavior:'instant'})}}};
   const skip=document.querySelector('[data-rv-skip]');if(skip)skip.onclick=()=>advance(p,i);
   const edit=document.querySelector('[data-rv-edit]');if(edit)edit.onclick=()=>go(pathFor(p,FLOWS[p.id].findIndex(s=>s.type==='info')));

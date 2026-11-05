@@ -24,6 +24,7 @@
     Cache-Control = "no-store"
     X-Frame-Options = "DENY"
 
+# 상품이 정해진 짧은 주소는 /p/상품/ 공유 페이지를 거친다(2026-11-05: 카톡·인스타 미리보기에 그 상품 카드가 뜨게). 공유 페이지가 ?from= 을 그대로 넘긴다.
 # 손님이 어디서 왔는지 남기는 짧은 주소(사장님 2026-11-03 "링크 못생겨져").
 # 사이트가 ?from= 을 30일 기억했다가 주문에 같이 저장하고, 주소창에서는 바로 지운다. ?go= 는 그 상품 첫 화면.
 [[redirects]]
@@ -32,48 +33,48 @@
   status = 302
 [[redirects]]
   from = "/dn"
-  to = "/?from=dn&go=newyear"
+  to = "/p/newyear/?from=dn"
   status = 302
 [[redirects]]
   from = "/dr"
-  to = "/?from=dr&go=romance"
+  to = "/p/romance/?from=dr"
   status = 302
 [[redirects]]
   from = "/dw"
-  to = "/?from=dw&go=wealth"
+  to = "/p/wealth/?from=dw"
   status = 302
 [[redirects]]
   from = "/df"
-  to = "/?from=df&go=taster"
+  to = "/p/taster/?from=df"
   status = 302
 [[redirects]]
   from = "/t"
-  to = "/?from=t&go=taster"
+  to = "/p/taster/?from=t"
   status = 302
 # 블로그 → 신년운세
 [[redirects]]
   from = "/bn"
-  to = "/?from=bn&go=newyear"
+  to = "/p/newyear/?from=bn"
   status = 302
 # 블로그 → 재물운
 [[redirects]]
   from = "/bw"
-  to = "/?from=bw&go=wealth"
+  to = "/p/wealth/?from=bw"
   status = 302
 # 블로그 → 깊은 궁합
 [[redirects]]
   from = "/bc"
-  to = "/?from=bc&go=intimate"
+  to = "/p/intimate/?from=bc"
   status = 302
 # 블로그 → 무료 맛보기
 [[redirects]]
   from = "/bf"
-  to = "/?from=bf&go=taster"
+  to = "/p/taster/?from=bf"
   status = 302
 # 스레드 → 신년운세
 [[redirects]]
   from = "/tn"
-  to = "/?from=tn&go=newyear"
+  to = "/p/newyear/?from=tn"
   status = 302
 [[redirects]]
   from = "/i"
