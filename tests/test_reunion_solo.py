@@ -30,7 +30,7 @@ def test_solo_outline_has_no_partner_chart():
     slots = str([p.get("slot") for p in pages])
     assert "그 사람의 사주표" not in slots and "두 사람 비교" not in slots
     assert "단정하지 않습니다" in M.style_for(facts) and M.style_for(facts) != M.STYLE
-    assert len(t["months"]) == 24
+    assert len(facts["theme"]["months"]) == 24
 
 
 def test_reunion_without_flag_still_needs_partner():

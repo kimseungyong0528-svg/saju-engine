@@ -99,7 +99,8 @@ def build(f: dict, result: dict, answers: dict, partner: dict | None) -> dict:
         if y["year"] == 2027 and ny_side == "bad" and good and not bad:
             y["ny_note"] = "2027년에는 재회에 좋은 기운이 들어오지만, 한 해 전체 운은 조심할 쪽이에요. 연락은 이 해의 좋은 달에 맞춰 하세요."
         elif y["year"] == 2027 and ny_side == "good" and bad and not good:
-            y["ny_note"] = "2027년 한 해 전체 운은 좋은 쪽이지만, 두 사람 사이에는 부딪히는 기운이 들어와요. 이 해에는 서두르지 마세요."
+            y["ny_note"] = ("2027년 한 해 전체 운은 좋은 쪽이지만, 재회에는 부딪히는 기운이 들어와요. 이 해에는 서두르지 마세요." if solo else
+                            "2027년 한 해 전체 운은 좋은 쪽이지만, 두 사람 사이에는 부딪히는 기운이 들어와요. 이 해에는 서두르지 마세요.")
     months = [dict(m, **mark(m)) for m in f["screen_months"]]
     T.reveal_fix(result, "reunion", months)   # 제1조항: 결제 전 화면의 24개월 지도와 같은 표시·방향
     for m in months:
