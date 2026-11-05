@@ -2,7 +2,7 @@
 // 계산은 assets/free/ 의 계산기가 브라우저에서 한다(서버·AI 호출 없음).
 let tasterState={person:{},result:null};
 let tasterLib=null;
-async function tasterLoad(){if(!tasterLib){const json=u=>fetch(u).then(r=>{if(!r.ok)throw Error(u);return r.json()});const [eng,tst,data,texts]=await Promise.all([import('./assets/free/engine.mjs'),import('./assets/free/taster.mjs'),json('assets/free/saju-data.json?v=20261105j'),json('assets/free/texts.json?v=20261105j')]);tasterLib={eng,tst,data,texts}}return tasterLib}
+async function tasterLoad(){if(!tasterLib){const json=u=>fetch(u).then(r=>{if(!r.ok)throw Error(u);return r.json()});const [eng,tst,data,texts]=await Promise.all([import('./assets/free/engine.mjs'),import('./assets/free/taster.mjs'),json('assets/free/saju-data.json?v=20261105k'),json('assets/free/texts.json?v=20261105k')]);tasterLib={eng,tst,data,texts}}return tasterLib}
 function tasterItem(a,kind,i){const p=pById(a.product);return `<article class="taster-item ${kind}"><div class="taster-rank"><span>${kind==='good'?'좋은 운':'조심할 운'} ${i+1}위</span><h3>${esc(a.title)}</h3></div><p>${esc(a.text)}</p><p class="taster-hook">${esc(a.hook)}</p><a class="taster-more" href="#/f/${p.id}/info" data-taster-product="${p.id}">나의 ${esc(p.short)} 무료로 미리보기 →</a></article>`}
 function tasterChart(r){const c=r.chart;
  return `<div class="taster-chart">${c.columns.map(x=>`<div class="tc-col${x.me?' me':''}"><small>${x.label}</small><b>${x.hanja?esc(x.hanja[0]):'?'}</b><b>${x.hanja?esc(x.hanja[1]):'?'}</b><span>${x.ko?esc(x.ko):'모름'}</span>${x.me?'<em>나</em>':''}</div>`).join('')}</div><p class="taster-note">${esc(r.name)} 님이 태어난 해·달·날·시를 여덟 글자로 바꾼 것이 사주팔자입니다. ${esc(r.name)} 님은 ${esc(c.zodiac)}띠입니다.${c.columns[0].hanja?'':' 태어난 시간을 몰라서 시 자리는 비워 두었습니다.'}</p>
