@@ -28,6 +28,8 @@ class OrderInfo:
     gift: bool = False          # 선물 주문: 책을 읽는 사람은 산 사람이 아니라 받는 분이다
     gift_message: str = ""      # 선물 메시지(80자). 글쓰기에는 쓰지 않고 PDF 표지 다음 쪽에만 싣는다(gift_card)
     gift_from: str = ""         # 보내는 사람(20자)
+    partner_unknown: bool = False  # 재회사주: 상대 생년월일 모름(그 사람 사주는 계산하지 않는다, 2026-11-05)
+    partner_name: str = ""      # 그때 손님이 적은 상대 이름(없으면 '그 사람')
 
 
 def gift_card(order: "OrderInfo") -> dict | None:

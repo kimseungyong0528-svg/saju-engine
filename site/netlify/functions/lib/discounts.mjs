@@ -70,7 +70,6 @@ export async function quote(store, body, now = new Date()) {
 export async function afterPaid(store, order, now = new Date()) {
   const hash = emailHash(order.email);
   if (!(await store.get(`buyers/${hash}`))) await store.set(`buyers/${hash}`, { firstPaidAt: now.toISOString() });
-  await store.delete(`remind/${hash}`);   // 결제했으니 이어하기 안내는 보내지 않는다
   const d = order.discount;
   if (d?.code) {
     const c = await store.get(`coupons/${d.code}`);

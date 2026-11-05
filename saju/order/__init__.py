@@ -45,7 +45,10 @@ def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, 
         return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", ""), gift=gift, gift_message=gift_message, gift_from=gift_from), {}
     if product == "newyear" and not question:   # 신년운세는 질문을 answers.question으로 받는다(선택)
         question = str(answers.get("question") or "")[:1000]
-    return OrderInfo(d, question, reveal_start=reveal_start, gift=gift, gift_message=gift_message, gift_from=gift_from), answers
+    pinfo = payload.get("partner") or {}
+    solo = product == "reunion" and bool(pinfo.get("birthUnknown"))   # 상대 생일 없이 보는 재회사주(2026-11-05)
+    return OrderInfo(d, question, reveal_start=reveal_start, gift=gift, gift_message=gift_message, gift_from=gift_from,
+                     partner_unknown=solo, partner_name=clean_note(pinfo.get("name", ""), 30, lines=1) if solo else ""), answers
 
 
 def clean_note(value, limit: int, lines: int = 3) -> str:
@@ -85,7 +88,7 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
         return make_lifetime_report(me, order, out_pdf, writer, taster=seen, taster_view=view, **extra)
     if product == "romance":
         return make_romance_report(me, order, out_pdf, writer, taster=seen, taster_view=view, **extra)
-    partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS else None
+    partner = analyze_person(payload["partner"], current_year=when.year) if product in PAIR_PRODUCTS and not order.partner_unknown else None
     return make_product_report(product, me, order, out_pdf, writer, answers=answers, partner=partner, taster=seen, taster_view=view, **extra)
 
 

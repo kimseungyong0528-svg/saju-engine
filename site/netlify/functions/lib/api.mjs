@@ -8,7 +8,6 @@ import {
 import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
-import { saveRemind, unsubscribe, unsubscribePage } from './remind.mjs';
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -39,15 +38,6 @@ export function makeApi({ store, services, env, studioStore = store }) {
         let event; try { event = JSON.parse(text); } catch { return json({ error: 'BAD_JSON' }, 400); }
         await mailEvent(store, services, event);
         return json({ ok: true });
-      }
-      // 결제 이어하기 안내(선택 동의, 2026-11-05). 체크를 풀면 consent:false 로 지운다.
-      if (m === 'POST' && parts.join('/') === 'remind') {
-        const r = await saveRemind(store, await readJson(req, 4096));
-        return json(r, r.ok ? 200 : 400);
-      }
-      if (m === 'GET' && parts.join('/') === 'unsubscribe') {
-        const ok = await unsubscribe(store, url.searchParams.get('h'), url.searchParams.get('t'));
-        return new Response(unsubscribePage(ok), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
       }
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
