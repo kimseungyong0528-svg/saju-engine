@@ -916,7 +916,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .taster-pick .eyebrow{color:#f0c75e}
 .taster-pick strong{display:block;font-size:24px;line-height:1.4;margin:8px 0 10px}
 .taster-pick p{font-size:16px;line-height:1.65;color:#ece6da;margin:0 0 10px;word-break:keep-all}
-.taster-pick ul{margin:0 0 14px;padding-left:18px}.taster-pick li{font-size:16px;line-height:1.7;color:#ece6da}
+.taster-pick ul{margin:0 0 14px;padding-left:18px}.taster-pick li{font-size:16px;line-height:1.7;color:#ece6da;word-break:keep-all}
 .trust-strip .ts-card{margin:0 20px;border:1px solid #d8bb7866;border-radius:16px;padding:20px 18px;background:linear-gradient(180deg,#1d170c,#120f09)}
 .trust-strip .ts-eye{display:block;font-size:15px;font-weight:700;color:#d8bb78;letter-spacing:.02em}
 .trust-strip .ts-big{margin:6px 0 8px;font-size:22px;font-weight:800;color:#fff;line-height:1.35}.trust-strip .ts-big b{display:inline;font-size:34px;color:#f0c75e}
@@ -929,7 +929,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .trust-strip .ts-refund b{display:block;font-size:17px;color:#fff}.trust-strip .ts-refund small{display:block;font-size:15px;color:#cfe9da;margin-top:2px}
 .modal.drawer .modal-close{outline:none!important;box-shadow:none!important;border:0!important;width:52px;height:52px;color:#fff!important;opacity:1}.modal.drawer .modal-close svg{width:32px;height:32px;stroke:#fff;stroke-width:2.4}
 .scene-flow.is-cover .cover-me{pointer-events:auto;display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:10px 14px;border-radius:12px;background:#000000b3;border:1px solid #f0d89680;color:#fff;font-size:16px;font-weight:700;cursor:pointer;max-width:100%}
-.scene-flow.is-cover .cover-me input{width:22px;height:22px;margin:0;accent-color:#f0c75e;flex:0 0 22px}.scene-flow.is-cover .cover-me small{font-size:15px;font-weight:500;color:#eadfbf;white-space:nowrap}
+.scene-flow.is-cover .cover-me input{width:22px;height:22px;margin:0;accent-color:#f0c75e;flex:0 0 22px}.scene-flow.is-cover .cover-me span{display:flex;flex-direction:column;align-items:flex-start;text-align:left;line-height:1.35}.scene-flow.is-cover .cover-me b{font-size:16px;white-space:nowrap}.scene-flow.is-cover .cover-me small{font-size:15px;font-weight:500;color:#eadfbf;white-space:nowrap}.scene-flow.is-cover .cover-sub{text-wrap:balance}
 .scene-flow.is-cover .next-btn{white-space:nowrap;font-size:clamp(15px,4.6vw,18px)}
 .taster-pick .tp-why{font-size:17px;color:#fff;font-weight:700}.taster-pick .tp-why em{font-style:normal;padding:2px 8px;border-radius:8px;margin-right:6px;font-size:15px}.taster-pick .tp-why em.good,.taster-others .tos-tag.good{background:#1d3b2a;color:#7ee0a6}.taster-pick .tp-why em.bad,.taster-others .tos-tag.bad{background:#3d1a22;color:#ff9aac}
 .taster-others{margin:22px 0;padding:20px 18px;border-radius:16px;background:#17171c;border:1px solid #3a3a44;color:#f3efe6}.taster-others h3{margin:0 0 6px;font-size:21px;color:#fff;line-height:1.4}.taster-others .tos-sub{margin:0 0 10px;font-size:16px;line-height:1.6;color:#e7e2d8}
@@ -6342,7 +6342,7 @@ const COVER_QUOTES={lifetime:'열심히 사는데 왜 나만 제자리일까요?
 const COVER_SUB={reunion:'앞으로 24개월, 다시 이어지기 좋은 달까지 무료로 공개',romance:'앞으로 12년, 인연이 들어오는 해까지 무료로 공개',intimate:'두 사람 궁합 점수와 가까워지는 해까지 무료로 공개',newyear:'2027년 열두 달, 돕는 달과 조심할 달까지 무료로 공개',wealth:'앞으로 12년, 돈이 들어오는 해까지 무료로 공개',career:'앞으로 12년, 옮기기 좋은 해까지 무료로 공개',business:'앞으로 12년, 키울 해와 지킬 해까지 무료로 공개',health:'내 생활 리듬과 쉬어야 할 해까지 무료로 공개',lifetime:'여덟 가지 운 점수와 12년 지도까지 무료로 공개'};
 // First scene of every product: logo + menu on top, big portrait, name · big title · one quote line, one wide button.
 // 표지의 '저장된 내 정보로 보기' 체크(사장님 2026-11-06): 버튼 글이 길어 줄바꿈되던 것을 체크 칸으로 뺐다. 끄면 새로 입력한다.
-function coverMe(p,escape){let me=null;try{me=savedMe()}catch{}if(!me||!me.name||!me.birth||(typeof isGift==='function'&&isGift(p.id)))return '';return `<label class="cover-me"><input type="checkbox" id="cover-me" checked><span>저장된 내 정보로 보기</span><small>${escape(me.name)} · ${escape(String(me.birth).replace(/-/g,'.'))}</small></label>`}
+function coverMe(p,escape){let me=null;try{me=savedMe()}catch{}if(!me||!me.name||!me.birth||(typeof isGift==='function'&&isGift(p.id)))return '';return `<label class="cover-me"><input type="checkbox" id="cover-me" checked><span><b>저장된 내 정보로 보기</b><small>${escape(me.name)} · ${escape(String(me.birth).replace(/-/g,'.'))}</small></span></label>`}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.cover-me'))e.stopPropagation()},true);
 function coverMarkup(p,escape){
  const first=FLOWS[p.id]?.[0]||{},full=p.short||p.name,lead=(full.match(/^(\d+)\s+/)||[])[1]||'',title=lead?full.slice(full.indexOf(' ')+1):full,units=[...title].reduce((n,c)=>n+(c==='·'?.38:c===' '?.3:/\d/.test(c)?.6:.97),0),size=Math.min(96,Math.round(362/Math.max(3.6,units)));
@@ -6829,7 +6829,7 @@ function revealCompare(p,lib){try{const {eng,tst,data,texts,rv}=lib,R=texts.REVE
 function revealCompareCard(v){const c=v.cmp;if(!c||c.length<2)return '';const yr=b=>b.slice(0,4)+'년 '+Number(b.slice(5,7))+'월 '+Number(b.slice(8,10))+'일생';
  return `<section class="rv-cmp" aria-label="생일이 하루만 달라도 답이 달라요"><h3>생일이 하루만 달라도, 답이 달라요</h3><p class="rv-cmp-lead">같은 해 같은 달, 하루 차이로 태어난 두 사람을 같은 계산기로 풀어 봤어요. 비슷한 생일이어도 결과는 확실히 달라요. ${esc(v.name)} 님 결과도 ${esc(v.name)} 님 생일로만 나와요.</p><div class="rv-cmp-grid">${c.map(x=>`<div><b>${esc(x.label)}</b><small>${esc(yr(x.birth))}</small><p>${esc(x.word)} <strong>${typeof x.score==='number'?x.score+'점':esc(String(x.score||''))}</strong></p><p>${x.unit==='month'?'좋은 달':'좋은 해'} <strong>${x.goodN}번</strong></p><p>첫 '${esc(x.first?.tag||'-')}' <strong>${esc(x.first?(x.unit==='month'?x.first.label:x.first.label+'년'):'-')}</strong></p></div>`).join('')}</div><p class="rv-cmp-note">예시 생일은 실존 인물이 아니에요. 태어난 시간은 모름으로 계산했어요.</p></section>`}
 // 결제 전 화면 '계산 근거 자세히 보기'(자청 기획안 B-1): 홈의 계산 근거 칸으로 바로 내려간다.
-document.addEventListener('click',e=>{if(e.target.closest('[data-goto-trust]'))try{sessionStorage.setItem('unmyeong.gotoTrust','1')}catch{}});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-goto-trust]'))return;const t=document.querySelector('#trust-title');if(t){e.preventDefault();t.scrollIntoView({block:'start',behavior:'smooth'});return}try{sessionStorage.setItem('unmyeong.gotoTrust','1')}catch{}});
 new MutationObserver(()=>{try{if(sessionStorage.getItem('unmyeong.gotoTrust')!=='1')return;const t=document.querySelector('#trust-title');if(!t)return;sessionStorage.removeItem('unmyeong.gotoTrust');setTimeout(()=>t.scrollIntoView({block:'start',behavior:'instant'}),60)}catch{}}).observe(document.documentElement,{childList:true,subtree:true});
 // 지금까지 보낸 리포트 수(자청 기획안 E-4): 실제 발송 수만, 50권이 넘을 때만 보인다.
 new MutationObserver(()=>document.querySelectorAll('[data-delivered]:not([data-filled])').forEach(el=>{el.dataset.filled='1';fetch('/api/stats/public').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.delivered&&el.isConnected){el.textContent=`지금까지 ${d.delivered.toLocaleString('ko-KR')}권의 리포트를 보냈어요`;el.hidden=false}}).catch(()=>{})})).observe(document.documentElement,{childList:true,subtree:true});
