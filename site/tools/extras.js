@@ -25,7 +25,7 @@ function entryPopup(){
  const d=eventDays();if(d===null)return;
  // 재구매 링크로 온 손님에게는 이벤트 팝업 대신 '재구매 할인 적용' 안내를 먼저 보여 준다.
  if(savedCoupon()){try{if(sessionStorage.getItem('unmyeong.rebuyNote'))return;sessionStorage.setItem('unmyeong.rebuyNote','1')}catch{}
-  setTimeout(()=>toast('재구매 할인 10%가 적용돼요. 어떤 리포트를 고르셔도 결제할 때 저절로 깎여요.'),300);return}
+  couponCheck().then(ok=>{if(ok===true)toast('재구매 할인 10%가 적용돼요. 어떤 리포트를 고르셔도 결제할 때 저절로 깎여요.');else if(ok===false)toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.')});return}
  const today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
  try{if(sessionStorage.getItem('unmyeong.entry')||localStorage.getItem('unmyeong.entryHide')===today)return;sessionStorage.setItem('unmyeong.entry','1')}catch{}
  const p=pById('newyear');
@@ -45,14 +45,21 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 (()=>{try{const cp=new URLSearchParams(location.search).get('coupon');
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
+// 재구매 링크 확인(2026-11-05 자청 점검 F-6): 서버(/api/quote)가 쿠폰을 확인하기 전에는 '적용돼요'라고 말하지 않는다. 틀린 링크면 저장값을 지운다.
+let couponValid=null;
+function couponCheck(){const c=savedCoupon();if(!c){couponValid=false;return Promise.resolve(false)}return fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:'newyear',email:'',extras:[],coupon:c}),signal:AbortSignal.timeout(15000)}).then(r=>r.ok?r.json():null).then(q=>{couponValid=Boolean(q&&!q.notes?.includes('COUPON_INVALID'));if(q&&!couponValid){try{localStorage.removeItem('unmyeong.coupon')}catch{}}return couponValid}).catch(()=>{couponValid=null;return null})}
 // 함께 받아 보기 순서 (2026-11-05): 같은 순서를 모두에게 보이지 않고, 이 손님에게 맞는 상품을 위로. 점수가 같으면 사장님 순서(CO_TOP).
 // 고른 답 → 상품: 손님이 고른 보기 글자 그대로(예전 선택지 값)
 const CO_HINT={'일과 직장':'career','돈과 재물':'wealth','연애와 결혼':'romance','건강':'health','한 해 전체':'lifetime','사업을 하고 있어요':'business','사업을 운영하고 있어요':'business','창업을 생각해요':'business','이직을 고민해요':'career','첫 취업을 준비해요':'career','헤어진 사이예요':'reunion','최근에 헤어졌어요':'reunion','아직 헤어지지 않았어요':'intimate','연애 중이에요':'intimate','결혼했어요':'intimate','결혼한 사이예요':'newyear'};
 function tasterPicks(){try{const v=JSON.parse(localStorage.getItem('unmyeong.tasterPicks')||'null');if(v&&Date.now()-(v.at||0)<30*864e5)return {good:v.good||[],bad:v.bad||[]}}catch{}return {good:[],bad:[]}}
+// 방금 고른 상품의 '다음 질문'(2026-11-05 자청 점검 N-11): 가치 사다리. 손님이 고른 답(CO_HINT)과 상대 정보보다는 아래 점수.
+const CO_NEXT={career:['wealth','business','newyear'],business:['wealth','newyear','career'],wealth:['business','newyear','career'],health:['newyear','lifetime','wealth'],lifetime:['newyear','romance','wealth'],romance:['intimate','newyear','reunion'],reunion:['intimate','romance','newyear'],intimate:['reunion','newyear','romance'],newyear:['romance','wealth','career']};
+const CO_WHY={'career>wealth':'옮길 해를 봤다면, 돈 들어오는 해도 같이','business>wealth':'키울 해와 돈 들어오는 해를 같이','wealth>business':'돈 들어오는 해에 벌일 일도 같이','health>newyear':'쉬어야 할 때를 2027년 달마다','lifetime>newyear':'평생 흐름 중 2027년을 달마다','romance>intimate':'만나는 사람이 있다면 두 사람 궁합도','reunion>intimate':'그 사람 생일을 이미 넣으셨어요. 두 사람 궁합도 바로','intimate>reunion':'두 사람 정보 그대로, 다시 가까워지는 달도','newyear>romance':'2027년 연애운을 따로 자세히','reunion-solo>romance':'그 사람 정보 없이도 내 연애 패턴은 바로'};
+function coSolo(p,d){return p.id==='reunion'&&Boolean(d.partner&&d.partner.birthUnknown)}
 function coOrder(p,d,others){
  const ans=new Set([...Object.values(d.answers||{}),...Object.values(d.extraAnswers||{}).flatMap(a=>Object.values(a||{}))].filter(Boolean).map(String));
  const tp=tasterPicks(),gift=typeof isGift==='function'&&isGift(p.id),married=['결혼했어요','결혼한 사이예요'].some(x=>ans.has(x)),hasPartner=Boolean(d.partner&&personValid(d.partner));
- const sc=x=>{let s=0;if(hasPartner&&PAIR_IDS.includes(x.id))s+=100;for(const [k,v] of Object.entries(CO_HINT))if(v===x.id&&ans.has(k))s+=60;const gi=tp.good.indexOf(x.id);if(gi>=0)s+=45-gi*5;const bi=tp.bad.indexOf(x.id);if(bi>=0)s+=30-bi*5;if(married&&['romance','reunion'].includes(x.id))s-=200;if(gift&&['romance','reunion'].includes(x.id))s-=50;return s};
+ const nx=coSolo(p,d)?['romance','newyear','wealth']:(CO_NEXT[p.id]||[]);const sc=x=>{let s=0;const ni=nx.indexOf(x.id);if(ni>=0)s+=40-ni*10;if(coSolo(p,d)&&x.id==='romance')s+=80;if(hasPartner&&PAIR_IDS.includes(x.id))s+=100;for(const [k,v] of Object.entries(CO_HINT))if(v===x.id&&ans.has(k))s+=60;const gi=tp.good.indexOf(x.id);if(gi>=0)s+=45-gi*5;const bi=tp.bad.indexOf(x.id);if(bi>=0)s+=30-bi*5;if(married&&['romance','reunion'].includes(x.id))s-=200;if(gift&&['romance','reunion'].includes(x.id))s-=50;return s};
  return [...others].sort((x,y)=>sc(y)-sc(x)||((CO_TOP.indexOf(x.id)+1||99)-(CO_TOP.indexOf(y.id)+1||99)));
 }
 // 이메일은 이 기기에만 기억해 두고 다음 결제 때 다시 채운다(서버로 따로 보내지 않음).
@@ -72,7 +79,7 @@ function bundleBlock(p,d){
  const lastPair=[...others].reverse().find(x=>PAIR_IDS.includes(x.id))?.id;
  const partnerForm=`<form class="bundle-partner" data-bundle-partner novalidate><p class="bundle-partner-title">상대방 정보</p><p class="bundle-partner-sub">재회사주·깊은 궁합은 상대방의 출생 정보로 두 사람을 함께 봐요. 둘 다 고르면 같은 상대방으로 봐요.</p>${personFields('bundle-partner',d.partner||{}).replace('나의 이야기 준비하기','상대방 정보 준비하기')}</form>`;
  // 재구매 링크로 온 손님: 재구매 할인 10%가 붙고 묶음 할인과는 겹치지 않는다(한 주문에 할인 하나). 첫 구매 상자 대신 한 줄로 알려 준다.
- if(d.coupon||savedCoupon())return `<p class="bundle-rebuy">재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.</p>`;
+ if(d.coupon||savedCoupon())return couponValid===true?`<p class="bundle-rebuy">재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.</p>`:`<p class="bundle-rebuy">재구매 할인 링크를 확인하고 있어요. 확인되면 결제 금액에서 10%가 깎여요.</p>`;
  // 목록은 접어 두고(결제 화면이 길어지지 않게), 이미 고른 상품이 있으면 펼친다.
  return `<section class="bundle-x"><details class="bundle-more"${on.size?' open':''}><summary><span class="x-eyebrow">FIRST ORDER</span><span class="x-title">함께 사면 전부 <em>10%</em> 할인</span><span class="x-sub">처음 구매하시는 분이 2개 이상 함께 사면 전부 10% 할인돼요. 리포트는 한 권씩 따로 보내드려요.</span><b class="bundle-open">여기를 눌러서 할인 받기</b></summary><div class="bundle-list">${others.map(x=>{const q=qs(x);return `<div class="bundle-row"><label class="bundle-item"><input type="checkbox" name="extra" value="${x.id}"${on.has(x.id)?' checked':''}><span class="bundle-name">${esc(x.name.replace(/^금월선녀의\s*/,''))}</span><span class="bundle-price"><s>${money(x.price)}</s><span><em>10%</em> ${money(discounted(x.price))}</span></span></label>${q?`<div class="bundle-q">${q}</div>`:''}</div>${!pair&&x.id===lastPair?partnerForm:''}`}).join('')}</div></details></section>`;
 }
@@ -113,7 +120,8 @@ async function refreshQuote(p,d){
  const seq=++quoteSeq,box=document.querySelector('#checkout-price');if(!box)return;
  let q=null;try{const r=await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,productId:p.id,email:d.email||'',extras:d.extras||[],coupon:d.coupon||''}),signal:AbortSignal.timeout(15000)});if(r.ok)q=await r.json()}catch{}
  if(seq!==quoteSeq||!box.isConnected)return;
- if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();return refreshQuote(p,d)}
+ if(q&&d.coupon&&q.notes?.includes('COUPON_INVALID')){couponValid=false;toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.');d.coupon='';try{localStorage.removeItem('unmyeong.coupon')}catch{}save();document.querySelector('.bundle-rebuy')?.remove();return refreshQuote(p,d)}
+ if(q&&d.coupon&&couponValid!==true){couponValid=true;const rb=document.querySelector('.bundle-rebuy');if(rb)rb.textContent='재구매 할인 10%가 이 주문에 적용돼요. 할인은 한 주문에 하나만 들어가요.'}
  if(q)q.missing=Boolean(q.incomplete?.length);
  // 이미 구매한 이메일이면 목록의 '10%' 가격을 지운다(손님 테스트 4차: 재구매 손님에게도 '10% 26,820원'이 보였다)
  document.querySelector('.bundle-x')?.classList.toggle('no-first',Boolean(q?.notes?.includes('BUNDLE_FIRST_ONLY')));

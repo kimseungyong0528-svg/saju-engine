@@ -1,0 +1,39 @@
+# 임시 작업(aside/jacheong 브랜치 전용, 합치기 전에 지운다): 맛보기 문구(texts.json)를 고친 뒤
+# 사이트 검사용 정답표(site/tests/fixtures/taster-parity.json)를 파이썬 엔진으로 다시 만든다.
+name: 맛보기 정답표 다시 만들기 (임시)
+
+on:
+  push:
+    branches: [aside/jacheong-2026-11-05]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aside/jacheong-2026-11-05
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils > /dev/null
+          pip install -q -e ".[dev]"
+      - name: 정답표 만들기
+        run: python site/tools/make_taster_fixture.py
+      - name: 바뀌었으면 올리기
+        run: |
+          if git diff --quiet -- site/tests/fixtures/taster-parity.json; then echo "no change"; exit 0; fi
+          git config user.name "aside-bot"
+          git config user.email "aside-bot@users.noreply.github.com"
+          git add site/tests/fixtures/taster-parity.json
+          git commit -m "맛보기 정답표 다시 만들기 (texts.json 문구 수정 반영)"
+          git push
