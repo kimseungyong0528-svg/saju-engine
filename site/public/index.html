@@ -7302,6 +7302,8 @@ function rvOnePage(p,v){const F=[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4],O
   if(k===0){const nt=(h.match(/<p class="rv-situation">태어난 시간을 모르셔서[^<]*<\/p>/)||[''])[0];h=h.replace(nt,'');const a=h.indexOf('<span class="eyebrow">'),b=h.indexOf('</h1>',a)+5;h=`${nt}<details class="rv-fold"><summary>${h.slice(a,b)}<span class="rv-fold-more">내 사주 여덟 글자 자세히 보기</span></summary>${h.slice(b)}</details>`}
   h=h.replace(/STEP \d/,()=>'STEP '+(++no));
   return `<section class="rv-sec" id="rv-sec-${k}">${h}</section>`}).join('')}
+// 시간 모름이면 화면 전체에서 '여덟 글자'를 '여섯 글자'로(2-4 ⑤)
+function rvOnePageText(p,html){return rvNoTime(p)?html.replace(/여덟 글자/g,'여섯 글자').replace(/사주팔자/g,'사주 여섯 글자'):html}
 // 2-6 ④ 결제 화면에서 뒤로 오면 보던 자리로(30분 안)
 function rvSaveY(p){try{sessionStorage.setItem('unmyeong.rvY.'+p.id,JSON.stringify({y:Math.round(window.scrollY),at:Date.now()}))}catch{}}
 function rvRestoreY(p){try{const k='unmyeong.rvY.'+p.id,s=JSON.parse(sessionStorage.getItem(k)||'null');if(!s)return;sessionStorage.removeItem(k);if(Date.now()-s.at>18e5||!s.y)return;setTimeout(()=>window.scrollTo({top:s.y,behavior:'instant'}),120)}catch{}}
@@ -7320,7 +7322,7 @@ function revealPage(p,i){
   const v=revealState.view;let n=revealState.scene;const rest=Math.max(0,(EXTRA_DATA.toc[p.id]||[]).length-1);
   // 한 페이지 (사장님 2026-11-03): 다섯 장면을 줄이지 않고 그대로 위에서 아래로 이어 붙인다. 버튼은 마지막(결제) 하나.
   if(REVEAL_ONE_PAGE)revealState.scene=n=REVEAL_SCENES-1;
-  const body=REVEAL_ONE_PAGE?rvOnePage(p,v):[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
+  const body=REVEAL_ONE_PAGE?rvOnePageText(p,rvOnePage(p,v)):[rvScene0,rvScene1,rvScene2,rvScene3,rvScene4][n](p,v);
   const cta=n===REVEAL_SCENES-1?`${({intimate:'깊은 궁합'})[p.id]||p.short||p.name} 전체 리포트 받기 · ${money(p.price)}`:n===2&&p.id==='newyear'?'내 운이 들어오는 달 보기':RV_CTA[n];
   app.innerHTML=`<div class="shell flow reveal-flow" style="--accent:${p.color}">${progress(p,i,'<button type="button" class="rv-edit rv-edit-top" data-rv-edit>입력한 정보 고치기</button>')}${REVEAL_ONE_PAGE?'':`<div class="rv-dots" aria-label="${n+1} / ${REVEAL_SCENES}">${Array.from({length:REVEAL_SCENES},(_,k)=>`<i class="${k<=n?'on':''}"></i>`).join('')}</div>`}<main id="main"><div class="flow-content rv-body">${n===0&&typeof savedCoupon==='function'&&savedCoupon()?'<button type="button" class="rv-edit" data-rv-skip>이야기 건너뛰기</button>':''}${body}</div></main>${n===REVEAL_SCENES-1?bottom(p,i,cta).replace('<div class="flow-bottom">','<div class="flow-bottom rv-bottom">'+rvNearCta(p,v)):bottom(p,i,cta)}</div>`;
   document.activeElement?.blur?.();
