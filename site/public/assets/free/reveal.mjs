@@ -10,7 +10,8 @@ const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
 const GROUP_OF = { 비견: '비겁', 겁재: '비겁', 식신: '식상', 상관: '식상', 편재: '재성', 정재: '재성', 편관: '관성', 정관: '관성', 편인: '인성', 정인: '인성' };
 export const FIRST_YEAR = 2027;
-export const REUNION_MONTHS = 24;   // 재회사주 지도: 앞으로 24개월(사장님 2026-10-30: 몇 달 안, 길어야 2~3년)
+export const REUNION_MONTHS = 24;
+export const MONEY_MAX = 4;     // 12년 지도의 '돈의 별'은 4번까지(사장님 2026-11-06)   // 재회사주 지도: 앞으로 24개월(사장님 2026-10-30: 몇 달 안, 길어야 2~3년)
 // 태어난 날 지지의 삼합 무리마다 정해진 도화(桃花) 글자: 인오술→묘, 신자진→유, 사유축→오, 해묘미→자
 const PEACH_OF = { 2: 3, 6: 3, 10: 3, 8: 9, 0: 9, 4: 9, 5: 6, 9: 6, 1: 6, 11: 0, 3: 0, 7: 0 };
 
@@ -108,15 +109,26 @@ export function luckMap(fp, sex, product, T, startYear = FIRST_YEAR, start = nul
   const nyMap = product === 'reunion' ? luckMap(fp, sex, 'newyear', T).cells : null;
   const nyBad = nyMap ? new Set(nyMap.filter(c => c.bad.length).map(c => c.ko)) : null;
   const nyGood = nyMap ? new Set(nyMap.filter(c => c.good.length).map(c => c.ko)) : null;
+  const ds = fp.day.stem, pow = [];
   const cells = base.map(p => {
     const cell = { label: p.label, ko: p.ko, hanja: p.hanja };
     [cell.good, cell.bad] = yearMarks(fp, sex, product, T, p.label,
       conf.good.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)), conf.bad.filter(k => ruleOf(k)(p)).map(k => markKey(k, sex)));
     if (nyBad && p.label.startsWith('2027년') && nyBad.has(p.ko)) cell.good = [];
     if (nyGood && p.label.startsWith('2027년') && nyGood.has(p.ko)) cell.bad = [];
-    for (const [kind, into] of [['good', good], ['bad', bad]]) for (const key of cell[kind]) (into[key] || (into[key] = [])).push(p.label);
+    pow.push((GROUP_OF[tenGod(ds, p.stem)] === '재성' ? 1 : 0) + (GROUP_OF[branchTenGod(ds, p.branch)] === '재성' ? 1 : 0));
     return cell;
   });
+  // 돈의 별은 12년 가운데 MONEY_MAX번까지만(사장님 2026-11-06: 12년 중 7년이 '돈의 별'이면 귀해 보이지 않는다).
+  // 남기는 순서: 2027년 칸(무료 풀이 '2027년 운'과 맞춘 칸) → 천간·지지 둘 다 재성인 해 → 가까운 해. saju/reveal.py 와 같다.
+  if (unit === 'year') {
+    const has = cells.map((c, i) => i).filter(i => cells[i].good.includes('money'));
+    if (has.length > MONEY_MAX) {
+      const keep = new Set([...has].sort((i, j) => (cells[j].label === '2027') - (cells[i].label === '2027') || pow[j] - pow[i] || i - j).slice(0, MONEY_MAX));
+      for (const i of has) if (!keep.has(i)) cells[i].good = cells[i].good.filter(k => k !== 'money');
+    }
+  }
+  for (const cell of cells) for (const [kind, into] of [['good', good], ['bad', bad]]) for (const key of cell[kind]) (into[key] || (into[key] = [])).push(cell.label);
   return { unit, cells, good, bad, weak };
 }
 

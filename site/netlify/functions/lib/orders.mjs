@@ -15,7 +15,7 @@ export const STATUS_MESSAGES = {
   processing: '사주 결과를 작성하고 검사하고 있어요.',
   retry: '처리가 잠시 지연되어 다시 진행하고 있어요.',
   held: '결과 준비 중 문제가 확인되어 발송을 보류했어요. 확인 후 다시 보내드리거나 환불해 드릴게요.',
-  email_accepted: '결과 PDF를 이메일로 보냈어요.',
+  email_accepted: '결과 PDF를 이메일로 보냈어요. 이미 보낸 리포트라 단순 변심 환불은 안 돼요.',
   test_paid: '시험 결제가 확인되었어요. 지금은 시험 운영 중이라 결과 PDF는 만들지 않아요.',
   refund_pending: '결제 취소를 처리하고 있어요.',
   refunded: '결제 취소가 확인되었어요.',
@@ -233,9 +233,15 @@ export async function syncRefund(store, services, order, now = new Date()) {
     root.refundStatus = p.status;
   }
   const kids = await Promise.all((root.children || []).map(id => store.get(`orders/${id}`)));
-  // 환불은 사장님이 토스에서 직접 하므로 따로 알리지 않는다. 스튜디오는 refunded를 '취소'로 센다.
+  // 환불은 사장님이 토스에서 직접 하므로 따로 알리지 않는다(이미 보낸 주문만 아래에서 한 번 알린다). 스튜디오는 refunded를 '취소'로 센다.
+  let told = false;
   for (const o of [root, ...kids.filter(Boolean)]) {
     if (!REFUNDABLE.has(o.status)) continue;
+    // 이미 리포트를 보낸 주문(사장님 2026-11-06: 보낸 뒤에는 환불 불가): 토스에서 취소됐으면 사장님께 '이미 보낸 주문'이라고 알린다.
+    if (o.status === 'email_accepted' && services.notifyOwner && !told) {
+      told = true;
+      try { await services.notifyOwner(o, `이미 ${o.emailedAt ? new Date(o.emailedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + '에 ' : ''}리포트를 보낸 주문인데 토스에서 결제가 취소됐어요. 보낸 뒤에는 단순 변심 환불 대상이 아니에요. 실수로 취소했다면 토스 관리자 화면에서 확인해 주세요.`, 'sent_refund'); } catch (e) { console.error('notify sent_refund', e?.message); }
+    }
     setStatus(o, 'refunded', now, `toss ${root.refundStatus || 'CANCELED'}`);
     delete o.payload; delete o.disclosures;
     await store.set(`orders/${o.id}`, o);

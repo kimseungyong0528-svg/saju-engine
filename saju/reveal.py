@@ -15,6 +15,7 @@ from .pillars import FourPillars
 STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4]
 BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4]
 FIRST_YEAR = 2027
+MONEY_MAX = 4   # 12년 지도의 '돈의 별'은 4번까지(사장님 2026-11-06)
 REUNION_MONTHS = 24   # 재회사주 지도: 앞으로 24개월(사장님 2026-10-30: 몇 달 안, 길어야 2~3년)
 # 태어난 날 지지의 삼합 무리마다 정해진 도화(桃花) 글자: 인오술→묘, 신자진→유, 사유축→오, 해묘미→자
 PEACH_OF = {2: 3, 6: 3, 10: 3, 8: 9, 0: 9, 4: 9, 5: 6, 9: 6, 1: 6, 11: 0, 3: 0, 7: 0}
@@ -152,7 +153,8 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
     ny_cells = luck_map(fp, sex, "newyear")["cells"] if product == "reunion" else []
     ny_bad = {c["ko"] for c in ny_cells if c["bad"]}
     ny_good = {c["ko"] for c in ny_cells if c["good"]}
-    cells = []
+    ds = fp.day.stem
+    cells, pow_ = [], []
     for p in base:
         cell = {"label": p["label"], "ko": p["ko"], "hanja": p["hanja"]}
         cell["good"], cell["bad"] = year_marks(fp, sex, product, p["label"],
@@ -162,10 +164,21 @@ def luck_map(fp: FourPillars, sex: str, product: str, start_year: int = FIRST_YE
             cell["good"] = []
         if p["label"].startswith("2027년") and p["ko"] in ny_good:
             cell["bad"] = []
+        pow_.append(sum(TEN_GOD_GROUP[g] == "재성" for g in (A.ten_god(ds, p["stem"]), A.branch_ten_god(ds, p["branch"]))))
+        cells.append(cell)
+    # 돈의 별은 12년 가운데 MONEY_MAX번까지만(사장님 2026-11-06: 12년 중 7년이 '돈의 별'이면 귀해 보이지 않는다).
+    # 남기는 순서: 2027년 칸(무료 풀이 '2027년 운'과 맞춘 칸) → 천간·지지 둘 다 재성인 해 → 가까운 해. 사이트 reveal.mjs 와 같다.
+    if unit == "year":
+        has = [i for i, c in enumerate(cells) if "money" in c["good"]]
+        if len(has) > MONEY_MAX:
+            keep = set(sorted(has, key=lambda i: (cells[i]["label"] != "2027", -pow_[i], i))[:MONEY_MAX])
+            for i in has:
+                if i not in keep:
+                    cells[i]["good"] = [k for k in cells[i]["good"] if k != "money"]
+    for cell in cells:
         for kind, into in (("good", good), ("bad", bad)):
             for key in cell[kind]:
-                into.setdefault(key, []).append(p["label"])
-        cells.append(cell)
+                into.setdefault(key, []).append(cell["label"])
     return {"unit": unit, "cells": cells, "good": good, "bad": bad, "weak": weak}
 
 
