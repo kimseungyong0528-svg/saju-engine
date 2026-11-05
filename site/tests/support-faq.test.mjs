@@ -17,7 +17,8 @@ test('고객센터에 메일 미도착·이메일 오입력·정보 오입력 �
 
 test('결제 전 이야기 화면의 질문은 그대로 FAQ만 쓴다', () => {
   const rv = html.slice(html.indexOf('function rvScene4'), html.indexOf('const RV_CTA'));
-  assert.ok(/\bFAQ\]?\.map\(|\.\.\.FAQ\]/.test(rv) && !rv.includes('SUPPORT_FAQ'));
+  // 상품 화면 자주 묻는 질문에서는 'AI가 쓴 리포트인가요?'만 뺀다(사장님 2026-11-06). 고객센터 질문(SUPPORT_FAQ)은 쓰지 않는다.
+  assert.ok(/\bFAQ\]?\.map\(|\.\.\.FAQ\]|\.\.\.FAQ\.filter\(/.test(rv) && !rv.includes('SUPPORT_FAQ'));
 });
 
 test('재구매 금액 답은 실제 할인 계산과 같다', () => {
