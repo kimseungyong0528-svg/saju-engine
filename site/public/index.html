@@ -6982,7 +6982,8 @@ for(const [id,f] of Object.entries(FLOWS)){
  if(f[si-1]?.id==='ready')f.splice(si-1,1,REVEAL_STEP);else f.splice(si,0,REVEAL_STEP);
 }
 let revealLib=null,revealState={key:'',scene:0,confirm:{},view:null};
-async function revealLoad(){const lib=await tasterLoad();if(!revealLib)revealLib=await import('./assets/free/reveal.mjs');return {...lib,rv:revealLib}}
+// reveal.mjs는 브라우저가 7일 동안 저장해 둔다(/assets/* 캐시). 규칙을 바꾸면 ?v= 값을 꼭 바꿔야 화면과 리포트가 어긋나지 않는다(제1조항).
+async function revealLoad(){const lib=await tasterLoad();if(!revealLib)revealLib=await import('./assets/free/reveal.mjs?v=20261106a');return {...lib,rv:revealLib}}
 const REVEAL_SCENES=5;
 function revealStartYear(){return Math.max(2027,new Date(Date.now()+9*3600e3).getUTCFullYear())}
 // 재회사주 24개월 지도의 첫 달(한국 날짜로 15일까지면 이번 달, 16일부터 다음 달). saju/reveal.py start_month 와 같다.
