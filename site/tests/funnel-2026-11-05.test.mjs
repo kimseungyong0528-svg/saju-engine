@@ -44,7 +44,7 @@ test('미리 보기 A/B 와 손님 답 반영', () => {
 });
 test('첫 화면 선물하기 버튼과 지금 답 반영', () => {
   assert.ok(html.includes('class="cover-gift"') && html.includes('data-gift-entry'));
-  assert.ok(html.includes('const ans=draft(p.id).answers||{},pick=(RV_FOCUS[p.id]||{})[ans.focus]'));
+  assert.ok(html.includes('const ans=draft(p.id).answers||{};let pick=(RV_FOCUS[p.id]||{})[ans.focus]'));
   assert.ok(html.includes("${month||re?'달은':'해는'}"));
 });
 test('검색·카드·무료 분석: 단계 수 대신 무료 미리보기, 무료 분석에서 바로 정보 확인으로', () => {
@@ -64,4 +64,20 @@ test('상품별 공유 페이지와 짧은 주소', () => {
 test('글꼴: 2MB 한 파일 대신 조각 글꼴', () => {
   assert.ok(!html.includes('rel="preload" href="assets/fonts/PretendardVariable.woff2"'));
   assert.ok((html.match(/assets\/fonts\/pretendard-ds\/PretendardVariable\.subset\.\d+\.woff2/g) || []).length >= 90);
+});
+
+test('신년운세에만 있던 것을 9개 상품 모두에 (2026-11-05 사장님 "일부만 반영된 거 전부"): 목차 강조, 지도 위 한 줄, 12개월 잠금 줄, 상품별 질문', () => {
+  const all = ['romance','reunion','intimate','newyear','wealth','career','business','health','lifetime'];
+  const obj = name => { const i = html.indexOf('const ' + name + '={'); assert.ok(i > 0, name); return html.slice(i, html.indexOf('\n', i)); };
+  const focus = obj('RV_FOCUS_ALL') + obj('RV_FOCUS'), sit = obj('RV_SIT'), month = obj('RV_MONTH_LOCK'), faq = obj('PRODUCT_FAQ');
+  for (const id of all) {
+    assert.ok(new RegExp('[{,]' + id + ':').test(focus), 'focus ' + id);
+    assert.ok(new RegExp('[{,]' + id + ':').test(faq), 'faq ' + id);
+    if (id !== 'reunion') assert.ok(new RegExp('[{,]' + id + ':').test(sit), 'sit ' + id);
+    if (!['reunion','newyear'].includes(id)) assert.ok(new RegExp('[{,]' + id + ':').test(month), 'month ' + id);
+  }
+  // 목차 강조 번호는 그 상품 리포트 목차에 실제로 있는 장이다(제1조항)
+  const ed = JSON.parse(html.slice(html.indexOf('const EXTRA_DATA=') + 17, html.indexOf('};', html.indexOf('const EXTRA_DATA=')) + 1));
+  const F = Function('return ' + obj('RV_FOCUS_ALL').replace(/^const RV_FOCUS_ALL=/, '').replace(/;$/, ''))();
+  for (const [id, qs] of Object.entries(F)) for (const m of Object.values(qs)) for (const no of Object.values(m)) assert.ok(ed.toc[id].some(t => String(t[0]) === no), id + ' ' + no);
 });
