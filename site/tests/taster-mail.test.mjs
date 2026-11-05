@@ -32,7 +32,7 @@ test('결과 메일: 화면과 같은 좋은 운 3개·조심할 운 3개를 보
   assert.deepEqual(m.to, ['a@example.com']);
   assert.match(m.subject, /김테스트님의 무료 사주 결과/);
   assert.ok(!/할인|\d,\d{3}원|\d+%\s*(할인|off)/i.test(m.text), '할인·가격은 메일에 쓰지 않는다(2026-10-27 사장님)');
-  assert.ok(m.text.includes('AI 안내자'));
+  assert.ok(!/AI/.test(m.text) && !/AI/.test(m.html));   // AI 문구는 쓰지 않는다(사장님 2026-11-06)
   assert.ok(m.text.includes('다른 메일은 보내지 않아요'));
   assert.ok(!birthLeft(t.store));
   assert.equal((await t.store.list('leads/')).length, 0, '소식 받기를 안 고르면 이메일을 보관하지 않는다');
