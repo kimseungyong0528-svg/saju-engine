@@ -214,9 +214,39 @@ export async function workerStatus(store, services, order, status, note, now = n
   return order;
 }
 
+// 결제 취소 반영(P-VC-3, 11-05): 토스 관리자 화면에서 환불해도 주문은 그대로라 리포트가 만들어져 메일로 나갔다.
+// 토스에 결제 상태를 직접 물어 전액 취소(CANCELED)면 그 결제의 주문(묶음 포함)을 refunded로 바꾸고
+// 출생 정보·질문을 지운다. 토스 조회가 실패하면 아무것도 바꾸지 않는다(정상 주문 발송을 막지 않음).
+const TOSS_CANCELED = new Set(['CANCELED']); // 부분 취소(묶음 중 한 권 환불 등)는 다른 책까지 멈추지 않도록 여기서 다루지 않는다
+const REFUNDABLE = new Set(['queued', 'processing', 'retry', 'held', 'email_accepted']);
+
+export async function syncRefund(store, services, order, now = new Date()) {
+  const root = order.parentId ? await store.get(`orders/${order.parentId}`) : order;
+  if (!root) return false;
+  if (root.status !== 'refunded') {
+    // 체험단 무료(0원) 주문은 토스 결제가 없어 물어볼 것이 없다.
+    if (!root.paymentKey || !services.tossPayment || (root.amount === 0 && root.discount?.kind === 'trial')) return false;
+    let p;
+    try { p = await services.tossPayment(root.paymentKey); } catch (e) { console.error('toss lookup', e?.message); return false; }
+    if (!p || p.orderId !== root.id || !TOSS_CANCELED.has(p.status)) return false;
+    root.refundStatus = p.status;
+  }
+  const kids = await Promise.all((root.children || []).map(id => store.get(`orders/${id}`)));
+  // 환불은 사장님이 토스에서 직접 하므로 따로 알리지 않는다. 스튜디오는 refunded를 '취소'로 센다.
+  for (const o of [root, ...kids.filter(Boolean)]) {
+    if (!REFUNDABLE.has(o.status)) continue;
+    setStatus(o, 'refunded', now, `toss ${root.refundStatus || 'CANCELED'}`);
+    delete o.payload; delete o.disclosures;
+    await store.set(`orders/${o.id}`, o);
+  }
+  return true;
+}
+
 export async function deliverPdf(store, services, order, pdf, now = new Date()) {
   if (!['queued', 'processing', 'retry', 'held'].includes(order.status)) throw new ApiError(409, 'ORDER_NOT_PROCESSING');
   if (!pdf?.byteLength || pdf.byteLength > 5_500_000) throw new ApiError(400, 'PDF_REQUIRED');
+  // 보내기 직전에 한 번 더: 그사이 환불된 주문에는 메일을 보내지 않는다(P-VC-3)
+  if (await syncRefund(store, services, order, now)) throw new ApiError(409, 'ORDER_REFUNDED');
   await store.setBytes(`pdf/${order.id}`, pdf);
   await rememberMail(store, order, await services.sendEmail(order, pdf));
   order.emailedAt = now.toISOString();

@@ -202,3 +202,25 @@ test('결제창 앞뒤: 온 곳마다 결제하기 누른 사람·결제·안 �
   await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
   assert.ok((await (await t.call('GET', '/api/studio/funnel')).json()).sources);
 });
+
+test('재구매 기준선: 재구매 링크가 한 번이라도 쓰인 비율과 링크로 결제한 금액 (P-CR-1)', async () => {
+  const { rebuyBaseline } = await import('../netlify/functions/lib/studio.mjs');
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/studio/rebuy')).status, 401);
+  const o = (id, x) => t.store.set(`orders/${id}`, { id, productId: 'wealth', paidAt: '2026-11-04T01:00:00Z', amount: 29800, ...x });
+  await o('a', { rebuyCode: 'UNM-A' });
+  await o('b', { rebuyCode: 'UNM-B' });
+  await o('c', { rebuyCode: 'UNM-C', discount: { kind: 'rebuy', code: 'UNM-A' }, amount: 26820 }); // A 링크로 다시 산 주문
+  await o('d', { parentId: 'c', rebuyCode: 'UNM-C' });           // 묶음 책: 세지 않음
+  await o('e', { testOnly: true, rebuyCode: 'UNM-E' });          // 시험 결제: 세지 않음
+  await o('f', { paidAt: undefined, status: 'payment_expired' }); // 결제 안 함
+  await t.store.set('coupons/UNM-A', { code: 'UNM-A', kind: 'rebuy', uses: 1 });
+  await t.store.set('coupons/UNM-B', { code: 'UNM-B', kind: 'rebuy' });
+  await t.store.set('coupons/UNM-C', { code: 'UNM-C', kind: 'rebuy', uses: 0 });
+  await t.store.set('coupons/UNM-E', { code: 'UNM-E', kind: 'rebuy', uses: 3 });
+  assert.deepEqual(await rebuyBaseline(t.store), { paidOrders: 3, issued: 3, used: 1, uses: 1, rate: 33.3, rebuyOrders: 1, rebuyAmount: 26820 });
+  assert.deepEqual(await rebuyBaseline(memoryStore()), { paidOrders: 0, issued: 0, used: 0, uses: 0, rate: null, rebuyOrders: 0, rebuyAmount: 0 });
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  const r = await (await t.call('GET', '/api/studio/rebuy')).json();
+  assert.equal(r.issued, 3); assert.ok(!JSON.stringify(r).includes('UNM-'), '코드·개인정보는 내보내지 않음');
+});

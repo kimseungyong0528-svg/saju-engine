@@ -1,0 +1,7 @@
+# 검색 노출 기초 (P-26①, 11-05): 손님용 화면은 열고, 관리 화면은 닫는다. 주문 확인 화면은 noindex meta로 맡긴다(검수 의견).
+User-agent: *
+Allow: /
+Disallow: /studio
+Disallow: /.netlify/
+
+Sitemap: https://unmyeong-saju.com/sitemap.xml

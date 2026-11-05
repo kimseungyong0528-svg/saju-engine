@@ -192,6 +192,8 @@ export function makeStudio({ store, services, env, orderStore = store }) {
       const q = new URL(req.url).searchParams;
       return json(await sourceFunnel(orderStore, new Date(), 14, { from: q.get('from'), to: q.get('to') }));
     }
+    // 재구매 기준선(P-CR-1): 재구매 링크를 받은 결제 중 몇 개가 다시 쓰였는지.
+    if (route === 'studio/rebuy' && m === 'GET') return json(await rebuyBaseline(orderStore));
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;
@@ -324,4 +326,23 @@ export async function sourceFunnel(store, now = new Date(), days = 14, range = {
     else r.unpaid += 1;
   }
   return { from, to, sources: out };
+}
+
+// 재구매 기준선(P-CR-1, 11-05): 결제한 주문마다 리포트 끝에 넣은 재구매 링크(coupons/*, kind=rebuy) 가운데
+// 한 번이라도 쓰인 비율과, 그 링크로 결제한 금액. 시험 결제·묶음으로 함께 만든 책은 세지 않는다. 숫자만 돌려준다.
+export async function rebuyBaseline(store) {
+  const issued = new Set(); let paidOrders = 0, rebuyOrders = 0, rebuyAmount = 0;
+  for (const key of await store.list('orders/')) {
+    const o = await store.get(key);
+    if (!o || o.parentId || o.testOnly || !o.paidAt) continue;
+    paidOrders += 1;
+    if (o.rebuyCode) issued.add(o.rebuyCode);
+    if (o.discount?.kind === 'rebuy') { rebuyOrders += 1; rebuyAmount += o.amount || 0; }
+  }
+  let used = 0, uses = 0;
+  for (const code of issued) {
+    const c = await store.get(`coupons/${code}`);
+    if (c?.kind === 'rebuy' && (c.uses || 0) >= 1) { used += 1; uses += c.uses; }
+  }
+  return { paidOrders, issued: issued.size, used, uses, rate: issued.size ? Math.round(used / issued.size * 1000) / 10 : null, rebuyOrders, rebuyAmount };
 }

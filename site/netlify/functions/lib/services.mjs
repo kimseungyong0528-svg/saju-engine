@@ -23,6 +23,14 @@ export function realServices(env, fetcher = fetch) {
     return { ok: false, code: body.code || 'PAYMENT_FAILED' };
   }
 
+  // 결제 한 건의 지금 상태(DONE·CANCELED·PARTIAL_CANCELED …). 환불 반영(P-VC-3)에 쓴다.
+  async function tossPayment(paymentKey) {
+    const r = await fetcher(toss(`/${encodeURIComponent(paymentKey)}`), { headers: { Authorization: tossAuth } });
+    if (!r.ok) throw Error(`toss ${r.status}`);
+    const p = await r.json();
+    return { status: p.status, orderId: p.orderId };
+  }
+
   async function startWorker(orderId) {
     const r = await fetcher(`https://api.github.com/repos/${env.GITHUB_REPO || 'kimseungyong0528-svg/saju-engine'}/dispatches`, {
       method: 'POST',
@@ -86,7 +94,7 @@ export function realServices(env, fetcher = fetch) {
   // 무료 맛보기 결과 메일(leads.mjs가 내용을 만든다). 답장은 사장님 메일로.
   const sendMail = (message, key) => resendEmail({ ...message, ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}) }, key);
 
-  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner, sendMail };
+  return { tossConfirm, tossPayment, startWorker, startStudio, sendEmail, notifyOwner, sendMail };
 }
 
 // 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.

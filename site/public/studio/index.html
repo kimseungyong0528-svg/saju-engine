@@ -216,6 +216,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
   <details id="daily" class="rules-like"><summary id="dailySum">일별 주문 (보냄·못 보냄)</summary><div id="dailyBody">불러오는 중…</div></details>
   <details id="sources" class="rules-like"><summary>손님이 온 곳 (결제 수)</summary><div id="sourcesBody">불러오는 중…</div></details>
   <details id="funnel" class="rules-like"><summary>결제창 앞뒤 (최근 14일)</summary><div id="funnelBody">불러오는 중…</div></details>
+  <details id="rebuy" class="rules-like"><summary>재구매 링크 (지금까지)</summary><div id="rebuyBody">불러오는 중…</div></details>
   <details id="trial" class="rules-like"><summary id="trialSum">체험단 (무료 코드 · 후기 싣기)</summary><div id="trialBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
@@ -300,7 +301,7 @@ async function boot() {
   const me = await fetch('/api/studio/me').then(r => r.json()).catch(() => ({}));
   if (!me.loggedIn) return show('login');
   show('app');
-  loadSources(); loadDaily(); loadFunnel(); loadTrial();
+  loadSources(); loadDaily(); loadFunnel(); loadTrial(); loadRebuy();
   await loadWeeks();
 }
 // 체험단(사장님 2026-11-05 "체험단 후기 30명"): 무료 코드 만들기(모두 30개, 한 번에 10개까지)와 후기 싣기.
@@ -372,6 +373,17 @@ async function loadFunnel() {
         el('td', { class: 'n' }, v.unpaid + (v.waiting ? ` (+ 결제창 열림 ${v.waiting})` : '')), el('td', { class: 'n' }, rate)));
     }
     box.replaceChildren(t, el('p', { class: 'note' }, `${from} ~ ${to}. 기간을 바꿔 보려면 /api/studio/funnel?from=YYYY-MM-DD&to=YYYY-MM-DD. 같은 사람이 같은 날 같은 상품을 여러 번 눌러도 한 명으로 셉니다. 결제창까지 왔다가 결제하지 않은 사람이 많으면 결제창·가격 쪽, 적으면 그 앞(소개·정보 입력) 쪽을 봅니다.`));
+  } catch { box.textContent = '불러오지 못했어요.'; }
+}
+// 재구매 기준선(P-CR-1, 11-05): 리포트 끝 재구매 링크가 몇 번 다시 쓰였는지. 안내 메일(P-10)을 켜기 전 값과 비교한다.
+async function loadRebuy() {
+  const box = $('#rebuyBody');
+  try {
+    const r = await api('rebuy');
+    const t = el('table', {}, el('tr', {}, ...['결제한 주문', '재구매 링크 받음', '한 번 이상 쓰임', '쓰인 비율', '링크로 결제', '그 금액'].map(h => el('th', {}, h))),
+      el('tr', {}, el('td', { class: 'n' }, r.paidOrders + '건'), el('td', { class: 'n' }, r.issued + '건'), el('td', { class: 'n' }, r.used + '건'),
+        el('td', { class: 'n' }, r.rate == null ? '-' : r.rate + '%'), el('td', { class: 'n' }, r.rebuyOrders + '건'), el('td', { class: 'n' }, r.rebuyAmount.toLocaleString('ko-KR') + '원')));
+    box.replaceChildren(t, el('p', { class: 'note' }, '시험 결제와 묶음으로 함께 만든 책은 세지 않습니다. 재구매 링크는 결제한 주문마다 리포트 끝에 하나씩 들어갑니다.'));
   } catch { box.textContent = '불러오지 못했어요.'; }
 }
 async function loadSources() {
