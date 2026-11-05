@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>리포트 후기 남기기 · 운명서재</title>
+<!-- 리포트 보낸 다음 날 메일 속 링크로 여는 후기 화면(자청 기획안 E-2, 2026-11-05). 링크에 서명이 있어 그 주문에만 후기를 남긴다. -->
+<style>
+:root{color-scheme:dark;--bg:#0b0a09;--card:#16130f;--line:rgba(216,187,120,.22);--ink:#f4efe4;--muted:#c9c0b0;--gold:#d8bb78;--bad:#e08e80}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+main{max-width:520px;margin:0 auto;padding:40px 20px 60px}
+.brand{font-family:"Noto Serif KR",serif;color:var(--gold);font-size:22px;text-decoration:none}
+h1{font-size:26px;line-height:1.4;margin:26px 0 8px}
+p{font-size:17px;line-height:1.7;color:var(--muted);margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:20px 0}
+.stars{border:0;padding:0;margin:4px 0 16px;display:grid;gap:8px}.stars legend{font-size:17px;color:var(--ink);margin:0 0 8px;padding:0}
+.stars label{display:flex;align-items:center;gap:10px;font-size:21px;color:var(--gold);cursor:pointer}.stars input{width:22px;height:22px;accent-color:#d8bb78}
+.f{display:block;margin:0 0 14px}.f span{display:block;font-size:17px;color:var(--ink);margin:0 0 6px}
+.f textarea,.f input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:#0b0a09;color:var(--ink);font:inherit;font-size:17px;line-height:1.6}
+.c{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.6;color:var(--ink);margin:0 0 8px}.c input{width:22px;height:22px;flex:0 0 22px;margin:3px 0 0;accent-color:#d8bb78}
+button{display:block;width:100%;min-height:54px;margin:12px 0 0;border:0;border-radius:10px;background:var(--gold);color:#14100a;font:inherit;font-size:18px;font-weight:800;cursor:pointer}button:disabled{opacity:.6}
+#msg{font-size:17px;margin:12px 0 0}#msg.ok{color:#9fe0a8}#msg.error{color:var(--bad)}
+a.home{display:inline-block;margin-top:18px;color:var(--gold);font-size:17px}
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/">운명서재</a>
+  <h1 id="title">리포트, 어떠셨어요?</h1>
+  <p id="lead">맞았던 것, 아쉬웠던 것 한 줄이면 충분해요. 좋은 말만 써 달라고 하지 않아요. 사장님이 전부 직접 읽고, 고르지 않고 실어요. 글은 고치지 않아요.</p>
+  <section class="card" id="box" hidden>
+    <form id="f" novalidate>
+      <fieldset class="stars"><legend>별점</legend>
+        <label><input type="radio" name="stars" value="5" checked><span>★★★★★</span></label>
+        <label><input type="radio" name="stars" value="4"><span>★★★★☆</span></label>
+        <label><input type="radio" name="stars" value="3"><span>★★★☆☆</span></label>
+        <label><input type="radio" name="stars" value="2"><span>★★☆☆☆</span></label>
+        <label><input type="radio" name="stars" value="1"><span>★☆☆☆☆</span></label>
+      </fieldset>
+      <label class="f"><span>후기 (10자 이상, 400자까지)</span><textarea name="text" maxlength="400" rows="5" placeholder="예) 좋은 달을 미리 알고 나니 계획 세우기가 편해졌어요."></textarea></label>
+      <label class="f"><span>보일 이름 (8자까지, 비우면 '익명')</span><input name="nick" maxlength="8" placeholder="예) 김** 또는 서울 30대"></label>
+      <label class="c"><input type="checkbox" name="agree"><span>이 후기를 운명서재 사이트와 SNS에 싣는 데 동의해요. 주문 정보는 함께 싣지 않아요.</span></label>
+      <button type="submit" id="send">후기 보내기</button>
+      <p id="msg" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <a class="home" href="/">운명서재로 가기</a>
+</main>
+<script>
+const q=new URLSearchParams(location.search),o=q.get('o')||'',s=q.get('s')||'';
+const $=id=>document.getElementById(id),api='/api/review-link?o='+encodeURIComponent(o)+'&s='+encodeURIComponent(s);
+(async()=>{let v;try{const r=await fetch(api);v=await r.json();if(!r.ok)throw Error(v.code)}catch(e){$('lead').textContent='링크를 확인하지 못했어요. 메일 속 링크를 다시 눌러 주세요.';return}
+  if(v.productName)$('title').textContent=v.productName.replace(/^금월선녀의\s*/,'')+' 리포트, 어떠셨어요?';
+  if(!v.canReview){$('lead').textContent='리포트를 받으신 뒤에 후기를 남길 수 있어요.';return}
+  if(v.review&&v.review.status!=='pending'){$('lead').textContent='후기를 남겨 주셔서 고마워요. 사이트에 실렸어요.';return}
+  const f=$('f');$('box').hidden=false;
+  if(v.review){f.text.value=v.review.text;f.nick.value=v.review.nick==='익명'?'':v.review.nick;const x=f.querySelector('input[name=stars][value="'+v.review.stars+'"]');if(x)x.checked=true}
+  f.onsubmit=async e=>{e.preventDefault();const m=$('msg');m.className='';const text=f.text.value.trim();
+    if(text.length<10){m.textContent='후기를 10자 이상 써 주세요.';m.className='error';return}
+    if(!f.agree.checked){m.textContent='싣는 데 동의하셔야 보낼 수 있어요.';m.className='error';return}
+    $('send').disabled=true;
+    try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stars:Number(f.querySelector('input[name=stars]:checked').value),text,nick:f.nick.value.trim(),agree:true})});const b=await r.json().catch(()=>({}));if(!r.ok)throw Error(b.code);m.textContent='보냈어요. 고마워요! 사장님이 읽고 사이트에 실어요.';m.className='ok';$('send').textContent='다시 보내기'}
+    catch(err){m.textContent=({BAD_NICK:'보일 이름은 한글·영문·숫자로 8자까지 써 주세요.',BAD_TEXT:'후기는 10자에서 400자까지 써 주세요.',REVIEW_DONE:'이미 실린 후기예요.'})[err.message]||'보내지 못했어요. 잠시 뒤 다시 눌러 주세요.';m.className='error'}
+    $('send').disabled=false}
+})();
+</script>
+</body>
+</html>

@@ -82,6 +82,24 @@
   from = "/i"
   to = "/p/taster/?from=i"
   status = 302
+# 무료 결과 공유 카드로 온 손님(2026-11-05 자청 기획안 H-2)
+[[redirects]]
+  from = "/s"
+  to = "/p/taster/?from=s"
+  status = 302
+# 당근 새 광고(11-05) 전용: 옛 광고와 따로 세려고(자청 기획안 A-3)
+[[redirects]]
+  from = "/dw2"
+  to = "/p/wealth/?from=dw2"
+  status = 302
+[[redirects]]
+  from = "/dn2"
+  to = "/p/newyear/?from=dn2"
+  status = 302
+[[redirects]]
+  from = "/dre"
+  to = "/p/reunion/?from=dre"
+  status = 302
 [[redirects]]
   from = "/f"
   to = "/?from=f"

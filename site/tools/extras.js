@@ -45,6 +45,16 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 (()=>{try{const cp=new URLSearchParams(location.search).get('coupon');
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
+// '누구한테나 같은 말 하겠지' 반박 카드(자청 기획안 B-4, 2026-11-05): 예시 생일 두 개를 이 화면과 같은 계산기로 계산해 나란히 보여 준다. 손으로 쓴 숫자 없음(제1조항).
+const RV_CMP=[{label:'예시 A',birth:'1994-04-11'},{label:'예시 B',birth:'1996-09-23'}];
+function revealCompare(p,lib){try{const {eng,tst,data,texts,rv}=lib,R=texts.REVEAL;return RV_CMP.map(x=>{const person={name:x.label,sex:'female',calendar:'solar',birth:x.birth,timeAccuracy:'unknown',time:'',birthPlace:{status:'unknown'}};const fp=eng.chartFromPerson(data,person,x.birth),r=tst.reading(fp,person,texts);const m=rv.luckMap(fp,'female',p.id,texts,revealStartYear(),p.id==='reunion'?revealStartMonth(rv):null);const c=m.cells.find(c=>c.good.length);const word=p.id==='lifetime'?'가장 좋은 운':(R.AREA_WORD[p.id]||'운');const score=p.id==='lifetime'?r.good[0]?.title:r.scores[p.id];return {label:x.label,birth:x.birth,word,score,first:c?{label:c.label,tag:R.MARKS[c.good[0]]?.tag||''}:null,unit:m.unit}})}catch(e){return null}}
+function revealCompareCard(v){const c=v.cmp;if(!c||c.length<2)return '';const yr=b=>b.slice(0,4)+'년 '+Number(b.slice(5,7))+'월 '+Number(b.slice(8,10))+'일생';
+ return `<section class="rv-cmp" aria-label="생일이 다르면 답도 달라요"><h3>생일이 다르면, 답도 달라요</h3><p class="rv-cmp-lead">같은 계산기로 예시 생일 두 개를 계산해 봤어요. ${esc(v.name)} 님 결과도 ${esc(v.name)} 님 생일로만 나와요.</p><div class="rv-cmp-grid">${c.map(x=>`<div><b>${esc(x.label)}</b><small>${esc(yr(x.birth))}</small><p>${esc(x.word)} <strong>${typeof x.score==='number'?x.score+'점':esc(String(x.score||''))}</strong></p><p>첫 '${esc(x.first?.tag||'-')}' <strong>${esc(x.first?(x.unit==='month'?x.first.label:x.first.label+'년'):'-')}</strong></p></div>`).join('')}</div><p class="rv-cmp-note">예시 생일은 실존 인물이 아니에요. 태어난 시간은 모름으로 계산했어요.</p></section>`}
+// 결제 전 화면 '계산 근거 자세히 보기'(자청 기획안 B-1): 홈의 계산 근거 칸으로 바로 내려간다.
+document.addEventListener('click',e=>{if(e.target.closest('[data-goto-trust]'))try{sessionStorage.setItem('unmyeong.gotoTrust','1')}catch{}});
+new MutationObserver(()=>{try{if(sessionStorage.getItem('unmyeong.gotoTrust')!=='1')return;const t=document.querySelector('#trust-title');if(!t)return;sessionStorage.removeItem('unmyeong.gotoTrust');setTimeout(()=>t.scrollIntoView({block:'start',behavior:'instant'}),60)}catch{}}).observe(document.documentElement,{childList:true,subtree:true});
+// 지금까지 보낸 리포트 수(자청 기획안 E-4): 실제 발송 수만, 50권이 넘을 때만 보인다.
+new MutationObserver(()=>document.querySelectorAll('[data-delivered]:not([data-filled])').forEach(el=>{el.dataset.filled='1';fetch('/api/stats/public').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.delivered&&el.isConnected){el.textContent=`지금까지 ${d.delivered.toLocaleString('ko-KR')}권의 리포트를 보냈어요`;el.hidden=false}}).catch(()=>{})})).observe(document.documentElement,{childList:true,subtree:true});
 // 실제 후기(2026-11-05 체험단): 사장님이 관리 사이트에서 '싣기'한 후기만 서버에서 받아 보여 준다. 없으면 칸을 숨긴다.
 // 체험단 무료 코드로 받은 리포트의 후기는 '체험단 무료 제공'을 붙이고 아래에 뜻을 적는다(표시광고법 추천·보증 심사지침).
 const reviewCache={};
