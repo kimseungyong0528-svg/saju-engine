@@ -10,6 +10,7 @@ import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
 import { LeadError, sendTasterMail, stopLead } from './leads.mjs';
 import { submitReview, reviewFor, publicReviews } from './reviews.mjs';
+import { reviewByLink, deliveredCount, COUNTER_MIN } from './followup.mjs';
 
 // 무료 맛보기 계산에 쓰는 자료. 이 사이트가 내보내는 파일을 그대로 읽는다(화면과 같은 판, 제1조항).
 let assetCache = null;
@@ -29,7 +30,7 @@ async function readJson(req, limit = 65_536) {
 const bearer = req => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || '';
 
 export function makeApi({ store, services, env, studioStore = store, leadStore = store, assets }) {
-  const studio = makeStudio({ store: studioStore, orderStore: store, services, env });
+  const studio = makeStudio({ store: studioStore, orderStore: store, services, env, leadStore });
   return async function handle(req) {
     const url = new URL(req.url);
     const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
@@ -60,6 +61,10 @@ export function makeApi({ store, services, env, studioStore = store, leadStore =
         const r = await publicReviews(store, /^[a-z]{3,12}$/.test(pid) ? pid : '');
         return new Response(JSON.stringify(r), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
       }
+      // 메일 속 서명 링크로 남기는 후기(review.html, 자청 기획안 E-2)
+      if (parts.join('/') === 'review-link' && (m === 'GET' || m === 'POST')) return json(await reviewByLink(store, env, m, Object.fromEntries(url.searchParams), m === 'POST' ? await readJson(req, 4_096) : null));
+      // 지금까지 보낸 리포트 수(50권이 넘어야 보여 준다, 자청 기획안 E-4)
+      if (m === 'GET' && parts.join('/') === 'stats/public') { const n = await deliveredCount(store); return new Response(JSON.stringify({ delivered: n >= COUNTER_MIN ? n : null }), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=600' } }); }
       if (m === 'GET' && parts.join('/') === 'leads/stop') return await stopLead(leadStore, url.searchParams.get('id'), url.searchParams.get('t'));
       // 토스 결제 상태 변경 알림(P-VC-3). 본문은 믿지 않고, 저장된 결제 키로 토스에 다시 물어 취소면 주문에 반영한다.
       if (m === 'POST' && parts.join('/') === 'toss-events') {

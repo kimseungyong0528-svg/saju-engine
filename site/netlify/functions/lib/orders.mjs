@@ -1,6 +1,7 @@
 // 주문 규칙: 접수 확인, 주문 만들기, 상태 바꾸기. 저장소(store)와 바깥 서비스(services)는 밖에서 넣어 준다.
 import { createHash, createHmac, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { INTAKE_POLICY_VERSION, PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
+import { afterDelivered } from './followup.mjs';
 import { quote, afterPaid, extraBody } from './discounts.mjs';
 
 export const CALCULATION_VERSION = 'saju-engine-0.2';
@@ -251,6 +252,7 @@ export async function deliverPdf(store, services, order, pdf, now = new Date()) 
   await rememberMail(store, order, await services.sendEmail(order, pdf));
   order.emailedAt = now.toISOString();
   setStatus(order, 'email_accepted', now);
+  await afterDelivered(store, order, now).catch(e => console.error('afterDelivered', e?.message));   // 다음 날 후기 요청 예약 + 보낸 수(자청 기획안 E-2·E-4)
   // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF와 받는 분 이름은 다시 보내기를 위해 7일만 둔다.
   order.mailName = order.payload?.self?.name || null;
   delete order.payload; delete order.disclosures;

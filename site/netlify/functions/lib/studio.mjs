@@ -4,6 +4,7 @@
 import { createHmac } from 'node:crypto';
 import { ApiError, sameSecret } from './orders.mjs';
 import { studioReviews, moderateReview, trialCodes, issueTrialCodes } from './reviews.mjs';
+import { sendNews } from './followup.mjs';
 
 const COOKIE = 'studio_s';
 const DAYS30 = 30 * 24 * 3600;
@@ -70,7 +71,7 @@ async function tooMany(store, now = new Date()) {
   return { blocked: n >= 20, bump: () => store.set(key, n + 1) };
 }
 
-export function makeStudio({ store, services, env, orderStore = store }) {
+export function makeStudio({ store, services, env, orderStore = store, leadStore = orderStore }) {
   return async function handle(req, parts) {
     const m = req.method;
     const url = new URL(req.url);
@@ -173,6 +174,9 @@ export function makeStudio({ store, services, env, orderStore = store }) {
     if (route === 'studio/trial-codes' && m === 'GET') return json({ codes: await trialCodes(orderStore) });
     if (route === 'studio/trial-codes' && m === 'POST') return json(await issueTrialCodes(orderStore, (await body(req, 1024)).count, env.SITE_URL));
     if (route === 'studio/reviews' && m === 'GET') return json(await studioReviews(orderStore));
+    // 소식 메일(자청 기획안 F-3): 소식 받기에 동의한 분께만, 제목에 (광고)·그만 받기 링크가 저절로 붙는다.
+    if (route === 'studio/news' && m === 'GET') return json({ subscribers: (await leadStore.list('leads/')).length });
+    if (route === 'studio/news' && m === 'POST') return json(await sendNews(leadStore, services, env, await body(req, 8192)));
     if (parts[1] === 'reviews' && parts[2] && m === 'POST') return json(await moderateReview(orderStore, parts[2], String((await body(req, 1024)).action || '')));
     // 손님이 온 곳별 결제 수(사장님 2026-11-03). 최근 3달.
     if (route === 'studio/sources' && m === 'GET') {
