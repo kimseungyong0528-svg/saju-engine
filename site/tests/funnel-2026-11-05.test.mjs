@@ -41,6 +41,11 @@ test('미리 보기 A/B 와 손님 답 반영', () => {
   assert.ok(!html.includes('님 사주로 풀어 드리는 이 장의 내용`'));
   assert.ok(html.includes('rv-situation'));
 });
+test('첫 화면 선물하기 버튼과 지금 답 반영', () => {
+  assert.ok(html.includes('class="cover-gift"') && html.includes('data-gift-entry'));
+  assert.ok(html.includes('const ans=draft(p.id).answers||{},pick=(RV_FOCUS[p.id]||{})[ans.focus]'));
+  assert.ok(html.includes("${month||re?'달은':'해는'}"));
+});
 test('검색·카드·무료 분석: 단계 수 대신 무료 미리보기, 무료 분석에서 바로 정보 확인으로', () => {
   assert.ok(!html.includes('${p.steps}단계'));
   assert.ok(html.includes('card-free') && html.includes('무료로 미리보기 →'));
