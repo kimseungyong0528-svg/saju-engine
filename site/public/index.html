@@ -1111,7 +1111,55 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .reveal-flow .rv-portrait-bg{top:calc(-1*var(--shift));bottom:auto;height:min(165vw,700px)}
 .reveal-flow .rv-portrait-bg i{background:linear-gradient(180deg,#0000 0,#0000 calc(var(--q) - 170px),#0009 calc(var(--q) - 60px),#000e calc(var(--q) + 10px),#000 calc(var(--q) + 60px))}
 .reveal-flow .rv-portrait-quote{position:relative;bottom:auto}
-</style><style>.reveal-flow .rv-faq{padding-top:14.5px;padding-bottom:0}.reveal-flow .rv-faq h2{margin-bottom:12.5px}.reveal-flow .rv-close{font-size:min(16px,3.7vw);word-break:keep-all}</style><style>.taster-quick .taster-intro{margin:auto 0;padding:0;text-align:center;color:#fff;text-shadow:0 2px 10px #000c}.taster-quick .taster-intro h1{margin:0 0 12px;font:700 min(27px,6.8vw)/1.4 "Gowun Batang","Noto Serif CJK KR",serif;color:#fff;word-break:keep-all}.taster-quick .taster-intro p{margin:0 -14px;white-space:nowrap;font-size:min(16px,4.1vw);line-height:1.7;color:#f3ecdf;word-break:keep-all}</style><style>.taster-quick .qi-bg{filter:blur(1.5px) brightness(.45);transform:scale(1.03)}.taster-quick .qi-bg img{object-position:50% 30%}.taster-quick .qi-bg:after{background:linear-gradient(180deg,#0004 0%,#0000 22%,#0003 42%,#000b 62%,#000e 100%)}.taster-quick .taster-intro h1{font:700 min(27px,6.9vw)/1.5 "Gowun Batang",serif;text-shadow:0 2px 8px #000d}.taster-quick .taster-intro p{font-family:"Gowun Batang",serif;font-weight:700;line-height:1.75;color:#fff;text-shadow:0 2px 8px #000d}</style><style>.taster-quick .taster-intro+form{margin-top:0}.taster-quick .taster-intro{padding-bottom:0}</style><style>.taster-result .rv-portrait{--shift:0px;--q:min(122vw,520px);margin:0 -20px 26px;height:auto;background:#000;padding:calc(var(--q) - var(--shift)) 0 22px}.taster-result .rv-portrait-bg{top:0;bottom:auto;height:min(165vw,700px)}.taster-result .rv-portrait-bg i{background:linear-gradient(180deg,#0000 0,#0000 calc(var(--q) - 170px),#0009 calc(var(--q) - 60px),#000e calc(var(--q) + 10px),#000 calc(var(--q) + 60px))}.taster-result .rv-portrait-quote{position:relative;bottom:auto}</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
+</style><style>.reveal-flow .rv-faq{padding-top:14.5px;padding-bottom:0}.reveal-flow .rv-faq h2{margin-bottom:12.5px}.reveal-flow .rv-close{font-size:min(16px,3.7vw);word-break:keep-all}</style><style>.taster-quick .taster-intro{margin:auto 0;padding:0;text-align:center;color:#fff;text-shadow:0 2px 10px #000c}.taster-quick .taster-intro h1{margin:0 0 12px;font:700 min(27px,6.8vw)/1.4 "Gowun Batang","Noto Serif CJK KR",serif;color:#fff;word-break:keep-all}.taster-quick .taster-intro p{margin:0 -14px;white-space:nowrap;font-size:min(16px,4.1vw);line-height:1.7;color:#f3ecdf;word-break:keep-all}</style><style>.taster-quick .qi-bg{filter:blur(1.5px) brightness(.45);transform:scale(1.03)}.taster-quick .qi-bg img{object-position:50% 30%}.taster-quick .qi-bg:after{background:linear-gradient(180deg,#0004 0%,#0000 22%,#0003 42%,#000b 62%,#000e 100%)}.taster-quick .taster-intro h1{font:700 min(27px,6.9vw)/1.5 "Gowun Batang",serif;text-shadow:0 2px 8px #000d}.taster-quick .taster-intro p{font-family:"Gowun Batang",serif;font-weight:700;line-height:1.75;color:#fff;text-shadow:0 2px 8px #000d}</style><style>.taster-quick .taster-intro+form{margin-top:0}.taster-quick .taster-intro{padding-bottom:0}</style><style>.taster-result .rv-portrait{--shift:0px;--q:min(122vw,520px);margin:0 -20px 26px;height:auto;background:#000;padding:calc(var(--q) - var(--shift)) 0 22px}.taster-result .rv-portrait-bg{top:0;bottom:auto;height:min(165vw,700px)}.taster-result .rv-portrait-bg i{background:linear-gradient(180deg,#0000 0,#0000 calc(var(--q) - 170px),#0009 calc(var(--q) - 60px),#000e calc(var(--q) + 10px),#000 calc(var(--q) + 60px))}.taster-result .rv-portrait-quote{position:relative;bottom:auto}</style><style id="readability-2026-11-05">
+/* 글자 잘 보이게 (2026-11-05). 어두운 화면 보조 글은 밝게, 밝은 결제 화면 회색 글은 진하게, 13px 이하는 한 단계 크게. */
+/* 홈·검색 */
+.hero-copy .hero-link{color:#fff!important;font-weight:700;text-shadow:0 1px 6px #000c;border-bottom-color:#ffffffb3!important}
+.product-meta .card-hook{color:#ffffffd1;font-size:14px}
+.product-meta .card-free{color:#e3c88a;border-color:#e3c88a99;font-size:13px;font-weight:600}
+.section-head p{color:#d0d0d0}
+.search-result .step-label{color:#e3c88a;font-weight:600}
+.search-result small{color:#c4c4c4}
+/* 상품 첫 화면 '선물하기' */
+.cover-gift{background:#000000a6!important;border-color:#ffffffcc!important;font-size:14px!important;text-shadow:none}
+/* 정보 입력 */
+.quick-info .qi-row input::placeholder{color:#ffffffb8!important}
+.quick-info .qi-row input:not([type=radio]):not([type=checkbox]){border-bottom-color:#ffffffb3!important}
+.quick-info .qi-err{color:#ffd0c8!important;font-size:15px!important;font-weight:600}
+.quick-info .qi-help{color:#ffffffe6!important;font-size:15px!important}
+.quick-info .qi-next.is-off,.quick-info .qi-next:disabled{color:#ffffffb3!important}
+.quick-info .qi-note,.quick-info .qi-reuse small{color:#ffffffd9!important}
+/* 객관식 */
+.survey-page .sv-note{color:#ffffffd9!important;font-size:15px!important}
+.survey-page .sv-line>span{color:#ffffffeb!important}
+/* 결제 전 이야기 화면 */
+.reveal-flow .flow-top span{color:#dedede}
+.reveal-flow .rv-edit-top{font-size:14px!important;color:#f3e6cf!important;border-color:#f3e6cf99!important}
+.reveal-flow .rv-body .eyebrow{opacity:1!important;color:#f7b4b4!important;font-weight:700;letter-spacing:.02em}
+.reveal-flow .tc-col small,.reveal-flow .tb-bar em{color:#d4d4d4!important}
+.reveal-flow .rv-cell small{color:#cfcfcf!important}
+.reveal-flow .rv-cell.rv-locked{opacity:1!important}
+.reveal-flow .rv-cell.rv-locked b{color:#e8e8e8}
+.reveal-flow .rv-cell .l{color:#e3c88a}
+.reveal-flow .rv-legend span{color:#d6d6d6!important;font-size:14px}
+.reveal-flow .rv-lock-note{color:#e6e6e6!important;font-size:14px!important}
+.reveal-flow .rv-score-help{color:#ebe4d6!important;font-size:15px!important;line-height:1.7}
+.reveal-flow .rv-score-label{color:#ebe4d6!important}
+.reveal-flow .rv-focus-tag{color:#9b1c2c!important;font-size:13px!important;font-weight:700}
+.reveal-flow .rv-situation{color:#fff}
+.reveal-flow .rv-faq summary{color:#ececec}
+/* 결제 페이지(밝은 화면) */
+.co2{--co-sub:#5c5561}
+.co2 .co-main s,.co2 .bundle-price s,.co2 .price-box s,.co2 .qb-was s{color:#77717c!important}
+.co2 .co-bundle-note,.co2 .person-summary span{font-size:14px!important}
+.co2 .co-email .field-help,.co2 .consents button,.co2 .purchase-info li,.co2 .purchase-info a{color:#4f4954!important;font-size:15px!important}
+.co2 .qb-no{color:#9a7a2e!important}
+.co2 .price-total span{color:#3a3540}
+.co2 .pay-why{font-size:15px!important;font-weight:600}
+.co2 .business-info h2{color:#4f4954!important}
+.co2 .business-info p,.co2 .business-info a{color:#6a6470!important}
+.co2 .email-hint{color:#5c5561!important}
+</style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
 MIT License
 
