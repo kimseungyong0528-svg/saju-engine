@@ -1305,6 +1305,8 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .co-trust .co-proof{margin-top:8px;padding-top:8px;border-top:1px solid #e5dcc6}
 .co-trust .co-proof a{color:#8a5a12;font-weight:700;text-decoration:underline}
 .co-tag.co-boss{background:#8a5a12}
+.price-total>span:first-child{white-space:nowrap}
+.qb-final small.qb-wait{display:block;color:#5c4a2e!important;font-size:15px!important;font-weight:600}
 .qb-set{margin:0 0 8px;font-size:16px;font-weight:800;color:#8a5a12}
 .bundle-ask.is-known .bundle-known{display:block;margin-top:4px;font-size:16px;font-weight:700;line-height:1.5}
 .bundle-ask.is-known .bundle-known small{font-size:14px;font-weight:600;opacity:.8}
@@ -6960,7 +6962,7 @@ function quoteBox(p,q){
  // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
  const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
  const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워야 결제할 수 있어요.`:QUOTE_NOTES[n]}</p>`).join('');
- return `<div class="price-box">${items.length===2&&isBossPair(items[0].id,items[1].id)?'<p class="qb-set">사장님 세트 (사업운+재물운)</p>':''}${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>${wait?'첫 구매 금액':'최종 금액'}</span>${finalPrice(orig,wait?q.base-cut:q.amount,wait?'<small>이메일로 첫 구매를 확인하면 이 금액이에요</small>':'')}</div></div>${notes}`;
+ return `<div class="price-box">${items.length===2&&isBossPair(items[0].id,items[1].id)?'<p class="qb-set">사장님 세트 (사업운+재물운)</p>':''}${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>${wait?'첫 구매 금액':'최종 금액'}</span>${finalPrice(orig,wait?q.base-cut:q.amount,wait?'<small class="qb-wait">이메일로 첫 구매를 확인하면 이 금액이에요</small>':'')}</div></div>${notes}`;
 }
 // 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
 // '더 보기' 단추는 목록 맨 아래에 둔다(사장님 2026-11-03: 펼치면 8개 밑으로).
