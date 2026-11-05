@@ -1,0 +1,77 @@
+# 자동 합치기 (대표님 2026-11-05 "내가 머지 컨펌 하는거 니가 자동화하는 방법 찾으랬잖아")
+# 이 파일은 대표님이 이 PR을 직접 합쳐야 켜진다. 끄려면 Actions 탭 → '자동 합치기' → Disable workflow.
+#
+# 합치는 것: claude/ 가지에서 main으로 가는 PR(초안 아님)이 '통일성 검사'를 초록불로 통과하고,
+#   바꾼 파일이 전부 아래 '허용 목록'(손님 눈에 안 보이는 계산·측정·문서)에 들 때.
+# 그 밖의 파일이 하나라도 있으면(화면·글·가격·메일·게시 글·검사·이 파일 자체 등)
+#   대표님이 저녁 보고에서 허락하고 '허락됨' 꼬리표가 붙어야 합친다
+#   (대표님 2026-11-05 "디자인이나 카피라이팅은 저녁에 보고서에 넣어서 허락 받고 진행. 돈 쓰는 것도 마찬가지").
+# 늘 사람 허락: .github/, CLAUDE.md, tests/ (문지기가 자기 문을 여는 것을 막음, 검수팀 11-05 심사 6번)
+# 허용 목록을 넓히는 것도 이 파일을 바꾸는 일이라 늘 사람 허락이다.
+name: 자동 합치기
+
+on:
+  workflow_run:
+    workflows: ["통일성 검사"]
+    types: [completed]
+  # 대표님이 저녁에 '허락됨' 꼬리표를 붙이면 그때 다시 본다.
+  # pull_request_target: main에 있는 이 파일로 돈다(PR 쪽이 고친 판으로 돌지 않음, 검수팀 3차 13번). 코드는 내려받지 않는다.
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  issues: read
+
+jobs:
+  merge:
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       startsWith(github.event.workflow_run.head_branch, 'claude/') &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.label.name == '허락됨' &&
+       startsWith(github.event.pull_request.head.ref, 'claude/') &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
+      # 손님 눈에 안 보이는 것으로 확인된 곳만 (검수팀 11-05 심사. ranking.py는 SNS 글(GOD_TEXT)이 있어 뺌, 재심사 10번)
+      ALLOW: '^(saju/(astro|pillars|luck|timeutil)\.py|saju/marketing/threads_stats\.py|docs/.*|README\.md)$'
+    steps:
+      - name: PR 찾기와 조건 확인, 합치기
+        run: |
+          set -euo pipefail
+          pr=$(gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$BRANCH" \
+               --jq ".[] | select(.head.sha==\"$SHA\" and .base.ref==\"main\" and .draft==false) | .number" | head -1)
+          [ -n "$pr" ] || { echo "조건 맞는 열린 PR 없음(초안·main 아님·검사 뒤 새 커밋) → 건너뜀"; exit 0; }
+          # 이 커밋의 통일성 검사가 초록불인지 직접 확인 (꼬리표로 깨어난 경우에도)
+          # 통일성 검사 워크플로(이름으로 좁힘, 검수팀 3차 15번)의 이 커밋 실행 중 마지막 것
+          chk=$(gh api "repos/$REPO/actions/runs?head_sha=$SHA&event=pull_request&per_page=100" \
+                --jq '[.workflow_runs[]|select(.name=="통일성 검사" and .head_repository.full_name==env.REPO)]|sort_by(.created_at)|last|"\(.conclusion) \(.created_at)"')
+          set -- $chk; conclusion=$1; pushed_at=$2
+          [ "$conclusion" = "success" ] || { echo "#$pr 통일성 검사가 초록불 아님($conclusion) → 건너뜀"; exit 0; }
+          labels=$(gh api "repos/$REPO/issues/$pr/labels" --jq '[.[].name]|join(",")')
+          case ",$labels," in *",합치지마,"*) echo "#$pr 합치지마 꼬리표 → 건너뜀"; exit 0;; esac
+          # 이름 바꾸기는 옛 이름·새 이름 둘 다 본다 (검수팀 심사 8번)
+          files=$(gh api --paginate "repos/$REPO/pulls/$pr/files" --jq '.[] | .filename, (.previous_filename // empty)')
+          [ -n "$files" ] || { echo "#$pr 바꾼 파일 목록 비어 있음 → 건너뜀"; exit 0; }
+          outside=$(echo "$files" | grep -vE "$ALLOW" || true)
+          if [ -n "$outside" ]; then
+            # 대표님 허락으로 인정하는 것: 사람이 웹에서 붙인 '허락됨'(앱·AI가 붙인 것 제외, 재심사 11번),
+            # 그리고 이 커밋 검사 시작(=올라온 시각) 뒤에 붙인 것(허락 뒤 새 커밋 막기, 재심사 12번)
+            ok=$(gh api --paginate --slurp "repos/$REPO/issues/$pr/events" | jq \
+              "add | map(select(.event==\"labeled\" and .label.name==\"허락됨\" and .performed_via_github_app==null and .created_at > \"$pushed_at\")) | length")
+            case ",$labels," in *",허락됨,"*) ;; *) ok=0;; esac
+            if [ "${ok:-0}" -gt 0 ]; then echo "#$pr 허용 목록 밖 파일 있음, 대표님 허락됨(사람, 커밋 뒤)"
+            else echo "#$pr 허용 목록 밖 파일 → 대표님이 이 커밋 뒤에 직접 붙인 '허락됨' 꼬리표 전까지 안 합침:"; echo "$outside"; exit 0; fi
+          fi
+          gh pr merge "$pr" -R "$REPO" --merge --match-head-commit "$SHA"
+          echo "#$pr 합침"
