@@ -82,8 +82,8 @@ export function reminderMail(rec, n, site, productName) {
   ];
   const text = [...lines, ...foot].join('\n');
   const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const html = [...lines.map(l => l === link ? `<p style="margin:14px 0"><a href="${esc(link)}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#17141a;color:#fff;text-decoration:none;font-weight:700">${esc(name)} 이어서 보기</a></p>` : l ? `<p style="margin:0 0 8px;font-size:15px;line-height:1.7;color:#222">${esc(l)}</p>` : '<br>'),
-    ...foot.map(l => l.startsWith('더 받지') ? `<p style="margin:0 0 4px;font-size:12px;color:#666">더 받지 않으려면 <a href="${esc(off)}" style="color:#666">수신 거부</a></p>` : l ? `<p style="margin:0 0 4px;font-size:12px;color:#666">${esc(l)}</p>` : '<br>')].join('');
+  const html = [...lines.map(l => l === link ? `<p style="margin:14px 0"><a href="${esc(link)}" style="display:inline-block;padding:14px 22px;border-radius:10px;background:#17141a;color:#fff;text-decoration:none;font-weight:700;font-size:17px">${esc(name)} 이어서 보기</a></p>` : l ? `<p style="margin:0 0 8px;font-size:16px;line-height:1.7;color:#222">${esc(l)}</p>` : '<br>'),
+    ...foot.map(l => l.startsWith('더 받지') ? `<p style="margin:0 0 6px;font-size:15px;line-height:1.6;color:#444">더 받지 않으려면 <a href="${esc(off)}" style="color:#666">수신 거부</a></p>` : l ? `<p style="margin:0 0 6px;font-size:15px;line-height:1.6;color:#444">${esc(l)}</p>` : '<br>')].join('');
   return { subject, text, html };
 }
 
