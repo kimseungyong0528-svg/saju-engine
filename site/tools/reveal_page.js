@@ -79,10 +79,10 @@ function rvScene2(p,v){const s=SALES[p.id];
  // 점수: 앞으로 12년(12달) 가운데 그런 해(달)가 몇 번인지로 매긴다(saju/reveal.py side_score 와 같은 식).
  const N=v.map.cells.length,spanW=N===24?'24개월':month?'열두 달':'12년';
  const sideScore=(d,kind)=>{const n=new Set(Object.values(d).flat()).size;return kind==='good'?Math.min(95,50+Math.round(50*n/N)):Math.max(5,50-Math.round(50*n/N))};
- const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=sideScore(d,kind),lockB=v.ab==='B';
+ const yearsPart=(d,kind)=>{const n=new Set(Object.values(d).flat()).size,sc=sideScore(d,kind),lockB=v.ab==='B',OPEN=rvOpen(v.map);
   // 'N번'이라고 했으면 N개를 모두 적는다(표시마다 한 줄). 뜻 풀이는 첫 표시 하나만.
   const ents=Object.entries(d);if(!ents.length)return '';const [k0]=ents[0];
-  return big(kind,sc,`앞으로 ${spanW} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}">${ents.map(([key,ls],k)=>lockB?(k===0?`<p>${esc(when(ls.slice(0,1)))}${ls.length>1?` 외 ${ls.length-1}번`:''}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`:`<p>${ls.length}번 더 있습니다. 언제인지는 리포트에서 공개해요.</p>`):`<p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`).join('')}<p>${esc(v.fill(M[k0].meaning,vals))}</p><p class="rv-hook">${esc(M[k0].hook)}</p></div>`};
+  return big(kind,sc,`앞으로 ${spanW} 중 ${kind==='good'?'운이 들어오는':'조심할'} ${month?'달':'해'} ${n}번`)+`<div class="rv-card ${kind}">${ents.map(([key,ls],k)=>lockB?((vis=>vis.length?`<p>${esc(when(vis))}${ls.length>vis.length?` 외 ${ls.length-vis.length}번`:''}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`:`<p>${esc(M[key].tag)} ${ls.length}번은 언제인지 리포트에서 공개해요.</p>`)(ls.filter(l=>OPEN.has(String(l))))):`<p>${esc(when(ls))}은 ${esc(v.fill(M[key].line,vals))}입니다.</p>`).join('')}<p>${esc(v.fill(M[k0].meaning,vals))}</p><p class="rv-hook">${esc(M[k0].hook)}</p></div>`};
  const reasonPart=(x,kind)=>big(kind,x.score,kind==='good'?(x.score>=60?'좋은 운':'좋은 편인 운'):'조심할 운')+`<div class="rv-card ${kind}"><p>${esc(x.text)}${kind==='good'&&v.note(p.id)?' '+esc(v.note(p.id)):''}</p><p class="rv-hook">${esc(v.fill(kind==='good'?v.R.SCORE_GOOD:v.R.SCORE_BAD,{name:v.name,area:word}))}</p></div>`;
  const goodPart=pt.good?reasonPart(pt.good,'good'):yearsPart(v.map.good,'good');
  const badPart=pt.bad?reasonPart(pt.bad,'bad'):yearsPart(v.map.bad,'bad');
@@ -113,8 +113,8 @@ function rvSitLines(p){const S=RV_SIT[p.id];if(!S)return '';const a=draft(p.id).
 function rvScene3(p,v){const m=v.map,M=v.R.MARKS,month=m.unit==='month',unit=month?'달':'해',re=p.id==='reunion';
  const vals={name:v.name,weak:m.weak};
  const when=labels=>labels.map(l=>month?l:l+'년').join(' · ');
- const lockB=v.ab==='B',goods0=Object.entries(m.good),bads0=Object.entries(m.bad),open=new Set([goods0[0]?.[1]?.[0],bads0[0]?.[1]?.[0]].filter(x=>x!=null).map(String));
- const shown=(key,labels,kind)=>{if(!lockB)return esc(when(labels));const firstKey=(kind==='good'?goods0:bads0)[0]?.[0];return key===firstKey?esc(when(labels.slice(0,1)))+(labels.length>1?` <small>외 ${labels.length-1}번 · 리포트에서 공개</small>`:''):`${labels.length}번 <small>· 리포트에서 공개</small>`};
+ const lockB=v.ab==='B',goods0=Object.entries(m.good),bads0=Object.entries(m.bad),open=rvOpen(m);
+ const shown=(key,labels,kind)=>{if(!lockB)return esc(when(labels));const vis=labels.filter(l=>open.has(String(l)));return vis.length?esc(when(vis))+(labels.length>vis.length?` <small>외 ${labels.length-vis.length}번 · 리포트에서 공개</small>`:''):`${labels.length}번 <small>· 리포트에서 공개</small>`};
  const card=(key,labels,kind)=>`<div class="rv-card rv-mark ${kind}"><div class="rv-mark-head"><span class="rv-tag ${kind}">${esc(M[key].tag)}</span><b>${shown(key,labels,kind)}</b></div><p class="rv-mark-line">${esc(v.fill(M[key].line,vals))}</p><p>${esc(v.fill(M[key].meaning,vals))}</p><p class="rv-hook">${esc(M[key].hook)}</p></div>`;
  const goods=Object.entries(m.good),bads=Object.entries(m.bad);
  const bk=re?(draft(p.id).answers||{}).breakup:'',bkLine=bk?({'3개월 이내예요':'헤어진 지 석 달이 안 된 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','3~6개월 정도예요':'헤어진 지 3~6개월 된 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','6개월~1년 정도예요':'헤어진 지 반년이 넘은 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','1년 이상 지났어요':'헤어진 지 1년이 넘은 지금, 아래 지도에서 다시 이어지기 좋은 달부터 확인해 보세요.','아직 헤어지지 않았어요':'아직 헤어지지 않았다면, 아래 지도에서 엇갈리는 달부터 먼저 확인해 두세요.'})[bk]||'':'';
@@ -159,7 +159,9 @@ const RV_TAG={reunion:{breakup:{'3개월 이내예요':'헤어진 지 3개월이
 function rvFocusTag(p,v,t){const n=esc(v.name);if(t.ask)return `${n} 님이 궁금해하신 '${esc(t.focus)}'`;let ph=((RV_TAG[p.id]||{})[t.q]||{})[t.focus];if(!ph){const l=(((RV_SIT[p.id]||{}).ans||{})[t.q]||{})[t.focus];if(l)ph=l.split(',')[0]}if(!ph)return `${n} 님이 고른 '${esc(t.focus)}'에 맞춘 장`;return /지금$/.test(ph)?`${esc(ph)}, ${n} 님께 맞춘 장`:`${esc(ph)} 먼저 볼 장`}
 function rvChapterLine(title,name){const t=String(title||'');if(/답/.test(t))return `${name} 님이 고른 상황과 질문에 사주로 하나씩 답해 드립니다`;if(/조언/.test(t))return `앞의 장을 모아 ${name} 님이 지금 할 일을 순서대로 정리합니다`;if(/색|숫자|방향/.test(t))return `${name} 님 사주에 맞는 색·숫자·방향을 골라 드립니다`;return `${name} 님 사주로 이 장의 내용을 풀어 드립니다`}
 // 미리 보기 양 시험(A: 지금처럼 다 보여 줌, B: 좋은 달·조심할 달 하나씩만). 한 번 정해지면 이 브라우저에서는 그대로.
-function abPreview(){try{let v=localStorage.getItem('unmyeong.ab.preview');if(v!=='A'&&v!=='B'){v=Math.random()<.5?'A':'B';localStorage.setItem('unmyeong.ab.preview',v)}return v}catch{return 'A'}}
+// 결제 전 달력 A/B는 끝냈다(사장님 2026-11-06): 모든 사주 달력은 B. 좋은 표시(초록)는 가장 가까운 1개, 조심할 표시(빨강)는 가장 먼 1개만 보이고 나머지는 '공개 예정'.
+function abPreview(){try{localStorage.setItem('unmyeong.ab.preview','B')}catch{}return 'B'}
+function rvOpen(m){const g=m.cells.find(c=>c.good.length),b=[...m.cells].reverse().find(c=>c.bad.length);return new Set([g&&g.label,b&&b.label].filter(x=>x!=null).map(String))}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
 // 결제 화면으로 넘어갈 때(주소 #만 바뀜)도 popstate가 오므로, 이야기 화면 주소 그대로일 때만 장면을 바꾼다(손님 테스트 3차: 결제 화면에서 뒤로 가면 STEP 1).
 window.addEventListener('popstate',e=>{if(!document.querySelector('.reveal-flow')||!revealState.view||location.hash!==revealState.hash)return;const n=e.state&&typeof e.state.rvScene==='number'?e.state.rvScene:0;if(n!==revealState.scene){revealState.scene=n;revealRepaint&&revealRepaint();window.scrollTo({top:0,behavior:'instant'})}});
