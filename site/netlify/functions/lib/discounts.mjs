@@ -31,7 +31,7 @@ export const bundleItems = body => { const bad = new Set(bundleIncomplete(body))
 export function extraBody(body, id) {
   const ans = body?.extraAnswers && typeof body.extraAnswers === 'object' ? body.extraAnswers[id] : null;
   // 선물 주문 표시는 함께 사는 책에도 그대로(받는 분이 읽는 책이다)
-  const gift = body?.answers?.revealGift === '1' ? { revealGift: '1' } : {};
+  const gift = body?.answers?.revealGift === '1' ? { revealGift: '1', ...(body.answers.giftMessage ? { giftMessage: String(body.answers.giftMessage).slice(0, 80) } : {}), ...(body.answers.giftFrom ? { giftFrom: String(body.answers.giftFrom).slice(0, 20) } : {}) } : {};
   return { ...body, productId: id, answers: { ...(ans && typeof ans === 'object' ? ans : {}), ...gift }, question: '' };
 }
 

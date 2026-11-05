@@ -2897,16 +2897,17 @@ FLOWS.newyear=[
 // SCOPE-01 / INPUT-01/02 / INTAKE-C01..06 / ISSUE-01.
 const INTAKE_POLICY_VERSION='kr-c-2026-10-10.2';
 function intakePayload(productId,draft={}){
- const person=v=>{if(!v||typeof v!=='object')return {};const keys=['name','birth','calendar','leap','leapStatus','timeAccuracy','time','unknown','timeRange','birthPlace','sex'];return Object.fromEntries(keys.filter(k=>v[k]!==undefined).map(k=>[k,v[k]]));};
+ const person=v=>{if(!v||typeof v!=='object')return {};const keys=['name','birth','calendar','leap','leapStatus','timeAccuracy','time','unknown','timeRange','birthPlace','sex','birthUnknown'];return Object.fromEntries(keys.filter(k=>v[k]!==undefined).map(k=>[k,v[k]]));};
  return {productId,self:person(draft.self),partner:person(draft.partner),answers:draft.answers||{},question:typeof draft.question==='string'?draft.question.slice(0,1000):''};
 }
 function evaluateIntake(payload={},trusted={}){
  const product=PRODUCTS.find(p=>p.id===payload.productId),pair=['reunion','intimate'].includes(payload.productId);
  const outcome=(status,code,message,extra={})=>({policyVersion:INTAKE_POLICY_VERSION,status,code,message,inputAccepted:false,paymentAllowed:false,issuanceAllowed:false,requiresHumanReview:false,requiresAutomatedValidation:true,...extra});
  if(!product)return outcome('blocked','UNKNOWN_PRODUCT','현재 판매 중인 상품을 선택해주세요.');
- if(pair&&!payload.partner?.birth)return outcome('blocked','PARTNER_BIRTH_REQUIRED','두 사람의 분석에는 상대방 생년월일이 필요해요. 확인 전에는 이 상품을 구매할 수 없어요.',{person:'partner'});
+ const solo=payload.productId==='reunion'&&payload.partner?.birthUnknown===true;   // 상대 생일 없이 보는 재회사주(2026-11-05)
+ if(pair&&!solo&&!payload.partner?.birth)return outcome('blocked','PARTNER_BIRTH_REQUIRED','두 사람의 분석에는 상대방 생년월일이 필요해요. 확인 전에는 이 상품을 구매할 수 없어요.',{person:'partner'});
  const inputs={};const uncertainties=[];
- for(const who of pair?['self','partner']:['self']){
+ for(const who of pair&&!solo?['self','partner']:['self']){
   const p=payload[who]||{};const label=who==='self'?'나의':'상대방의';
   if(p.birthPlace?.countryCode&&p.birthPlace.countryCode!=='KR')return outcome('blocked','UNSUPPORTED_COUNTRY',`${label} 출생 국가를 확인해주세요. 현재 대한민국 출생만 지원해요.`,{person:who});
   const date=validateBirthDate(p);

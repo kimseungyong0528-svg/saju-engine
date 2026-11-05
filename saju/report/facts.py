@@ -26,6 +26,17 @@ class OrderInfo:
     experience: str = ""        # 연애사주: 연애 경험 횟수(사이트 선택지 그대로)
     reveal_start: str = ""      # 재회사주: 손님이 결제 전 화면에서 본 24개월 지도의 첫 달('2026-11')
     gift: bool = False          # 선물 주문: 책을 읽는 사람은 산 사람이 아니라 받는 분이다
+    gift_message: str = ""      # 선물 메시지(80자). 글쓰기에는 쓰지 않고 PDF 표지 다음 쪽에만 싣는다(gift_card)
+    gift_from: str = ""         # 보내는 사람(20자)
+    partner_unknown: bool = False  # 재회사주: 상대 생년월일 모름(그 사람 사주는 계산하지 않는다, 2026-11-05)
+    partner_name: str = ""      # 그때 손님이 적은 상대 이름(없으면 '그 사람')
+
+
+def gift_card(order: "OrderInfo") -> dict | None:
+    """선물 메시지 쪽에 실을 것. 선물 주문이고 메시지가 있을 때만."""
+    if not order.gift or not order.gift_message.strip():
+        return None
+    return {"message": order.gift_message.strip(), "sender": order.gift_from.strip()}
 
 
 def _age_on(birth: date, on: date) -> int:
