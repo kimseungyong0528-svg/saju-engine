@@ -1,0 +1,45 @@
+# 임시 작업(aside/proof 브랜치 전용, 합치기 전에 지운다): 결제 전 화면에 보여 줄 실제 리포트 쪽(표지·목차·사주표)을 예시 생일로 만든다.
+# 글은 AI 없이(--draft) 만든다. 캡처는 AI 글이 없는 쪽만 쓴다.
+name: 리포트 샘플 쪽 만들기 (임시)
+on:
+  push:
+    branches: [aside/proof-2026-11-06]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aside/proof-2026-11-06
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils > /dev/null
+          pip install -q -e ".[dev]"
+      - name: 샘플 만들기
+        run: |
+          if [ -f site/public/assets/sample/.done ]; then echo "already"; exit 0; fi
+          mkdir -p site/public/assets/sample /tmp/s
+          P="--partner-name 예시상대 --partner-sex male --partner-birth 1993-07-21"
+          for id in lifetime romance reunion intimate newyear wealth career business health; do
+            EXTRA=""; case $id in reunion|intimate) EXTRA="$P";; esac
+            python -m saju.report --product $id --name 예시 --sex female --birth 1995-03-14 --time 06:30 --draft --out /tmp/s/$id.pdf $EXTRA || echo "fail $id"
+            pdfinfo /tmp/s/$id.pdf | grep Pages | awk '{print $2}' > site/public/assets/sample/$id.pages || true
+            pdftoppm -jpeg -jpegopt quality=82 -r 70 -f 1 -l 8 /tmp/s/$id.pdf site/public/assets/sample/$id || true
+          done
+          touch site/public/assets/sample/.done
+      - name: 올리기
+        run: |
+          git config user.name "aside-bot"
+          git config user.email "aside-bot@users.noreply.github.com"
+          git add site/public/assets/sample
+          git commit -m "리포트 샘플 쪽 이미지(예시 생일, AI 글 없는 쪽만 쓸 예정)" || exit 0
+          git push
