@@ -25,7 +25,7 @@ function entryPopup(){
  const d=eventDays();if(d===null)return;
  // 재구매 링크로 온 손님에게는 이벤트 팝업 대신 '재구매 할인 적용' 안내를 먼저 보여 준다.
  if(savedCoupon()){try{if(sessionStorage.getItem('unmyeong.rebuyNote'))return;sessionStorage.setItem('unmyeong.rebuyNote','1')}catch{}
-  couponCheck().then(ok=>{if(ok===true)toast('재구매 할인 10%가 적용돼요. 어떤 리포트를 고르셔도 결제할 때 저절로 깎여요.');else if(ok===false)toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.')});return}
+  const tr=/^TRY-/.test(savedCoupon());couponCheck().then(ok=>{if(ok===true)toast(tr?'체험단 초대 링크예요. 고르신 리포트 한 권을 무료로 보내 드려요. 결제 화면에서 0원으로 보여요.':'재구매 할인 10%가 적용돼요. 어떤 리포트를 고르셔도 결제할 때 저절로 깎여요.');else if(ok===false&&tr)toast('이미 쓰인 체험단 링크예요. 보내 드린 분께 새 링크를 받아 주세요.');else if(ok===false)toast('재구매 할인 링크를 확인하지 못했어요. 리포트 안의 링크로 다시 들어와 주세요.')});return}
  const today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
  try{if(sessionStorage.getItem('unmyeong.entry')||localStorage.getItem('unmyeong.entryHide')===today)return;sessionStorage.setItem('unmyeong.entry','1')}catch{}
  const p=pById('newyear');
@@ -45,6 +45,13 @@ const byOrder=(a,b)=>(BUNDLE_IDS.indexOf(a.id)+1||99)-(BUNDLE_IDS.indexOf(b.id)+
 (()=>{try{const cp=new URLSearchParams(location.search).get('coupon');
  if(cp)localStorage.setItem('unmyeong.coupon',cp.slice(0,20).toUpperCase());}catch{}})();
 function savedCoupon(){try{return localStorage.getItem('unmyeong.coupon')||''}catch{return ''}}
+// 실제 후기(2026-11-05 체험단): 사장님이 관리 사이트에서 '싣기'한 후기만 서버에서 받아 보여 준다. 없으면 칸을 숨긴다.
+// 체험단 무료 코드로 받은 리포트의 후기는 '체험단 무료 제공'을 붙이고 아래에 뜻을 적는다(표시광고법 추천·보증 심사지침).
+const reviewCache={};
+function fillReviews(box){const pid=box.dataset.reviews;box.dataset.filled='1';
+ (reviewCache[pid]||=fetch('/api/reviews?product='+encodeURIComponent(pid)).then(r=>r.ok?r.json():null).catch(()=>null)).then(d=>{if(!d||!d.count||!box.isConnected)return;
+  box.innerHTML=`<h3>받아 보신 분들의 후기 <span class="rvw-avg">★ ${d.avg} · ${d.count}개</span></h3>${d.reviews.slice(0,5).map(r=>`<article class="rvw"><p class="rvw-stars" aria-label="별 ${r.stars}개">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}${r.trial?'<em class="rvw-tag">체험단 무료 제공</em>':''}</p><p class="rvw-text">${esc(r.text)}</p><p class="rvw-who">${esc(r.nick)} · ${esc(r.date.replace(/-/g,'.'))}</p></article>`).join('')}${d.trialCount?'<p class="rvw-note">\'체험단 무료 제공\' 표시가 있는 후기는 운명서재가 리포트를 무료로 드리고 받은 후기예요. 글은 고치지 않고 그대로 실어요.</p>':'<p class="rvw-note">리포트를 받으신 분이 남긴 글을 고치지 않고 그대로 실어요.</p>'}`;box.hidden=false})}
+new MutationObserver(()=>document.querySelectorAll('[data-reviews]:not([data-filled])').forEach(fillReviews)).observe(document.documentElement,{childList:true,subtree:true});
 // 재구매 링크 확인(2026-11-05 자청 점검 F-6): 서버(/api/quote)가 쿠폰을 확인하기 전에는 '적용돼요'라고 말하지 않는다. 틀린 링크면 저장값을 지운다.
 let couponValid=null;
 function couponCheck(){const c=savedCoupon();if(!c){couponValid=false;return Promise.resolve(false)}return fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:'newyear',email:'',extras:[],coupon:c}),signal:AbortSignal.timeout(15000)}).then(r=>r.ok?r.json():null).then(q=>{couponValid=Boolean(q&&!q.notes?.includes('COUPON_INVALID'));if(q&&!couponValid){try{localStorage.removeItem('unmyeong.coupon')}catch{}}return couponValid}).catch(()=>{couponValid=null;return null})}

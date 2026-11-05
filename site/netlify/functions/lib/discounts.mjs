@@ -8,7 +8,10 @@ import { PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
 export const PERCENT = 10;
 // 묶음에 함께 담을 수 있는 상품. 재회·깊은궁합은 상대방 정보가 필요해서, 주 주문에 상대방 정보가 있을 때만 접수 검사를 통과한다.
 export const BUNDLE_PRODUCTS = ['newyear', 'romance', 'intimate', 'reunion', 'wealth', 'career', 'business', 'health', 'lifetime'];
-const LABELS = { bundle: '첫 구매 묶음 할인', rebuy: '재구매 할인' };
+const LABELS = { bundle: '첫 구매 묶음 할인', rebuy: '재구매 할인', trial: '체험단 무료 제공' };
+// 체험단 초대 코드(2026-11-05 사장님 선택 "체험단 후기 30명"): 사장님이 관리 사이트에서 만든 코드 하나로 리포트 한 권(주 상품)을 무료로. 한 번만 쓴다.
+// 함께 고른 다른 상품은 정가로 따로 결제한다. 이 코드로 받은 리포트의 후기에는 '체험단 무료 제공'을 꼭 붙인다(표시광고법 추천·보증 심사지침).
+export const TRIAL_MAX = 30;
 
 export const emailHash = email => createHash('sha256').update('unmyeong:' + String(email || '').trim().toLowerCase()).digest('hex');
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -38,6 +41,7 @@ export function extraBody(body, id) {
 async function validCoupon(store, code) {
   if (!code) return null;
   const c = await store.get(`coupons/${code}`);
+  if (c?.kind === 'trial' && c.usedBy) return null;   // 체험단 코드는 한 번만
   return c || null;
 }
 
@@ -57,7 +61,8 @@ export async function quote(store, body, now = new Date()) {
   let discount = null;
   if (coupon) discount = { kind: coupon.kind, code };
   else if (extras.length && hash && !buyer) discount = { kind: 'bundle' };
-  if (discount) discount = { ...discount, label: LABELS[discount.kind] || '할인', percent: PERCENT, amount: base - discounted(base) };
+  if (discount?.kind === 'trial') discount = { ...discount, label: LABELS.trial, percent: 100, amount: main.price };
+  else if (discount) discount = { ...discount, label: LABELS[discount.kind] || '할인', percent: PERCENT, amount: base - discounted(base) };
   const notes = [];
   if (code && !coupon) notes.push('COUPON_INVALID');
   if (extras.length && buyer && !coupon) notes.push('BUNDLE_FIRST_ONLY');
@@ -68,16 +73,17 @@ export async function quote(store, body, now = new Date()) {
 
 // 결제가 확인된 뒤: 첫 구매 기록, 재구매 링크로 산 횟수 기록(링크는 계속 쓸 수 있다).
 export async function afterPaid(store, order, now = new Date()) {
-  const hash = emailHash(order.email);
-  if (!(await store.get(`buyers/${hash}`))) await store.set(`buyers/${hash}`, { firstPaidAt: now.toISOString() });
+  const hash = emailHash(order.email), trial = order.discount?.kind === 'trial';
+  // 체험단 무료 리포트는 '첫 구매'로 치지 않는다(나중에 직접 살 때 첫 구매 묶음 할인을 그대로 받게).
+  if (!trial && !(await store.get(`buyers/${hash}`))) await store.set(`buyers/${hash}`, { firstPaidAt: now.toISOString() });
   const d = order.discount;
   if (d?.code) {
     const c = await store.get(`coupons/${d.code}`);
-    if (c) await store.set(`coupons/${d.code}`, { ...c, uses: (c.uses || 0) + 1, lastUsedAt: now.toISOString() });
+    if (c) await store.set(`coupons/${d.code}`, { ...c, uses: (c.uses || 0) + 1, lastUsedAt: now.toISOString(), ...(trial ? { usedBy: c.usedBy || order.id, productId: order.productId } : {}) });
   }
   // 들어온 곳별 결제 수(달마다, 한국 시간). 스튜디오 '손님이 온 곳'에 보인다. 묶음은 결제 한 번으로 센다.
   const month = new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 7);
-  const key = `stats/sources/${month}`, src = order.source || 'direct';
+  const key = `stats/sources/${month}`, src = trial ? 'trial' : (order.source || 'direct');
   const stats = (await store.get(key)) || {};
   const row = stats[src] || { orders: 0, amount: 0 };
   stats[src] = { orders: row.orders + 1, amount: row.amount + (order.amount || 0) };
@@ -85,8 +91,8 @@ export async function afterPaid(store, order, now = new Date()) {
 }
 
 export async function issueCoupon(store, kind, now = new Date()) {
-  const code = newCode();
-  const coupon = { code, kind, percent: PERCENT, createdAt: now.toISOString() };
+  const code = newCode(kind === 'trial' ? 'TRY' : 'UNM');
+  const coupon = { code, kind, percent: kind === 'trial' ? 100 : PERCENT, createdAt: now.toISOString() };
   await store.set(`coupons/${code}`, coupon);
   return coupon;
 }

@@ -131,6 +131,7 @@ function rvScene4(p,v){const toc=EXTRA_DATA.toc[p.id]||[],c=v.r.chart,rest=Math.
  </div></div>
  <p class="rv-close">목차 2번부터 ${toc.length}번까지 ${esc(v.name)} 님의 ${v.map.unit==='month'?'달마다':'해마다'} 할 일과 방법이 들어 있습니다.<br>리포트는 PDF로 써서 이메일로 보내드려요.</p>
  ${(()=>{const V=(typeof RV_VALUE!=='undefined'&&RV_VALUE[p.id])||[];if(!V.length)return '';const n=(EXTRA_DATA.toc[p.id]||[]).length;return `<section class="rv-value" aria-label="리포트에 들어 있는 것"><h3>${esc(p.short)} 리포트 · ${n}개 장</h3><p>지금 본 건 1장의 첫머리예요. 리포트에는 이 내용이 ${esc(v.name)} 님 사주로 이어져요.</p><ul>${V.map(([k,t])=>`<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}<li><b>받는 법</b><span>PDF로 이메일에 보내 드려요. 내려받아 두고 언제든 다시 보세요.</span></li></ul></section>`})()}
+ <section class="rv-reviews" data-reviews="${p.id}" hidden></section>
  <section class="rv-trust" aria-label="믿고 받아 보셔도 되는 이유"><h3>믿고 받아 보셔도 되는 이유</h3><ul><li>금월선녀는 운명서재의 AI 안내자예요. 그래서 감으로 풀지 않고, 생년월일 10,000개를 전문 만세력과 대조해 모두 일치한 계산으로 풀어요.</li><li>생일이 다르면 결과도 달라요. 지금 본 점수와 ${v.map.unit==='month'?'달은':'해는'} 리포트에도 그대로 이어져요.</li><li>리포트를 보내기 전에는 전액 환불해 드려요.</li>${p.id==='health'?'<li>건강운은 의학적 진단이 아니에요. 생활 리듬과 쉬어야 할 때를 정리한 리포트예요.</li>':''}${['wealth','business'].includes(p.id)?'<li>실제 투자와 계약은 전문가와 함께 정해 주세요. 리포트는 사주로 본 돈의 흐름과 때를 정리해 드려요.</li>':''}</ul></section>
  <!-- 가격 안내는 결제 화면에만 (사장님 2026-11-03) -->
  <section class="faq rv-faq"><h2>자주 묻는 질문</h2>${[...(typeof PRODUCT_FAQ!=='undefined'&&PRODUCT_FAQ[p.id]||[]),...FAQ].map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</section>`}

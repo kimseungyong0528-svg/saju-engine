@@ -216,6 +216,7 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
   <details id="daily" class="rules-like"><summary id="dailySum">일별 주문 (보냄·못 보냄)</summary><div id="dailyBody">불러오는 중…</div></details>
   <details id="sources" class="rules-like"><summary>손님이 온 곳 (결제 수)</summary><div id="sourcesBody">불러오는 중…</div></details>
   <details id="funnel" class="rules-like"><summary>결제창 앞뒤 (최근 14일)</summary><div id="funnelBody">불러오는 중…</div></details>
+  <details id="trial" class="rules-like"><summary id="trialSum">체험단 (무료 코드 · 후기 싣기)</summary><div id="trialBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -299,13 +300,45 @@ async function boot() {
   const me = await fetch('/api/studio/me').then(r => r.json()).catch(() => ({}));
   if (!me.loggedIn) return show('login');
   show('app');
-  loadSources(); loadDaily(); loadFunnel();
+  loadSources(); loadDaily(); loadFunnel(); loadTrial();
   await loadWeeks();
+}
+// 체험단(사장님 2026-11-05 "체험단 후기 30명"): 무료 코드 만들기(모두 30개, 한 번에 10개까지)와 후기 싣기.
+// 코드 링크를 체험단 한 분께 하나씩 보내면, 고른 리포트 한 권이 0원으로 결제 없이 만들어져요. 한 번 쓰면 끝.
+// 후기는 리포트를 받은 손님만 주문 화면에서 남기고, 여기서 '싣기'를 눌러야 사이트에 보여요. 체험단 후기에는 '체험단 무료 제공'이 저절로 붙어요.
+const PNAME = { lifetime: '평생사주', romance: '연애사주', intimate: '깊은 궁합', reunion: '재회사주', newyear: '2027 신년운세', wealth: '재물운', career: '직업운', business: '사업운', health: '건강운' };
+async function loadTrial() {
+  const box = $('#trialBody');
+  try {
+    const [{ codes }, { reviews }] = await Promise.all([api('trial-codes'), api('reviews')]);
+    const used = codes.filter(c => c.usedBy).length, pend = reviews.filter(r => r.status === 'pending').length;
+    $('#trialSum').textContent = `체험단 (코드 ${codes.length}/30 · 쓴 코드 ${used} · 싣기 기다리는 후기 ${pend})`;
+    const count = el('select', { class: 'field', 'aria-label': '만들 개수' }, ...[1, 3, 5, 10].map(n => el('option', { value: n }, n + '개')));
+    const make = el('button', { class: 'btn small', onclick: async () => {
+      make.disabled = true;
+      try { const r = await api('trial-codes', { method: 'POST', body: { count: Number(count.value) } }); await navigator.clipboard?.writeText(r.codes.map(c => c.url).join('\n')).catch(() => {}); alert(r.codes.length + '개 만들었어요. 링크를 복사해 두었어요.'); }
+      catch (e) { alert(e.code === 'TRIAL_LIMIT' ? '체험단 코드는 모두 30개까지예요.' : '만들지 못했어요.'); }
+      make.disabled = false; loadTrial();
+    } }, '무료 코드 만들기');
+    const ct = el('table', {}, el('tr', {}, el('th', {}, '링크 (한 분께 하나씩)'), el('th', {}, '상태')));
+    for (const c of codes) ct.append(el('tr', {}, el('td', {}, el('code', {}, `https://unmyeong-saju.com/?coupon=${c.code}&from=trial`)), el('td', {}, c.usedBy ? `씀 · ${PNAME[c.productId] || ''}` : '안 씀')));
+    const rv = el('div', {});
+    if (!reviews.length) rv.append(el('p', {}, '아직 들어온 후기가 없어요.'));
+    for (const r of reviews) {
+      const act = a => async () => { if (a === 'delete' && !confirm('이 후기를 지울까요?')) return; await api('reviews/' + r.orderId, { method: 'POST', body: { action: a } }); loadTrial(); };
+      rv.append(el('div', { class: 'rules-like', style: 'padding:12px 0;border-top:1px solid #333' },
+        el('p', {}, `${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)} · ${PNAME[r.productId] || r.productId} · ${r.nick}${r.trial ? ' · 체험단 무료 제공' : ''} · ${String(r.at).slice(0, 10)} · `, el('b', {}, { pending: '싣기 기다림', approved: '사이트에 실림', hidden: '숨김' }[r.status] || r.status)),
+        el('p', {}, r.text),
+        el('div', {}, r.status !== 'approved' ? el('button', { class: 'btn small', onclick: act('approve') }, '싣기') : null, ' ', r.status !== 'hidden' ? el('button', { class: 'btn ghost small', onclick: act('hide') }, '숨기기') : null, ' ', el('button', { class: 'btn ghost small', onclick: act('delete') }, '지우기'))));
+    }
+    box.replaceChildren(el('div', {}, count, ' ', make), el('p', { class: 'note' }, '링크를 체험단 한 분께 하나씩 보내 주세요. 고른 리포트 한 권이 0원으로 만들어져요(같이 고른 다른 리포트는 정가 결제). 한 번 쓴 링크는 다시 안 돼요.'), ct,
+      el('h4', {}, '후기'), el('p', { class: 'note' }, "후기 글은 고칠 수 없어요(싣기·숨기기·지우기만). 체험단 후기에는 사이트에서 '체험단 무료 제공'이 저절로 붙어요."), rv);
+  } catch { box.textContent = '불러오지 못했어요.'; }
 }
 // 손님이 온 곳: 짧은 주소(/d, /dn …)나 ?from= 꼬리표로 들어와 결제한 수(사장님 2026-11-03)
 const SOURCE_NAMES = { d: '당근 소식 링크 (/d)', dn: '당근 광고 신년운세 (/dn)', dr: '당근 광고 연애사주 (/dr)', dw: '당근 광고 재물운 (/dw)', df: '당근 광고 무료 사주 (/df)',
   bn: '블로그 신년운세 (/bn)', bw: '블로그 재물운 (/bw)', bc: '블로그 깊은 궁합 (/bc)', bf: '블로그 무료 사주 (/bf)', tn: '스레드 신년운세 (/tn)',
-  m: '메타 광고 (/m)', t: '스레드 (/t)', i: '인스타 (/i)', f: '페북 (/f)', y: '유튜브 (/y)', direct: '꼬리표 없이 들어옴' };
+  m: '메타 광고 (/m)', t: '스레드 (/t)', i: '인스타 (/i)', f: '페북 (/f)', y: '유튜브 (/y)', tm: '무료 결과 메일 (tm)', trial: '체험단 무료 (0원)', direct: '꼬리표 없이 들어옴' };
 // 일별 주문(사장님 2026-11-04): 날짜마다 결제 수와 리포트가 손님 메일로 갔는지. 못 보낸 게 있으면 칸이 열리고 빨갛게 보인다.
 async function loadDaily() {
   const box = $('#dailyBody');

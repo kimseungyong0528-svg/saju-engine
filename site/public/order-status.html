@@ -25,6 +25,13 @@ p{line-height:1.7;color:var(--muted);margin:0 0 12px;text-wrap:pretty}
 @keyframes pulse{50%{opacity:.3}}
 @media (prefers-reduced-motion:reduce){.steps li.now:before{animation:none}}
 .error{color:var(--bad)}
+.review h2{font-size:22px;margin:0 0 8px;color:var(--ink)} .review p{font-size:17px}
+.stars{border:0;padding:0;margin:8px 0 14px;display:grid;gap:6px} .stars legend{font-size:17px;color:var(--ink);margin:0 0 6px;padding:0}
+.stars label{display:flex;align-items:center;gap:10px;font-size:20px;color:var(--gold);cursor:pointer} .stars input{width:22px;height:22px;accent-color:#d8bb78}
+.rv-f{display:block;margin:0 0 14px} .rv-f span{display:block;font-size:17px;color:var(--ink);margin:0 0 6px}
+.rv-f textarea,.rv-f input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:#0b0a09;color:var(--ink);font:inherit;font-size:17px;line-height:1.6}
+.rv-c{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.6;color:var(--ink);margin:0 0 6px} .rv-c input{width:22px;height:22px;flex:0 0 22px;margin:3px 0 0;accent-color:#d8bb78}
+#review-msg{font-size:17px;margin:10px 0 0} #review-msg.ok{color:#9fe0a8}
 button,a.button{display:block;width:100%;min-height:52px;margin:10px 0 0;border-radius:8px;font:inherit;font-weight:650;font-size:16px;cursor:pointer;text-align:center;text-decoration:none;line-height:52px;transition:transform .16s cubic-bezier(.23,1,.32,1),opacity .16s}
 button{border:0;background:var(--gold);color:#1a150e}
 button.secondary,a.button{background:transparent;color:var(--ink);border:1px solid var(--line)}
@@ -50,6 +57,18 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
     </ol>
   </section>
   <section class="card" id="books" hidden></section>
+  <section class="card review" id="review" hidden>
+    <h2>리포트, 어떠셨어요?</h2>
+    <p id="review-lead">받아 보신 느낌을 짧게 남겨 주세요. 사장님이 읽고 사이트에 실어요. 글은 고치지 않아요.</p>
+    <form id="review-form" novalidate>
+      <fieldset class="stars" aria-label="별점"><legend>별점</legend><label><input type="radio" name="stars" value="5" checked><span>★★★★★</span></label><label><input type="radio" name="stars" value="4"><span>★★★★☆</span></label><label><input type="radio" name="stars" value="3"><span>★★★☆☆</span></label><label><input type="radio" name="stars" value="2"><span>★★☆☆☆</span></label><label><input type="radio" name="stars" value="1"><span>★☆☆☆☆</span></label></fieldset>
+      <label class="rv-f"><span>후기 (10자 이상, 400자까지)</span><textarea name="text" maxlength="400" rows="5" placeholder="예) 좋은 달을 미리 알고 나니 계획 세우기가 편해졌어요."></textarea></label>
+      <label class="rv-f"><span>보일 이름 (8자까지, 비우면 '익명')</span><input name="nick" maxlength="8" placeholder="예) 김** 또는 서울 30대"></label>
+      <label class="rv-c"><input type="checkbox" name="agree"><span>이 후기를 운명서재 사이트와 SNS에 싣는 데 동의해요. 주문 정보는 함께 싣지 않아요.</span></label>
+      <button type="submit" id="review-send">후기 보내기</button>
+      <p id="review-msg" role="status" aria-live="polite"></p>
+    </form>
+  </section>
   <button id="pdf" hidden>PDF 내려받기</button>
   <button id="resend" class="secondary" hidden>이메일 다시 보내기</button>
   <a class="button" id="back-checkout" href="/" hidden>방금 보던 리포트로 돌아가기</a>
@@ -78,8 +97,9 @@ function show(view){if(view.fileName)fileName=view.fileName;
   $('email').textContent=view.emailHint||'';
   const paid=!['awaiting_payment','payment_failed','payment_expired','payment_adjusted'].includes(view.status);
   // 결제 완료 측정(2026-11-05): 같은 주문은 한 번만. 시험 결제·환불은 보내지 않는다.
-  try{if(paid&&!['test_paid','refund_pending','refunded','erased','held'].includes(view.status)&&!localStorage.getItem('unmyeong.ga.purchase.'+orderId)){localStorage.setItem('unmyeong.ga.purchase.'+orderId,'1');gtag('event','purchase',{transaction_id:orderId,value:Number(view.amount||0),currency:'KRW',items:[{item_name:String(view.productName||'')}].concat((view.books||[]).map(b=>({item_name:String(b.productName||'')})))})}}catch(e){}
+  try{if(paid&&Number(view.amount||0)>0&&!['test_paid','refund_pending','refunded','erased','held'].includes(view.status)&&!localStorage.getItem('unmyeong.ga.purchase.'+orderId)){localStorage.setItem('unmyeong.ga.purchase.'+orderId,'1');gtag('event','purchase',{transaction_id:orderId,value:Number(view.amount||0),currency:'KRW',items:[{item_name:String(view.productName||'')}].concat((view.books||[]).map(b=>({item_name:String(b.productName||'')})))})}}catch(e){}
   const sent=view.status==='email_accepted';
+  if(sent)loadReview();
   const step=(name,done,now)=>{const li=document.querySelector(`[data-step="${name}"]`);li.className=done?'done':now?'now':'';};
   step('paid',paid,!paid&&view.status==='awaiting_payment');
   step('writing',sent,paid&&!sent&&!FINAL.has(view.status));
@@ -111,6 +131,22 @@ async function api(action='',body,extra={},id=orderId){
   const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.code||'ORDER_UNAVAILABLE');return v;
 }
 
+// 후기(2026-11-05): 리포트를 메일로 받은 주문만. 사장님이 '싣기'를 누르면 사이트에 보인다. 체험단 무료 리포트는 사이트에 '체험단 무료 제공'이 붙는다.
+let reviewLoaded=false;
+async function loadReview(){if(reviewLoaded)return;reviewLoaded=true;
+  let v;try{v=await api('review');}catch{return}
+  if(!v.canReview)return;
+  const box=$('review'),f=$('review-form'),msg=$('review-msg');box.hidden=false;
+  if(v.review&&v.review.status!=='pending'){f.hidden=true;$('review-lead').textContent='후기를 남겨 주셔서 고마워요. 사이트에 실렸어요.';return}
+  if(v.review){f.text.value=v.review.text;f.nick.value=v.review.nick==='익명'?'':v.review.nick;const s=f.querySelector('input[name=stars][value="'+v.review.stars+'"]');if(s)s.checked=true;$('review-lead').textContent='보내 주신 후기를 사장님이 읽고 있어요. 싣기 전까지는 고쳐서 다시 보낼 수 있어요.'}
+  f.onsubmit=async e=>{e.preventDefault();msg.className='';
+    const text=f.text.value.trim();if(text.length<10){msg.textContent='후기를 10자 이상 써 주세요.';msg.className='error';return}
+    if(!f.agree.checked){msg.textContent='싣는 데 동의하셔야 보낼 수 있어요.';msg.className='error';return}
+    const btn=$('review-send');btn.disabled=true;
+    try{await api('review',{stars:Number(f.querySelector('input[name=stars]:checked').value),text,nick:f.nick.value.trim(),agree:true});msg.textContent='보냈어요. 고마워요! 사장님이 읽고 사이트에 실어요.';msg.className='ok';btn.textContent='다시 보내기'}
+    catch(err){msg.textContent=({BAD_NICK:'보일 이름은 한글·영문·숫자로 8자까지 써 주세요.',BAD_TEXT:'후기는 10자에서 400자까지 써 주세요.',REVIEW_DONE:'이미 실린 후기예요.'})[err.message]||'보내지 못했어요. 잠시 뒤 다시 눌러 주세요.';msg.className='error'}
+    btn.disabled=false};
+}
 async function poll(){
   for(let i=0;i<180;i++){
     let v;try{v=await api();}catch(e){await new Promise(r=>setTimeout(r,5000));continue;}
