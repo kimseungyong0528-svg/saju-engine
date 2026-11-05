@@ -182,7 +182,7 @@ function rvYearHint(v,n){const open=rvOpen(v.map),later=v.map.cells.filter(c=>c.
 function rvNearBox(p,v){const n=rvNear(v);if(!n)return '';const w=rvNearWord(p,n),lbl=n.re?n.label:n.month?'2027년 '+n.label:n.label+'년',hint=n.month?'':rvYearHint(v,n);
  return `<div class="rv-near${n.now?' is-now':''}">${n.now?`<b>지금이 바로 ${esc(rvIda(w,n))}</b><span>${esc(lbl)}, 아래 지도에서 초록으로 열어 둔 칸이에요.</span>`:`<span class="rv-near-k">가장 가까운 ${esc(w)}까지</span><b>${n.days}일</b><span>${esc(lbl)} 칸 · ${n.month?'':n.y+'년 '}${n.mo}월 ${n.d}일 ${esc(n.jie)}부터 시작돼요</span>`}${hint?`<span class="rv-near-hint">${esc(hint)}</span>`:''}</div>`}
 // 결제 버튼 바로 위 한 줄(1-1 ②): 가장 가까운 좋은 때와, 지금 받으면 무엇을 미리 준비할 수 있는지.
-function rvNearCta(p,v){const n=rvNear(v);if(!n)return '';const prep=p.id==='reunion'?'며칠 무렵, 어떤 첫마디로 연락할지':n.month?'그 달에 시작할 일':'그 해 몇 월에 무엇을 할지';const t=n.now?`지금이 바로 좋은 ${rvIda(n.unit,n)}.`:n.days<=31?'가장 가까운 좋은 때가 한 달 안에 와요.':`가장 가까운 좋은 ${n.unit}까지 ${n.days}일 남았어요.`;return `<p class="rv-near-cta">${esc(t)} 지금 받으면 ${esc(prep)}까지 미리 준비할 수 있어요.</p>`}
+function rvNearCta(p,v){const n=rvNear(v);if(!n)return '';const prep=p.id==='reunion'?'연락할 날짜와 첫마디':n.month?'그 달에 할 일':'그 해 몇 월에 할 일';const t=n.now?`지금이 바로 좋은 ${rvIda(n.unit,n)}.`:n.days<=31?'좋은 때가 한 달 안에 와요.':`좋은 ${n.unit}까지 ${n.days}일.`;return `<p class="rv-near-cta">${esc(t)} 지금 받으면 ${esc(prep)}까지 미리 준비할 수 있어요.</p>`}
 // 점수 바로 아래 구매 버튼(1-3 ②): 큰 점수의 이유와 가장 궁금한 때를 리포트에서.
 function rvBuy(p,v,sc){if(typeof sc!=='number')return '';const w=p.id==='reunion'?'다시 이어지는 달':v.map.unit==='month'?'운이 들어오는 달':'운이 들어오는 해';return `<button type="button" class="rv-buy" data-rv-buy><span>${sc}점의 이유와 ${w} 보기</span><b>전체 리포트 ${money(p.price)} →</b></button>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];

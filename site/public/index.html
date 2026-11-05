@@ -1302,6 +1302,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 
 /* 1-2 ③ 결제 화면 상황 줄, 1-5 사장님 세트·답한 질문, 1-6 근거·선물 (2026-11-06) */
 .co2 .co-main .co-sit{display:block;margin-top:8px;font-size:15px;font-weight:700;color:#8a5a12;word-break:keep-all}
+.co-trust .co-proof{margin-top:8px;padding-top:8px;border-top:1px solid #e5dcc6}
 .co-trust .co-proof a{color:#8a5a12;font-weight:700;text-decoration:underline}
 .co-tag.co-boss{background:#8a5a12}
 .qb-set{margin:0 0 8px;font-size:16px;font-weight:800;color:#8a5a12}
@@ -6908,7 +6909,7 @@ function coSolo(p,d){return p.id==='reunion'&&Boolean(d.partner&&d.partner.birth
 function coOrder(p,d,others){
  const ans=new Set([...Object.values(d.answers||{}),...Object.values(d.extraAnswers||{}).flatMap(a=>Object.values(a||{}))].filter(Boolean).map(String));
  const tp=tasterPicks(),gift=typeof isGift==='function'&&isGift(p.id),married=['결혼했어요','결혼한 사이예요'].some(x=>ans.has(x)),hasPartner=Boolean(d.partner&&personValid(d.partner));
- const nx=coSolo(p,d)?['romance','newyear','wealth']:(CO_NEXT[p.id]||[]);const sc=x=>{let s=0;const ni=nx.indexOf(x.id);if(ni>=0)s+=40-ni*10;if(coSolo(p,d)&&x.id==='romance')s+=80;if(hasPartner&&PAIR_IDS.includes(x.id))s+=100;for(const [k,v] of Object.entries(CO_HINT))if(v===x.id&&ans.has(k))s+=60;const gi=tp.good.indexOf(x.id);if(gi>=0)s+=45-gi*5;const bi=tp.bad.indexOf(x.id);if(bi>=0)s+=30-bi*5;if(married&&['romance','reunion'].includes(x.id))s-=200;if(gift&&['romance','reunion'].includes(x.id))s-=50;return s};
+ const nx=coSolo(p,d)?['romance','newyear','wealth']:(CO_NEXT[p.id]||[]);const sc=x=>{let s=0;const ni=nx.indexOf(x.id);if(ni>=0)s+=40-ni*10;if(coSolo(p,d)&&x.id==='romance')s+=80;if(hasPartner&&PAIR_IDS.includes(x.id))s+=100;for(const [k,v] of Object.entries(CO_HINT))if(v===x.id&&ans.has(k))s+=60;const gi=tp.good.indexOf(x.id);if(gi>=0)s+=45-gi*5;const bi=tp.bad.indexOf(x.id);if(bi>=0)s+=30-bi*5;if(married&&['romance','reunion'].includes(x.id))s-=200;if(isBossPair(p.id,x.id)&&(p.id==='business'||ans.has('사업을 운영하고 있어요')))s+=150;if(gift&&['romance','reunion'].includes(x.id))s-=50;return s};
  return [...others].sort((x,y)=>sc(y)-sc(x)||((CO_TOP.indexOf(x.id)+1||99)-(CO_TOP.indexOf(y.id)+1||99)));
 }
 // 이메일은 이 기기에만 기억해 두고 다음 결제 때 다시 채운다(서버로 따로 보내지 않음).
@@ -6959,7 +6960,7 @@ function quoteBox(p,q){
  // 같은 안내를 두 번 쓰지 않고(손님 테스트 2차), 질문이 비어 있는 상품 이름을 짚는다.
  const gap=(q.incomplete||[]).map(id=>PRODUCTS.find(x=>x.id===id)?.short||'').filter(Boolean);
  const notes=[...new Set([...(q.notes||[]),...(q.missing?['EXTRA_ANSWERS']:[])])].filter(n=>QUOTE_NOTES[n]).map(n=>`<p class="qb-note">${n==='EXTRA_ANSWERS'&&gap.length?`${esc(gap.join(', '))}의 질문${gap.some(x=>/재회|궁합/.test(x))?'(재회사주·깊은 궁합은 상대방 정보)':''}을 채워야 결제할 수 있어요.`:QUOTE_NOTES[n]}</p>`).join('');
- return `<div class="price-box">${items.length===2&&isBossPair(items[0].id,items[1].id)?'<p class="qb-set">사장님 세트 (사업운+재물운)</p>':''}${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>${wait?'첫 구매 최종 금액':'최종 금액'}</span>${finalPrice(orig,wait?q.base-cut:q.amount,wait?'<small>이메일로 첫 구매를 확인하면 이 금액이에요</small>':'')}</div></div>${notes}`;
+ return `<div class="price-box">${items.length===2&&isBossPair(items[0].id,items[1].id)?'<p class="qb-set">사장님 세트 (사업운+재물운)</p>':''}${list}<div><span><i class="qb-no">①</i>정가</span><s>${money(orig)}</s></div><div><span><i class="qb-no">②</i>상품 할인 <em class="qb-pct">${Math.round((orig-q.base)/orig*100)}%</em></span><strong>−${money(orig-q.base)}</strong></div>${dc}<div class="price-total"><span>${wait?'첫 구매 금액':'최종 금액'}</span>${finalPrice(orig,wait?q.base-cut:q.amount,wait?'<small>이메일로 첫 구매를 확인하면 이 금액이에요</small>':'')}</div></div>${notes}`;
 }
 // 결제가 '함께 살 리포트의 질문이 비어 있음'으로 막히면, 접힌 목록을 펼치고 비어 있는 칸으로 데려간다.
 // '더 보기' 단추는 목록 맨 아래에 둔다(사장님 2026-11-03: 펼치면 8개 밑으로).
@@ -7244,7 +7245,7 @@ function rvYearHint(v,n){const open=rvOpen(v.map),later=v.map.cells.filter(c=>c.
 function rvNearBox(p,v){const n=rvNear(v);if(!n)return '';const w=rvNearWord(p,n),lbl=n.re?n.label:n.month?'2027년 '+n.label:n.label+'년',hint=n.month?'':rvYearHint(v,n);
  return `<div class="rv-near${n.now?' is-now':''}">${n.now?`<b>지금이 바로 ${esc(rvIda(w,n))}</b><span>${esc(lbl)}, 아래 지도에서 초록으로 열어 둔 칸이에요.</span>`:`<span class="rv-near-k">가장 가까운 ${esc(w)}까지</span><b>${n.days}일</b><span>${esc(lbl)} 칸 · ${n.month?'':n.y+'년 '}${n.mo}월 ${n.d}일 ${esc(n.jie)}부터 시작돼요</span>`}${hint?`<span class="rv-near-hint">${esc(hint)}</span>`:''}</div>`}
 // 결제 버튼 바로 위 한 줄(1-1 ②): 가장 가까운 좋은 때와, 지금 받으면 무엇을 미리 준비할 수 있는지.
-function rvNearCta(p,v){const n=rvNear(v);if(!n)return '';const prep=p.id==='reunion'?'며칠 무렵, 어떤 첫마디로 연락할지':n.month?'그 달에 시작할 일':'그 해 몇 월에 무엇을 할지';const t=n.now?`지금이 바로 좋은 ${rvIda(n.unit,n)}.`:n.days<=31?'가장 가까운 좋은 때가 한 달 안에 와요.':`가장 가까운 좋은 ${n.unit}까지 ${n.days}일 남았어요.`;return `<p class="rv-near-cta">${esc(t)} 지금 받으면 ${esc(prep)}까지 미리 준비할 수 있어요.</p>`}
+function rvNearCta(p,v){const n=rvNear(v);if(!n)return '';const prep=p.id==='reunion'?'연락할 날짜와 첫마디':n.month?'그 달에 할 일':'그 해 몇 월에 할 일';const t=n.now?`지금이 바로 좋은 ${rvIda(n.unit,n)}.`:n.days<=31?'좋은 때가 한 달 안에 와요.':`좋은 ${n.unit}까지 ${n.days}일.`;return `<p class="rv-near-cta">${esc(t)} 지금 받으면 ${esc(prep)}까지 미리 준비할 수 있어요.</p>`}
 // 점수 바로 아래 구매 버튼(1-3 ②): 큰 점수의 이유와 가장 궁금한 때를 리포트에서.
 function rvBuy(p,v,sc){if(typeof sc!=='number')return '';const w=p.id==='reunion'?'다시 이어지는 달':v.map.unit==='month'?'운이 들어오는 달':'운이 들어오는 해';return `<button type="button" class="rv-buy" data-rv-buy><span>${sc}점의 이유와 ${w} 보기</span><b>전체 리포트 ${money(p.price)} →</b></button>`}
 const RV_CTA=['계속 듣기','다음 이야기 듣기','내 운이 들어오는 해 보기','리포트 미리 보기',''];
