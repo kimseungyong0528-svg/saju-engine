@@ -86,7 +86,8 @@ test('친구 초대·할인 메일은 없다: 초대 링크(ref)는 할인되지
   assert.equal((await t.job(a.orderId)).rebuy.invite, undefined);
   const q = await (await t.call('POST', '/api/quote', { ...draft, email: 'friend@example.com', productId: 'lifetime', ref: 'FR-ABCDEF' })).json();
   assert.equal(q.discount, null);
-  assert.equal((await t.call('GET', '/api/unsubscribe?h=x&t=y')).status, 404);
+  // 2026-11-05 사장님: 결제 이어하기 안내 메일(선택 동의, 할인 없음)이 생겨 수신 거부 주소가 있다. 잘못된 링크는 아무것도 지우지 않는다.
+  assert.match(await (await t.call('GET', '/api/unsubscribe?h=x&t=y')).text(), /잘못된 링크/);
 });
 
 test('재회·깊은궁합 묶음: 상대방 정보가 있는 주문에서만 함께 담긴다', async () => {

@@ -1,6 +1,7 @@
 // 바깥 서비스: 토스페이먼츠(결제 승인), 깃허브(결과 작성·SNS 게시물 작업 시작), Resend(이메일).
 import { productName, reportFileName } from './orders.mjs';
 import { PERCENT } from './discounts.mjs';
+import { reminderMail } from './remind.mjs';
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -83,7 +84,15 @@ export function realServices(env, fetcher = fetch) {
     });
   }
 
-  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
+  // 결제 이어하기 안내(선택 동의한 손님만, 최대 2번). 글은 remind.mjs reminderMail.
+  async function sendReminder(rec, n) {
+    const site = env.SITE_URL || 'https://unmyeong-saju.com';
+    const m = reminderMail(rec, n, site, productName);
+    return await resendEmail({ to: [rec.email], subject: m.subject, text: m.text, html: m.html,
+      headers: { 'List-Unsubscribe': `<${site}/api/unsubscribe?h=${rec.hash}&t=${rec.token}>` } }, `remind-${rec.hash}-${n}-${rec.startedAt}`);
+  }
+
+  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner, sendReminder };
 }
 
 // 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.

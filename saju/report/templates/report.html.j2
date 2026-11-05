@@ -405,6 +405,16 @@
   </div>
   <div class="brand">運命書齋 · 운명서재 · 금월선녀</div>
 </section>
+{% if f.gift_card %}
+<section class="gift-page">
+  <div class="gift-card">
+    <div class="gift-head">마음을 담아 드려요</div>
+    <p class="gift-msg">{{ f.gift_card.message }}</p>
+    {% if f.gift_card.sender %}<div class="gift-from">{{ f.gift_card.sender }} 드림</div>{% endif %}
+    <div class="gift-foot">{{ P.name }} 님을 위해 준비한 운명서재 리포트</div>
+  </div>
+</section>
+{% endif %}
 
 {% for sec in sections %}
   {% set body = sec.pages|rejectattr("figure", "equalto", "cover")|rejectattr("figure", "equalto", "toc")|first %}

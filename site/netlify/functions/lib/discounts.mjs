@@ -31,7 +31,7 @@ export const bundleItems = body => { const bad = new Set(bundleIncomplete(body))
 export function extraBody(body, id) {
   const ans = body?.extraAnswers && typeof body.extraAnswers === 'object' ? body.extraAnswers[id] : null;
   // 선물 주문 표시는 함께 사는 책에도 그대로(받는 분이 읽는 책이다)
-  const gift = body?.answers?.revealGift === '1' ? { revealGift: '1' } : {};
+  const gift = body?.answers?.revealGift === '1' ? { revealGift: '1', ...(body.answers.giftMessage ? { giftMessage: String(body.answers.giftMessage).slice(0, 80) } : {}), ...(body.answers.giftFrom ? { giftFrom: String(body.answers.giftFrom).slice(0, 20) } : {}) } : {};
   return { ...body, productId: id, answers: { ...(ans && typeof ans === 'object' ? ans : {}), ...gift }, question: '' };
 }
 
@@ -70,6 +70,7 @@ export async function quote(store, body, now = new Date()) {
 export async function afterPaid(store, order, now = new Date()) {
   const hash = emailHash(order.email);
   if (!(await store.get(`buyers/${hash}`))) await store.set(`buyers/${hash}`, { firstPaidAt: now.toISOString() });
+  await store.delete(`remind/${hash}`);   // 결제했으니 이어하기 안내는 보내지 않는다
   const d = order.discount;
   if (d?.code) {
     const c = await store.get(`coupons/${d.code}`);

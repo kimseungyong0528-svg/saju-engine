@@ -33,15 +33,27 @@ def order_info(product: str, payload: dict, when: datetime) -> tuple[OrderInfo, 
     answers = dict(payload.get("answers") or {})
     reveal_start = str(answers.pop("revealStart", "") or "")[:7]   # 재회사주 화면의 첫 달(제1조항)
     gift = answers.pop("revealGift", "") == "1"   # 선물 주문(사이트 결제 전 화면에서 '선물'을 고름)
+    # 선물 메시지(2026-11-05): 손님이 쓴 글이라 글쓰기 AI에는 넘기지 않는다(answers 에서 뺀다). PDF 표지 다음 쪽에만 싣는다.
+    gift_message = clean_note(answers.pop("giftMessage", ""), 80) if gift else ""
+    gift_from = clean_note(answers.pop("giftFrom", ""), 20, lines=1) if gift else ""
+    answers.pop("giftMessage", None); answers.pop("giftFrom", None)
     question = str(payload.get("question") or "")[:1000]
     d = when.date()
     if product == "lifetime":
-        return OrderInfo(d, question, daily=answers.get("occupation", ""), relationship=answers.get("relationship", ""), gift=gift), {}
+        return OrderInfo(d, question, daily=answers.get("occupation", ""), relationship=answers.get("relationship", ""), gift=gift, gift_message=gift_message, gift_from=gift_from), {}
     if product == "romance":
-        return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", ""), gift=gift), {}
+        return OrderInfo(d, question, relationship=answers.get("status", ""), experience=answers.get("experience", ""), gift=gift, gift_message=gift_message, gift_from=gift_from), {}
     if product == "newyear" and not question:   # 신년운세는 질문을 answers.question으로 받는다(선택)
         question = str(answers.get("question") or "")[:1000]
-    return OrderInfo(d, question, reveal_start=reveal_start, gift=gift), answers
+    return OrderInfo(d, question, reveal_start=reveal_start, gift=gift, gift_message=gift_message, gift_from=gift_from), answers
+
+
+def clean_note(value, limit: int, lines: int = 3) -> str:
+    """손님이 쓴 짧은 글: 제어 문자를 빼고, 줄은 lines 줄까지, 글자는 limit 자까지."""
+    import re
+    s = re.sub(r"[\x00-\x09\x0b-\x1f\x7f]", "", str(value or ""))
+    rows = [re.sub(r"\s+", " ", r).strip() for r in s.split("\n")]
+    return "\n".join([r for r in rows if r][:lines])[:limit]
 
 
 def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
