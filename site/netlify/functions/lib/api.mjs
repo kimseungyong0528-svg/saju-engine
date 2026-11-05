@@ -8,6 +8,13 @@ import {
 import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
+import { LeadError, sendTasterMail, stopLead } from './leads.mjs';
+import { submitReview, reviewFor, publicReviews } from './reviews.mjs';
+
+// 무료 맛보기 계산에 쓰는 자료. 이 사이트가 내보내는 파일을 그대로 읽는다(화면과 같은 판, 제1조항).
+let assetCache = null;
+const siteAssets = origin => (assetCache ||= Promise.all(['saju-data.json', 'texts.json'].map(f => fetch(`${origin}/assets/free/${f}`).then(r => { if (!r.ok) throw Error(f); return r.json(); })))
+  .then(([data, texts]) => ({ data, texts })).catch(e => { assetCache = null; throw e; }));
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -21,7 +28,7 @@ async function readJson(req, limit = 65_536) {
 
 const bearer = req => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || '';
 
-export function makeApi({ store, services, env, studioStore = store }) {
+export function makeApi({ store, services, env, studioStore = store, leadStore = store, assets }) {
   const studio = makeStudio({ store: studioStore, orderStore: store, services, env });
   return async function handle(req) {
     const url = new URL(req.url);
@@ -39,6 +46,21 @@ export function makeApi({ store, services, env, studioStore = store }) {
         await mailEvent(store, services, event);
         return json({ ok: true });
       }
+      // 무료 맛보기 결과 메일(손님이 결과 화면에서 직접 요청). 리포트 메일과 같은 Resend로 보낸다.
+      if (m === 'POST' && parts.join('/') === 'taster-mail') {
+        if (!env.RESEND_API_KEY || !services.sendMail) return json({ code: 'MAIL_NOT_READY' }, 503);
+        try {
+          return json(await sendTasterMail({ store: leadStore, send: services.sendMail, env, body: await readJson(req, 8_192),
+            assets: assets || (() => siteAssets(new URL(req.url).origin)), ip: req.headers.get('x-nf-client-connection-ip') || '' }));
+        } catch (e) { if (e instanceof LeadError) return json({ code: e.code }, e.status); throw e; }
+      }
+      // 사이트에 싣는 후기(사장님이 관리 사이트에서 '싣기'한 것만). 5분 동안 저장해 두고 쓴다.
+      if (m === 'GET' && parts.join('/') === 'reviews') {
+        const pid = url.searchParams.get('product') || '';
+        const r = await publicReviews(store, /^[a-z]{3,12}$/.test(pid) ? pid : '');
+        return new Response(JSON.stringify(r), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
+      }
+      if (m === 'GET' && parts.join('/') === 'leads/stop') return await stopLead(leadStore, url.searchParams.get('id'), url.searchParams.get('t'));
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
           customerAnalysisReady: ready(env), clientKey: ready(env) ? String(env.TOSS_CLIENT_KEY).trim() : '',
@@ -96,6 +118,9 @@ export function makeApi({ store, services, env, studioStore = store }) {
           const body = await readJson(req);
           return json(publicView(await markFailed(store, order, body.code), false));
         }
+        // 후기: 리포트를 메일로 받은 주문만(주문 화면의 접근 열쇠로)
+        if (action === 'review' && m === 'GET') return json({ review: await reviewFor(store, order.id), canReview: Boolean(order.emailedAt) });
+        if (action === 'review' && m === 'POST') return json(await submitReview(store, order, await readJson(req, 4_096)));
         if (m === 'POST' && action === 'resend') {
           const updated = await resend(store, services, order, req.headers.get('idempotency-key'));
           return json(publicView(updated, true));

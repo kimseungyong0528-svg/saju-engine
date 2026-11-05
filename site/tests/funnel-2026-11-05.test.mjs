@@ -14,9 +14,10 @@ test('방문 통계: GA4·Clarity 가 있고, 이름·생년월일·이메일을
   assert.ok(html.includes('2-1. 방문 통계') && html.includes('Microsoft(미국, 화면 이용 기록)'));
   assert.ok(os.includes("gtag('event','purchase'") && os.includes('unmyeong.ga.purchase.'));
 });
-test('이름 묻기 장면이 따로 없고, 그 한 마디는 정보 입력 화면 첫 줄에 있다', () => {
+test('이름 묻기 장면이 따로 없고, 정보 입력 화면 첫 줄은 상품마다 공감 한 줄이다 (2026-11-05 자청 점검 N-2)', () => {
   assert.ok(!html.includes("scene('name','운명을 열어보기 전에"));
-  assert.ok(html.includes('운명을 열어보기 전에 이름을 여쭤봐도 될까요?'));
+  assert.ok(html.includes('하루에도 몇 번씩 카톡 열어 봤죠. 연락해도 되는 달부터 찾아 드릴게요.'));
+  assert.ok(html.includes('먼저 이름과 생일만 알려 주세요.'));
 });
 test('정보 입력: 빈 칸을 알려 주고, 상대 생일을 모를 때 길을 알려 준다', () => {
   assert.ok(html.includes('function quickMissing(') && html.includes('아직 비어 있어요: '));

@@ -3,6 +3,7 @@ import { blobStore } from './lib/blobs.mjs';
 import { eraseOld, flagStuck } from './lib/orders.mjs';
 import { realServices } from './lib/services.mjs';
 import { eraseOldWeeks } from './lib/studio.mjs';
+import { eraseOldLeads } from './lib/leads.mjs';
 
 export default async () => {
   const store = blobStore();
@@ -10,7 +11,8 @@ export default async () => {
   const stuck = await flagStuck(store, services);
   const erased = await eraseOld(store);
   const weeks = await eraseOldWeeks(blobStore('unmyeong-studio'));
-  console.log('stuck', stuck, 'erased', erased, 'studio weeks erased', weeks);
+  const leads = await eraseOldLeads(blobStore('unmyeong-leads'));
+  console.log('stuck', stuck, 'erased', erased, 'studio weeks erased', weeks, 'lead records erased', leads);
 };
 
 export const config = { schedule: '@hourly' };

@@ -148,7 +148,18 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
     await store.set(`orders/${order.id}`, order);
     throw new ApiError(400, 'AMOUNT_MISMATCH');
   }
-  const result = await services.tossConfirm({ paymentKey, orderId: order.id, amount: order.amount });
+  // 체험단 무료 리포트(금액 0원): 토스 결제창 없이 승인한다. 코드는 이 주문에 묶어 다시 못 쓰게 한다.
+  const free = order.amount === 0 && order.discount?.kind === 'trial';
+  if (free) {
+    const c = await store.get(`coupons/${order.discount.code}`);
+    if (!c || c.kind !== 'trial' || (c.usedBy && c.usedBy !== order.id)) {
+      setStatus(order, 'payment_failed', now, 'TRIAL_USED');
+      await store.set(`orders/${order.id}`, order);
+      throw new ApiError(400, 'COUPON_INVALID');
+    }
+    await store.set(`coupons/${c.code}`, { ...c, usedBy: order.id });
+  }
+  const result = free ? { ok: true } : await services.tossConfirm({ paymentKey, orderId: order.id, amount: order.amount });
   if (!result.ok) {
     setStatus(order, 'payment_failed', now, result.code);
     await store.set(`orders/${order.id}`, order);

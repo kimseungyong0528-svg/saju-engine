@@ -215,8 +215,14 @@ def build(start: dt.date, days: int, out: Path, used: set[str] | None = None, vi
         if C:
             C.close()
     titles = [it["title"] for d in manifest["days"] for it in d["items"] if it["channel"] == "youtube"]
-    manifest["daangn"] = {"소식": "\n".join(["이번 주 띠별 운세", ""] + [f"▪ {t}" for t in titles] +
-                                         ["", "띠는 태어난 해 하나만 본 것이에요.", "생년월일과 태어난 시간으로 보는 내 운세는 운명서재에서", SITE_URL])}
+    # 당근 소식 (2026-11-05 자청 점검 K-2~K-6): 숫자 있는 제목 → 공감 한 줄 → 띠별 → 신뢰(환불·AI) → 링크 하나(/d = 2027 신년운세).
+    manifest["daangn"] = {"소식": "\n".join(["2027년 좋은 달, 띠별로 먼저 보기", "",
+                                         "올해 끝나기 전에 내년 흐름이 궁금해지죠. 이번 주 띠별 운세부터 가볍게 보세요.", ""] +
+                                        [f"▪ {t}" for t in titles] +
+                                        ["", "띠는 태어난 해 하나만 본 거예요. 생년월일과 태어난 시간으로 보면 12달 중 좋은 달과 조심할 달이 따로 보여요.",
+                                         "· 2027 신년운세 29,800원, 리포트를 보내기 전에는 전액 환불",
+                                         "· 금월선녀는 운명서재의 AI 안내자예요. 리포트는 AI가 사주 계산으로 작성해요.", "",
+                                         "무료로 먼저 보기: " + SITE_URL + "/d"])}
     shutil.rmtree(week / "_작업", ignore_errors=True)
     if approve_threads:
         # 심사원 50명 심사를 통과한 주만 이 표시를 단다 (CLAUDE.md 제2조항). 표시가 있으면 /studio 승인 없이 시간 맞춰 올라간다.

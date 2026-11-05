@@ -3,6 +3,7 @@
 // 게시물을 만들어도 사이트 배포는 일어나지 않는다.
 import { createHmac } from 'node:crypto';
 import { ApiError, sameSecret } from './orders.mjs';
+import { studioReviews, moderateReview, trialCodes, issueTrialCodes } from './reviews.mjs';
 
 const COOKIE = 'studio_s';
 const DAYS30 = 30 * 24 * 3600;
@@ -168,6 +169,11 @@ export function makeStudio({ store, services, env, orderStore = store }) {
 
     // ── 로그인한 사장님만 ──
     if (route === 'studio/weeks' && m === 'GET') return json({ weeks: await index(store) });
+    // 체험단(사장님 2026-11-05): 무료 초대 코드 만들기(모두 30개까지)와 후기 싣기·숨기기.
+    if (route === 'studio/trial-codes' && m === 'GET') return json({ codes: await trialCodes(orderStore) });
+    if (route === 'studio/trial-codes' && m === 'POST') return json(await issueTrialCodes(orderStore, (await body(req, 1024)).count, env.SITE_URL));
+    if (route === 'studio/reviews' && m === 'GET') return json(await studioReviews(orderStore));
+    if (parts[1] === 'reviews' && parts[2] && m === 'POST') return json(await moderateReview(orderStore, parts[2], String((await body(req, 1024)).action || '')));
     // 손님이 온 곳별 결제 수(사장님 2026-11-03). 최근 3달.
     if (route === 'studio/sources' && m === 'GET') {
       const months = [];
