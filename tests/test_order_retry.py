@@ -45,3 +45,25 @@ def test_usage_line_sums_tokens_by_model():
     ])
     assert line == "a 호출 2 입력 12 출력 6 캐시읽기 1 캐시쓰기 0 / b 호출 1 입력 7 출력 3 캐시읽기 0 캐시쓰기 4"
     assert M.usage_line(None) == "없음"
+
+
+def test_stops_quietly_when_refunded_before_send(monkeypatch):
+    """작업 중 환불되면 서버가 409 ORDER_REFUNDED로 막고, 작업은 보류로 남기지 않고 끝낸다(P-VC-3)."""
+    import io
+    import urllib.error
+    sent = []
+    def call(method, path, body=None, content_type="application/json"):
+        if method == "GET":
+            return {"orderId": "x", "productId": "wealth", "status": "queued", "payload": {}}
+        raise urllib.error.HTTPError(path, 409, "Conflict", {}, io.BytesIO(b'{"code":"ORDER_REFUNDED"}'))
+    monkeypatch.setattr(M, "_call", call)
+    monkeypatch.setattr(M, "build", lambda job: (b"%PDF", ""))
+    monkeypatch.setattr(M, "status", lambda *a: sent.append(a[1]))
+    assert M.run("x") == 0
+    assert sent == ["processing"]
+
+
+def test_skips_refunded_job(monkeypatch):
+    monkeypatch.setattr(M, "_call", lambda *a, **k: {"orderId": "x", "productId": "wealth", "status": "refunded"})
+    monkeypatch.setattr(M, "status", lambda *a: (_ for _ in ()).throw(AssertionError("상태를 보내면 안 됨")))
+    assert M.run("x") == 0

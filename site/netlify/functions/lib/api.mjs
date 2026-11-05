@@ -3,7 +3,7 @@ import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
-  mailEvent, verifyMailWebhook,
+  mailEvent, verifyMailWebhook, syncRefund,
 } from './orders.mjs';
 import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
@@ -61,6 +61,17 @@ export function makeApi({ store, services, env, studioStore = store, leadStore =
         return new Response(JSON.stringify(r), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
       }
       if (m === 'GET' && parts.join('/') === 'leads/stop') return await stopLead(leadStore, url.searchParams.get('id'), url.searchParams.get('t'));
+      // 토스 결제 상태 변경 알림(P-VC-3). 본문은 믿지 않고, 저장된 결제 키로 토스에 다시 물어 취소면 주문에 반영한다.
+      if (m === 'POST' && parts.join('/') === 'toss-events') {
+        const text = await req.text();
+        if (text.length > 65_536) return json({ error: 'TOO_LARGE' }, 413);
+        let event; try { event = JSON.parse(text); } catch { return json({ error: 'BAD_JSON' }, 400); }
+        const d = event?.data || {};
+        const id = String(d.orderId || '');
+        const order = /^[a-f0-9-]{36}$/.test(id) ? await store.get(`orders/${id}`) : null;
+        if (order?.paymentKey && d.paymentKey === order.paymentKey) await syncRefund(store, services, order);
+        return json({ ok: true });
+      }
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
           customerAnalysisReady: ready(env), clientKey: ready(env) ? String(env.TOSS_CLIENT_KEY).trim() : '',
@@ -131,6 +142,8 @@ export function makeApi({ store, services, env, studioStore = store, leadStore =
         const order = await loadOrder(store, parts[2]);
         const action = parts[3] || '';
         if (m === 'GET' && !action) {
+          // 작업 시작 때 환불됐는지 먼저 본다. 환불이면 작업이 '처리할 상태가 아님'으로 멈춘다(P-VC-3).
+          if (await syncRefund(store, services, order)) return json({ orderId: order.id, productId: order.productId, status: 'refunded' });
           if (!order.payload) throw new ApiError(410, 'ERASED');
           const rebuy = await rebuyForJob(store, order, env.SITE_URL).catch(() => null);
           // 같은 주문(묶음)에서 함께 산 상품: 리포트가 이미 산 상품을 다시 권하지 않고, 묶음 상품은 '결제 전에 보신'이라고 쓰지 않는다.

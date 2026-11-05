@@ -23,7 +23,7 @@ function setup(overrides = {}) {
     method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
     body: raw ?? (body ? JSON.stringify(body) : undefined),
   }));
-  return { store, calls, call };
+  return { store, calls, call, services };
 }
 
 async function order(t, extra = {}) {
@@ -315,4 +315,66 @@ test('메일 도착 확인: Resend 알림(서명 확인)으로 도착·튕김을
   // 비밀값이 없으면 꺼져 있다
   const off = setup();
   assert.equal((await off.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered')) })).status, 404);
+});
+
+test('결제 취소 반영: 토스에서 환불된 주문은 작업을 멈추고 메일을 보내지 않는다 (P-VC-3)', async () => {
+  const t = setup();
+  let toss = 'DONE';
+  const lookups = [];
+  t.services.tossPayment = async key => { lookups.push(key); return { status: toss, orderId: t.lastOrderId }; };
+  const { body: o } = await order(t);
+  t.lastOrderId = o.orderId;
+  const auth = { Authorization: 'Bearer ' + o.accessToken };
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_r', amount: 49800 }, headers: auth });
+  const w = { 'X-Worker-Secret': 'worker-secret' };
+  // 결제가 그대로면 평소처럼 작업 재료를 준다
+  let job = await (await t.call('GET', `/api/internal/orders/${o.orderId}`, { headers: w })).json();
+  assert.equal(job.status, 'queued'); assert.ok(job.payload); assert.deepEqual(lookups, ['pk_r']);
+  // 작업 중 환불: 보내기 직전에 막히고, 주문은 refunded, 출생 정보는 지워짐
+  toss = 'CANCELED';
+  const r = await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70]), headers: { ...w, 'Content-Type': 'application/pdf' } });
+  assert.equal(r.status, 409); assert.equal((await r.json()).code, 'ORDER_REFUNDED');
+  assert.equal(t.calls.email.length, 0);
+  const saved = await t.store.get(`orders/${o.orderId}`);
+  assert.equal(saved.status, 'refunded'); assert.equal(saved.payload, undefined);
+  assert.equal(await t.store.getBytes(`pdf/${o.orderId}`), null);
+  // 다시 돌려도 작업은 '처리할 상태 아님'으로 멈춘다
+  job = await (await t.call('GET', `/api/internal/orders/${o.orderId}`, { headers: w })).json();
+  assert.equal(job.status, 'refunded'); assert.equal(job.payload, undefined);
+});
+
+test('결제 취소 반영: 토스 조회가 실패하면 정상 발송을 막지 않는다 (P-VC-3)', async () => {
+  const t = setup();
+  t.services.tossPayment = async () => { throw Error('toss 500'); };
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_x', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const w = { 'X-Worker-Secret': 'worker-secret' };
+  const v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70]), headers: { ...w, 'Content-Type': 'application/pdf' } })).json();
+  assert.equal(v.status, 'email_accepted'); assert.equal(t.calls.email.length, 1);
+});
+
+test('토스 알림: 본문은 믿지 않고 토스에 다시 물어 취소면 묶음까지 refunded (P-VC-3)', async () => {
+  const t = setup();
+  let toss = 'DONE';
+  t.services.tossPayment = async () => ({ status: toss, orderId: t.lastOrderId });
+  const { body: o } = await order(t, { extras: ['wealth'], extraAnswers: { wealth: { occupation: '직장에 다니고 있어요' } } });
+  assert.ok(o.orderId, JSON.stringify(o));
+  t.lastOrderId = o.orderId;
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_b', amount: o.amount }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const root = await t.store.get(`orders/${o.orderId}`);
+  assert.equal(root.children.length, 1);
+  const ev = (paymentKey, orderId = o.orderId) => t.call('POST', '/api/toss-events', { body: { eventType: 'PAYMENT_STATUS_CHANGED', data: { paymentKey, orderId, status: 'CANCELED' } } });
+  // 본문이 '취소'라고 해도 토스 조회가 DONE이면 그대로
+  assert.equal((await ev('pk_b')).status, 200);
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  // 결제 키가 다르면 토스에 묻지도 않는다
+  toss = 'CANCELED';
+  await ev('pk_wrong');
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  await ev('pk_b');
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'refunded');
+  for (const id of root.children || []) assert.equal((await t.store.get(`orders/${id}`)).status, 'refunded');
+  // 이미 보낸 주문은 다시 보내기도 막힌다
+  const rs = await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { Authorization: 'Bearer ' + o.accessToken, 'Idempotency-Key': 'z' } });
+  assert.equal(rs.status, 409);
 });
