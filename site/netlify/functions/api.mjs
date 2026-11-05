@@ -4,7 +4,7 @@ import { realServices } from './lib/services.mjs';
 
 export default async req => {
   const env = process.env;
-  return makeApi({ store: blobStore(), studioStore: blobStore('unmyeong-studio'), services: realServices(env), env })(req);
+  return makeApi({ store: blobStore(), studioStore: blobStore('unmyeong-studio'), leadStore: blobStore('unmyeong-leads'), services: realServices(env), env })(req);
 };
 
 export const config = { path: '/api/*' };

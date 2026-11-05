@@ -83,7 +83,10 @@ export function realServices(env, fetcher = fetch) {
     });
   }
 
-  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
+  // 무료 맛보기 결과 메일(leads.mjs가 내용을 만든다). 답장은 사장님 메일로.
+  const sendMail = (message, key) => resendEmail({ ...message, ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}) }, key);
+
+  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner, sendMail };
 }
 
 // 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.
