@@ -72,7 +72,8 @@ export function realServices(env, fetcher = fetch) {
       '7일 안에는 결제한 기기의 주문 화면에서 다시 내려받을 수 있고, 이 메일에 답장하시면 다시 보내 드려요.',
       ...(order.amount === 0 && order.parentId ? ['함께 주문하신 다른 리포트는 따로 메일로 보내드려요.', ''] : []),
       `리포트 끝의 '자세히 보기 (재구매 ${PERCENT}% 할인)' 링크를 누르면 다음 리포트를 ${PERCENT}% 할인받을 수 있어요.`,
-      '결과에 오류가 있거나 파일이 열리지 않으면 이 메일에 답장으로 알려주세요.', '',
+      '리포트를 이미 보내 드렸기 때문에, 이제 단순 변심 환불은 안 돼요(디지털 콘텐츠).',
+      '결과에 오류가 있거나 파일이 열리지 않으면 이 메일에 답장으로 알려주세요. 확인한 뒤 다시 보내 드리거나 환불해 드려요.', '',
       `운명서재 ${site}`,
     ].join('\n');
     const html = text.split('\n').map(l => l ? `<p style="margin:0 0 6px">${esc(l)}</p>` : '<br>').join('');
@@ -85,10 +86,10 @@ export function realServices(env, fetcher = fetch) {
 
   async function notifyOwner(order, note, kind = 'held') {
     if (!env.OWNER_EMAIL) return;
-    const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : kind === 'bounced' ? '리포트 메일이 손님에게 닿지 않았어요' : '발송 보류된 주문이 있어요';
+    const what = kind === 'sent_refund' ? '이미 리포트를 보낸 주문이 환불됐어요' : kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : kind === 'bounced' ? '리포트 메일이 손님에게 닿지 않았어요' : '발송 보류된 주문이 있어요';
     await resendEmail({
       to: [env.OWNER_EMAIL], subject: `[운명서재] ${what} (${productName(order.productId)})`,
-      text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,
+      text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}${kind === 'sent_refund' ? '\n\n토스 관리자 화면: https://app.tosspayments.com' : '\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.'}`,
     });
   }
 
