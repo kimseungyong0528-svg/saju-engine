@@ -71,7 +71,7 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     # 같은 6가지는 책 맨 끝 '무료 분석에서 본 나의 좋은 운과 조심할 운' 쪽에도 그대로 싣는다(2026-10-27 사장님).
     # 재구매 10% 할인 코드도 그 쪽에 크게 싣는다(주문 서버가 주문마다 만들어 job["rebuy"]로 준다).
     view = taster.reading_for_person(me)
-    seen = taster.digest(view, product)
+    seen = taster.digest(view, product, payload.get("answers") or {})
     # 결제 직전 이야기 화면에서 본 '내 점수'와 해·달 지도(같은 계산)도 넘겨, 리포트가 그 해·달의 몇 월·방법까지 풀게 한다(2026-10-28 사장님).
     # 묶음으로 함께 산 상품(job["parentId"])은 손님이 그 상품의 결제 전 이야기 화면을 보지 않았다: '화면에서 보신'이라고 쓰지 않는다.
     bundled = bool(job.get("parentId"))
@@ -81,7 +81,8 @@ def make_pdf(job: dict, out_pdf: str | Path, writer=None) -> dict:
     else:
         seen["결제 전 이야기 화면에서 본 내용"] = reveal.digest(taster.pillars_from_result(me), me["person"].get("name", ""),
                                                     me["person"].get("sex", ""), product, when.date().isoformat() if hasattr(when, "date") else when,
-                                                    str((payload.get("answers") or {}).get("revealStart") or "")[:7])
+                                                    str((payload.get("answers") or {}).get("revealStart") or "")[:7],
+                                                    answers=payload.get("answers") or {})
     # 같은 주문에서 함께 산 상품은 책 끝에서 다시 권하지 않는다.
     extra = {"rebuy": job.get("rebuy"), "owned": [p for p in job.get("together") or [] if p != product], "bundled": bundled}
     if product == "lifetime":

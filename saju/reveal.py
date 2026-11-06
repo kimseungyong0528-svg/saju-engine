@@ -233,7 +233,7 @@ def start_year(order_year: int) -> int:
     return max(FIRST_YEAR, order_year)
 
 
-def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown: str = "") -> dict:
+def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown: str = "", answers=None) -> dict:
     """리포트 글쓰기에 넘길 '결제 전 이야기 화면에서 본 내용'."""
     T = taster.texts()["REVEAL"]
     name = (name or "").strip() or "고객"
@@ -247,7 +247,9 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown
             mk = T["MARKS"][key]
             vals = {"name": name, "weak": f"{m['weak']}"}
             row = {unit: [lb if m["unit"] == "month" else f"{lb}년" for lb in labels],
-                   "뜻": taster.fill(mk["line"], vals), "화면에서 본 설명": taster.fill(mk["meaning"], vals)}
+                   "뜻": taster.fill(mk["line"], vals),
+                   # 손님 상황에 맞춰 바꾼 문장 그대로(결제 전 화면 v.sw 와 같다, 1-2)
+                   "화면에서 본 설명": taster.situ_text(f"MARKS.{key}.meaning", taster.fill(mk["meaning"], vals), answers, product)}
             if m["unit"] == "year":
                 row["그 해 안에서 같은 기운이 들어오는 달(절기 기준, 매달 4~8일 무렵 시작)"] = {
                     f"{lb}년": months_in_year(fp, sex, key, int(lb)) for lb in labels}
@@ -271,10 +273,10 @@ def digest(fp: FourPillars, name: str, sex: str, product: str, order_year, shown
         out["화면에서 본 점수"] = {
             "운": title, "전체 점수": pt["score"],
             # 근거도 없고 지도에 그 쪽 표시도 없으면 화면에 점수 카드가 나오지 않는다(점수 None, 손님 테스트 4차: 화면엔 없는 '조심할 점 50점'이 PDF에 나왔다)
-            "좋은 점": {"점수": pt["good"]["score"], "글": pt["good"]["text"]} if pt["good"] else
+            "좋은 점": {"점수": pt["good"]["score"], "글": taster.situ_text("REASONS." + pt["good"]["reason"], pt["good"]["text"], answers, product)} if pt["good"] else
                      {"점수": side_score(len({lb for ls in m["good"].values() for lb in ls}), "good", len(m["cells"])) if m["good"] else None,
                       "글": f"앞으로 운이 들어오는 {unit}(아래 '좋은 {unit}')로 매긴 점수" if m["good"] else f"화면 지도에 좋은 {unit} 표시가 없음"},
-            "조심할 점": {"점수": pt["bad"]["score"], "글": pt["bad"]["text"]} if pt["bad"] else
+            "조심할 점": {"점수": pt["bad"]["score"], "글": taster.situ_text("REASONS." + pt["bad"]["reason"], pt["bad"]["text"], answers, product)} if pt["bad"] else
                       {"점수": side_score(len({lb for ls in m["bad"].values() for lb in ls}), "bad", len(m["cells"])) if m["bad"] else None,
                        "글": f"앞으로 조심할 {unit}(아래 '조심할 {unit}')로 매긴 점수" if m["bad"] else f"화면 지도에 조심할 {unit} 표시가 없음"},
             "쓸 점": "화면은 이 운의 좋은 점과 조심할 점을 모두 짚었습니다. 리포트는 두 가지 모두를 더 깊게 풀고, "
