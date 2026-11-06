@@ -1358,9 +1358,10 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .cover-deadline{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;background:#b3261e;color:#fff;font-size:15px;font-weight:700}
 .co2 .co-deadline-tip{display:block;margin-top:2px;font-size:15px;color:#4f4954;word-break:keep-all}
 #trust-title{scroll-margin-top:96px}
+@media (max-width:420px){.categories{gap:3px!important}.categories>*{font-size:16.5px!important;padding-left:2px!important;padding-right:2px!important}}
 .sample-zoom-img{display:block;width:100%;height:auto;border-radius:8px;margin:8px 0}
 .sample-zoom-note{font-size:15px;line-height:1.6}
-.trust-box{scroll-margin-top:96px}
+.trust-box{scroll-margin-top:150px}
 .qb-note.qb-rebuy{color:#8a5a12;font-weight:700}
 </style></head><body><a class="skip" href="#main">본문으로 이동</a><div id="app"></div><div id="overlay"></div><div id="toast" role="status" aria-live="polite"></div><script type="module">
 /* korean-lunar-calendar 0.4.0; https://github.com/usingsky/korean_lunar_calendar_js
@@ -6938,8 +6939,8 @@ function revealCompare(p,lib){try{const {eng,tst,data,texts,rv}=lib,R=texts.REVE
 function revealCompareCard(v){const c=v.cmp;if(!c||c.length<2)return '';const yr=b=>b.slice(0,4)+'년 '+Number(b.slice(5,7))+'월 '+Number(b.slice(8,10))+'일생';
  return `<section class="rv-cmp" aria-label="생일이 하루만 달라도 답이 달라요"><h3>생일이 하루만 달라도, 답이 달라요</h3><p class="rv-cmp-lead">같은 해 같은 달, 하루 차이로 태어난 두 사람을 같은 계산기로 풀어 봤어요. 하루 차이에도 결과가 이렇게 달라져요. 그만큼 정확하게, ${esc(v.name)} 님만의 사주를 분석해 드려요.</p><div class="rv-cmp-grid">${c.map(x=>`<div><b>${esc(x.label)}</b><small>${esc(yr(x.birth))}</small><p>${esc(x.word)} <strong>${typeof x.score==='number'?x.score+'점':esc(String(x.score||''))}</strong></p><p>${x.unit==='month'?'좋은 달':'좋은 해'} <strong>${x.goodN}번</strong></p><p>첫 '${esc(x.first?.tag||'-')}' <strong>${esc(x.first?(x.unit==='month'?x.first.label:x.first.label+'년'):'-')}</strong></p></div>`).join('')}</div></section>`}
 // 결제 전 화면 '계산 근거 자세히 보기'(자청 기획안 B-1): 홈의 계산 근거 칸으로 바로 내려간다.
-document.addEventListener('click',e=>{if(!e.target.closest('[data-goto-trust]'))return;const t=document.querySelector('#trust-title');if(t){e.preventDefault();t.scrollIntoView({block:'start',behavior:'smooth'});return}try{sessionStorage.setItem('unmyeong.gotoTrust','1')}catch{}});
-new MutationObserver(()=>{try{if(sessionStorage.getItem('unmyeong.gotoTrust')!=='1')return;const t=document.querySelector('#trust-title');if(!t)return;sessionStorage.removeItem('unmyeong.gotoTrust');setTimeout(()=>t.scrollIntoView({block:'start',behavior:'instant'}),60)}catch{}}).observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-goto-trust]'))return;const t=document.querySelector('.trust-box')||document.querySelector('#trust-title');if(t){e.preventDefault();t.scrollIntoView({block:'start',behavior:'smooth'});return}try{sessionStorage.setItem('unmyeong.gotoTrust','1')}catch{}});
+new MutationObserver(()=>{try{if(sessionStorage.getItem('unmyeong.gotoTrust')!=='1')return;const t=document.querySelector('.trust-box')||document.querySelector('#trust-title');if(!t)return;sessionStorage.removeItem('unmyeong.gotoTrust');setTimeout(()=>t.scrollIntoView({block:'start',behavior:'instant'}),60)}catch{}}).observe(document.documentElement,{childList:true,subtree:true});
 // 지금까지 보낸 리포트 수(자청 기획안 E-4): 실제 발송 수만, 50권이 넘을 때만 보인다.
 new MutationObserver(()=>document.querySelectorAll('[data-delivered]:not([data-filled])').forEach(el=>{el.dataset.filled='1';fetch('/api/stats/public').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.delivered&&el.isConnected){el.textContent=`지금까지 ${d.delivered.toLocaleString('ko-KR')}권의 리포트를 보냈어요`;el.hidden=false}}).catch(()=>{})})).observe(document.documentElement,{childList:true,subtree:true});
 // 실제 후기(2026-11-05 체험단): 사장님이 관리 사이트에서 '싣기'한 후기만 서버에서 받아 보여 준다. 없으면 칸을 숨긴다.
