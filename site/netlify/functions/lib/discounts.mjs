@@ -1,6 +1,7 @@
 // 할인 장치 (2026-10-27 사장님 결정). 할인은 모두 10%이고, 한 주문에는 하나만 들어간다(더하지 않음).
 // 1) 첫 구매 묶음 할인: 처음 사는 이메일이 상품 2개 이상을 함께 사면 전부 10%.
 // 2) 재구매 할인: 리포트 끝의 링크(?coupon=)로 들어온 손님. 기한·횟수 제한 없음(2026-10-27 사장님). 할인 코드 칸·친구 초대·할인 메일은 없다.
+//    링크 없이도 이전에 산 이메일이면 결제 화면에서 자동으로 10%(2026-11-06 사장님 3-4). 한 주문에 할인은 하나.
 // 금액은 항상 서버가 계산한다. 화면에서 보낸 금액·할인값은 믿지 않는다.
 import { createHash, randomBytes } from 'node:crypto';
 import { PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
@@ -61,6 +62,7 @@ export async function quote(store, body, now = new Date()) {
   let discount = null;
   if (coupon) discount = { kind: coupon.kind, code };
   else if (extras.length && hash && !buyer) discount = { kind: 'bundle' };
+  else if (hash && buyer) discount = { kind: 'rebuy', auto: true };
   if (discount?.kind === 'trial') discount = { ...discount, label: LABELS.trial, percent: 100, amount: main.price };
   else if (discount) discount = { ...discount, label: LABELS[discount.kind] || '할인', percent: PERCENT, amount: base - discounted(base) };
   const notes = [];
