@@ -118,6 +118,10 @@ STYLE = T.style("깊은 궁합", """
 """)
 
 
+STATUS_SUB = {"부부": {"10": "부부 사이가 깊어지는 시기와 지금 우리 부부의 모습"},
+              "헤어짐": {"10": "다시 가까워질 수 있는 시기와 함께였을 때의 우리"}}
+
+
 def build_outline(f: dict) -> list[dict]:
     th = f["theme"]
     t = th["data"]
@@ -128,6 +132,8 @@ def build_outline(f: dict) -> list[dict]:
 
     def section(no: str, pages: list[dict]) -> None:
         title, subtitle = next((a, b) for n, a, b in SECTIONS if n == no)
+        # 결혼한 사이·헤어진 사이에게 '우리의 결혼 시기'라고 하지 않는다(2026-11-06 사장님 2-4 ①, 결제 전 화면 목차와 같은 말)
+        subtitle = (STATUS_SUB.get(t.get("status", ""), {}).get(no) or subtitle)
         sections.append({"no": no, "title": title, "subtitle": subtitle, "pages": pages, "terms": []})
 
     P, S = T.tpage, _slot

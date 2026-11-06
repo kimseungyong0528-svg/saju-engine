@@ -270,10 +270,10 @@ test('들어온 곳(from): 주문에 저장하고, 결제되면 달마다 들어
   assert.equal(a.source, 'dn');
   const b = await pay({ from: 'BAD value!<script>' });
   assert.equal(b.source, undefined);
-  await pay({ from: 'dn' });
+  const c = await pay({ from: 'dn' });   // 같은 이메일 두 번째부터는 재구매 할인 10%가 자동으로(2026-11-06)
   const month = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 7);
   const stats = await t.store.get(`stats/sources/${month}`);
-  assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount * 2);
+  assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount + c.amount);
   assert.equal(stats.direct.orders, 1);
 });
 

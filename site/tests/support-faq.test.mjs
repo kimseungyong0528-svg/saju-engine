@@ -17,7 +17,7 @@ test('고객센터에 메일 미도착·이메일 오입력·정보 오입력 �
 
 test('결제 전 이야기 화면의 질문은 그대로 FAQ만 쓴다', () => {
   const rv = html.slice(html.indexOf('function rvScene4'), html.indexOf('const RV_CTA'));
-  // 상품 화면 자주 묻는 질문에서는 'AI가 쓴 리포트인가요?'만 뺀다(사장님 2026-11-06). 고객센터 질문(SUPPORT_FAQ)은 쓰지 않는다.
+  // 상품 화면은 FAQ만 쓰고 고객센터 질문(SUPPORT_FAQ)은 쓰지 않는다. AI 질문은 FAQ에서 아예 뺐다(사장님 2026-11-06: AI 문구 전부 빼기).
   assert.ok(/\bFAQ\]?\.map\(|\.\.\.FAQ\]|\.\.\.FAQ\.filter\(/.test(rv) && !rv.includes('SUPPORT_FAQ'));
 });
 
