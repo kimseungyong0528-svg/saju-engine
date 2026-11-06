@@ -37,12 +37,40 @@ def formats(since: dt.date, until: dt.date) -> dict[str, dict]:
     return out
 
 
+def comments(tok: str, word: str) -> int:
+    """첫 줄에 word 가 든 글마다 달린 댓글(대댓글 포함)을 모두 보여 준다. 읽기만 한다."""
+    url = f"{meta.T}/me/threads?fields=id,text,timestamp,permalink,is_reply&limit=100&access_token={tok}"
+    posts = []
+    while url and len(posts) < 300:
+        r = meta._http("GET", url)
+        posts += r.get("data", [])
+        url = r.get("paging", {}).get("next")
+    hit = [p for p in posts if not p.get("is_reply") and word in (p.get("text") or "").split("\n")[0]]
+    for p in hit:
+        print(f"\n=== {p['timestamp']} {p.get('permalink')} ===\n{(p.get('text') or '')[:80]}")
+        u = f"{meta.T}/{p['id']}/conversation?fields=id,text,username,timestamp,replied_to&reverse=false&limit=100&access_token={tok}"
+        n = 0
+        while u:
+            r = meta._http("GET", u)
+            for c in r.get("data", []):
+                n += 1
+                print(f"- [{c.get('timestamp', '')}] @{c.get('username', '?')} (답글 대상 {(c.get('replied_to') or {}).get('id', '')}): {c.get('text', '')}")
+            u = r.get("paging", {}).get("next")
+        print(f"댓글 {n}개")
+    if not hit:
+        print("그런 글을 못 찾음")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default="2026-11-01")
+    ap.add_argument("--comments", default="", help="이 말이 첫 줄에 든 글의 댓글을 모두 읽는다 (예 9탄)")
     a = ap.parse_args()
     since = dt.date.fromisoformat(a.since)
     tok = meta.threads_token()
+    if a.comments:
+        return comments(tok, a.comments)
     fm = formats(since - dt.timedelta(days=1), dt.datetime.now(KST).date())
     posts, url = [], f"{meta.T}/me/threads?fields=id,text,timestamp,permalink,is_reply&limit=100&access_token={tok}"
     while url and len(posts) < 300:
