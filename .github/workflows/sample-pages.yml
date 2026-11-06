@@ -1,0 +1,49 @@
+# 임시(버리는 브랜치 aside/proof-2026-11-06 전용): 예시 생일 리포트(AI 없이 --draft)의 모든 쪽을 그림으로. 실제 리포트 사진 '본문' 고를 때만 쓴다.
+name: 리포트 샘플 쪽 만들기 (임시)
+on:
+  push:
+    branches: [aside/proof-2026-11-06]
+    paths: ['.github/workflows/sample-pages.yml']
+permissions:
+  contents: write
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aside/proof-2026-11-06
+          path: out
+      - uses: actions/checkout@v4
+        with:
+          ref: aside/batch-2026-11-06
+          path: src
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 도구 설치
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-noto-cjk poppler-utils imagemagick > /dev/null
+          cd src && pip install -q -e ".[dev]"
+      - name: 모든 쪽 그리기
+        run: |
+          cd src
+          mkdir -p ../out/tmp-pages /tmp/s
+          P="--partner-name 예시상대 --partner-sex male --partner-birth 1993-07-21"
+          for id in lifetime romance reunion intimate newyear wealth career business health; do
+            EXTRA=""; case $id in reunion|intimate) EXTRA="$P";; esac
+            python -m saju.report --product $id --name 예시 --sex female --birth 1995-03-14 --time 06:30 --draft --out /tmp/s/$id.pdf $EXTRA || echo "fail $id"
+            pdftoppm -jpeg -jpegopt quality=82 -r 70 /tmp/s/$id.pdf ../out/tmp-pages/$id
+            montage -label '%t' -pointsize 18 -geometry 180x255+4+4 -tile 8x ../out/tmp-pages/$id-*.jpg ../out/tmp-pages/sheet-$id.jpg || true
+          done
+      - name: 올리기
+        run: |
+          cd out
+          git config user.name "aside-bot"
+          git config user.email "aside-bot@users.noreply.github.com"
+          git rm -q .github/workflows/sample-pages.yml
+          git add tmp-pages
+          git commit -m "임시: 예시 리포트 모든 쪽 그림"
+          git push
