@@ -19,8 +19,26 @@ PARTNER = {"name": "정민호", "sex": "male", "birth": "1991-02-14", "calendar"
 SKIP = {"cover", "toc"}
 
 
+def _general(titles: list[str]) -> list[str]:
+    """예시 손님의 나이·주문한 해에 따라 달라지는 쪽 제목을 누구에게나 맞는 말로 바꾼다(재점검 C2)."""
+    import re
+    out: list[str] = []
+    for t in titles:
+        if re.fullmatch(r"\d+~\d+세 대운( \(지금\))?|\d+세 이후 대운", t):
+            t = "태어나서부터 10년씩 나눈 대운과 지금 지나는 대운"
+        elif re.fullmatch(r"20\d\d년 운세", t):
+            t = "앞으로 6년 해마다 운세"
+        elif re.fullmatch(r"20\d\d년 \d+월 ~ (20\d\d년 )?\d+월 운세", t):
+            t = "지금부터 석 달씩 나눈 12개월 운세"
+        else:
+            t = re.sub(r"^20\d\d년 (연애운|재물운|사업운)$", r"올해 \1", t)
+        if t not in out:
+            out.append(t)
+    return out
+
+
 def pages(secs: list[dict]) -> dict:
-    return {s["no"]: [p["title"] for p in s["pages"] if p["id"] not in SKIP] for s in secs if s["no"] != "더보기"}
+    return {s["no"]: _general([p["title"] for p in s["pages"] if p["id"] not in SKIP]) for s in secs if s["no"] != "더보기"}
 
 
 def build() -> dict:

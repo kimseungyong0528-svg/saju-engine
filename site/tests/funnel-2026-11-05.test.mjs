@@ -45,7 +45,8 @@ test('미리 보기 A/B 와 손님 답 반영', () => {
 test('첫 화면 선물하기 버튼과 지금 답 반영', () => {
   assert.ok(html.includes('class="cover-gift"') && html.includes('data-gift-entry'));
   assert.ok(html.includes('const ans=draft(p.id).answers||{};let pick=(RV_FOCUS[p.id]||{})[ans.focus]'));
-  assert.ok(html.includes("${month||re?'달은':'해는'}"));
+  // 잠긴 칸 안내는 달·해를 구분해 말한다(2026-11-06 밤: '황금색 해가 좋은 해인지 조심할 해인지는')
+  assert.ok(html.includes("${month||re?'달이':'해가'}"));
 });
 test('검색·카드·무료 분석: 단계 수 대신 무료 미리보기, 무료 분석에서 바로 정보 확인으로', () => {
   assert.ok(!html.includes('${p.steps}단계'));
