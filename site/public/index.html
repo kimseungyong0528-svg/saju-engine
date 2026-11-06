@@ -1368,7 +1368,7 @@ html,body,#app,.shell,.flow,.sales,.light,.report-shell { background-color:#000;
 .gift-count{display:block;text-align:right;font-size:15px;color:#666;margin:2px 0 6px}.gift-count.full{color:#c0392b;font-weight:700}
 .gift-sample{margin:10px 0 0}.gift-sample img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid #e5dccb}.gift-sample figcaption{font-size:15px;color:#666;margin-top:4px}
 .reveal-flow.is-gift .rv-score-help{display:none}
-.trust-modal .trust-box{margin:0;padding:0;background:none}.trust-modal h2{font-size:22px}
+.trust-modal .trust-box{margin:0;padding:0;background:none;border:0!important;box-shadow:none!important}.trust-modal h2{font-size:22px}
 .qi-privacy{opacity:.92}.co-privacy{margin-top:2px}
 .co-solo-why{display:block;margin-top:6px;font-size:15px;color:#5c5c5c}
 /* 20명 점검 5단계 (2026-11-06 저녁) */
@@ -6736,7 +6736,7 @@ document.addEventListener('click',async e=>{const a=e.target.closest('[data-acti
 // 계산은 assets/free/ 의 계산기가 브라우저에서 한다(서버·AI 호출 없음).
 let tasterState={person:{},result:null};
 let tasterLib=null;
-async function tasterLoad(){if(!tasterLib){const json=u=>fetch(u).then(r=>{if(!r.ok)throw Error(u);return r.json()});const [eng,tst,data,texts]=await Promise.all([import('./assets/free/engine.mjs'),import('./assets/free/taster.mjs'),json('assets/free/saju-data.json?v=20261106c'),json('assets/free/texts.json?v=20261106g')]);tasterLib={eng,tst,data,texts};json('assets/free/toc-pages.json?v=20261106g').then(t=>{RV_TOC_PAGES=t}).catch(()=>{})}return tasterLib}
+async function tasterLoad(){if(!tasterLib){const json=u=>fetch(u).then(r=>{if(!r.ok)throw Error(u);return r.json()});const [eng,tst,data,texts,toc]=await Promise.all([import('./assets/free/engine.mjs'),import('./assets/free/taster.mjs'),json('assets/free/saju-data.json?v=20261106c'),json('assets/free/texts.json?v=20261106g'),json('assets/free/toc-pages.json?v=20261106g').catch(()=>null)]);tasterLib={eng,tst,data,texts};RV_TOC_PAGES=toc}return tasterLib}
 // 목차 장마다 실제 리포트 쪽 제목(사장님 2026-11-06 저녁 5-2: 네 문장을 돌려 쓰는 것처럼 보였다)
 let RV_TOC_PAGES=null;
 function rvTocPages(p,no){const k=p.id==='reunion'&&draft(p.id).partner?.birthUnknown?'reunion-solo':p.id,a=(RV_TOC_PAGES&&RV_TOC_PAGES[k]&&RV_TOC_PAGES[k][String(no)])||[];return a.length?a.join(' · '):''}
