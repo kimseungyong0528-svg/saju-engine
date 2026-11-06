@@ -14,7 +14,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from . import analysis as A
-from .constants import BRANCHES, BRANCHES_HANJA, ELEMENTS, STEM_ELEMENT, TEN_GOD_GROUP
+from .constants import BRANCHES, BRANCHES_HANJA, ELEMENTS, ELEMENTS_HANJA, STEM_ELEMENT, STEMS, STEMS_HANJA, TEN_GOD_GROUP
 from .pillars import FourPillars
 
 TEXTS = Path(__file__).resolve().parents[1] / "site" / "public" / "assets" / "free" / "texts.json"
@@ -63,6 +63,12 @@ def fill(text: str, values: dict) -> str:
         v = _num(values[k])
         return _josa(v, p) if p else v
     return re.sub(r"\{(\w+)(?:\|(\S))?\}", rep, text)
+
+
+def _dm(f: dict) -> str:
+    """일간 이름(예: 을목(乙木)). 같은 구조의 문단이라도 첫 문장에 그 사람 글자를 넣는다(사장님 2026-11-06 저녁, taster.mjs dmName 과 같다)."""
+    d = f["ds"]
+    return f"{STEMS[d]}{ELEMENTS[STEM_ELEMENT[d]]}({STEMS_HANJA[d]}{ELEMENTS_HANJA[STEM_ELEMENT[d]]})"
 
 
 def _rels(a: int, b: int) -> set[str]:
@@ -238,7 +244,7 @@ def _wealth(f, T):
     out, g = [], f["groups"]
     jae = g["재성"]
     if g["식상"] >= 1 and jae >= 1:
-        out.append(("we_flow", 14, {}))
+        out.append(("we_flow", 14, {"dm": _dm(f), "sik": g["식상"], "jae": jae}))
     if f["gyeok"] in ("정재격", "편재격"):
         out.append(("we_gyeok", 10, {"gyeok": f["gyeok"], "gyeokMeaning": T["GYEOK_MEANING"][f["gyeok"]]}))
     if f["st"] >= 55 and jae >= 1:
@@ -256,7 +262,7 @@ def _career(f, T):
     out, g = [], f["groups"]
     gwan = g["관성"]
     if gwan >= 1 and g["인성"] >= 1:
-        out.append(("ca_flow", 14, {}))
+        out.append(("ca_flow", 14, {"dm": _dm(f), "gwan": gwan, "inn": g["인성"]}))
     if f["gyeok"] in ("정관격", "편관격", "정인격", "편인격"):
         out.append(("ca_gyeok", 8, {"gyeok": f["gyeok"], "gyeokMeaning": T["GYEOK_MEANING"][f["gyeok"]]}))
     if "문창귀인" in f["names"]:
@@ -268,7 +274,7 @@ def _career(f, T):
     if gwan == 0:
         out.append(("ca_free", -8, {}))
     if f["pct"]("관성") >= 30 and f["st"] <= 45:
-        out.append(("ca_pressure", -14, {}))
+        out.append(("ca_pressure", -14, {"dm": _dm(f)}))
     if "상관" in f["gods"] and gwan >= 1 and g["식상"] >= 2:
         out.append(("ca_clash", -10, {}))
     return out
@@ -301,7 +307,7 @@ def _health(f, T):
     out = []
     vals = [(e, f["elements"][e]) for e in ELEMENTS]
     if all(10 <= v <= 30 for _, v in vals):
-        out.append(("he_balance", 16, {}))
+        out.append(("he_balance", 16, {"dm": _dm(f)}))
     if 50 <= f["st"] < 70:
         out.append(("he_stamina", 6, {}))
     # 같은 비율이면 뒤 순서(맛보기 '가장 모자란 기운'·reveal._weakest 와 같게, 손님 테스트 3차: 흙·불 4.7% 동률에 서로 다른 기운)
@@ -349,8 +355,29 @@ def reading(fp: FourPillars, name: str, sex: str) -> dict:
             "scores": {a["id"]: a["score"] for a in areas}}
 
 
-def digest(r: dict, product: str | None = None) -> dict:
+def situ_text(path: str, text: str, answers=None, product: str = "") -> str:
+    """손님이 답한 지금 상황에 맞춰 화면 글의 한 문장을 바꾼다(texts.json SITUATION.swap). 사이트 taster.mjs situText 와 같다."""
+    S = texts()["SITUATION"].get("swap", {}).get(path)
+    if not S or not text:
+        return text
+    vals = {str(a) for a in ((answers or {}).values() if isinstance(answers, dict) else (answers or [])) if a}
+    rules = None
+    for key, opts in texts()["SITUATION"]["groups"].items():
+        if key in S and vals & set(opts):
+            rules = S[key]
+            break
+    if rules is None and product and "@" + product in S:
+        rules = S["@" + product]
+    for a, b in rules or []:
+        text = text.replace(a, b)
+    return text
+
+
+def digest(r: dict, product: str | None = None, answers=None) -> dict:
     """리포트 글쓰기에 넘길 맛보기 내용. 고객이 결제 전에 무엇을 봤고, 그래서 무엇을 더 알고 싶어 하는지 알려 준다."""
+    if answers:   # 결제 전 화면(평생사주 STEP 3)과 같은 상황별 문장(1-2)
+        r = {**r, "good": [{**a, "text": situ_text("REASONS." + a.get("reason", ""), a["text"], answers, product or "")} for a in r["good"]],
+             "bad": [{**a, "text": situ_text("REASONS." + a.get("reason", ""), a["text"], answers, product or "")} for a in r["bad"]]}
     items = [("좋은 운", a) for a in r["good"]] + [("조심할 운", a) for a in r["bad"]]
     mine = [{"구분": k, "운": a["title"], "맛보기에서 본 글": a["text"]} for k, a in items if a["id"] == product]
     out = {

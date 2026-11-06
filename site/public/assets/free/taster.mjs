@@ -11,6 +11,9 @@ const STEM_HANJA = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬
 const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const ZODIAC = ['쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양', '원숭이', '닭', '개', '돼지'];
 const godName = g => `${g}(${HANJA_GOD[g]})`;
+// 일간 이름(예: 을목(乙木)). 같은 구조의 문단이라도 첫 문장에 그 사람 글자를 넣는다(사장님 2026-11-06 저녁 1-3, saju/taster.py _dm 과 같다).
+const EL_HANJA = ['木', '火', '土', '金', '水'];
+const dmName = f => `${STEMS[f.ds]}${ELEMENTS[STEM_EL[f.ds]]}(${STEM_HANJA[f.ds]}${EL_HANJA[STEM_EL[f.ds]]})`;
 const branchName = b => `${BRANCHES[b]}(${BRANCHES_HANJA[b]})`;
 const Y2027 = { stem: 3, branch: 7 }; // 정미(丁未)
 export const AREA_ORDER = ['newyear', 'romance', 'intimate', 'reunion', 'wealth', 'career', 'business', 'health'];
@@ -127,7 +130,7 @@ const RULES = {
   wealth(f, T) {
     const out = [];
     const jae = f.groups.재성;
-    if (f.groups.식상 >= 1 && jae >= 1) out.push(['we_flow', 14]);
+    if (f.groups.식상 >= 1 && jae >= 1) out.push(['we_flow', 14, { dm: dmName(f), sik: f.groups.식상, jae }]);
     const gy = f.an.gyeokguk.name;
     if (['정재격', '편재격'].includes(gy)) out.push(['we_gyeok', 10, { gyeok: gy, gyeokMeaning: T.GYEOK_MEANING[gy] }]);
     if (f.st >= 55 && jae >= 1) out.push(['we_strong', 8]);
@@ -139,14 +142,14 @@ const RULES = {
   career(f, T) {
     const out = [];
     const gwan = f.groups.관성;
-    if (gwan >= 1 && f.groups.인성 >= 1) out.push(['ca_flow', 14]);
+    if (gwan >= 1 && f.groups.인성 >= 1) out.push(['ca_flow', 14, { dm: dmName(f), gwan, inn: f.groups.인성 }]);
     const gy = f.an.gyeokguk.name;
     if (['정관격', '편관격', '정인격', '편인격'].includes(gy)) out.push(['ca_gyeok', 8, { gyeok: gy, gyeokMeaning: T.GYEOK_MEANING[gy] }]);
     if (f.names.has('문창귀인')) out.push(['ca_munchang', 8]);
     if (f.names.has('천을귀인')) out.push(['ca_cheoneul', 6]);
     if (f.names.has('역마살')) out.push(['ca_yeokma', 4]);
     if (gwan === 0) out.push(['ca_free', -8]);
-    if (f.pct('관성') >= 30 && f.st <= 45) out.push(['ca_pressure', -14]);
+    if (f.pct('관성') >= 30 && f.st <= 45) out.push(['ca_pressure', -14, { dm: dmName(f) }]);
     if (f.gods.has('상관') && gwan >= 1 && f.groups.식상 >= 2) out.push(['ca_clash', -10]);
     return out;
   },
@@ -165,7 +168,7 @@ const RULES = {
   health(f, T) {
     const out = [];
     const vals = ELEMENTS.map(e => [e, f.elements[e]]);
-    if (vals.every(([, v]) => v >= 10 && v <= 30)) out.push(['he_balance', 16]);
+    if (vals.every(([, v]) => v >= 10 && v <= 30)) out.push(['he_balance', 16, { dm: dmName(f) }]);
     if (f.st >= 50 && f.st < 70) out.push(['he_stamina', 6]);
     const lack = vals.filter(([, v]) => v < 8).sort((a, b) => a[1] - b[1] || ELEMENTS.indexOf(b[0]) - ELEMENTS.indexOf(a[0]));   // 같으면 뒤 순서(taster.py 와 같다)
     // 모자란 정도(8%에서 얼마나 모자란지)로 점수를 달리한다(손님마다 늘 34점이 되지 않게). saju/taster.py 와 같은 식.
@@ -250,6 +253,18 @@ export function areaParts(fp, person, T, id) {
     return { score, reason: key, text: fill(T.REASONS[key], { name, ...vars }), hook: fill(T.HOOKS[key], { name, ...vars }) };
   };
   return { id, score: Math.max(5, Math.min(95, 50 + reasons.reduce((a, x) => a + x[1], 0))), good: part(1), bad: part(-1) };
+}
+
+// 손님이 답한 지금 상황에 맞춰 화면 글의 한 문장을 바꾼다(texts.json SITUATION.swap, saju/taster.py situ_text 와 같다).
+// 결혼한 분에게 '고르는 눈이 필요합니다', 사업하는 분에게 '월급 밖의 돈' 같은 문장이 나오지 않게(사장님 2026-11-06 저녁 1-2).
+export function situText(path, text, answers, T, product) {
+  const S = T.SITUATION.swap?.[path];
+  if (!S || !text) return text;
+  const vals = new Set(Object.values(answers || {}).filter(Boolean).map(String));
+  let rules = null;
+  for (const [key, opts] of Object.entries(T.SITUATION.groups)) if (S[key] && opts.some(o => vals.has(o))) { rules = S[key]; break; }
+  if (!rules && product && S['@' + product]) rules = S['@' + product];
+  return rules ? rules.reduce((t, [a, b]) => t.split(a).join(b), text) : text;
 }
 
 // 손님이 답한 지금 상황(연애 중·결혼·쉬는 중…)에 맞춰 그 운이 어떻게 나타나는지 한 줄(saju/taster.py situation_note 와 같다).

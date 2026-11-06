@@ -35,9 +35,10 @@ test('첫 구매 묶음: 2개 이상이면 전부 10%, 결제 뒤 책마다 따�
   const q = await (await t.call('POST', '/api/quote', { ...draft, productId: 'lifetime', extras: ['wealth', 'lifetime', 'reunion', 'health'], extraAnswers: { wealth: { occupation: '직장에 다니고 있어요' } } })).json();
   // 체크한 상품은 금액에 바로 담고(주 상품 중복은 뺀다), 답이 없는 상품은 incomplete 로 알려 준다
   assert.deepEqual(q.items.map(i => i.id), ['lifetime', 'wealth', 'reunion', 'health']);
-  assert.deepEqual(q.incomplete, ['reunion', 'health']); assert.ok(q.notes.includes('EXTRA_ANSWERS'));
-  // 답이 빈 묶음 상품이 있으면 결제를 받지 않는다(말없이 빠지지 않게)
-  const no = await t.call('POST', '/api/orders', { ...draft, productId: 'lifetime', extras: ['wealth', 'health'], extraAnswers: W }, { 'Idempotency-Key': 'k-incomplete-1' });
+  // 질문은 모두 답하지 않아도 되게 바뀜다(사장님 2026-11-06 저녁 5-3). 상대 정보가 꼭 필요한 재회사주만 빈 칸으로 알려 준다.
+  assert.deepEqual(q.incomplete, ['reunion']); assert.ok(q.notes.includes('EXTRA_ANSWERS'));
+  // 빈 칸이 남은 묶음 상품(상대 정보 없는 재회사주)이 있으면 결제를 받지 않는다(말없이 빠지지 않게)
+  const no = await t.call('POST', '/api/orders', { ...draft, productId: 'lifetime', extras: ['wealth', 'reunion'], extraAnswers: W }, { 'Idempotency-Key': 'k-incomplete-1' });
   assert.equal(no.status, 400); assert.equal((await no.json()).code, 'BUNDLE_INCOMPLETE');
   const q1 = await (await t.call('POST', '/api/quote', { ...draft, productId: 'lifetime', extras: ['wealth'], extraAnswers: W })).json();
   assert.equal(q1.base, 49800 + 29800); assert.equal(q1.discount.kind, 'bundle'); assert.equal(q1.amount, Math.round(79600 * 0.9));
