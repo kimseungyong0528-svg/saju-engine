@@ -131,9 +131,12 @@ class Renderer:
         shutil.rmtree(fr, ignore_errors=True)
         return out
 
-    def still(self, png: Path, out: Path, sec: int, seed: int) -> Path:
+    def still(self, png: Path, out: Path, sec: int, seed: int, zoom: bool = False) -> Path:
         bgm = music.bgm(sec + 1, self.work / f"bgm-{out.stem}.wav", seed=seed)
-        _ff("-loop", "1", "-i", str(png), "-i", str(bgm), "-t", str(sec), "-vf", "format=yuv420p", "-r", "30",
+        # zoom: 7초 동안 4% 천천히 다가간다 (멈춘 화면이 되지 않게, 영상 심사 2026-11-09)
+        vf = (f"scale=2160:3840,zoompan=z='1+0.04*on/{sec * 30}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,format=yuv420p"
+              if zoom else "format=yuv420p")
+        _ff("-loop", "1", "-i", str(png), "-i", str(bgm), "-t", str(sec), "-vf", vf, "-r", "30",
             "-c:v", "libx264", "-c:a", "aac", "-shortest", str(out))
         return out
 
@@ -265,24 +268,34 @@ class Renderer:
         return self.animated(html, out, 7, seed)
 
     def sinbi(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
-        """신비사주식: 흰 표, 날짜 제목 + 계정, 12띠 그림 + 두 줄 글."""
+        """신비사주식: 흰 표, 날짜 제목 + 계정, 12띠 그림 + 두 줄 글.
+        영상 심사 2026-11-09: 웃는 띠 🟢·조심할 띠 🔴 를 칸에 표시하고(조심 칸은 연분홍), 표를 화면 맨 위에 붙여 위쪽 검은 띠를 없애고,
+        7초 동안 천천히 다가오게 해서 멈춘 화면이 되지 않게 한다."""
         import datetime as dt
         d = dt.date.fromisoformat(m.data["date"])
         txt = m.data["text"]
+        mk = m.data.get("mark", {})
         Z = ASSETS / "zodiac"
-        cell = lambda a: (f"<div class=c><div class=l><b>{ddi(a)}</b><img src='{(Z / (a + '.png')).as_uri()}'></div><p>{txt[a]}</p></div>")
+        badge = {"good": "<s class=g>🟢</s>", "bad": "<s class=b>🔴</s>"}
+        cell = lambda a: (f"<div class='c {mk.get(a, '')}'><div class=l><b>{badge.get(mk.get(a), '')}{ddi(a)}</b>"
+                          f"<img src='{(Z / (a + '.png')).as_uri()}'></div><p>{txt[a]}</p></div>")
         rows = "".join(f"<div class=row>{cell(ORDER[i])}{cell(ORDER[i + 6])}</div>" for i in range(6))
         html = f"""<style>body{{background:#000;font-family:'Noto Sans KR'}}
-        .sheet{{position:absolute;top:{'44%' if cta else '50%'};transform:translateY(-50%);left:0;right:0;background:#fff;padding:0 0 30px}}
-        .cta{{position:absolute;bottom:40px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:64px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
-        .hd{{display:flex;align-items:center;justify-content:center;height:150px;border-bottom:3px solid #ddd;position:relative}}
-        .hd h1{{margin:0;font-weight:700;font-size:56px;color:#111}} .hd i{{position:absolute;right:22px;bottom:18px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
+        .sheet{{position:absolute;top:0;left:0;right:0;background:#fff;padding:0 0 26px}}
+        .cta{{position:absolute;bottom:56px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:64px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
+        .hd{{display:flex;align-items:center;justify-content:center;height:168px;border-bottom:3px solid #ddd;position:relative}}
+        .hd h1{{margin:0;font-weight:700;font-size:60px;color:#111}} .hd i{{position:absolute;right:22px;bottom:14px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
+        .hd em{{position:absolute;left:22px;bottom:14px;font-style:normal;font-size:26px;color:#333;font-weight:500;white-space:nowrap}}
         .row{{display:flex;border-bottom:2px solid #e6e3ef}} .c{{background:linear-gradient(90deg,#fff 0%,#fbfaff 55%,#eeeaf8 100%)}}
-        .c{{flex:1;display:flex;gap:14px;padding:16px 18px 18px;min-height:212px;align-items:center}} .c:first-child{{border-right:2px solid #e3e3e3}}
-        .l{{width:168px;flex:none}} .l b{{display:block;color:#222;font-weight:500;font-size:32px;margin-bottom:6px}} .l img{{width:150px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}}
-        .c p{{margin:30px 0 0;font-size:31px;line-height:1.5;color:#222;font-weight:400;word-break:keep-all}}
-        </style><body><div class=sheet><div class=hd><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div>{_cta_box(cta)}</body>"""
-        return self.still(self.shot(html, out.stem), out, 7, seed)
+        .c.bad{{background:linear-gradient(90deg,#fff5f5 0%,#ffe9ea 100%)}}
+        .c{{flex:1;display:flex;gap:14px;padding:16px 18px 18px;min-height:236px;align-items:center}} .c:first-child{{border-right:2px solid #e3e3e3}}
+        .l{{width:176px;flex:none}} .l b{{display:block;color:#222;font-weight:500;font-size:32px;margin-bottom:6px;white-space:nowrap}}
+        .l s{{text-decoration:none;font-family:'Noto Color Emoji';font-size:26px;margin-right:6px}}
+        .l img{{width:150px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}}
+        .c p{{margin:30px 0 0;font-size:33px;line-height:1.5;color:#222;font-weight:400;word-break:keep-all}}
+        .c.bad p{{color:#8a1c22}}
+        </style><body><div class=sheet><div class=hd><em>🟢 웃는 띠 · 🔴 조심할 띠</em><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div>{_cta_box(cta)}</body>"""
+        return self.still(self.shot(html, out.stem), out, 7, seed, zoom=True)
 
     def forceteller(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
         """포스텔러식: 위 검은 띠 큰 2줄 제목 + 아래 수채화 오행 그림, 아래 설명이 바뀐다."""
@@ -291,7 +304,7 @@ class Renderer:
         pos = {"목": (545, 260, "#4fa98a", "나무"), "화": (865, 490, "#d95a6c", "불"), "토": (750, 860, "#d9a32a", "땅"),
                "금": (340, 860, "#bdb7c4", "쇠"), "수": (225, 490, "#3d8fc8", "물")}
         H = {e: B["elements"][e]["hanja"] for e in ELEMENTS}
-        R, cx, cy = 92, 545, 600
+        R, cx, cy = 98, 545, 600
         circles = "".join(f"<div class='o{' on' if k in on else ''}' style='left:{x - R}px;top:{y - R}px;background:{c};--c:{c}'>{H[k]}<span>{t}</span></div>"
                           for k, (x, y, c, t) in pos.items())
 
@@ -330,7 +343,7 @@ class Renderer:
             .t div{{white-space:nowrap}} .t em{{font-style:normal;color:#ffd23f}}
             .art{{position:absolute;top:{460 if cta else 600}px;left:0;right:0;bottom:0;background:#f7f4ef;overflow:hidden}}
             .o{{position:absolute;width:{2 * R}px;height:{2 * R}px;border-radius:50%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Nanum Myeongjo';font-weight:800;font-size:76px;line-height:1;box-shadow:0 6px 14px rgba(0,0,0,.08)}}
-            .o span{{font-family:'Noto Sans KR';font-size:24px;font-weight:500;margin-top:6px}}
+            .o span{{font-family:'Noto Sans KR';font-size:42px;font-weight:800;margin-top:4px;text-shadow:0 2px 4px rgba(0,0,0,.25)}}
             .o.on{{box-shadow:0 0 0 16px color-mix(in srgb,var(--c) 25%,transparent),0 0 50px var(--c)}}
             svg.ar{{position:absolute;left:0;top:0;z-index:2}}
             .say{{position:absolute;left:70px;right:70px;bottom:{215 if cta else 110}px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
@@ -378,7 +391,7 @@ class Renderer:
         .h{{color:#fff;font-weight:900;font-size:68px;line-height:1.1;white-space:nowrap;letter-spacing:-2px}}
         .h b{{color:#ffd23f}} .h i{{font-style:normal;font-size:44px;color:#eee;font-weight:700}}
         .s{{color:#ffe9a8;font-weight:800;font-size:50px;line-height:1.3;margin-top:12px;letter-spacing:-1.5px;word-break:keep-all}}
-        .cta{{position:absolute;bottom:90px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:70px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55,0 0 18px rgba(0,0,0,.8)}}
+        .cta{{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap;font-family:Jua;font-size:66px;line-height:1.18;color:#f0c4ff;text-shadow:0 4px 0 #3a0d55;background:rgba(0,0,0,.74);padding:16px 34px 20px;border-radius:24px}}
         </style><body><div class='c a'>{title}</div><div class='c b'>{title}<div class=list>{top3}</div></div>{_cta_box(cta)}</body>"""
         fr = self.overlay(html, f"{out.stem}-제목", 7)
         clip = media(m.data["bg"])

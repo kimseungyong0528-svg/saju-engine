@@ -133,7 +133,7 @@ def titles(kind: str, p: Period) -> list[list[str]]:
     lab = p.label
     out = []
     for lines in rules.load()["titles"].get(kind, []):
-        out.append([t.replace("11월", lab).replace("이번 달", lab) for t in lines])
+        out.append([video_plain(t.replace("11월", lab).replace("이번 달", lab)).replace("들어오는 띠", "터지는 띠") for t in lines])
     for sc in k["scenes"]:
         out.append([sc, f"{lab} {k['verb']} 띠", "1위부터 12위"])
         out.append([sc, f"{lab} {k['alt']} 띠", "1위부터 12위"])
@@ -170,23 +170,30 @@ def _forceteller_variants() -> list[tuple[str, str, str]]:
     return out
 
 
+def _el(e: str) -> str:
+    """'수(水) 기운' : 화면에 한자를 붙여 '수많은'으로 읽히지 않게 (영상 심사 2026-11-09). 목소리도 화면 그대로 읽는다."""
+    return f"{e}({B['elements'][e]['hanja']}) 기운"
+
+
 def forceteller_data(tpl: str, e: str, c: str, p: Period) -> dict:
+    """오행 그림 (포스텔러식). 7초엔 두 장: 첫 장 = 많은 사주의 모습, 둘째 장 = 제목이 말한 '조심할 한 가지' (영상 심사 2026-11-09).
+    '많은 분'은 '사주에 ○ 많은'으로 짧게 쓴다 ('태어날 때 받은 여덟 글자 안에'는 부족·없음에만, CLAUDE.md SNS 규칙).
+    인스타는 댓글 말고 팔로우 (사장님 2026-11-03) → 설명란에 댓글 부탁을 넣지 않는다."""
     E = B["elements"][e]
     lab = f"{e}({E['hanja']})"
     if tpl == "lack":
         head = [f"<em>{e} 없는 사주</em>가", "꼭 만나야 하는 사람"]
         say = [f"태어날 때 받은 여덟 글자 안에\n{josa(lab, '이', '가')} 없으면"] + E["lack"]
     elif tpl == "much":
-        head = [f"<em>{e} 많은 사주</em>가", "조심해야 할 한 가지"]
-        say = [f"태어날 때 받은 여덟 글자 안에\n{josa(lab, '이', '가')} 많으면"] + E["much"]
+        head = [f"<em>{_el(e)} 많은 사주</em>가", "조심해야 할 한 가지"]
+        say = [f"사주에 {josa(lab, '이', '가')} 많으면\n{E['much'][0].replace(chr(10), ' ')}", *E["much"][1:]]
     else:
         C = B["elements"][c]
-        head = [f"<em>{e} 많은 사람</em>과", f"{c} 많은 사람이 만나면"]
-        say = [f"{e} 많은 사람은\n{E['who']}", f"{c} 많은 사람은\n{C['who']}",
+        head = [f"<em>{_el(e)} 많은 사람</em>과", f"{_el(c)} 많은 사람이 만나면"]
+        say = [f"{e} 많은 사람은\n{E['who']}\n{c} 많은 사람은\n{C['who']}",
                f"{josa(e + '(' + E['hanja'] + ')', '이', '가')} {josa(c + '(' + C['hanja'] + ')', '을', '를')} 키워 주는\n상생(相生) 사이예요",
                f"{c} 쪽이 받기만 하지 않게\n고마움을 말로 표현하세요"]
-    cta = f"내 사주에 {josa(e, '이', '가')} 얼마나 있는지 궁금하면\n댓글에 '{e}' 남겨 주세요"
-    return {"tpl": tpl, "el": e, "pair": c, "head": head, "say": say + [cta]}
+    return {"tpl": tpl, "el": e, "pair": c, "head": head, "say": say}
 
 
 def forceteller_stem(st: str) -> dict:
@@ -197,8 +204,7 @@ def forceteller_stem(st: str) -> dict:
     a, c = sorted((i, j))
     return {"tpl": "stem", "el": ELEMENTS[STEM_ELEMENT[i]], "pair": ELEMENTS[STEM_ELEMENT[j]],
             "head": [f"<em>{name} 일간</em>이", "꼭 만나야 하는 사람"],
-            "say": [f"{name} 일간은\n{trait}", weak, f"{partner} 일간을 만나면\n{gain}", f"{STEMS[a]}{STEMS[c]}합(合)\n서로 손을 잡는 사이예요",
-                    "이런 오행 이야기 계속 올려요\n놓치기 싫으면 팔로우 해 두세요"]}
+            "say": [f"{name} 일간은\n{trait}", f"{partner} 일간을 만나면\n{gain}", weak, f"{STEMS[a]}{STEMS[c]}합(合)\n서로 손을 잡는 사이예요"]}
 
 
 def forceteller_month(tpl: str, p: Period) -> dict:
@@ -210,31 +216,76 @@ def forceteller_month(tpl: str, p: Period) -> dict:
         say = [intro, f"태어날 때 받은 여덟 글자 안에\n{josa(lab, '이', '가')} 없던 사람은\n이 달에 그 기운을 빌려 써요", E["borrow"], E["lack"][2]]
         head = [f"<em>{p.label}, {e}의 달</em>", f"{e} 없는 사주는 이렇게"]
     else:
-        say = [intro, f"태어날 때 받은 여덟 글자 안에\n{josa(lab, '이', '가')} 많은 사람은\n같은 기운이 겹쳐 넘치기 쉬워요", E["much"][1], E["much"][2]]
-        head = [f"<em>{p.label}, {e}의 달</em>", f"{e} 많은 사주는 이렇게"]
-    cta = f"내 사주에 {josa(e, '이', '가')} 얼마나 있는지 궁금하면\n댓글에 '{e}' 남겨 주세요"
-    return {"tpl": tpl, "el": e, "pair": "", "head": head, "say": say + [cta]}
+        say = [intro, f"사주에 {josa(lab, '이', '가')} 많은 사람은\n같은 기운이 겹쳐 넘치기 쉬워요", E["much"][1], E["much"][2]]
+        head = [f"<em>{p.label}, {e}의 달</em>", f"{_el(e)} 많은 사주는 이렇게"]
+    return {"tpl": tpl, "el": e, "pair": "", "head": head, "say": say}
 
 
-def sinbi_data(day: dt.date) -> dict:
+# 영상 전용 쉬운 말 (사장님 2026-11-03 "들어오는 운 이라는 말 자체가 존나 ai같다고", 영상 심사 2026-11-09).
+# 스레드 글이 같이 쓰는 문장(banks.json why·rel)은 그대로 두고, 영상에 올릴 때만 바꾼다.
+VIDEO_PLAIN = {"돈 들어올 일이 생겨요.": "돈 생길 일이 있어요.", "받을 돈이 들어오기 쉬운 날이에요.": "받을 돈을 받기 쉬운 날이에요.",
+               "들어온 제안을": "받은 제안을", "작은 일감이 들어와요.": "작은 일감이 생겨요.",
+               "들어오는 돈이 보여요.": "받을 돈이 손에 쥐어져요.", "소개 자리가 들어와요.": "소개 자리가 생겨요.",
+               "문서 기운이 들어와요.": "문서 일이 잘 풀려요."}
+SINBI_GOOD = ("money", "love", "work", "help")
+SINBI_MONEY_CAP = 4      # 하루 표 12칸 중 돈 이야기는 4칸까지 (영상 심사 2026-11-09: 84칸 중 33칸이 돈)
+
+
+def video_plain(s: str) -> str:
+    for a, b in VIDEO_PLAIN.items():
+        s = s.replace(a, b)
+    return s
+
+
+def sinbi_data(day: dt.date, seen: dict | None = None) -> dict:
+    """그날 띠별 운세 표. 영상 심사(2026-11-09, 제1조항): 그날 조심운 1·2위이거나 좋은 운이 평균 10위 밑인 띠(충 받는 띠 등)는
+    좋은 말을 주지 않고 조심 말을 준다. 표엔 조심할 띠가 꼭 하나 이상 있다(대사가 '웃는 띠와 조심할 띠'라서).
+    seen: 한 주 동안 쓴 줄 (안 쓴 줄부터 고르고 같은 줄은 한 주에 두 번까지, 어제 그 띠가 받은 줄은 다시 안 준다)."""
+    seen = seen if seen is not None else {}
+    week_lines = seen.setdefault("lines", {})
+    prev = seen.setdefault("prev", {})
     p = day_pillar_for_date(day)
     per = Period(day.isoformat(), "오늘", f"{day.month}월 {day.day}일", p.stem, p.branch, None)
-    allw: dict[str, list] = {}
-    for kind in ("money", "love", "care", "work", "help"):
-        for r in rank(kind, per):
-            allw.setdefault(r.ddi, []).extend((w, kind, t) for w, t in r.why)
+    rows = {kind: {r.ddi: r for r in rank(kind, per)} for kind in (*SINBI_GOOD, "care")}
+    stand = {a: sum(rows[k][a].rank for k in SINBI_GOOD) / len(SINBI_GOOD) for a in ZODIAC_ANIMALS}
+    bad = {a for a in ZODIAC_ANIMALS if rows["care"][a].rank <= 2 or stand[a] >= 10}
+    if not bad:
+        bad = {min(ZODIAC_ANIMALS, key=lambda a: (rows["care"][a].rank, -stand[a]))}
     used: set[str] = set()
-    txt = {}
-    for a in ZODIAC_ANIMALS:
+    money = 0
+    txt, mark = {}, {}
+    # 조심할 띠부터 고른다 (좋은 띠가 조심 말을 먼저 가져가지 않게)
+    for a in sorted(ZODIAC_ANIMALS, key=lambda a: (a not in bad, ZODIAC_ANIMALS.index(a))):
+        if a in bad:
+            # 같은 점수면 충·형·파·해·원진(그날 글자와 부딪힘) 줄을 먼저 쓴다
+            reasons = sorted([(w, "care", t) for w, t in rows["care"][a].why if w > 0], key=lambda x: (-x[0], why_key("care", x[2]) not in B["rel"]))
+            reasons += sorted([(w, k, t) for k in SINBI_GOOD for w, t in rows[k][a].why if w < 0], key=lambda x: x[0])
+        else:
+            reasons = sorted([(w, k, t) for k in SINBI_GOOD for w, t in rows[k][a].why if w > 0],
+                             key=lambda x: (-x[0], SINBI_GOOD.index(x[1])))
         hit = None
-        for w, kind, t in sorted(allw.get(a, []), key=lambda x: -abs(x[0])):
-            longs = _rot(why_bank(kind, t)["long"], day.toordinal())
-            hit = next((s for s in longs if s not in used), None)
-            if hit:
-                used.add(hit)
-                break
-        txt[a] = hit or "큰 변화 없이 흘러가는 날이에요. 하던 일을 마무리하세요."
-    return {"date": day.isoformat(), "ganzhi": f"{STEMS[p.stem]}{BRANCHES[p.branch]}", "text": txt}
+        pool = []  # (돈 4칸 넘음, 이번 주에 쓴 횟수, 순서) 가 작은 줄부터
+        for i, (w, kind, t) in enumerate(reasons):
+            is_money = kind == "money" and a not in bad
+            for j, x in enumerate(video_plain(x) for x in _rot(why_bank(kind, t)["long"], day.toordinal())):
+                if x in used or x == prev.get(a):
+                    continue
+                over = is_money and money >= SINBI_MONEY_CAP
+                pool.append(((over, week_lines.get(x, 0), i, j), x, is_money))
+        if pool:
+            _, hit, is_money = min(pool, key=lambda c: c[0])
+            money += is_money
+        if not hit:
+            hit = ("말은 한 템포 늦게 하는 날이에요. 큰 결정은 내일로 미루세요." if a in bad
+                   else "큰 변화 없이 흘러가는 날이에요. 하던 일을 마무리하세요.")
+        used.add(hit)
+        week_lines[hit] = week_lines.get(hit, 0) + 1
+        prev[a] = hit
+        txt[a] = hit
+        mark[a] = "bad" if a in bad else "good"
+    txt = {a: txt[a] for a in ZODIAC_ANIMALS}
+    return {"date": day.isoformat(), "ganzhi": f"{STEMS[p.stem]}{BRANCHES[p.branch]}", "text": txt,
+            "mark": {a: mark[a] for a in ZODIAC_ANIMALS}}
 
 
 def video_periods(day: dt.date) -> list[Period]:
@@ -261,12 +312,7 @@ def morning_candidates(fmt: str, day: dt.date):
             ts = titles(kind, p)
             m = Morning(f"{fmt}-{kind}-{p.key}", fmt, kind, p, ts[n % len(ts)], rows)
             if fmt == "hidden":
-                used: set[str] = set()
-                # 한 영상 안에서 같은 줄이 두 번 나오지 않게, 이유별 말을 다 쓰면 점수 방향에 맞는 말로 채운다 (심사 2026-11-03)
-                ex = B["hidden_extra"][kind]
-                m.data["phrase"] = {r.ddi: pick_unique(
-                    [s for _, t in (main_whys(r) if r.score > 0 else sorted(r.why)) for s in why_bank(kind, t)["short"]]
-                    + ex["up" if r.score > 0 else "down"] + ["평소처럼 흘러가요"], used) for r in rows}
+                m.data["phrase"] = hidden_phrases(kind, rows)
             if fmt == "solo":
                 # 계절에 안 맞는 풍경은 빼고 고른다 (11월에 벚꽃이 나오면 안 됨, 심사 2026-11-03)
                 bgs = [b for b in B["backgrounds"] if day.month in b.get("months", range(1, 13))]
@@ -280,8 +326,59 @@ def _topic(key: str) -> str:
     return key.split("-", 1)[1] if "-" in key else key
 
 
+def video_top(m: Morning) -> tuple[set[str], set[str]]:
+    """순위 영상에서 1~3위로 보이는 띠: (좋은 쪽, 조심 쪽)."""
+    if not m.rows or not m.kind:
+        return set(), set()
+    top = {r.ddi for r in m.rows[:3]}
+    return (set(), top) if m.kind == "care" else (top, set())
+
+
+def video_ok(m: Morning, week: dict | None) -> bool:
+    """한 주 영상끼리: 같은 순위(주제+기간)는 한 번, 한 띠를 한쪽 영상에선 1~3위 좋은 띠로 다른 영상에선 1~3위 조심 띠로 쓰지 않는다
+    (영상 심사 2026-11-09: 뱀띠가 이사운 1위와 조심 1위로 같은 주에 나옴)."""
+    if not week:
+        return True
+    if m.rows and _topic(m.key) in week["topics"]:
+        return False
+    g, b = video_top(m)
+    return not (g & week["bad"] or b & week["good"])
+
+
+def video_note(m: Morning, week: dict) -> None:
+    if m.rows:
+        week["topics"].add(_topic(m.key))
+    g, b = video_top(m)
+    week["good"] |= g
+    week["bad"] |= b
+    if m.fmt == "hidden":
+        m.data["phrase"] = hidden_phrases(m.kind, m.rows, week["phrases"])
+
+
+def hidden_phrases(kind: str, rows: list[Row], week: set[str] | None = None) -> dict[str, str]:
+    """가림식 한 줄 (영상 심사 2026-11-03·11-09): 한 영상 안에서, 한 주 영상끼리 같은 줄을 다시 쓰지 않는다.
+    순위 위쪽(점수 +, 6위 안)은 좋은 말, 점수 -는 조심 말, 그 사이는 무난한 말이라 순위와 말의 방향이 거꾸로 가지 않는다.
+    조심운은 무서운 꼬리표 대신 장면+할 일로 부드럽게 쓴다 (no_scary_tag)."""
+    week = week if week is not None else set()
+    ex = B["hidden_extra"][kind]
+    soft = B["video_soft"]
+    used: set[str] = set(week)
+    out = {}
+    for r in rows:
+        if r.score > 0 and r.rank <= 6:
+            opts = [s for _, t in main_whys(r) if _ > 0 for s in why_bank(kind, t)["short"]] + ex["up"]
+        elif r.score < 0:
+            opts = [s for _, t in sorted(r.why) if _ < 0 for s in why_bank(kind, t)["short"]] + ex["down"]
+        else:
+            opts = list(ex.get("mid") or B["hidden_mid"])
+        opts = [soft.get(o, o) for o in opts]
+        out[r.ddi] = pick_unique(opts + B["hidden_mid"], used)
+    week |= set(out.values())
+    return out
+
+
 def morning(day: dt.date, used: set[str], fmt: str = "", avoid: set[str] | frozenset = frozenset(),
-            hard: set[str] | frozenset = frozenset(), evening: bool = False) -> Morning:
+            hard: set[str] | frozenset = frozenset(), evening: bool = False, week: dict | None = None) -> Morning:
     """영상 심사(2026-11-01): 형식만 바꿔 같은 순위를 한 주에 세 번 내면 보는 사람이 '또 이거네' 한다.
     형식이 달라도 이미 쓴 순위(주제+기간)는 다시 고르지 않는다."""
     fmt = fmt or rules.morning_format(day)
@@ -293,16 +390,24 @@ def morning(day: dt.date, used: set[str], fmt: str = "", avoid: set[str] | froze
     def cands(f: str):
         return morning_candidates(f, day + dt.timedelta(days=1) if evening and f == "sinbi" and fmt != "sinbi" else day)
     for f in order:
-        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen), None)
+        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen and video_ok(c, week)), None)
+        if not fresh and f == fmt and week is not None and f not in ("forceteller", "sinbi"):
+            # 그 달 순위 주제를 지난주에 다 썼으면, 이번 주에 아직 안 쓴 순위를 다시 쓴다 (같은 주 안에서는 한 번, 띠 좋고 나쁨이 안 어긋나게).
+            # 저녁 형식 돌리기(사장님 2026-11-03)를 지키고, 같은 주에 같은 순위를 두 번 내지 않는다 (영상 심사 2026-11-09).
+            fresh = next((c for c in cands(f) if c.key not in used and video_ok(c, week)), None)
         if fresh:
             return fresh
     # 그래도 없으면 전날 형식이라도 쓴다 (같은 날 형식만은 피한다). 같은 영상을 다시 내는 것보다 낫다.
     order += [f for f in ("forceteller", "sinbi") if f not in order and f not in hard]
     for f in order:
-        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen), None)
+        fresh = next((c for c in cands(f) if c.key not in used and _topic(c.key) not in seen and video_ok(c, week)), None)
         if fresh:
             return fresh
     order += [f for f in ("forceteller", "sinbi", "tier", "solo", "hidden") if f not in order and f not in hard]
+    for f in order:
+        fresh = next((c for c in cands(f) if c.key not in used and video_ok(c, week)), None)
+        if fresh:
+            return fresh
     for f in order:
         fresh = next((c for c in cands(f) if c.key not in used), None)
         if fresh:
@@ -317,30 +422,46 @@ def _rank_lines(rows: list[Row], upto: int = 12) -> list[str]:
 FOLLOW_AM = "띠별 운세 계속 올려요. 놓치기 싫으면 팔로우 해 두세요."
 
 
-def _am(cap: str) -> dict[str, dict]:
-    """아침 캡션: 모든 형식에 팔로우 말 (유튜브는 '구독'으로). 사장님 2026-11-01."""
+def _am(cap: str, m: "Morning | None" = None) -> dict[str, dict]:
+    """아침·저녁 영상 설명란: 끝 말은 화면 밑 팔로우 말과 같다 ('나의 ○○을 더 자세히 알고 싶다면 팔로우!', judges.video bottom,
+    영상 심사 2026-11-09). 유튜브는 '구독!'."""
+    if m is not None:
+        from .script import cta
+        c = cta(m)
+        cap = cap.replace("\n\n#", f"\n\n{c['instagram-reel']}\n\n#", 1)
+        return {"yt": cap.replace(c["instagram-reel"], c["youtube"]), "ig": cap}
     if "팔로우" not in cap:
         cap = cap.replace("\n\n#", f"\n\n{FOLLOW_AM}\n\n#", 1)
     return {"yt": cap.replace("팔로우 해 두세요", "구독해 두세요"), "ig": cap}
 
 
+def _mark(m: "Morning", a: str) -> str:
+    return {"good": "🟢 ", "bad": "🔴 "}.get(m.data.get("mark", {}).get(a, ""), "")
+
+
 def morning_texts(m: Morning) -> dict[str, dict]:
+    """영상 설명란. 첫 줄은 화면 위 제목 그대로 (제1조항 통일성, 영상 심사 2026-11-09).
+    인스타는 댓글 말고 팔로우 (사장님 2026-11-03) → 댓글 부탁은 쓰지 않는다."""
+    from .script import top_title
     tags = "#사주 #운세 #띠별운세 #띠순위 #운명서재"
     if m.fmt == "sinbi":
         d = dt.date.fromisoformat(m.data["date"])
         head = f"{d.month}월 {d.day}일 띠별 운세"
-        body = "\n".join(f"{ddi(a)}: {t}" for a, t in m.data["text"].items())
-        lines = [head, "", body, "", f"오늘 일진은 {m.data['ganzhi']}일이에요. 띠 글자와 오늘 글자의 관계로 풀었어요.", "",
-                 "저장해 두고 오늘 하루 한 번 더 보세요.", FOLLOW_AM, "", tags]
+        body = "\n".join(f"{_mark(m, a)}{ddi(a)}: {t}" for a, t in m.data["text"].items())
+        lines = [head, "", "🟢 웃는 띠 · 🔴 조심할 띠", "", body, "",
+                 f"오늘 일진은 {m.data['ganzhi']}일이에요. 띠 글자와 오늘 글자의 관계로 풀었어요.", "",
+                 "저장해 두고 오늘 하루 한 번 더 보세요.", "", tags]
         cap = "\n".join(lines)
-        return {"youtube": {"제목": f"{head} | 오늘의 운세 #shorts", "설명": _am(cap)["yt"]},
-                "instagram-reel": {"캡션": _am(cap)["ig"]}, "facebook-reel": {"캡션": _am(cap)["ig"]}}
+        A = _am(cap, m)
+        return {"youtube": {"제목": f"{head} | 오늘의 운세 #shorts", "설명": A["yt"]},
+                "instagram-reel": {"캡션": A["ig"]}, "facebook-reel": {"캡션": A["ig"]}}
     if m.fmt == "forceteller":
         e = m.data["el"]
-        head = " ".join(x.replace("<em>", "").replace("</em>", "") for x in m.data["head"])
+        head = top_title(m)
         cap = "\n".join([head, ""] + [s.replace("\n", " ") for s in m.data["say"]] + ["", f"#오행 #{e} #사주 #궁합 #운명서재"])
-        return {"youtube": {"제목": f"{head} | 오행 쉽게 보기 #shorts", "설명": _am(cap)["yt"]},
-                "instagram-reel": {"캡션": _am(cap)["ig"]}, "facebook-reel": {"캡션": _am(cap)["ig"]}}
+        A = _am(cap, m)
+        return {"youtube": {"제목": f"{head} | 오행 쉽게 보기 #shorts", "설명": A["yt"]},
+                "instagram-reel": {"캡션": A["ig"]}, "facebook-reel": {"캡션": A["ig"]}}
     k = KINDS[m.kind]
     lab = m.period.label
     title = " ".join(m.title).replace("“", "").replace("”", "")
@@ -348,18 +469,19 @@ def morning_texts(m: Morning) -> dict[str, dict]:
              f"합·충 같은 지지 관계로 12띠 {k['name']} 점수를 매겼어요.")
     if m.fmt == "solo":
         top = m.rows[:3]
-        cap = "\n".join([" ".join(m.data["lines"]), "", *[f"✅ {r.rank}위 {ddi(r.ddi)} ({years_short(r.ddi)}년생)" for r in top], "",
-                         "💬 댓글에 본인 띠 남겨 주세요", "", basis, "", tags])
+        cap = "\n".join([top_title(m), "", *[f"✅ {r.rank}위 {ddi(r.ddi)} ({years_short(r.ddi)}년생)" for r in top], "",
+                         basis, "", tags])
     elif m.fmt == "hidden":
         rest = [f"{r.rank}위 {ddi(r.ddi)} 👉 {m.data['phrase'][r.ddi]}" for r in reversed(m.rows[3:])]
         top = [f"{r.rank}위 {ddi(r.ddi)} ({years_short(r.ddi)}년생) 👉 {m.data['phrase'][r.ddi]}" for r in reversed(m.rows[:3])]
-        cap = "\n".join([title, "", *rest, "", "1~3위는 맨 아래에 👇", "", "💬 댓글에 내 띠 남기기", "", basis, "", tags,
+        cap = "\n".join([top_title(m), "", *rest, "", "1~3위는 맨 아래에 👇", "", basis, "", tags,
                          "", ".", ".", ".", *top])
     else:
-        cap = "\n".join([title, "", *_rank_lines(m.rows), "", basis, "", "💬 내 띠는 몇 위인지 댓글로 남겨 주세요", "", tags])
+        cap = "\n".join([title, "", *_rank_lines(m.rows), "", basis, "", tags])
     yt = f"{lab} {k['name']} 띠 순위 | 1위 {ddi(m.rows[0].ddi)} ({years_short(m.rows[0].ddi)}년생) #shorts"
-    return {"youtube": {"제목": yt[:100], "설명": _am(cap)["yt"]}, "instagram-reel": {"캡션": _am(cap)["ig"]},
-            "facebook-reel": {"캡션": _am(cap)["ig"]}}
+    A = _am(cap, m)
+    return {"youtube": {"제목": yt[:100], "설명": A["yt"]}, "instagram-reel": {"캡션": A["ig"]},
+            "facebook-reel": {"캡션": A["ig"]}}
 
 
 # ── 저녁 ──
@@ -1351,13 +1473,17 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         return f
 
     prev: tuple = ()
+    sinbi_seen: dict = {}
+    vweek: dict = {"topics": set(), "good": set(), "bad": set(), "phrases": set()}   # 한 주 영상끼리 어긋나지 않게 (영상 심사 2026-11-09)
     for i in range(days):
         d = start + dt.timedelta(days=i)
         # 사장님 2026-11-03: 아침 8시는 무조건 그날 띠별 운세. 저녁은 띠 순위(천복식·가림식)·분야별 띠 3개(풍경식)·'○ 많은 사주'(오행 그림)를 돌린다.
-        m = Morning(f"sinbi-{d.isoformat()}", "sinbi", data=sinbi_data(d))
+        m = Morning(f"sinbi-{d.isoformat()}", "sinbi", data=sinbi_data(d, sinbi_seen))
         used.add(m.key)
         f2 = EVENING_FORMATS[d.toordinal() % len(EVENING_FORMATS)]
-        m2 = morning(d, used, fmt=f2, avoid={x.fmt for x in prev[1:]}, hard={"sinbi", *(x.fmt for x in prev[1:])}, evening=True)
+        m2 = morning(d, used, fmt=f2, avoid={x.fmt for x in prev[1:]}, hard={"sinbi", *(x.fmt for x in prev[1:])}, evening=True,
+                     week=vweek)
+        video_note(m2, vweek)
         used.add(m2.key)
         prev = (m, m2)
         ths, today, new_frames = [], set(), {}

@@ -695,3 +695,45 @@ def test_hidden_lines_not_repeated():
         for m in T.morning_candidates("hidden", dt.date(*mon, 10)):
             ph = list(m.data["phrase"].values())
             assert len(ph) == len(set(ph)), (m.key, ph)
+
+
+def test_sinbi_care_animal_gets_caution_line():
+    """영상 심사 2026-11-09 (제1조항): 그날 조심운 1위(충 받는 띠)에게 좋은 말을 주지 않는다. 표엔 조심할 띠가 꼭 있다.
+    같은 줄은 한 주에 한 번, 돈 이야기는 하루 4칸까지."""
+    seen: dict = {}
+    week = []
+    for i in range(14):
+        d = dt.date(2026, 11, 9) + dt.timedelta(days=i)
+        x = T.sinbi_data(d, seen if i < 7 else None)
+        p = T.day_pillar_for_date(d)
+        per = T.Period(d.isoformat(), "오늘", "x", p.stem, p.branch, None)
+        worst = T.rank("care", per)[0].ddi
+        assert x["mark"][worst] == "bad", (d, worst, x["text"][worst])
+        assert "bad" in x["mark"].values() and "good" in x["mark"].values(), d
+        assert not [t for t in x["text"].values() if "들어오" in t or "들어와" in t], d
+        if i < 7:
+            week += list(x["text"].values())
+    assert max(week.count(t) for t in week) <= 2  # 한 주 84칸, 줄이 모자라면 두 번까지
+
+
+def test_week_videos_do_not_contradict():
+    """영상 심사 2026-11-09: 한 주 영상끼리 같은 순위를 두 번 내지 않고, 한 띠를 좋은 1~3위와 조심 1~3위로 같이 쓰지 않는다.
+    설명란 첫 줄은 화면 제목, 끝 말은 화면 밑 팔로우 말, 인스타 설명란에 댓글 부탁 없음, 제목·대사에 '들어오는' 없음."""
+    from saju.marketing.formula import script as S
+    days = T.plan(dt.date(2026, 11, 9), 7, set())
+    vids = [d.video2 for d in days]
+    tops = [_t for _t in (T._topic(m.key) for m in vids if m.rows)]
+    assert len(tops) == len(set(tops))
+    good, bad = set(), set()
+    for m in vids:
+        g, b = T.video_top(m)
+        good |= g
+        bad |= b
+    assert not good & bad
+    for d in days:
+        for m in (d.morning, d.video2):
+            cap = m.texts()["instagram-reel"]["캡션"]
+            assert "댓글" not in cap, m.key
+            assert S.cta(m)["instagram-reel"] in cap, m.key
+            assert cap.split("\n")[0].replace(" 1위부터 12위", "") .startswith(S.top_title(m)[:8]), (m.key, cap.split("\n")[0])
+            assert "들어오" not in S.script(m)[0], m.key
