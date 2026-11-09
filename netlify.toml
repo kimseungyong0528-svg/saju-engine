@@ -24,35 +24,81 @@
     Cache-Control = "no-store"
     X-Frame-Options = "DENY"
 
+# 상품이 정해진 짧은 주소는 /p/상품/ 공유 페이지를 거친다(2026-11-05: 카톡·인스타 미리보기에 그 상품 카드가 뜨게). 공유 페이지가 ?from= 을 그대로 넘긴다.
 # 손님이 어디서 왔는지 남기는 짧은 주소(사장님 2026-11-03 "링크 못생겨져").
 # 사이트가 ?from= 을 30일 기억했다가 주문에 같이 저장하고, 주소창에서는 바로 지운다. ?go= 는 그 상품 첫 화면.
+# 당근 소식 링크: 소식이 말하는 상품(2027 신년운세) 첫 화면으로 바로(2026-11-05 자청 점검 F-1, 예전에는 홈)
 [[redirects]]
   from = "/d"
-  to = "/?from=d"
+  to = "/p/newyear/?from=d"
   status = 302
 [[redirects]]
   from = "/dn"
-  to = "/?from=dn&go=newyear"
+  to = "/p/newyear/?from=dn"
   status = 302
 [[redirects]]
   from = "/dr"
-  to = "/?from=dr&go=romance"
+  to = "/p/romance/?from=dr"
   status = 302
 [[redirects]]
   from = "/dw"
-  to = "/?from=dw&go=wealth"
+  to = "/p/wealth/?from=dw"
   status = 302
 [[redirects]]
   from = "/df"
-  to = "/?from=df&go=taster"
+  to = "/p/taster/?from=df"
   status = 302
 [[redirects]]
   from = "/t"
-  to = "/?from=t&go=taster"
+  to = "/p/taster/?from=t"
   status = 302
+# 블로그 → 신년운세
+[[redirects]]
+  from = "/bn"
+  to = "/p/newyear/?from=bn"
+  status = 302
+# 블로그 → 재물운
+[[redirects]]
+  from = "/bw"
+  to = "/p/wealth/?from=bw"
+  status = 302
+# 블로그 → 깊은 궁합
+[[redirects]]
+  from = "/bc"
+  to = "/p/intimate/?from=bc"
+  status = 302
+# 블로그 → 무료 맛보기
+[[redirects]]
+  from = "/bf"
+  to = "/p/taster/?from=bf"
+  status = 302
+# 스레드 → 신년운세
+[[redirects]]
+  from = "/tn"
+  to = "/p/newyear/?from=tn"
+  status = 302
+# 인스타 프로필 링크: 프로필 문구('좋은 운 3개 무료')와 같은 무료 맛보기로 바로(2026-11-05 자청 점검 F-1, 예전에는 홈)
 [[redirects]]
   from = "/i"
-  to = "/?from=i"
+  to = "/p/taster/?from=i"
+  status = 302
+# 무료 결과 공유 카드로 온 손님(2026-11-05 자청 기획안 H-2)
+[[redirects]]
+  from = "/s"
+  to = "/p/taster/?from=s"
+  status = 302
+# 당근 새 광고(11-05) 전용: 옛 광고와 따로 세려고(자청 기획안 A-3)
+[[redirects]]
+  from = "/dw2"
+  to = "/p/wealth/?from=dw2"
+  status = 302
+[[redirects]]
+  from = "/dn2"
+  to = "/p/newyear/?from=dn2"
+  status = 302
+[[redirects]]
+  from = "/dre"
+  to = "/p/reunion/?from=dre"
   status = 302
 [[redirects]]
   from = "/f"

@@ -167,8 +167,60 @@ test('일별 주문: 결제·보냄·보류·만드는 중을 날짜별로 센�
   await t.store.set('orders/f', { id: 'f', status: 'payment_expired', history: h('payment_expired') });
   const days = await dailyOrders(t.store, now);
   assert.equal(days.length, 14); assert.equal(days[0].date, '2026-11-04');
-  assert.deepEqual(days[0], { date: '2026-11-04', orders: 2, amount: 79600, books: 3, sent: 1, held: 1, running: 1, canceled: 0, late: 1 });
+  assert.deepEqual(days[0], { date: '2026-11-04', orders: 2, amount: 79600, books: 3, sent: 1, held: 1, running: 1, canceled: 0, late: 1, delivered: 0, bounced: 0 });
   assert.equal(days[2].canceled, 1);
   await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
   assert.equal((await (await t.call('GET', '/api/studio/daily')).json()).days.length, 14);
+});
+
+test('결제창 앞뒤: 온 곳마다 결제하기 누른 사람·결제·안 함(같은 날 같은 사람은 한 번)', async () => {
+  const { sourceFunnel } = await import('../netlify/functions/lib/studio.mjs');
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/studio/funnel')).status, 401);
+  const now = new Date('2026-11-05T03:00:00Z');
+  const o = (id, x) => t.store.set(`orders/${id}`, { id, productId: 'wealth', email: 'a@x.kr', createdAt: '2026-11-04T01:50:00Z', history: [], ...x });
+  await o('a1', { source: 'dw', status: 'payment_expired' });                        // 같은 사람이 두 번 누르고
+  await o('a2', { source: 'dw', status: 'erased', paidAt: '2026-11-04T01:53:00Z', amount: 29800 }); // 두 번째에 결제 → 결제 1명
+  await o('b', { source: 'dw', email: 'b@x.kr', status: 'payment_expired' });        // 결제 안 함
+  await o('c', { source: 'df', email: 'c@x.kr', status: 'awaiting_payment', createdAt: '2026-11-05T02:30:00Z' }); // 결제창 열림
+  await o('d', { email: 'd@x.kr', status: 'payment_failed' });                       // 꼬리표 없음
+  await o('e', { source: 'dw', email: 'e@x.kr', parentId: 'a2', status: 'erased' });   // 묶음 책은 세지 않음
+  await o('f', { source: 'dw', email: 'f@x.kr', testOnly: true, status: 'test_paid', paidAt: 'x' }); // 시험 결제 제외
+  await o('g', { source: 'dw', email: 'g@x.kr', status: 'payment_expired', createdAt: '2026-10-01T00:00:00Z' }); // 14일 밖
+  const f = await sourceFunnel(t.store, now);
+  assert.equal(f.from, '2026-10-23'); assert.equal(f.to, '2026-11-05');
+  // 기간 고르기: 11-05 하루만 → df 1명만
+  const d5 = await sourceFunnel(t.store, now, 14, { from: '2026-11-05', to: '2026-11-05' });
+  assert.deepEqual(Object.keys(d5.sources), ['df']);
+  // 잘못된 날짜는 무시하고 기본 14일
+  assert.equal((await sourceFunnel(t.store, now, 14, { from: 'x' })).from, '2026-10-23');
+  assert.deepEqual(f.sources, {
+    dw: { started: 2, paid: 1, unpaid: 1, waiting: 0, amount: 29800 },
+    df: { started: 1, paid: 0, unpaid: 0, waiting: 1, amount: 0 },
+    direct: { started: 1, paid: 0, unpaid: 1, waiting: 0, amount: 0 },
+  });
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  assert.ok((await (await t.call('GET', '/api/studio/funnel')).json()).sources);
+});
+
+test('재구매 기준선: 재구매 링크가 한 번이라도 쓰인 비율과 링크로 결제한 금액 (P-CR-1)', async () => {
+  const { rebuyBaseline } = await import('../netlify/functions/lib/studio.mjs');
+  const t = setup();
+  assert.equal((await t.call('GET', '/api/studio/rebuy')).status, 401);
+  const o = (id, x) => t.store.set(`orders/${id}`, { id, productId: 'wealth', paidAt: '2026-11-04T01:00:00Z', amount: 29800, ...x });
+  await o('a', { rebuyCode: 'UNM-A' });
+  await o('b', { rebuyCode: 'UNM-B' });
+  await o('c', { rebuyCode: 'UNM-C', discount: { kind: 'rebuy', code: 'UNM-A' }, amount: 26820 }); // A 링크로 다시 산 주문
+  await o('d', { parentId: 'c', rebuyCode: 'UNM-C' });           // 묶음 책: 세지 않음
+  await o('e', { testOnly: true, rebuyCode: 'UNM-E' });          // 시험 결제: 세지 않음
+  await o('f', { paidAt: undefined, status: 'payment_expired' }); // 결제 안 함
+  await t.store.set('coupons/UNM-A', { code: 'UNM-A', kind: 'rebuy', uses: 1 });
+  await t.store.set('coupons/UNM-B', { code: 'UNM-B', kind: 'rebuy' });
+  await t.store.set('coupons/UNM-C', { code: 'UNM-C', kind: 'rebuy', uses: 0 });
+  await t.store.set('coupons/UNM-E', { code: 'UNM-E', kind: 'rebuy', uses: 3 });
+  assert.deepEqual(await rebuyBaseline(t.store), { paidOrders: 3, issued: 3, used: 1, uses: 1, rate: 33.3, rebuyOrders: 1, rebuyAmount: 26820 });
+  assert.deepEqual(await rebuyBaseline(memoryStore()), { paidOrders: 0, issued: 0, used: 0, uses: 0, rate: null, rebuyOrders: 0, rebuyAmount: 0 });
+  await t.call('POST', '/api/studio/login', { body: { password: 'open-sesame-123' } });
+  const r = await (await t.call('GET', '/api/studio/rebuy')).json();
+  assert.equal(r.issued, 3); assert.ok(!JSON.stringify(r).includes('UNM-'), '코드·개인정보는 내보내지 않음');
 });

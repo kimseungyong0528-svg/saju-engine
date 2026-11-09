@@ -23,7 +23,7 @@ function setup(overrides = {}) {
     method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
     body: raw ?? (body ? JSON.stringify(body) : undefined),
   }));
-  return { store, calls, call };
+  return { store, calls, call, services };
 }
 
 async function order(t, extra = {}) {
@@ -180,17 +180,51 @@ test('8개 상품 모두 서버 접수 확인이 된다', async () => {
   }
 });
 
-test('결제 뒤 1시간 넘게 멈춘 주문은 사장님께 한 번만 알림', async () => {
+test('결제 뒤 1시간 넘게 멈춘 주문은 자동으로 한 번 다시 돌리고, 그래도 멈추면 사장님께 한 번만 알림', async () => {
   const t = setup();
   const { body: o } = await order(t);
   const { body: unpaid } = await order(t);
   await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
-  t.calls.owner.length = 0;
-  const services = { notifyOwner: async (ord, note) => { t.calls.owner.push(ord.id); } };
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 30 * 60_000)), 0);
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 2 * 3_600_000)), 1);
-  assert.equal(await flagStuck(t.store, services, new Date(Date.now() + 3 * 3_600_000)), 0);
-  assert.deepEqual(t.calls.owner, [o.orderId]); assert.ok(unpaid.orderId);
+  t.calls.owner.length = 0; t.calls.dispatch.length = 0;
+  const services = { startWorker: async id => { t.calls.dispatch.push(id); }, notifyOwner: async (ord, note) => { t.calls.owner.push(ord.id); } };
+  const at = h => new Date(Date.now() + h * 3_600_000);
+  assert.equal(await flagStuck(t.store, services, at(0.5)), 0);
+  assert.equal(await flagStuck(t.store, services, at(2)), 1); // 자동 재실행 1번
+  assert.deepEqual(t.calls.dispatch, [o.orderId]); assert.deepEqual(t.calls.owner, []);
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  assert.equal(await flagStuck(t.store, services, at(2.5)), 0);
+  assert.equal(await flagStuck(t.store, services, at(3.5)), 1); // 그래도 멈춤 → 알림
+  assert.equal(await flagStuck(t.store, services, at(5)), 0); // 다시 돌리거나 알리지 않음
+  assert.deepEqual(t.calls.dispatch, [o.orderId]); assert.deepEqual(t.calls.owner, [o.orderId]); assert.ok(unpaid.orderId);
+});
+
+test('발송 보류(held)된 주문은 1시간 뒤 자동으로 한 번만 다시 만든다', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const W = { 'X-Worker-Secret': 'worker-secret' };
+  await t.call('POST', `/api/internal/orders/${o.orderId}/status`, { body: { status: 'held', note: '글 검사: 점수' }, headers: W });
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'held');
+  t.calls.dispatch.length = 0;
+  const services = { startWorker: async id => { t.calls.dispatch.push(id); }, notifyOwner: async () => {} };
+  const at = h => new Date(Date.now() + h * 3_600_000);
+  assert.equal(await flagStuck(t.store, services, at(2)), 1);
+  assert.deepEqual(t.calls.dispatch, [o.orderId]);
+  // 다시 돌린 작업이 또 보류하면 더는 자동으로 돌리지 않는다(보류 알림은 이미 감)
+  const held = await t.store.get(`orders/${o.orderId}`);
+  held.status = 'held'; held.updatedAt = at(2.2).toISOString(); await t.store.set(`orders/${o.orderId}`, held);
+  assert.equal(await flagStuck(t.store, services, at(5)), 0);
+  assert.deepEqual(t.calls.dispatch, [o.orderId]);
+});
+
+test('작업 시작(dispatch)이 실패해 retry로 남은 주문도 자동으로 다시 시작한다', async () => {
+  const t = setup();
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const x = await t.store.get(`orders/${o.orderId}`); x.status = 'retry'; await t.store.set(`orders/${o.orderId}`, x);
+  const sent = [];
+  assert.equal(await flagStuck(t.store, { startWorker: async id => { sent.push(id); }, notifyOwner: async () => {} }, new Date(Date.now() + 2 * 3_600_000)), 1);
+  assert.deepEqual(sent, [o.orderId]);
 });
 
 test('개인정보 지우기: 발송 즉시 출생 정보 삭제, PDF는 7일 뒤 삭제, 미결제 주문은 하루 뒤 만료', async () => {
@@ -236,9 +270,111 @@ test('들어온 곳(from): 주문에 저장하고, 결제되면 달마다 들어
   assert.equal(a.source, 'dn');
   const b = await pay({ from: 'BAD value!<script>' });
   assert.equal(b.source, undefined);
-  await pay({ from: 'dn' });
+  const c = await pay({ from: 'dn' });   // 같은 이메일 두 번째부터는 재구매 할인 10%가 자동으로(2026-11-06)
   const month = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 7);
   const stats = await t.store.get(`stats/sources/${month}`);
-  assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount * 2);
+  assert.equal(stats.dn.orders, 2); assert.equal(stats.dn.amount, a.amount + c.amount);
   assert.equal(stats.direct.orders, 1);
+});
+
+test('메일 도착 확인: Resend 알림(서명 확인)으로 도착·튕김을 주문에 남기고, 튕기면 사장님께 알림 (P-IT-2)', async () => {
+  const { createHmac } = await import('node:crypto');
+  const secret = 'whsec_' + Buffer.from('test-secret-key-123').toString('base64');
+  const t = setup({ env: { ...ENV, RESEND_WEBHOOK_SECRET: secret } });
+  // 이 시험에서는 보낸 메일 번호를 돌려준다
+  let n = 0;
+  const { body: a } = await order(t);
+  await t.call('POST', `/api/orders/${a.orderId}/confirm`, { body: { paymentKey: 'pk', amount: 49800 }, headers: { Authorization: 'Bearer ' + a.accessToken } });
+  t.calls.owner.length = 0;
+  // setup의 sendEmail은 번호를 돌려주지 않으므로, 번호를 돌려주는 가짜로 바꿔 끼운다
+  const { deliverPdf, mailEvent, verifyMailWebhook } = await import('../netlify/functions/lib/orders.mjs');
+  const services = { sendEmail: async () => `re_${++n}`, notifyOwner: async (o, note, kind) => { t.calls.owner.push(kind); } };
+  await deliverPdf(t.store, services, await t.store.get(`orders/${a.orderId}`), new Uint8Array([1, 2]));
+  assert.deepEqual((await t.store.get(`orders/${a.orderId}`)).mailIds, ['re_1']);
+  const sign = (body, ts = Math.floor(Date.now() / 1000), id = 'msg_1') => ({
+    'svix-id': id, 'svix-timestamp': String(ts),
+    'svix-signature': 'v1,' + createHmac('sha256', Buffer.from(secret.slice(6), 'base64')).update(`${id}.${ts}.${body}`).digest('base64'),
+  });
+  const ev = type => JSON.stringify({ type, data: { email_id: 're_1' } });
+  // 서명이 틀리거나 오래된 알림은 받지 않는다
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: { ...sign(ev('email.delivered')), 'svix-signature': 'v1,xxxx' } })).status, 401);
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered'), Math.floor(Date.now() / 1000) - 3600) })).status, 401);
+  // 도착함
+  assert.equal((await t.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered')) })).status, 200);
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'delivered');
+  // 늦게 온 '늦어짐'은 '도착함'을 덮지 않는다
+  await mailEvent(t.store, services, JSON.parse(ev('email.delivery_delayed')));
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'delivered');
+  // 튕김 → 기록 + 사장님 알림
+  await mailEvent(t.store, services, JSON.parse(ev('email.bounced')));
+  assert.equal((await t.store.get(`orders/${a.orderId}`)).mailStatus, 'bounced');
+  assert.deepEqual(t.calls.owner.concat(), ['bounced']);
+  // 모르는 메일 번호는 무시
+  assert.equal(await mailEvent(t.store, services, { type: 'email.delivered', data: { email_id: 're_x' } }), null);
+  assert.equal(verifyMailWebhook('', new Headers(), ''), false);
+  // 비밀값이 없으면 꺼져 있다
+  const off = setup();
+  assert.equal((await off.call('POST', '/api/mail-events', { raw: ev('email.delivered'), headers: sign(ev('email.delivered')) })).status, 404);
+});
+
+test('결제 취소 반영: 토스에서 환불된 주문은 작업을 멈추고 메일을 보내지 않는다 (P-VC-3)', async () => {
+  const t = setup();
+  let toss = 'DONE';
+  const lookups = [];
+  t.services.tossPayment = async key => { lookups.push(key); return { status: toss, orderId: t.lastOrderId }; };
+  const { body: o } = await order(t);
+  t.lastOrderId = o.orderId;
+  const auth = { Authorization: 'Bearer ' + o.accessToken };
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_r', amount: 49800 }, headers: auth });
+  const w = { 'X-Worker-Secret': 'worker-secret' };
+  // 결제가 그대로면 평소처럼 작업 재료를 준다
+  let job = await (await t.call('GET', `/api/internal/orders/${o.orderId}`, { headers: w })).json();
+  assert.equal(job.status, 'queued'); assert.ok(job.payload); assert.deepEqual(lookups, ['pk_r']);
+  // 작업 중 환불: 보내기 직전에 막히고, 주문은 refunded, 출생 정보는 지워짐
+  toss = 'CANCELED';
+  const r = await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70]), headers: { ...w, 'Content-Type': 'application/pdf' } });
+  assert.equal(r.status, 409); assert.equal((await r.json()).code, 'ORDER_REFUNDED');
+  assert.equal(t.calls.email.length, 0);
+  const saved = await t.store.get(`orders/${o.orderId}`);
+  assert.equal(saved.status, 'refunded'); assert.equal(saved.payload, undefined);
+  assert.equal(await t.store.getBytes(`pdf/${o.orderId}`), null);
+  // 다시 돌려도 작업은 '처리할 상태 아님'으로 멈춘다
+  job = await (await t.call('GET', `/api/internal/orders/${o.orderId}`, { headers: w })).json();
+  assert.equal(job.status, 'refunded'); assert.equal(job.payload, undefined);
+});
+
+test('결제 취소 반영: 토스 조회가 실패하면 정상 발송을 막지 않는다 (P-VC-3)', async () => {
+  const t = setup();
+  t.services.tossPayment = async () => { throw Error('toss 500'); };
+  const { body: o } = await order(t);
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_x', amount: 49800 }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const w = { 'X-Worker-Secret': 'worker-secret' };
+  const v = await (await t.call('POST', `/api/internal/orders/${o.orderId}/result`, { raw: new Uint8Array([37, 80, 68, 70]), headers: { ...w, 'Content-Type': 'application/pdf' } })).json();
+  assert.equal(v.status, 'email_accepted'); assert.equal(t.calls.email.length, 1);
+});
+
+test('토스 알림: 본문은 믿지 않고 토스에 다시 물어 취소면 묶음까지 refunded (P-VC-3)', async () => {
+  const t = setup();
+  let toss = 'DONE';
+  t.services.tossPayment = async () => ({ status: toss, orderId: t.lastOrderId });
+  const { body: o } = await order(t, { extras: ['wealth'], extraAnswers: { wealth: { occupation: '직장에 다니고 있어요' } } });
+  assert.ok(o.orderId, JSON.stringify(o));
+  t.lastOrderId = o.orderId;
+  await t.call('POST', `/api/orders/${o.orderId}/confirm`, { body: { paymentKey: 'pk_b', amount: o.amount }, headers: { Authorization: 'Bearer ' + o.accessToken } });
+  const root = await t.store.get(`orders/${o.orderId}`);
+  assert.equal(root.children.length, 1);
+  const ev = (paymentKey, orderId = o.orderId) => t.call('POST', '/api/toss-events', { body: { eventType: 'PAYMENT_STATUS_CHANGED', data: { paymentKey, orderId, status: 'CANCELED' } } });
+  // 본문이 '취소'라고 해도 토스 조회가 DONE이면 그대로
+  assert.equal((await ev('pk_b')).status, 200);
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  // 결제 키가 다르면 토스에 묻지도 않는다
+  toss = 'CANCELED';
+  await ev('pk_wrong');
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'queued');
+  await ev('pk_b');
+  assert.equal((await t.store.get(`orders/${o.orderId}`)).status, 'refunded');
+  for (const id of root.children || []) assert.equal((await t.store.get(`orders/${id}`)).status, 'refunded');
+  // 이미 보낸 주문은 다시 보내기도 막힌다
+  const rs = await t.call('POST', `/api/orders/${o.orderId}/resend`, { body: {}, headers: { Authorization: 'Bearer ' + o.accessToken, 'Idempotency-Key': 'z' } });
+  assert.equal(rs.status, 409);
 });

@@ -48,9 +48,11 @@ test('첫 구매 묶음: 2개 이상이면 전부 10%, 결제 뒤 책마다 따�
   const child = await t.store.get(`orders/${o.children[0]}`);
   assert.equal(child.productId, 'wealth'); assert.equal(child.amount, 0); assert.equal(child.parentId, o.id);
   assert.deepEqual(t.calls.dispatch, [o.id, child.id]);
-  // 두 번째 구매부터는 묶음 할인 없음
+  // 두 번째 구매부터는 묶음 할인 대신 재구매 할인 10%가 자동으로(2026-11-06 사장님 3-4). 할인은 하나만.
   const q2 = await (await t.call('POST', '/api/quote', { ...draft, productId: 'lifetime', extras: ['wealth'], extraAnswers: W })).json();
-  assert.equal(q2.discount, null); assert.equal(q2.amount, 79600); assert.ok(q2.notes.includes('BUNDLE_FIRST_ONLY'));
+  assert.equal(q2.discount.kind, 'rebuy'); assert.equal(q2.discount.auto, true); assert.equal(q2.amount, Math.round(79600 * 0.9)); assert.ok(q2.notes.includes('BUNDLE_FIRST_ONLY'));
+  const q2b = await (await t.call('POST', '/api/quote', { ...draft, productId: 'romance' })).json();
+  assert.equal(q2b.discount.kind, 'rebuy'); assert.equal(q2b.amount, Math.round(29800 * 0.9));
   // 한 개만 사면 묶음 할인 없음
   const t2 = setup();
   const q3 = await (await t2.call('POST', '/api/quote', { ...draft, productId: 'lifetime' })).json();

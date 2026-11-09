@@ -215,6 +215,10 @@ details.tx pre { margin: 0; padding: 4px 12px 12px; white-space: pre-wrap; word-
   <details id="rules"><summary>게시 규칙 (못 박음)</summary><div id="rulesBody">불러오는 중…</div></details>
   <details id="daily" class="rules-like"><summary id="dailySum">일별 주문 (보냄·못 보냄)</summary><div id="dailyBody">불러오는 중…</div></details>
   <details id="sources" class="rules-like"><summary>손님이 온 곳 (결제 수)</summary><div id="sourcesBody">불러오는 중…</div></details>
+  <details id="funnel" class="rules-like"><summary>결제창 앞뒤 (최근 14일)</summary><div id="funnelBody">불러오는 중…</div></details>
+  <details id="rebuy" class="rules-like"><summary>재구매 링크 (지금까지)</summary><div id="rebuyBody">불러오는 중…</div></details>
+  <details id="news" class="rules-like"><summary id="newsSum">소식 메일 (소식 받기 동의한 분만)</summary><div id="newsBody">불러오는 중…</div></details>
+  <details id="trial" class="rules-like"><summary id="trialSum">체험단 (무료 코드 · 후기 싣기)</summary><div id="trialBody">불러오는 중…</div></details>
   <main id="view"></main>
 </section>
 
@@ -298,28 +302,108 @@ async function boot() {
   const me = await fetch('/api/studio/me').then(r => r.json()).catch(() => ({}));
   if (!me.loggedIn) return show('login');
   show('app');
-  loadSources(); loadDaily();
+  loadSources(); loadDaily(); loadFunnel(); loadTrial(); loadRebuy(); loadNews();
   await loadWeeks();
+}
+// 체험단(사장님 2026-11-05 "체험단 후기 30명"): 무료 코드 만들기(모두 30개, 한 번에 10개까지)와 후기 싣기.
+// 코드 링크를 체험단 한 분께 하나씩 보내면, 고른 리포트 한 권이 0원으로 결제 없이 만들어져요. 한 번 쓰면 끝.
+// 후기는 리포트를 받은 손님만 주문 화면에서 남기고, 여기서 '싣기'를 눌러야 사이트에 보여요. 체험단 후기에는 '체험단 무료 제공'이 저절로 붙어요.
+const PNAME = { lifetime: '평생사주', romance: '연애사주', intimate: '깊은 궁합', reunion: '재회사주', newyear: '2027 신년운세', wealth: '재물운', career: '직업운', business: '사업운', health: '건강운' };
+// 소식 메일(자청 기획안 F-3, 11-05): 무료 결과 메일에서 '새 리포트 소식 받기'에 동의한 분께만 보내요. 제목 앞 (광고)와 그만 받기 링크는 저절로 붙어요.
+async function loadNews() {
+  const box = $('#newsBody');
+  try {
+    const { subscribers } = await api('news');
+    $('#newsSum').textContent = `소식 메일 (동의한 분 ${subscribers}명)`;
+    const sub = el('input', { class: 'field', value: '2027 신년운세, 2월 28일까지만 열려요' });
+    const txt = el('textarea', { class: 'field', rows: 6 }); txt.value = '안녕하세요, 운명서재예요.\n2027년 열두 달 가운데 내 운이 풀리는 달과 조심할 달을 알려 드리는 2027 신년운세를 2월 28일까지만 열어요.\n좋은 운 3개, 조심할 운 3개는 지금도 무료로 먼저 볼 수 있어요.\nunmyeong-saju.com/dn';
+    let cursor = '';
+    const send = el('button', { class: 'btn small', onclick: async () => {
+      if (!confirm(`동의한 ${subscribers}명에게 보낼까요? 제목 앞에 (광고)가 붙어요.`)) return;
+      send.disabled = true;
+      try { const r = await api('news', { method: 'POST', body: { subject: sub.value, body: txt.value, cursor } }); cursor = r.next || ''; alert(`${r.sent}통 보냈어요.${r.next ? ' 남은 분이 있어요. 한 번 더 눌러 주세요.' : ''}`); }
+      catch (e) { alert('보내지 못했어요.'); }
+      send.disabled = false;
+    } }, '보내기');
+    box.replaceChildren(el('p', { class: 'note' }, '받는 분: 무료 결과 메일에서 소식 받기에 동의한 분만. 할인·쿠폰은 넣지 마세요(10-27 결정).'), el('p', {}, '제목'), sub, el('p', {}, '내용'), txt, send);
+  } catch { box.textContent = '불러오지 못했어요.'; }
+}
+async function loadTrial() {
+  const box = $('#trialBody');
+  try {
+    const [{ codes }, { reviews }] = await Promise.all([api('trial-codes'), api('reviews')]);
+    const used = codes.filter(c => c.usedBy).length, pend = reviews.filter(r => r.status === 'pending').length;
+    $('#trialSum').textContent = `체험단 (코드 ${codes.length}/30 · 쓴 코드 ${used} · 싣기 기다리는 후기 ${pend})`;
+    const count = el('select', { class: 'field', 'aria-label': '만들 개수' }, ...[1, 3, 5, 10].map(n => el('option', { value: n }, n + '개')));
+    const make = el('button', { class: 'btn small', onclick: async () => {
+      make.disabled = true;
+      try { const r = await api('trial-codes', { method: 'POST', body: { count: Number(count.value) } }); await navigator.clipboard?.writeText(r.codes.map(c => c.url).join('\n')).catch(() => {}); alert(r.codes.length + '개 만들었어요. 링크를 복사해 두었어요.'); }
+      catch (e) { alert(e.code === 'TRIAL_LIMIT' ? '체험단 코드는 모두 30개까지예요.' : '만들지 못했어요.'); }
+      make.disabled = false; loadTrial();
+    } }, '무료 코드 만들기');
+    const ct = el('table', {}, el('tr', {}, el('th', {}, '링크 (한 분께 하나씩)'), el('th', {}, '상태')));
+    for (const c of codes) ct.append(el('tr', {}, el('td', {}, el('code', {}, `https://unmyeong-saju.com/?coupon=${c.code}&from=trial`)), el('td', {}, c.usedBy ? `씀 · ${PNAME[c.productId] || ''}` : '안 씀')));
+    const rv = el('div', {});
+    if (!reviews.length) rv.append(el('p', {}, '아직 들어온 후기가 없어요.'));
+    for (const r of reviews) {
+      const act = a => async () => { if (a === 'delete' && !confirm('이 후기를 지울까요?')) return; await api('reviews/' + r.orderId, { method: 'POST', body: { action: a } }); loadTrial(); };
+      rv.append(el('div', { class: 'rules-like', style: 'padding:12px 0;border-top:1px solid #333' },
+        el('p', {}, `${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)} · ${PNAME[r.productId] || r.productId} · ${r.nick}${r.trial ? ' · 체험단 무료 제공' : ''} · ${String(r.at).slice(0, 10)} · `, el('b', {}, { pending: '싣기 기다림', approved: '사이트에 실림', hidden: '숨김' }[r.status] || r.status)),
+        el('p', {}, r.text),
+        el('div', {}, r.status !== 'approved' ? el('button', { class: 'btn small', onclick: act('approve') }, '싣기') : null, ' ', r.status !== 'hidden' ? el('button', { class: 'btn ghost small', onclick: act('hide') }, '숨기기') : null, ' ', el('button', { class: 'btn ghost small', onclick: act('delete') }, '지우기'))));
+    }
+    box.replaceChildren(el('div', {}, count, ' ', make), el('p', { class: 'note' }, '링크를 체험단 한 분께 하나씩 보내 주세요. 고른 리포트 한 권이 0원으로 만들어져요(같이 고른 다른 리포트는 정가 결제). 한 번 쓴 링크는 다시 안 돼요.'), ct,
+      el('h4', {}, '후기'), el('p', { class: 'note' }, "후기 글은 고칠 수 없어요(싣기·숨기기·지우기만). 체험단 후기에는 사이트에서 '체험단 무료 제공'이 저절로 붙어요."), rv);
+  } catch { box.textContent = '불러오지 못했어요.'; }
 }
 // 손님이 온 곳: 짧은 주소(/d, /dn …)나 ?from= 꼬리표로 들어와 결제한 수(사장님 2026-11-03)
 const SOURCE_NAMES = { d: '당근 소식 링크 (/d)', dn: '당근 광고 신년운세 (/dn)', dr: '당근 광고 연애사주 (/dr)', dw: '당근 광고 재물운 (/dw)', df: '당근 광고 무료 사주 (/df)',
-  m: '메타 광고 (/m)', t: '스레드 (/t)', i: '인스타 (/i)', f: '페북 (/f)', y: '유튜브 (/y)', direct: '꼬리표 없이 들어옴' };
+  bn: '블로그 신년운세 (/bn)', bw: '블로그 재물운 (/bw)', bc: '블로그 깊은 궁합 (/bc)', bf: '블로그 무료 사주 (/bf)', tn: '스레드 신년운세 (/tn)',
+  m: '메타 광고 (/m)', t: '스레드 (/t)', i: '인스타 (/i)', f: '페북 (/f)', y: '유튜브 (/y)', tm: '무료 결과 메일 (tm)', s: '무료 결과 공유 카드 (/s)', dw2: '당근 새 광고 재물운 (/dw2)', dn2: '당근 새 광고 신년운세 (/dn2)', dre: '당근 광고 재회사주 (/dre)', dre1: '당근 재회1 · 전 애인의 프사 (dre1)', dre2: '당근 재회2 · 헤어진 지 3주 (dre2)', dre3: '당근 재회3 · 연락해도 되는 달 (dre3)', dw3: '당근 재물1 · 돈 들어오는 해 12년 지도 (dw3)', dw4: '당근 재물2 · 왜 항상 가난할까 (dw4)', dw5: '당근 재물3 · 돈 들어오는 때 (dw5)', dn3: '당근 신년1 · 운이 풀리는 달 (dn3)', dn4: '당근 신년2 · 좋은 운 준비 (dn4)', dn5: '당근 신년3 · 어떤 운이 쏟아질까 (dn5)', rv: '후기 요청 메일 (rv)', trial: '체험단 무료 (0원)', direct: '꼬리표 없이 들어옴' };
 // 일별 주문(사장님 2026-11-04): 날짜마다 결제 수와 리포트가 손님 메일로 갔는지. 못 보낸 게 있으면 칸이 열리고 빨갛게 보인다.
 async function loadDaily() {
   const box = $('#dailyBody');
   try {
     const { days } = await api('daily');
-    const bad = days.reduce((n, d) => n + d.held, 0), run = days.reduce((n, d) => n + d.running, 0);
+    const bad = days.reduce((n, d) => n + d.held + (d.bounced || 0), 0), run = days.reduce((n, d) => n + d.running, 0);
     $('#dailySum').textContent = '일별 주문 (보냄·못 보냄)' + (bad ? ` · 못 보낸 리포트 ${bad}개` : run ? ` · 만드는 중 ${run}개` : ' · 모두 보냄');
     if (bad) { $('#daily').open = true; $('#daily').classList.add('alert'); }
-    const t = el('table', {}, el('tr', {}, ...['날짜', '주문', '금액', '보냄', '못 보냄', '만드는 중', '취소'].map(h => el('th', {}, h))));
+    const t = el('table', {}, el('tr', {}, ...['날짜', '주문', '금액', '보냄', '도착 확인', '못 보냄', '만드는 중', '취소'].map(h => el('th', {}, h))));
     for (const d of days) {
       const [, mo, da] = d.date.split('-');
-      t.append(el('tr', { class: d.held ? 'bad' : '' },
+      t.append(el('tr', { class: d.held || d.bounced ? 'bad' : '' },
         el('td', {}, `${Number(mo)}/${Number(da)}`), el('td', { class: 'n' }, d.orders + '건'), el('td', { class: 'n' }, d.amount.toLocaleString('ko-KR') + '원'),
-        el('td', { class: 'n' }, d.sent + (d.late ? ` (늦게 ${d.late})` : '')), el('td', { class: 'n' }, String(d.held)), el('td', { class: 'n' }, String(d.running)), el('td', { class: 'n' }, String(d.canceled))));
+        el('td', { class: 'n' }, d.sent + (d.late ? ` (늦게 ${d.late})` : '')),
+        el('td', { class: 'n' }, (d.delivered || 0) + (d.bounced ? ` (튕김 ${d.bounced})` : '')), el('td', { class: 'n' }, String(d.held)), el('td', { class: 'n' }, String(d.running)), el('td', { class: 'n' }, String(d.canceled))));
     }
     box.replaceChildren(t, el('p', { class: 'note' }, "못 보냄 = 글 검사를 4번 다 통과하지 못해 멈춘 리포트예요. 클로드에게 '다시 보내'라고 하면 다시 만들어요. 손님 메일 주소가 틀려 튕긴 건 https://resend.com/emails 에서 보여요."));
+  } catch { box.textContent = '불러오지 못했어요.'; }
+}
+// 결제창 앞뒤(P-30, 11-05): 결제하기를 누른 사람 중 몇 명이 결제했는지, 온 곳마다. 광고 클릭 수는 당근 화면에 있다.
+async function loadFunnel() {
+  const box = $('#funnelBody');
+  try {
+    const { from, to, sources } = await api('funnel');
+    const rows = Object.entries(sources).sort((a, b) => b[1].started - a[1].started);
+    if (!rows.length) { box.textContent = '최근 14일 동안 결제하기를 누른 손님이 없어요.'; return; }
+    const t = el('table', {}, el('tr', {}, ...['들어온 곳', '결제하기 누름', '결제함', '결제 안 함', '결제율'].map(h => el('th', {}, h))));
+    for (const [k, v] of rows) {
+      const rate = v.started ? Math.round(v.paid / v.started * 100) + '%' : '-';
+      t.append(el('tr', {}, el('td', {}, SOURCE_NAMES[k] || k), el('td', { class: 'n' }, v.started + '명'), el('td', { class: 'n' }, v.paid + '명'),
+        el('td', { class: 'n' }, v.unpaid + (v.waiting ? ` (+ 결제창 열림 ${v.waiting})` : '')), el('td', { class: 'n' }, rate)));
+    }
+    box.replaceChildren(t, el('p', { class: 'note' }, `${from} ~ ${to}. 기간을 바꿔 보려면 /api/studio/funnel?from=YYYY-MM-DD&to=YYYY-MM-DD. 같은 사람이 같은 날 같은 상품을 여러 번 눌러도 한 명으로 셉니다. 결제창까지 왔다가 결제하지 않은 사람이 많으면 결제창·가격 쪽, 적으면 그 앞(소개·정보 입력) 쪽을 봅니다.`));
+  } catch { box.textContent = '불러오지 못했어요.'; }
+}
+// 재구매 기준선(P-CR-1, 11-05): 리포트 끝 재구매 링크가 몇 번 다시 쓰였는지. 안내 메일(P-10)을 켜기 전 값과 비교한다.
+async function loadRebuy() {
+  const box = $('#rebuyBody');
+  try {
+    const r = await api('rebuy');
+    const t = el('table', {}, el('tr', {}, ...['결제한 주문', '재구매 링크 받음', '한 번 이상 쓰임', '쓰인 비율', '링크로 결제', '그 금액'].map(h => el('th', {}, h))),
+      el('tr', {}, el('td', { class: 'n' }, r.paidOrders + '건'), el('td', { class: 'n' }, r.issued + '건'), el('td', { class: 'n' }, r.used + '건'),
+        el('td', { class: 'n' }, r.rate == null ? '-' : r.rate + '%'), el('td', { class: 'n' }, r.rebuyOrders + '건'), el('td', { class: 'n' }, r.rebuyAmount.toLocaleString('ko-KR') + '원')));
+    box.replaceChildren(t, el('p', { class: 'note' }, '시험 결제와 묶음으로 함께 만든 책은 세지 않습니다. 재구매 링크는 결제한 주문마다 리포트 끝에 하나씩 들어갑니다.'));
   } catch { box.textContent = '불러오지 못했어요.'; }
 }
 async function loadSources() {

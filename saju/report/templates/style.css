@@ -177,3 +177,11 @@ a.go { color: #9e2f22; font-weight: 700; text-decoration: underline; white-space
 .more-rebuy { font-weight: 700; color: #9e2f22; border: 1.2pt solid #9e2f22; background: #fbeee6; padding: 1.5mm 3mm; margin: 0 0 2.5mm; }
 .rebuy-price { color: #9e2f22; font-size: 14pt; }
 .rebuy-price strong { color: #9e2f22; }
+
+/* 선물 메시지 쪽 (2026-11-05): 표지 바로 다음, 한지 바탕에 손님이 쓴 말 */
+.gift-page { page: cover; break-before: page; position: relative; width: 210mm; height: 297mm; overflow: hidden; background: #f4ead6; color: #2b241b; }
+.gift-card { position: absolute; left: 20mm; right: 20mm; top: 62mm; padding: 18mm 14mm; border: .6mm solid #b08a4a; box-shadow: 0 0 0 2.2mm #f4ead6, 0 0 0 2.6mm #b08a4a; text-align: center; }
+.gift-head { font-family: "Song Myung", "Noto Serif CJK KR", serif; font-size: 28pt; color: #8a1c1c; letter-spacing: 1mm; margin-bottom: 11mm; }
+.gift-msg { font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 26pt; font-weight: 700; color: #3b3226; line-height: 1.7; white-space: pre-line; word-break: keep-all; margin: 0; }
+.gift-from { font-family: "Gowun Batang", "Noto Serif CJK KR", serif; font-size: 22pt; font-weight: 700; margin-top: 12mm; text-align: right; }
+.gift-foot { font-size: 16pt; color: #4f4333; margin-top: 14mm; }

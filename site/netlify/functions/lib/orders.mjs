@@ -1,6 +1,7 @@
 // 주문 규칙: 접수 확인, 주문 만들기, 상태 바꾸기. 저장소(store)와 바깥 서비스(services)는 밖에서 넣어 준다.
-import { createHash, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { INTAKE_POLICY_VERSION, PRODUCTS, intakePayload, evaluateIntake } from './intake.mjs';
+import { afterDelivered } from './followup.mjs';
 import { quote, afterPaid, extraBody } from './discounts.mjs';
 
 export const CALCULATION_VERSION = 'saju-engine-0.2';
@@ -14,7 +15,7 @@ export const STATUS_MESSAGES = {
   processing: '사주 결과를 작성하고 검사하고 있어요.',
   retry: '처리가 잠시 지연되어 다시 진행하고 있어요.',
   held: '결과 준비 중 문제가 확인되어 발송을 보류했어요. 확인 후 다시 보내드리거나 환불해 드릴게요.',
-  email_accepted: '결과 PDF를 이메일로 보냈어요.',
+  email_accepted: '결과 PDF를 이메일로 보냈어요. 이미 보낸 리포트라 단순 변심 환불은 안 돼요.',
   test_paid: '시험 결제가 확인되었어요. 지금은 시험 운영 중이라 결과 PDF는 만들지 않아요.',
   refund_pending: '결제 취소를 처리하고 있어요.',
   refunded: '결제 취소가 확인되었어요.',
@@ -148,7 +149,18 @@ export async function confirmPayment(store, services, order, { paymentKey, amoun
     await store.set(`orders/${order.id}`, order);
     throw new ApiError(400, 'AMOUNT_MISMATCH');
   }
-  const result = await services.tossConfirm({ paymentKey, orderId: order.id, amount: order.amount });
+  // 체험단 무료 리포트(금액 0원): 토스 결제창 없이 승인한다. 코드는 이 주문에 묶어 다시 못 쓰게 한다.
+  const free = order.amount === 0 && order.discount?.kind === 'trial';
+  if (free) {
+    const c = await store.get(`coupons/${order.discount.code}`);
+    if (!c || c.kind !== 'trial' || (c.usedBy && c.usedBy !== order.id)) {
+      setStatus(order, 'payment_failed', now, 'TRIAL_USED');
+      await store.set(`orders/${order.id}`, order);
+      throw new ApiError(400, 'COUPON_INVALID');
+    }
+    await store.set(`coupons/${c.code}`, { ...c, usedBy: order.id });
+  }
+  const result = free ? { ok: true } : await services.tossConfirm({ paymentKey, orderId: order.id, amount: order.amount });
   if (!result.ok) {
     setStatus(order, 'payment_failed', now, result.code);
     await store.set(`orders/${order.id}`, order);
@@ -203,13 +215,50 @@ export async function workerStatus(store, services, order, status, note, now = n
   return order;
 }
 
+// 결제 취소 반영(P-VC-3, 11-05): 토스 관리자 화면에서 환불해도 주문은 그대로라 리포트가 만들어져 메일로 나갔다.
+// 토스에 결제 상태를 직접 물어 전액 취소(CANCELED)면 그 결제의 주문(묶음 포함)을 refunded로 바꾸고
+// 출생 정보·질문을 지운다. 토스 조회가 실패하면 아무것도 바꾸지 않는다(정상 주문 발송을 막지 않음).
+const TOSS_CANCELED = new Set(['CANCELED']); // 부분 취소(묶음 중 한 권 환불 등)는 다른 책까지 멈추지 않도록 여기서 다루지 않는다
+const REFUNDABLE = new Set(['queued', 'processing', 'retry', 'held', 'email_accepted']);
+
+export async function syncRefund(store, services, order, now = new Date()) {
+  const root = order.parentId ? await store.get(`orders/${order.parentId}`) : order;
+  if (!root) return false;
+  if (root.status !== 'refunded') {
+    // 체험단 무료(0원) 주문은 토스 결제가 없어 물어볼 것이 없다.
+    if (!root.paymentKey || !services.tossPayment || (root.amount === 0 && root.discount?.kind === 'trial')) return false;
+    let p;
+    try { p = await services.tossPayment(root.paymentKey); } catch (e) { console.error('toss lookup', e?.message); return false; }
+    if (!p || p.orderId !== root.id || !TOSS_CANCELED.has(p.status)) return false;
+    root.refundStatus = p.status;
+  }
+  const kids = await Promise.all((root.children || []).map(id => store.get(`orders/${id}`)));
+  // 환불은 사장님이 토스에서 직접 하므로 따로 알리지 않는다(이미 보낸 주문만 아래에서 한 번 알린다). 스튜디오는 refunded를 '취소'로 센다.
+  let told = false;
+  for (const o of [root, ...kids.filter(Boolean)]) {
+    if (!REFUNDABLE.has(o.status)) continue;
+    // 이미 리포트를 보낸 주문(사장님 2026-11-06: 보낸 뒤에는 환불 불가): 토스에서 취소됐으면 사장님께 '이미 보낸 주문'이라고 알린다.
+    if (o.status === 'email_accepted' && services.notifyOwner && !told) {
+      told = true;
+      try { await services.notifyOwner(o, `이미 ${o.emailedAt ? new Date(o.emailedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + '에 ' : ''}리포트를 보낸 주문인데 토스에서 결제가 취소됐어요. 보낸 뒤에는 단순 변심 환불 대상이 아니에요. 실수로 취소했다면 토스 관리자 화면에서 확인해 주세요.`, 'sent_refund'); } catch (e) { console.error('notify sent_refund', e?.message); }
+    }
+    setStatus(o, 'refunded', now, `toss ${root.refundStatus || 'CANCELED'}`);
+    delete o.payload; delete o.disclosures;
+    await store.set(`orders/${o.id}`, o);
+  }
+  return true;
+}
+
 export async function deliverPdf(store, services, order, pdf, now = new Date()) {
   if (!['queued', 'processing', 'retry', 'held'].includes(order.status)) throw new ApiError(409, 'ORDER_NOT_PROCESSING');
   if (!pdf?.byteLength || pdf.byteLength > 5_500_000) throw new ApiError(400, 'PDF_REQUIRED');
+  // 보내기 직전에 한 번 더: 그사이 환불된 주문에는 메일을 보내지 않는다(P-VC-3)
+  if (await syncRefund(store, services, order, now)) throw new ApiError(409, 'ORDER_REFUNDED');
   await store.setBytes(`pdf/${order.id}`, pdf);
-  await services.sendEmail(order, pdf);
+  await rememberMail(store, order, await services.sendEmail(order, pdf));
   order.emailedAt = now.toISOString();
   setStatus(order, 'email_accepted', now);
+  await afterDelivered(store, order, now).catch(e => console.error('afterDelivered', e?.message));   // 다음 날 후기 요청 예약 + 보낸 수(자청 기획안 E-2·E-4)
   // 메일이 나가면 출생 정보·질문은 바로 지운다. PDF와 받는 분 이름은 다시 보내기를 위해 7일만 둔다.
   order.mailName = order.payload?.self?.name || null;
   delete order.payload; delete order.disclosures;
@@ -224,7 +273,7 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   const pdf = await store.getBytes(`pdf/${order.id}`);
   if (!pdf) throw new ApiError(410, 'PDF_NOT_AVAILABLE');
   // 메일 서비스는 같은 요청 키를 24시간 동안 중복으로 보고 다시 보내지 않으므로 다시 보내기마다 새 번호를 쓴다.
-  await services.sendEmail({ ...order, resends: order.resends + 1 }, pdf);
+  await rememberMail(store, order, await services.sendEmail({ ...order, resends: order.resends + 1 }, pdf));
   order.resends += 1;
   order.lastResendKey = idempotencyKey || null;
   order.updatedAt = now.toISOString();
@@ -232,16 +281,71 @@ export async function resend(store, services, order, idempotencyKey, now = new D
   return order;
 }
 
+// 메일 도착 확인(P-IT-2, 11-05): 보낸 메일 번호를 주문에 붙여 두고, Resend 알림(webhook)이 오면 '도착함/튕김'을 남긴다.
+// 지금까지는 '발송 요청됨'까지만 알았다. 메일 주소가 틀린 손님은 책을 못 받고도 아무도 몰랐다.
+async function rememberMail(store, order, mailId) {
+  if (!mailId || typeof mailId !== 'string') return;
+  order.mailIds = [...(order.mailIds || []), mailId].slice(-5);
+  await store.set(`mail/${mailId}`, { orderId: order.id });
+}
+
+const MAIL_EVENTS = { 'email.delivered': 'delivered', 'email.bounced': 'bounced', 'email.complained': 'complained', 'email.delivery_delayed': 'delayed' };
+
+export async function mailEvent(store, services, event, now = new Date()) {
+  const status = MAIL_EVENTS[event?.type];
+  const mailId = event?.data?.email_id;
+  if (!status || !mailId) return null;
+  const link = await store.get(`mail/${mailId}`);
+  if (!link?.orderId) return null;
+  const order = await store.get(`orders/${link.orderId}`);
+  if (!order) return null;
+  // 나중에 온 '늦어짐'이 이미 받은 '도착함'을 덮지 않는다
+  if (status === 'delayed' && order.mailStatus === 'delivered') return order;
+  order.mailStatus = status;
+  order.mailStatusAt = now.toISOString();
+  await store.set(`orders/${order.id}`, order);
+  if (status === 'bounced' && services.notifyOwner) {
+    await services.notifyOwner(order, '메일 주소가 틀렸거나 받는 쪽에서 거절했어요. 손님께 다른 연락처로 알리거나 주소를 고쳐 다시 보내 주세요.', 'bounced').catch(() => {});
+  }
+  return order;
+}
+
+// Resend 알림 서명 확인(Svix 방식): 'whsec_' 뒤 base64 비밀값으로 `id.시각.본문`을 HMAC-SHA256 한 값이 svix-signature 안에 있어야 한다. 5분 넘은 알림은 받지 않는다.
+export function verifyMailWebhook(secret, headers, body, now = Date.now()) {
+  const id = headers.get('svix-id'), ts = headers.get('svix-timestamp'), sigs = headers.get('svix-signature') || '';
+  if (!secret || !id || !ts || !/^\d+$/.test(ts) || Math.abs(now / 1000 - Number(ts)) > 300) return false;
+  const key = Buffer.from(String(secret).replace(/^whsec_/, ''), 'base64');
+  const want = createHmac('sha256', key).update(`${id}.${ts}.${body}`).digest('base64');
+  return sigs.split(' ').some(s => { const v = s.split(',')[1] || ''; return v.length === want.length && timingSafeEqual(Buffer.from(v), Buffer.from(want)); });
+}
+
 // 멈춘 주문 알림: 결제는 됐는데 1시간이 넘도록 결과 작업이 끝나지 않은 주문(작업 서버가 꺼졌을 때 등)을 사장님 메일로 한 번 알린다.
 const RUNNING = new Set(['queued', 'processing', 'retry']);
 
+// 한 시간마다(cleanup): 결제 뒤 1시간 넘게 끝나지 않았거나 발송 보류된 주문은 결과 작업을 자동으로 한 번 다시 시작하고,
+// 그래도 1시간 넘게 안 끝나면 사장님께 한 번 알린다. (11-04 재물운 주문이 5시간 50분 방치된 일, P-22)
+const AUTO_RETRY = new Set(['queued', 'processing', 'retry', 'held']);
 export async function flagStuck(store, services, now = new Date()) {
   let flagged = 0;
   for (const key of await store.list('orders/')) {
     const order = await store.get(key);
-    if (!order || !RUNNING.has(order.status) || order.stuckNotifiedAt) continue;
+    if (!order || !AUTO_RETRY.has(order.status)) continue;
     if ((now - new Date(order.updatedAt)) / 3_600_000 < 1) continue;
-    await services.notifyOwner?.(order, `결과 작업이 1시간 넘게 끝나지 않았어요 (상태 ${order.status})`, 'stuck').catch(() => {});
+    if (!order.autoRetriedAt && order.payload) {
+      order.autoRetriedAt = now.toISOString();
+      const from = order.status;
+      try {
+        await services.startWorker(order.id);
+        setStatus(order, 'queued', now, `auto retry from ${from}`);
+      } catch {
+        setStatus(order, 'retry', now, 'auto retry dispatch failed');
+      }
+      await store.set(key, order);
+      flagged += 1;
+      continue;
+    }
+    if (!RUNNING.has(order.status) || order.stuckNotifiedAt) continue;
+    await services.notifyOwner?.(order, `결과 작업이 1시간 넘게 끝나지 않았어요 (상태 ${order.status}, 자동 재실행 ${order.autoRetriedAt ? '했음' : '못 함'})`, 'stuck').catch(() => {});
     order.stuckNotifiedAt = now.toISOString();
     await store.set(key, order);
     flagged += 1;
@@ -264,6 +368,7 @@ export async function eraseOld(store, now = new Date()) {
     } else if (DONE.has(order.status) && age > RETENTION_DAYS) {
       setStatus(order, 'erased', now);
       delete order.payload; delete order.disclosures; delete order.mailName; delete order.bundle;
+      for (const id of order.mailIds || []) await store.delete(`mail/${id}`);
       await store.delete(`pdf/${order.id}`);
       erased += 1;
     } else continue;

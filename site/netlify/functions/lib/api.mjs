@@ -3,10 +3,19 @@ import { PRODUCTS } from './intake.mjs';
 import {
   ApiError, assess, createOrder, loadOrder, publicView, confirmPayment, markFailed,
   workerStatus, deliverPdf, resend, sameSecret, STATUS_MESSAGES, reportFileName, productName,
+  mailEvent, verifyMailWebhook, syncRefund,
 } from './orders.mjs';
 import { ready, tossKeyMode } from './services.mjs';
 import { quote, rebuyForJob } from './discounts.mjs';
 import { makeStudio } from './studio.mjs';
+import { LeadError, sendTasterMail, stopLead } from './leads.mjs';
+import { submitReview, reviewFor, publicReviews } from './reviews.mjs';
+import { reviewByLink, deliveredCount, COUNTER_MIN } from './followup.mjs';
+
+// 무료 맛보기 계산에 쓰는 자료. 이 사이트가 내보내는 파일을 그대로 읽는다(화면과 같은 판, 제1조항).
+let assetCache = null;
+const siteAssets = origin => (assetCache ||= Promise.all(['saju-data.json', 'texts.json'].map(f => fetch(`${origin}/assets/free/${f}`).then(r => { if (!r.ok) throw Error(f); return r.json(); })))
+  .then(([data, texts]) => ({ data, texts })).catch(e => { assetCache = null; throw e; }));
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -20,14 +29,54 @@ async function readJson(req, limit = 65_536) {
 
 const bearer = req => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || '';
 
-export function makeApi({ store, services, env, studioStore = store }) {
-  const studio = makeStudio({ store: studioStore, orderStore: store, services, env });
+export function makeApi({ store, services, env, studioStore = store, leadStore = store, assets }) {
+  const studio = makeStudio({ store: studioStore, orderStore: store, services, env, leadStore });
   return async function handle(req) {
     const url = new URL(req.url);
     const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
     const m = req.method;
     try {
       if (parts[0] === 'studio' || (parts[0] === 'internal' && parts[1] === 'studio')) return await studio(req, parts);
+      // Resend 메일 도착·튕김 알림(P-IT-2). 비밀값(RESEND_WEBHOOK_SECRET)이 없으면 꺼져 있다.
+      if (m === 'POST' && parts.join('/') === 'mail-events') {
+        if (!env.RESEND_WEBHOOK_SECRET) return json({ error: 'NOT_FOUND' }, 404);
+        const text = await req.text();
+        if (text.length > 65_536) return json({ error: 'TOO_LARGE' }, 413);
+        if (!verifyMailWebhook(env.RESEND_WEBHOOK_SECRET, req.headers, text)) return json({ error: 'BAD_SIGNATURE' }, 401);
+        let event; try { event = JSON.parse(text); } catch { return json({ error: 'BAD_JSON' }, 400); }
+        await mailEvent(store, services, event);
+        return json({ ok: true });
+      }
+      // 무료 맛보기 결과 메일(손님이 결과 화면에서 직접 요청). 리포트 메일과 같은 Resend로 보낸다.
+      if (m === 'POST' && parts.join('/') === 'taster-mail') {
+        if (!env.RESEND_API_KEY || !services.sendMail) return json({ code: 'MAIL_NOT_READY' }, 503);
+        try {
+          return json(await sendTasterMail({ store: leadStore, send: services.sendMail, env, body: await readJson(req, 8_192),
+            assets: assets || (() => siteAssets(new URL(req.url).origin)), ip: req.headers.get('x-nf-client-connection-ip') || '' }));
+        } catch (e) { if (e instanceof LeadError) return json({ code: e.code }, e.status); throw e; }
+      }
+      // 사이트에 싣는 후기(사장님이 관리 사이트에서 '싣기'한 것만). 5분 동안 저장해 두고 쓴다.
+      if (m === 'GET' && parts.join('/') === 'reviews') {
+        const pid = url.searchParams.get('product') || '';
+        const r = await publicReviews(store, /^[a-z]{3,12}$/.test(pid) ? pid : '');
+        return new Response(JSON.stringify(r), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
+      }
+      // 메일 속 서명 링크로 남기는 후기(review.html, 자청 기획안 E-2)
+      if (parts.join('/') === 'review-link' && (m === 'GET' || m === 'POST')) return json(await reviewByLink(store, env, m, Object.fromEntries(url.searchParams), m === 'POST' ? await readJson(req, 4_096) : null));
+      // 지금까지 보낸 리포트 수(50권이 넘어야 보여 준다, 자청 기획안 E-4)
+      if (m === 'GET' && parts.join('/') === 'stats/public') { const n = await deliveredCount(store); return new Response(JSON.stringify({ delivered: n >= COUNTER_MIN ? n : null }), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=600' } }); }
+      if (m === 'GET' && parts.join('/') === 'leads/stop') return await stopLead(leadStore, url.searchParams.get('id'), url.searchParams.get('t'));
+      // 토스 결제 상태 변경 알림(P-VC-3). 본문은 믿지 않고, 저장된 결제 키로 토스에 다시 물어 취소면 주문에 반영한다.
+      if (m === 'POST' && parts.join('/') === 'toss-events') {
+        const text = await req.text();
+        if (text.length > 65_536) return json({ error: 'TOO_LARGE' }, 413);
+        let event; try { event = JSON.parse(text); } catch { return json({ error: 'BAD_JSON' }, 400); }
+        const d = event?.data || {};
+        const id = String(d.orderId || '');
+        const order = /^[a-f0-9-]{36}$/.test(id) ? await store.get(`orders/${id}`) : null;
+        if (order?.paymentKey && d.paymentKey === order.paymentKey) await syncRefund(store, services, order);
+        return json({ ok: true });
+      }
       if (m === 'GET' && parts.join('/') === 'payment-config') {
         return json({
           customerAnalysisReady: ready(env), clientKey: ready(env) ? String(env.TOSS_CLIENT_KEY).trim() : '',
@@ -85,6 +134,9 @@ export function makeApi({ store, services, env, studioStore = store }) {
           const body = await readJson(req);
           return json(publicView(await markFailed(store, order, body.code), false));
         }
+        // 후기: 리포트를 메일로 받은 주문만(주문 화면의 접근 열쇠로)
+        if (action === 'review' && m === 'GET') return json({ review: await reviewFor(store, order.id), canReview: Boolean(order.emailedAt) });
+        if (action === 'review' && m === 'POST') return json(await submitReview(store, order, await readJson(req, 4_096)));
         if (m === 'POST' && action === 'resend') {
           const updated = await resend(store, services, order, req.headers.get('idempotency-key'));
           return json(publicView(updated, true));
@@ -95,6 +147,8 @@ export function makeApi({ store, services, env, studioStore = store }) {
         const order = await loadOrder(store, parts[2]);
         const action = parts[3] || '';
         if (m === 'GET' && !action) {
+          // 작업 시작 때 환불됐는지 먼저 본다. 환불이면 작업이 '처리할 상태가 아님'으로 멈춘다(P-VC-3).
+          if (await syncRefund(store, services, order)) return json({ orderId: order.id, productId: order.productId, status: 'refunded' });
           if (!order.payload) throw new ApiError(410, 'ERASED');
           const rebuy = await rebuyForJob(store, order, env.SITE_URL).catch(() => null);
           // 같은 주문(묶음)에서 함께 산 상품: 리포트가 이미 산 상품을 다시 권하지 않고, 묶음 상품은 '결제 전에 보신'이라고 쓰지 않는다.

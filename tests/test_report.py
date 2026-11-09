@@ -108,7 +108,7 @@ def test_pdf_renders(tmp_path, facts):
     from saju.report import make_lifetime_report
     out = make_lifetime_report(analyze_person(SAMPLE, current_year=2026), ORDER, tmp_path / "r.pdf")
     assert (tmp_path / "r.pdf").stat().st_size > 100_000
-    assert 95 <= out["pages"] <= 120
+    assert 100 <= out["pages"] <= 120   # 화면 약속 "100장 이상"(P-PD-2)
 
 
 def test_html_has_no_python_leaks(facts):

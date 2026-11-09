@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from . import unity
-from .facts import OrderInfo, build_facts
+from .facts import OrderInfo, build_facts, gift_card
 from .outline import build_outline
 from .render import render_html, render_pdf
 from .writer import FINAL_SECTION, ClaudeWriter, DraftWriter
@@ -42,6 +42,7 @@ def make_lifetime_report(result: dict, order: OrderInfo, out_pdf: str | Path, wr
     sections = build_outline(facts)
     texts = (writer or DraftWriter()).write(facts, sections)
     issues = check_texts(facts, sections, texts, FINAL_SECTION)
+    facts["gift_card"] = gift_card(order)   # 글을 다 쓴 뒤에만 넣는다(손님 글이 AI에 가지 않게)
     html = render_html(facts, sections, texts)
     if html_out:
         Path(html_out).write_text(html, encoding="utf-8")
@@ -72,6 +73,7 @@ def make_romance_report(result: dict, order: OrderInfo, out_pdf: str | Path, wri
         writer.style, writer.final_section = R.ROMANCE_STYLE, R.FINAL_SECTION
     texts = writer.write(facts, sections)
     issues = check_texts(facts, sections, texts, R.FINAL_SECTION)
+    facts["gift_card"] = gift_card(order)
     html = render_html(facts, sections, texts, product="romance", static={**STATIC, **R.STATIC},
                        first=R.cross_sell_order(facts["romance"]["status"]))
     if html_out:
@@ -112,11 +114,13 @@ def prepare_product(product: str, result: dict, order: OrderInfo, answers: dict 
     import importlib
     if product not in THEME_PRODUCTS:
         raise ValueError(f"알 수 없는 상품: {product}")
-    if product in PAIR_PRODUCTS and partner is None:
+    if product in PAIR_PRODUCTS and partner is None and not (product == "reunion" and order.partner_unknown):
         raise ValueError(f"{product}는 상대방 정보가 필요해요")
     M = importlib.import_module(f".{product}", __name__)
     facts = build_facts(result, order)
     _merge_boundary(facts)
+    if partner is None and order.partner_unknown:
+        facts["partner_name"] = order.partner_name   # 상대 생일 없이 보는 재회사주
     if partner is not None:
         facts["partner"] = build_facts(partner, order)
         _merge_boundary(facts["partner"])
@@ -145,9 +149,10 @@ def make_product_report(product: str, result: dict, order: OrderInfo, out_pdf: s
     if texts is None:
         writer = writer or DraftWriter()
         if isinstance(writer, ClaudeWriter):
-            writer.style, writer.final_section = M.STYLE, M.FINAL_SECTION
+            writer.style, writer.final_section = (M.style_for(facts) if hasattr(M, "style_for") else M.STYLE), M.FINAL_SECTION
         texts = writer.write(facts, sections)
     issues = check_texts(facts, sections, texts, M.FINAL_SECTION)
+    facts["gift_card"] = gift_card(order)
     html = render_html(facts, sections, texts, product=product, static={**STATIC, **M.STATIC},
                        first=M.cross_sell_order(facts))
     if html_out:

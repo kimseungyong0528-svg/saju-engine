@@ -87,12 +87,15 @@ def reveal_fix(result: dict, product: str, rows: list[dict], score: str = "t_sco
     ny_good = {c["ko"] for c in ny_cells if c["good"]}
     from .facts import NY_AREA
     area = NY_AREA.get(product)
+    money_cache: dict = {}
     for r in rows:
         gz = r["ganzhi"]
         p = {"stem": STEMS.index(gz[0]), "branch": BRANCHES.index(gz[1])}
         label = str(r["year"]) if "month" not in r and "year" in r else ""
         gk, bk = RV.year_marks(fp, sex, product, label, [RV._mark_key(k, sex) for k in conf["good"] if rule_of(k)(p)],
                                [RV._mark_key(k, sex) for k in conf["bad"] if rule_of(k)(p)])
+        if label and "money" in gk and label not in RV.money_keep(fp, sex, product, int(label), money_cache):
+            gk = [k for k in gk if k != "money"]   # 돈의 별은 12년에 4번까지(화면 지도와 같은 해, 사장님 2026-11-06)
         if "month" in r and r.get("year") == 2027 and gz in ny_bad:
             gk = []
         if "month" in r and r.get("year") == 2027 and gz in ny_good:

@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="description" content="이 리포트의 풀이 글은 사주 계산 결과를 바탕으로 생성형 인공지능을 이용해 작성했습니다.">
+<meta name="keywords" content="생성형 인공지능 작성">
+<meta name="generator" content="운명서재 (생성형 인공지능 작성)">
 <title>{{ product.name }} · {{ f.person.name }} 님</title>
 <link rel="stylesheet" href="style.css">{% if product.header %}<style>@page { @top-left { content: "{{ product.header }}"; } }</style>{% endif %}
 </head>
@@ -405,6 +408,16 @@
   </div>
   <div class="brand">運命書齋 · 운명서재 · 금월선녀</div>
 </section>
+{% if f.gift_card %}
+<section class="gift-page">
+  <div class="gift-card">
+    <div class="gift-head">마음을 담아 드려요</div>
+    <p class="gift-msg">{{ f.gift_card.message }}</p>
+    {% if f.gift_card.sender %}<div class="gift-from">{{ f.gift_card.sender }} 드림</div>{% endif %}
+    <div class="gift-foot">{{ P.name }} 님을 위해 준비한 운명서재 리포트</div>
+  </div>
+</section>
+{% endif %}
 
 {% for sec in sections %}
   {% set body = sec.pages|rejectattr("figure", "equalto", "cover")|rejectattr("figure", "equalto", "toc")|first %}

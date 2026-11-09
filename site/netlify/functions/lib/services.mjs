@@ -23,6 +23,14 @@ export function realServices(env, fetcher = fetch) {
     return { ok: false, code: body.code || 'PAYMENT_FAILED' };
   }
 
+  // 결제 한 건의 지금 상태(DONE·CANCELED·PARTIAL_CANCELED …). 환불 반영(P-VC-3)에 쓴다.
+  async function tossPayment(paymentKey) {
+    const r = await fetcher(toss(`/${encodeURIComponent(paymentKey)}`), { headers: { Authorization: tossAuth } });
+    if (!r.ok) throw Error(`toss ${r.status}`);
+    const p = await r.json();
+    return { status: p.status, orderId: p.orderId };
+  }
+
   async function startWorker(orderId) {
     const r = await fetcher(`https://api.github.com/repos/${env.GITHUB_REPO || 'kimseungyong0528-svg/saju-engine'}/dispatches`, {
       method: 'POST',
@@ -49,6 +57,8 @@ export function realServices(env, fetcher = fetch) {
       body: JSON.stringify({ from: env.MAIL_FROM || '운명서재 <report@unmyeong-saju.com>', ...message }),
     });
     if (!r.ok) throw Error(`email ${r.status}`);
+    // Resend가 돌려주는 메일 번호. 나중에 '도착함/튕김' 알림(webhook)을 이 주문에 붙일 때 쓴다(P-IT-2).
+    return (await r.json().catch(() => ({})))?.id || null;
   }
 
   async function sendEmail(order, pdf) {
@@ -59,13 +69,15 @@ export function realServices(env, fetcher = fetch) {
       `${name}님, 운명서재입니다.`, '',
       `주문하신 ${product} 결과를 PDF 파일로 보내드려요. 이 메일에 붙어 있는 파일을 내려받아 보관해주세요.`, '',
       '개인정보 보호를 위해 출생 정보는 이 메일을 보내면서 바로 지웠어요. 결과 파일도 7일 뒤 서버에서 지워요. 이 PDF를 꼭 내려받아 보관해주세요.',
+      '7일 안에는 결제한 기기의 주문 화면에서 다시 내려받을 수 있고, 이 메일에 답장하시면 다시 보내 드려요.',
       ...(order.amount === 0 && order.parentId ? ['함께 주문하신 다른 리포트는 따로 메일로 보내드려요.', ''] : []),
       `리포트 끝의 '자세히 보기 (재구매 ${PERCENT}% 할인)' 링크를 누르면 다음 리포트를 ${PERCENT}% 할인받을 수 있어요.`,
-      '결과에 오류가 있거나 파일이 열리지 않으면 이 메일에 답장으로 알려주세요.', '',
+      '리포트를 이미 보내 드렸기 때문에, 이제 단순 변심 환불은 안 돼요(디지털 콘텐츠).',
+      '결과에 오류가 있거나 파일이 열리지 않으면 이 메일에 답장으로 알려주세요. 확인한 뒤 다시 보내 드리거나 환불해 드려요.', '',
       `운명서재 ${site}`,
     ].join('\n');
     const html = text.split('\n').map(l => l ? `<p style="margin:0 0 6px">${esc(l)}</p>` : '<br>').join('');
-    await resendEmail({
+    return await resendEmail({
       to: [order.email], subject: `[운명서재] ${name}님의 ${product} 결과가 도착했어요`, text, html,
       ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}),
       attachments: [{ filename: reportFileName(order), content: Buffer.from(pdf).toString('base64') }],
@@ -74,14 +86,17 @@ export function realServices(env, fetcher = fetch) {
 
   async function notifyOwner(order, note, kind = 'held') {
     if (!env.OWNER_EMAIL) return;
-    const what = kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : '발송 보류된 주문이 있어요';
+    const what = kind === 'sent_refund' ? '이미 리포트를 보낸 주문이 환불됐어요' : kind === 'stuck' ? '작업이 멈춘 주문이 있어요' : kind === 'bounced' ? '리포트 메일이 손님에게 닿지 않았어요' : '발송 보류된 주문이 있어요';
     await resendEmail({
       to: [env.OWNER_EMAIL], subject: `[운명서재] ${what} (${productName(order.productId)})`,
-      text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.`,
+      text: `주문번호 ${order.id}${order.parentId ? ` (묶음 주문, 결제는 주문 ${order.parentId})` : ''}\n상품 ${productName(order.productId)}\n금액 ${order.amount}원\n사유 ${note || '-'}${kind === 'sent_refund' ? '\n\n토스 관리자 화면: https://app.tosspayments.com' : '\n\n작업 기록: https://github.com/kimseungyong0528-svg/saju-engine/actions\n환불: https://app.tosspayments.com\n작업 기록을 확인하고 다시 만들거나, 토스 관리자 화면에서 환불해주세요.'}`,
     });
   }
 
-  return { tossConfirm, startWorker, startStudio, sendEmail, notifyOwner };
+  // 무료 맛보기 결과 메일(leads.mjs가 내용을 만든다). 답장은 사장님 메일로.
+  const sendMail = (message, key) => resendEmail({ ...message, ...(env.OWNER_EMAIL ? { reply_to: env.OWNER_EMAIL } : {}) }, key);
+
+  return { tossConfirm, tossPayment, startWorker, startStudio, sendEmail, notifyOwner, sendMail };
 }
 
 // 토스 키 확인. 이 사이트는 결제창(payment)을 쓰므로 'API 개별 연동 키'(ck/sk)만 맞는다.

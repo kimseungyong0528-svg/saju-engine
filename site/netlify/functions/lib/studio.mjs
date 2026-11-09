@@ -3,6 +3,8 @@
 // 게시물을 만들어도 사이트 배포는 일어나지 않는다.
 import { createHmac } from 'node:crypto';
 import { ApiError, sameSecret } from './orders.mjs';
+import { studioReviews, moderateReview, trialCodes, issueTrialCodes } from './reviews.mjs';
+import { sendNews } from './followup.mjs';
 
 const COOKIE = 'studio_s';
 const DAYS30 = 30 * 24 * 3600;
@@ -69,7 +71,7 @@ async function tooMany(store, now = new Date()) {
   return { blocked: n >= 20, bump: () => store.set(key, n + 1) };
 }
 
-export function makeStudio({ store, services, env, orderStore = store }) {
+export function makeStudio({ store, services, env, orderStore = store, leadStore = orderStore }) {
   return async function handle(req, parts) {
     const m = req.method;
     const url = new URL(req.url);
@@ -168,6 +170,14 @@ export function makeStudio({ store, services, env, orderStore = store }) {
 
     // ── 로그인한 사장님만 ──
     if (route === 'studio/weeks' && m === 'GET') return json({ weeks: await index(store) });
+    // 체험단(사장님 2026-11-05): 무료 초대 코드 만들기(모두 30개까지)와 후기 싣기·숨기기.
+    if (route === 'studio/trial-codes' && m === 'GET') return json({ codes: await trialCodes(orderStore) });
+    if (route === 'studio/trial-codes' && m === 'POST') return json(await issueTrialCodes(orderStore, (await body(req, 1024)).count, env.SITE_URL));
+    if (route === 'studio/reviews' && m === 'GET') return json(await studioReviews(orderStore));
+    // 소식 메일(자청 기획안 F-3): 소식 받기에 동의한 분께만, 제목에 (광고)·그만 받기 링크가 저절로 붙는다.
+    if (route === 'studio/news' && m === 'GET') return json({ subscribers: (await leadStore.list('leads/')).length });
+    if (route === 'studio/news' && m === 'POST') return json(await sendNews(leadStore, services, env, await body(req, 8192)));
+    if (parts[1] === 'reviews' && parts[2] && m === 'POST') return json(await moderateReview(orderStore, parts[2], String((await body(req, 1024)).action || '')));
     // 손님이 온 곳별 결제 수(사장님 2026-11-03). 최근 3달.
     if (route === 'studio/sources' && m === 'GET') {
       const months = [];
@@ -181,6 +191,13 @@ export function makeStudio({ store, services, env, orderStore = store }) {
     }
     // 일별 주문과 발송 결과(사장님 2026-11-04 "일별 주문 횟수랑 성공실패"). 최근 14일, 한국 날짜 기준.
     if (route === 'studio/daily' && m === 'GET') return json({ days: await dailyOrders(orderStore) });
+    // 결제창 앞뒤: 온 곳마다 결제하기 누른 사람·결제한 사람·안 한 사람(P-30). 최근 14일.
+    if (route === 'studio/funnel' && m === 'GET') {
+      const q = new URL(req.url).searchParams;
+      return json(await sourceFunnel(orderStore, new Date(), 14, { from: q.get('from'), to: q.get('to') }));
+    }
+    // 재구매 기준선(P-CR-1): 재구매 링크를 받은 결제 중 몇 개가 다시 쓰였는지.
+    if (route === 'studio/rebuy' && m === 'GET') return json(await rebuyBaseline(orderStore));
     if (parts[1] === 'weeks' && parts[2] && m === 'GET') {
       const week = checkWeek(parts[2]);
       const row = (await index(store)).find(w => w.week === week) || null;
@@ -263,7 +280,7 @@ export function outcomeOf(order) {
 export async function dailyOrders(store, now = new Date(), days = 14) {
   const kstDay = t => new Date(new Date(t).getTime() + 9 * 3600_000).toISOString().slice(0, 10);
   const out = {};
-  for (let i = 0; i < days; i++) out[kstDay(now.getTime() - i * 86_400_000)] = { orders: 0, amount: 0, books: 0, sent: 0, held: 0, running: 0, canceled: 0, late: 0 };
+  for (let i = 0; i < days; i++) out[kstDay(now.getTime() - i * 86_400_000)] = { orders: 0, amount: 0, books: 0, sent: 0, held: 0, running: 0, canceled: 0, late: 0, delivered: 0, bounced: 0 };
   for (const key of await store.list('orders/')) {
     const o = await store.get(key);
     // 묶음으로 함께 산 책(parentId)은 결제 승인 때 만들어지므로 만든 시각이 결제 시각이다
@@ -276,6 +293,60 @@ export async function dailyOrders(store, now = new Date(), days = 14) {
     const r = outcomeOf(o);
     if (r in row) row[r] += 1;
     if (r === 'sent' && (o.history || []).some(h => h.status === 'held')) row.late += 1;
+    // Resend 알림으로 확인한 도착·튕김(P-IT-2). 알림이 켜지기 전 주문은 둘 다 0이다.
+    if (o.mailStatus === 'delivered') row.delivered += 1;
+    if (o.mailStatus === 'bounced' || o.mailStatus === 'complained') row.bounced += 1;
   }
   return Object.entries(out).map(([date, v]) => ({ date, ...v }));
+}
+
+// 결제창 앞뒤(P-30, 11-05): 최근 며칠 동안 손님이 온 곳마다 '결제하기를 누른 사람'과 그중 결제한 사람·안 한 사람.
+// 주문 기록(awaiting_payment → 결제 또는 만료)은 이미 저장되고 있다. 새 개인정보를 모으지 않고, 화면에는 숫자만 보낸다.
+// 같은 사람이 같은 날 여러 번 누르면 한 번으로 센다(이메일·상품·한국 날짜가 같으면 한 사람). 한 번이라도 결제했으면 결제로 본다.
+// 기간을 고르면(from·to, 한국 날짜 YYYY-MM-DD, 둘 다 포함) 실험 전후를 나눠 볼 수 있다(전환최적화 요청). 없으면 최근 days일.
+export async function sourceFunnel(store, now = new Date(), days = 14, range = {}) {
+  const kstDay = t => new Date(new Date(t).getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+  const okDay = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const to = okDay(range.to) ? range.to : kstDay(now);
+  const from = okDay(range.from) ? range.from : kstDay(now.getTime() - (days - 1) * 86_400_000);
+  const people = new Map();
+  for (const key of await store.list('orders/')) {
+    const o = await store.get(key);
+    if (!o || o.parentId || o.testOnly || !o.createdAt) continue;
+    const day = kstDay(o.createdAt);
+    if (day < from || day > to) continue;
+    const id = `${o.email || o.id}|${o.productId}|${day}`;
+    const p = people.get(id) || { source: o.source || 'direct', paid: false, waiting: false, amount: 0 };
+    if (o.paidAt) { p.paid = true; p.amount += o.amount || 0; }
+    else if (o.status === 'awaiting_payment') p.waiting = true;
+    people.set(id, p);
+  }
+  const out = {};
+  for (const p of people.values()) {
+    const r = out[p.source] ||= { started: 0, paid: 0, unpaid: 0, waiting: 0, amount: 0 };
+    r.started += 1;
+    if (p.paid) { r.paid += 1; r.amount += p.amount; }
+    else if (p.waiting) r.waiting += 1;
+    else r.unpaid += 1;
+  }
+  return { from, to, sources: out };
+}
+
+// 재구매 기준선(P-CR-1, 11-05): 결제한 주문마다 리포트 끝에 넣은 재구매 링크(coupons/*, kind=rebuy) 가운데
+// 한 번이라도 쓰인 비율과, 그 링크로 결제한 금액. 시험 결제·묶음으로 함께 만든 책은 세지 않는다. 숫자만 돌려준다.
+export async function rebuyBaseline(store) {
+  const issued = new Set(); let paidOrders = 0, rebuyOrders = 0, rebuyAmount = 0;
+  for (const key of await store.list('orders/')) {
+    const o = await store.get(key);
+    if (!o || o.parentId || o.testOnly || !o.paidAt) continue;
+    paidOrders += 1;
+    if (o.rebuyCode) issued.add(o.rebuyCode);
+    if (o.discount?.kind === 'rebuy') { rebuyOrders += 1; rebuyAmount += o.amount || 0; }
+  }
+  let used = 0, uses = 0;
+  for (const code of issued) {
+    const c = await store.get(`coupons/${code}`);
+    if (c?.kind === 'rebuy' && (c.uses || 0) >= 1) { used += 1; uses += c.uses; }
+  }
+  return { paidOrders, issued: issued.size, used, uses, rate: issued.size ? Math.round(used / issued.size * 1000) / 10 : null, rebuyOrders, rebuyAmount };
 }
