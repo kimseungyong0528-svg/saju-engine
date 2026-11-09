@@ -403,7 +403,7 @@ class Evening:
     @property
     def shown(self) -> list[list[str]]:
         """사람에게 보이는 장들 (이모지 규칙을 입힌 것). 스레드 글과 캡처 영상이 같은 것을 쓴다."""
-        return emojify(self)
+        return judge_fix(self.key, emojify(self))
 
     def texts(self) -> dict[str, dict]:
         n = len(self.parts)
@@ -636,9 +636,24 @@ def basis_stem(kind: str, p: Period, r: "StemRow", w: tuple) -> list[str]:
     return [f"- {'이 해' if p.year else '이 달'} {glyph(p, e)}{ELEMENTS[e]}({EL_HANJA[ELEMENTS[e]]}) 기운이 {short} 일간에게 {copula(f'{g}({GH[g]})')}", f"- {t}"]
 
 
-def next_lines(kind: str, ny: Period, place: int, total: int, unit: str, n: int = 0) -> tuple[list[str], str]:
-    """다음 해에도 이어지는지 (엔진 순위 그대로). 돌려주는 부호는 글의 사실(facts)에 들어간다."""
+def _same_rest(W: str, n: int) -> tuple[str, str]:
+    """끝장 '같은 띠라도 / 나머지 일곱 글자에 따라' 를 돌려 쓴다 (심사 2026-11-09: 한 주 3번 넘게 같은 줄 금지).
+    띠·일간은 여덟 글자 중 한 글자라 나머지는 일곱, 태어난 해(두 글자)는 여섯."""
+    if W == "해":
+        return "같은 해에 태어났어도", "나머지 여섯 글자에 따라"
+    pool = LB["same_rest"]["일간" if W == "일간" else "띠"]
+    return tuple(pool[n % len(pool)])
+
+
+def _where(where: str, n: int) -> str:
+    return fill(LB["where_tail"][n % len(LB["where_tail"])], w=where)
+
+
+def next_lines(kind: str, ny: Period, place: int, total: int, unit: str, n: int = 0, now: int = 0) -> tuple[list[str], str]:
+    """다음 해에도 이어지는지 (엔진 순위 그대로). 돌려주는 부호는 글의 사실(facts)에 들어간다.
+    '에도'는 지금 순위와 같을 때만 쓴다 (심사 2026-11-09: 지금 3위인데 '내년에도 1위'는 사실을 흐림)."""
     name = KINDS[kind]["name"]
+    edo = "에도" if now == place else "엔"
     if kind == "care":
         if place <= 4:
             return [f"- {ny.long}에도 조심할 {'띠' if unit == '띠' else '일간'} {total}{unit} 중 {place}위예요", "- 큰 결정은 내년에도 한 번 더 보고 하세요"], "-"
@@ -646,10 +661,10 @@ def next_lines(kind: str, ny: Period, place: int, total: int, unit: str, n: int 
             return [f"- {ny.long}엔 조심할 {'띠' if unit == '띠' else '일간'} 순위에서 {place}위로 빠져요", "- 이 달만 잘 넘기면 숨통이 트여요"], ""
         return [f"- {ny.long}엔 조심할 {'띠' if unit == '띠' else '일간'} 순위에서 {place}위로 보통이에요", "- 무리만 안 하면 괜찮아요"], ""
     if place <= 4:
-        return [f"- {ny.long}에도 {name} {total}{unit} 중 {place}위예요", LB["next_go"][n % 3]], "+"
+        return [f"- {ny.long}{edo} {name} {total}{unit} 중 {place}위예요", LB["next_go"][n % 3]], "+"
     if place > total - (4 if total == 12 else 3):
         return [f"- {ny.long}엔 {name} {total}{unit} 중 {place}위로 흐름이 바뀌어요", LB["next_keep"][n % 3]], "-"
-    return [f"- {ny.long}엔 {name} {total}{unit} 중 {place}위로 보통이에요", "- 지금 만든 걸 꾸준히 이어 가세요"], ""
+    return [f"- {ny.long}엔 {name} {total}{unit} 중 {place}위예요", LB["next_mid"][n % len(LB["next_mid"])]], ""
 
 
 def _alike(line: str, text: str) -> bool:
@@ -700,9 +715,8 @@ def list_post(key: str, kind: str, p: Period, n: int, W: str, items: list[dict],
                 facts.append((x["subj"], ny.key, kind, sign))
         pages.append(p5)
     burn = LB["burning"][kind][n % len(LB["burning"][kind])]
-    same = "같은 일간이라도" if W == "일간" else ("같은 해에 태어났어도" if W == "해" else "같은 띠라도")
-    rest = "나머지 일곱 글자에 따라" if W == "일간" else "나머지 여섯 글자에 따라"
-    end = [q[3], same, rest, f"{K['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", LB["close"][n % len(LB["close"])],
+    same, rest = _same_rest(W, n + len(key) + 1)
+    end = [q[3], same, rest, _where(K['where'], n), LB["apart"][(n + 3) % len(LB["apart"])], "", *burn, "", LB["close"][n % len(LB["close"])],
            "", *LB["find_me"][n % 3]]
     pages.append(end)
     return Evening(key, "jangin", pages, facts=tuple(facts))
@@ -723,7 +737,7 @@ def jangin(kind: str, p: Period, n: int) -> Evening:
         bi = BRANCHES.index(r.branch)
         items.append({"name": ddi(r.ddi), "line": f"{i}. {ddi(r.ddi)} [{BRANCHES_HANJA[bi]}] - ({years_full(r.ddi)})",
                       "pain": "" if kind == "care" else pain_ddi(r.ddi, p, n + i), "basis": basis_ddi(kind, p, r, main),
-                      "next": next_lines(kind, ny, nyr[r.ddi], 12, "띠", n + i) if ny else ([], ""), "subj": r.ddi})
+                      "next": next_lines(kind, ny, nyr[r.ddi], 12, "띠", n + i, now=i) if ny else ([], ""), "subj": r.ddi})
     sign = "-" if kind == "care" else "+"
     return list_post(f"jangin-{kind}-{p.key}", kind, p, n, "띠", items, [(r.ddi, p.key, kind, sign) for r in rows])
 
@@ -740,7 +754,7 @@ def jangin_stem(kind: str, p: Period, n: int) -> Evening | None:
         short = STEM_NAMES[r.stem].split("(")[0]
         items.append({"name": f"{short} 일간", "line": f"{i}. {STEM_NAMES[r.stem]} 일간",
                       "pain": "" if kind == "care" else pain_stem(r.stem, p, n + i), "basis": basis_stem(kind, p, r, w),
-                      "next": next_lines(kind, ny, nyr[r.stem], 10, "일간", n + i) if ny else ([], ""), "subj": STEMS[r.stem]})
+                      "next": next_lines(kind, ny, nyr[r.stem], 10, "일간", n + i, now=i) if ny else ([], ""), "subj": STEMS[r.stem]})
     sign = "-" if kind == "care" else "+"
     return list_post(f"jangin-stem-{kind}-{p.key}", kind, p, n, "일간", items, [(STEMS[r.stem], p.key, kind, sign) for r in rows])
 
@@ -960,9 +974,8 @@ def one_pages(kind: str, p: Period, n: int, good: bool, p1: list[str], feel: lis
     acts = [x for x in _rot(LB["actions" if good else "bad_actions"][kind], n) if not _alike(x, " ".join(p1 + p2 + sig))][:3]
     p4 = [qk[2] if good else qb[2], fill(LB["do_head"][n % 3], d=d, k="세"), "", *acts, "", B["good_end"][kind] if good else B["bad_end"][kind]]
     burn = LB["burning"][kind][n % len(LB["burning"][kind])]
-    same = "같은 일간이라도" if W == "일간" else "같은 띠라도"
-    rest = "나머지 일곱 글자에 따라" if W == "일간" else "나머지 여섯 글자에 따라"
-    end = [qk[3], same, rest, f"{B['kinds'][kind]['where']} 달라요", "그건 따로 봐야 알아요", "", *burn, "", LB["close"][n % len(LB["close"])],
+    same, rest = _same_rest(W, n + len(kind) * 3)
+    end = [qk[3], same, rest, _where(B['kinds'][kind]['where'], n), LB["apart"][(n + 3) % len(LB["apart"])], "", *burn, "", LB["close"][n % len(LB["close"])],
            "", *LB["find_me"][n % 3]]
     return [p1, p2, p3, p4, end]
 
@@ -978,7 +991,7 @@ def jangin_one(kind: str, p: Period, a: str, n: int) -> Evening | None:
     kw = {"p": p.label, "D": ddi(a), "Y": years_short(a), "r": r.rank, "name": KINDS[kind]["name"], "verb": B["kinds"][kind]["verb"],
           "gl": L["gl"], "bl": L["bl"], "fix": _action(kind, lead)}
     p1 = _heart(kind, good, n + ZODIAC_ANIMALS.index(a), ddi(a), kw)    # 피드백 heart_first
-    p1 += ["", f"{ddi(a)} ({years_full(a)})", ""] + ([f"이 글 본 {ira(ddi(a))}면 그냥 넘기지 마세요.", _rot(LB["promise_one"][kind], n + ZODIAC_ANIMALS.index(a))[0]] if good else
+    p1 += ["", f"{ddi(a)} ({years_full(a)})", ""] + ([fill(LB["dont_pass"][(n + ZODIAC_ANIMALS.index(a)) % len(LB["dont_pass"])], w=ira(ddi(a)), x=ddi(a)), _rot(LB["promise_one"][kind], n + ZODIAC_ANIMALS.index(a))[0]] if good else
                                                     [f"이 글 본 {ira(ddi(a))}면 {p.label} 한 달만 천천히 가세요."])   # no_scary_tag
     pool = B["feel"][kind] if good else B["bad_feel"][kind]
     feel = why_bank(kind, lead).get("feel") or pool[(n + r.rank) % len(pool)]
@@ -999,7 +1012,7 @@ def jangin_stem_one(kind: str, p: Period, s: int, n: int) -> Evening | None:
     ws = sorted(r.why, key=lambda x: -x[0] if good else x[0])
     p1 = _heart(kind, good, n + s, f"{short} 일간", {"p": p.label, "gl": L["gl"], "bl": L["bl"]})   # 피드백 heart_first
     p1 += ["", f"태어난 날 첫 글자가 {STEMS[s]}({STEMS_HANJA[s]})인 사람", ""] + (
-        [f"이 글 본 {short} 일간이라면 그냥 넘기지 마세요.", _rot(LB["promise_one"][kind], n + s)[0]] if good else
+        [fill(LB["dont_pass"][(n + s) % len(LB["dont_pass"])], w=f"{short} 일간이라", x=f"{short} 일간"), _rot(LB["promise_one"][kind], n + s)[0]] if good else
         [f"이 글 본 {short} 일간이라면 {p.label} 한 달만 천천히 가세요."])
     t0 = ws[0][1]
     pool = B["feel"][kind] if good else B["bad_feel"][kind]
@@ -1423,6 +1436,26 @@ def _ddi(line: str) -> str:
     return line[:i] + f"{DDI_EMOJI[mo.group(2)]} " + line[i:]
 
 
+FIX = json.loads((Path(__file__).with_name("judge_fixes.json")).read_text(encoding="utf-8"))
+
+
+def judge_fix(key: str, pages: list[list[str]]) -> list[list[str]]:
+    """심사원 지적으로 고친 문장 (CLAUDE.md 제2조항). judge_fixes.json 의 "all"은 모든 글, 재료 이름 칸은 그 글에만 쓴다.
+    고친 뒤에도 같은 재료는 같은 글이 나온다 (심사한 글 = 올리는 글)."""
+    rules = FIX.get("posts", {}).get(key, []) + FIX.get("all", [])   # 그 글 것 먼저, 모든 글 것은 나중에
+    if not rules:
+        return pages
+    out = []
+    for p in pages:
+        t = "\n".join(p)
+        for r in rules:
+            u = t.replace(r[0], r[1], *r[2:3])   # 셋째 칸이 있으면 한 장에 그 횟수만 (쉬운 뜻은 장마다 처음 한 번)
+            if len(r) < 3 or len(u) <= 480:      # 쉬운 뜻을 붙여 스레드 한 칸(500자)을 넘기면 붙이지 않는다
+                t = u
+        out.append(t.split("\n"))
+    return out
+
+
 def emojify(e: Evening) -> list[list[str]]:
     """보여 줄 글: 띠 이름 앞에 띠 이모지, 좋은·조심 신호 머리에 🟢·🔴, 첫 줄 앞에 글에 어울리는 이모지 하나.
     e.pages(재료·검사용 원문)는 그대로 두고, 스레드 글(parts)과 캡처 영상이 이것을 쓴다."""
@@ -1520,7 +1553,8 @@ def _groups(days: list[Day]) -> list[list[tuple[str, ...]]]:
         g.append([(f"※ 왜 {d}부터 천천히 가야 할까",), (f"※ {d}부터 왜 속도를 줄여야 할까",)])
         g.append([(x,) for x in dohwa_month_lines(p)])
     g += [[tuple(x) for x in B["salgu_end"]], [tuple(x) for x in B["dohwa_reply"]], [tuple(x) for x in LB["find_me"]]]
-    for s in [LB["close"], LB["follow"], LB["sign_head"], LB["sign_head_bad"], LB["next_keep"], LB["next_go"], *B["vary"]]:
+    g += [[tuple(x) for x in LB["same_rest"][w]] for w in ("띠", "일간")]   # 심사 2026-11-09: 끝장 틀도 돌려 쓴다
+    for s in [LB["close"], LB["follow"], LB["sign_head"], LB["sign_head_bad"], LB["next_keep"], LB["next_go"], LB["next_mid"], *B["vary"]]:
         g.append([(x,) for x in s])
     g.append([(x,) for x in DOHWA_WHY_HEAD])
     g += [[(x,) for x in v] for v in GOD_PLAIN.values()]

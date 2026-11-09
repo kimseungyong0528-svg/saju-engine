@@ -74,7 +74,8 @@ def test_jangin_shape(plan90):
     for e in js:
         one = e.key.startswith(("jone-", "jstem-"))   # 띠·일간 한 장 글: 본글 + 이유 + 끝장
         assert len(e.pages) == 5 if one else 5 <= len(e.pages) <= 7
-        assert any("따로 봐야 알아요" in x for x in e.pages[-1])
+        # 끝장 '따로 봐야 알아요'는 같은 말 반복을 피하려 여러 말로 돌려 쓴다 (심사 2026-11-09, banks list.apart)
+        assert any(x in T.B["list"]["apart"] for x in e.pages[-1])
         assert any("팔로우" in x for x in e.pages[-1])
         assert all(pg[0].startswith("※ ") for pg in e.pages[-1:] if not e.key.startswith("jangin-double-"))
 
@@ -387,7 +388,7 @@ def test_follow_everywhere(plan90):
 def test_no_line_more_than_three_times_a_week():
     """judges.strict (사장님 2026-11-01 '냉정하게'): 고정 틀을 뺀 같은 줄이 7일 안에 세 번 넘게 나오지 않는다 (사람 말투).
     11/1~11/8 심사한 묶음 기준. 다음 주는 만들 때 같은 검사로 다시 본다."""
-    frame = re.compile(r"^(같은 .+(라도|이라도)|나머지 .+ 글자에 따라|- 천간|- 지지|.+ 달라요|.*따로 봐야 알아요|흥미로운 사주 이야기들.*"
+    frame = re.compile(r"^(같은 .+(라도|이라도|끼리도)|나머지 .+ 글자.*에 따라|.+ 같아도|.+여덟 글자 중 한 글자라|.+만 같다고 다 같은 게 아니라|태어난 .+에 따라|다른 글자들이 .+에 따라|.+달라져요|- 천간|- 지지|.+ 달라요|.*따로 봐야 알아요|흥미로운 사주 이야기들.*"
                        r"|태어난 해는 여덟 글자 중 두 글자예요|겹경사인 이유|태어난 해 두 글자와|둘 다 좋게 만나요|\d\. .*)$")
     P = T.plan(dt.date(2026, 11, 1), 8)
     for w in range(2):

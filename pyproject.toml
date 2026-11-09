@@ -23,7 +23,7 @@ include = ["saju*"]
 [tool.setuptools.package-data]
 "saju.report" = ["templates/*", "fonts/*"]
 "saju.marketing" = ["data/*", "fonts/*", "video/*.html"]
-"saju.marketing.formula" = ["banks.json", "assets/*.jpg", "assets/zodiac/*"]
+"saju.marketing.formula" = ["banks.json", "judge_fixes.json", "assets/*.jpg", "assets/zodiac/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
