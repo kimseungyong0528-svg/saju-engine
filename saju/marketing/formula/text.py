@@ -1591,7 +1591,32 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     _follow_all(out)
     _vary_lines(out)
     _fresh_acts(out)
+    _judge_swaps(out)
     return out
+
+
+def _judge_swaps(out: list[Day]) -> None:
+    """심사원이 순서를 지적한 글 두 개를 서로 자리 바꾼다 (judge_fixes.json "swap": [[글 a, 글 b], ...]).
+    둘 다 이 묶음에 있을 때만, 시간대·시각은 그 자리 것을 그대로 두고 글만 바꾼다. 글 내용·고른 재료(used)는 그대로라
+    같은 주를 다시 만들어도 같은 결과가 나온다 (심사 12회차 2026-11-09: 도화도르식 같은 틀이 이틀 연속)."""
+    for a, b in FIX.get("swap", []):
+        at = [(d, i) for d in out for i, x in enumerate(d.threads) if x[2].key == a]
+        bt = [(d, i) for d in out for i, x in enumerate(d.threads) if x[2].key == b]
+        if len(at) != 1 or len(bt) != 1:
+            continue
+        (da, ia), (db, ib) = at[0], bt[0]
+        (sa, ta, ea), (sb, tb, eb) = da.threads[ia], db.threads[ib]
+        if da is not db and (_subjects(da, ia) & _subjects_of(eb) or _subjects(db, ib) & _subjects_of(ea)):
+            continue   # 바꾼 날에 같은 띠·일간이 두 번 나오면 바꾸지 않는다
+        da.threads[ia], db.threads[ib] = (sa, ta, eb), (sb, tb, ea)
+
+
+def _subjects_of(e: Evening) -> set:
+    return {f[0] for f in e.facts}
+
+
+def _subjects(d: Day, skip: int) -> set:
+    return set().union(*(_subjects_of(e) for j, (_, _, e) in enumerate(d.threads) if j != skip))
 
 
 # 이모지 규칙 (사장님 2026-11-01 "띠는 이모지로 다 넣고 좋고 나쁨도 저렇게, 첫 글 시작하기 전에도 잘 보이는 이모지 하나. 전부 못박아둬")

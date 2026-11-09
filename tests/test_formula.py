@@ -798,3 +798,22 @@ def test_follow_line_ends_every_caption():
             t = m.texts()
             assert t["instagram-reel"]["캡션"].rstrip().split("\n")[-1] == S.cta(m)["instagram-reel"], m.key
             assert t["youtube"]["설명"].rstrip().split("\n")[-1] == S.cta(m)["youtube"], m.key
+
+
+def test_judge_swap(monkeypatch):
+    """심사 12회차(2026-11-09): judge_fixes.json "swap" 은 두 글의 자리만 바꾼다. 시간대·시각·글 내용·고른 재료는 그대로, 늘 같은 결과."""
+    for a, b in T.FIX.get("swap", []):
+        assert a.split("-")[0] == b.split("-")[0] == "dohwa", (a, b)   # 같은 틀(도화도르식)끼리만 바꾼다
+    base = T.plan(dt.date(2026, 11, 9), 7, set())
+    pos = {e.key: (d.date, s, t) for d in base for s, t, e in d.threads}
+    dohwa = [(d.date, s, e.key) for d in base for s, t, e in d.threads if e.style == "dohwa"]
+    (d1, s1, a), (d2, s2, b) = next((x, y) for x, y in itertools.combinations(dohwa, 2) if x[1] == y[1] and x[0] != y[0])
+    monkeypatch.setitem(T.FIX, "swap", [[a, b], ["없는-글", b]])
+    one, two = T.plan(dt.date(2026, 11, 9), 7, set()), T.plan(dt.date(2026, 11, 9), 7, set())
+    got = {e.key: (d.date, s, t) for d in one for s, t, e in d.threads}
+    assert got[a] == pos[b] and got[b] == pos[a]
+    assert {k: v for k, v in got.items() if k not in (a, b)} == {k: v for k, v in pos.items() if k not in (a, b)}
+    assert [[(s, t, e.key, e.parts) for s, t, e in d.threads] for d in one] == [[(s, t, e.key, e.parts) for s, t, e in d.threads] for d in two]
+    for d in one:   # 같은 날 같은 대상(띠·일간)을 두 번 쓰지 않는다
+        subj = [x for s, t, e in d.threads for x in {f[0] for f in e.facts}]
+        assert len(subj) == len(set(subj)), (d.date, subj)
