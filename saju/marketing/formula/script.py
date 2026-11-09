@@ -46,7 +46,7 @@ def top_title(m) -> str:
         return f"{a} {b} 띠 순위"
     if m.fmt == "sinbi":
         d = dt.date.fromisoformat(m.data["date"])
-        return f"{d.month}월 {d.day}일 띠별 운세"
+        return f"{d.month}월 {d.day}일 웃는 띠와 조심할 띠"   # 목소리가 화면 제목 그대로 읽게 (영상 심사 2026-11-09 #12)
     if m.fmt == "solo":
         return " ".join(_plain(x) for x in m.data["lines"]).replace(", ", ",").replace(",", ", ")
     if m.fmt == "forceteller":
@@ -70,7 +70,7 @@ def script(m) -> list[str]:
     if m.fmt == "sinbi":
         # 화면 제목(날짜)만으로는 멈추지 않는다 (후킹 심사) → 표에 실제로 있는 좋은 띠·조심할 띠를 묶어 말한다
         # 저녁 영상은 다음 날 표라서 '오늘'이라 하지 않고 날짜로 말한다
-        return [f"{top_title(m).replace(' 띠별 운세', '')} 웃는 띠와 조심할 띠, 지금 바로 확인하세요!"]
+        return [f"{top_title(m)}, 지금 바로 확인하세요!"]
     if m.fmt == "forceteller":
         h1, h2 = (_spoken(_plain(x), m) for x in m.data["head"])
         # 화면은 7초라 앞 두 장만 보이고 나머지 풀이는 설명란에 있다 (render.forceteller)
@@ -78,6 +78,8 @@ def script(m) -> list[str]:
             return [f"{h1.replace(',', '은')}! {h2[:-3]}어떻게 해야 할까요? 본문에서 끝까지 확인하세요!"]
         # 목소리는 화면 제목 그대로 + '본문에서 확인하세요!' (영상 심사 2026-11-09: 화면에 없는 '어떻게 될까요'를 붙이지 않는다).
         # 화면에 '수(水) 기운'처럼 써 두었으므로 _spoken 은 '기운'을 다시 붙이지 않는다.
+        if h2.endswith("만나면"):          # '…만나면, 본문에서'는 말이 끊긴다 (영상 심사 2026-11-09 사람 말투)
+            return [f"{h1} {h2}? 본문에서 확인하세요!"]
         return [f"{h1} {h2}, 본문에서 확인하세요!"]
     if m.fmt == "hidden":
         # 화면에서 1~3위는 ???? 로 가려져 있고 설명란 맨 아래에 있다 → '10초 만에'라 하면 거짓 (신뢰 심사)

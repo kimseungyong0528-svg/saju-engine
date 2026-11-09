@@ -713,7 +713,7 @@ def test_sinbi_care_animal_gets_caution_line():
         assert not [t for t in x["text"].values() if "들어오" in t or "들어와" in t], d
         if i < 7:
             week += list(x["text"].values())
-    assert max(week.count(t) for t in week) <= 2  # 한 주 84칸, 줄이 모자라면 두 번까지
+    assert max(week.count(t) for t in week) == 1  # 한 주 84칸, 같은 줄은 한 번 (영상 심사 2026-11-09 #8)
 
 
 def test_week_videos_do_not_contradict():
@@ -737,3 +737,64 @@ def test_week_videos_do_not_contradict():
             assert S.cta(m)["instagram-reel"] in cap, m.key
             assert cap.split("\n")[0].replace(" 1위부터 12위", "") .startswith(S.top_title(m)[:8]), (m.key, cap.split("\n")[0])
             assert "들어오" not in S.script(m)[0], m.key
+
+
+def test_sinbi_marks_follow_score_not_list_order():
+    """영상 심사 2026-11-11 #1 (제1조항): 조심 점수가 같은 두 띠는 목록 순서로 🔴·🟢 가 갈리지 않는다."""
+    for i in range(60):
+        d = dt.date(2026, 11, 1) + dt.timedelta(days=i)
+        x = T.sinbi_data(d)
+        p = T.day_pillar_for_date(d)
+        per = T.Period(d.isoformat(), "오늘", "x", p.stem, p.branch, None)
+        care = {r.ddi: r for r in T.rank("care", per)}
+        stand = {a: sum({r.ddi: r for r in T.rank(k, per)}[a].rank for k in T.SINBI_GOOD) / 4 for a in care}
+        for a in care:
+            for b in care:
+                if care[a].score == care[b].score and stand[a] < 10 and stand[b] < 10:
+                    assert x["mark"][a] == x["mark"][b], (d, a, b)
+
+
+def test_hidden_phrases_come_from_own_reasons():
+    """영상 심사 2026-11-15 #2: 가림식 한 줄은 그 띠의 엔진 근거와 반대로 가지 않고, 점수 - 줄은 근거에서만 (지어내지 않는다)."""
+    for y, mo in [(2026, 11), (2026, 12), (2027, 1), (2027, 3), (2027, 6)]:
+        p = T.month_period(y, mo)
+        for kind in ("money", "love", "work", "help", "study", "move"):
+            rows = T.rank(kind, p)
+            ph = T.hidden_phrases(kind, rows)
+            mid = set(T.B["hidden_extra"][kind].get("mid") or T.B["hidden_mid"]) | set(T.B["hidden_mid"])
+            for r in rows:
+                x = ph[r.ddi]
+                soft = T.B["video_soft"]
+                neg = {soft.get(s, s) for w, t in r.why if w < 0 for s in T._hidden_own(kind, t)}
+                if r.score < 0:
+                    assert x in neg | mid, (kind, p.key, r.ddi, x)
+                if any(w < 0 and "집중" in t for w, t in r.why):
+                    assert "집중이 잘" not in x, (kind, r.ddi, x)
+
+
+def test_evening_video_agrees_with_morning_table():
+    """영상 심사 2026-11-09 #3 (제1조항): 그날 아침 표에서 🔴 인 띠를 저녁 영상 1~3위 좋은 띠로, 🟢 인 띠를 조심 1~3위로 쓰지 않는다.
+    오행 그림은 한 주에 같은 기운을 두 번 쓰지 않는다."""
+    for start in (dt.date(2026, 11, 9), dt.date(2026, 11, 16)):
+        days = T.plan(start, 7, set())
+        els = []
+        for d in days:
+            bad = {a for a, v in d.morning.data["mark"].items() if v == "bad"}
+            good = {a for a, v in d.morning.data["mark"].items() if v == "good"}
+            g, b = T.video_top(d.video2)
+            if d.video2.rows:
+                assert not g & bad, (d.date, d.video2.key, g & bad)
+                assert not b & good, (d.date, d.video2.key, b & good)
+            if d.video2.fmt == "forceteller":
+                els.append(d.video2.data["el"])
+        assert len(els) == len(set(els)), els
+
+
+def test_follow_line_ends_every_caption():
+    """영상 심사 2026-11-09 #7: 팔로우 말이 설명란 맨 끝 줄 (해시태그·가림식 1~3위 공개 뒤)."""
+    from saju.marketing.formula import script as S
+    for d in T.plan(dt.date(2026, 11, 9), 7, set()):
+        for m in (d.morning, d.video2):
+            t = m.texts()
+            assert t["instagram-reel"]["캡션"].rstrip().split("\n")[-1] == S.cta(m)["instagram-reel"], m.key
+            assert t["youtube"]["설명"].rstrip().split("\n")[-1] == S.cta(m)["youtube"], m.key

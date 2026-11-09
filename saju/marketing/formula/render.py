@@ -199,7 +199,7 @@ class Renderer:
             ("spin2", 640, "border:10px dashed rgba(255,248,220,.16)"),
             ("", 420, "background:radial-gradient(circle,rgba(255,255,245,.6),transparent 70%)")])
         li = "".join(
-            f"<div class='s r{' t' if r.rank <= 3 else ''}'><span class=n>{r.rank}위</span><span class=d>{ddi(r.ddi) if len(r.ddi) < 3 else r.ddi}</span>"
+            f"<div class='s r{' t' if r.rank <= 3 else ''}'><span class=n>{r.rank}위</span><span class=d>{ddi(r.ddi)}</span>"
             f"<span class=y>: {years_short(r.ddi)}년생</span></div>" for r in m.rows)
         t1, t2, t3 = m.title
         html = f"""<style>
@@ -229,7 +229,7 @@ class Renderer:
         <script>document.fonts.ready.then(()=>{{const L=document.querySelector('.list');L.style.left='0';L.style.width='max-content';
           const rs=[...document.querySelectorAll('.r')];let fs=parseFloat(getComputedStyle(rs[0]).fontSize);
           for(let k=0;k<4;k++){{const w=L.getBoundingClientRect().width;fs*=960/w;rs.forEach(r=>r.style.fontSize=fs+'px');
-            document.querySelectorAll('.n').forEach(e=>e.style.width=(fs*2.35)+'px');document.querySelectorAll('.d').forEach(e=>e.style.width=(fs*3.2)+'px');}}
+            document.querySelectorAll('.n').forEach(e=>e.style.width=(fs*2.35)+'px');document.querySelectorAll('.d').forEach(e=>e.style.width=(fs*4.1)+'px');}}
           L.style.left=((1080-L.getBoundingClientRect().width)/2)+'px';}})</script></body>"""
         return self.animated(html, out, 7, seed)
 
@@ -272,6 +272,7 @@ class Renderer:
         영상 심사 2026-11-09: 웃는 띠 🟢·조심할 띠 🔴 를 칸에 표시하고(조심 칸은 연분홍), 표를 화면 맨 위에 붙여 위쪽 검은 띠를 없애고,
         7초 동안 천천히 다가오게 해서 멈춘 화면이 되지 않게 한다."""
         import datetime as dt
+        from .script import top_title
         d = dt.date.fromisoformat(m.data["date"])
         txt = m.data["text"]
         mk = m.data.get("mark", {})
@@ -284,7 +285,7 @@ class Renderer:
         .sheet{{position:absolute;top:0;left:0;right:0;background:#fff;padding:0 0 26px}}
         .cta{{position:absolute;bottom:56px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:64px;line-height:1.18;color:#e6a3ff;text-shadow:0 5px 0 #3a0d55}}
         .hd{{display:flex;align-items:center;justify-content:center;height:168px;border-bottom:3px solid #ddd;position:relative}}
-        .hd h1{{margin:0;font-weight:700;font-size:60px;color:#111}} .hd i{{position:absolute;right:22px;bottom:14px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
+        .hd h1{{margin:0 0 30px;font-weight:700;font-size:58px;color:#111;white-space:nowrap}} .hd i{{position:absolute;right:22px;bottom:14px;font-style:normal;font-size:24px;color:#333;font-weight:500}}
         .hd em{{position:absolute;left:22px;bottom:14px;font-style:normal;font-size:26px;color:#333;font-weight:500;white-space:nowrap}}
         .row{{display:flex;border-bottom:2px solid #e6e3ef}} .c{{background:linear-gradient(90deg,#fff 0%,#fbfaff 55%,#eeeaf8 100%)}}
         .c.bad{{background:linear-gradient(90deg,#fff5f5 0%,#ffe9ea 100%)}}
@@ -294,7 +295,7 @@ class Renderer:
         .l img{{width:150px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}}
         .c p{{margin:30px 0 0;font-size:33px;line-height:1.5;color:#222;font-weight:400;word-break:keep-all}}
         .c.bad p{{color:#8a1c22}}
-        </style><body><div class=sheet><div class=hd><em>🟢 웃는 띠 · 🔴 조심할 띠</em><h1>{d.month}월 {d.day}일 띠별 운세</h1><i>@unmyeong_saju.kr</i></div>{rows}</div>{_cta_box(cta)}</body>"""
+        </style><body><div class=sheet><div class=hd><em>🟢 웃는 띠 · 🔴 조심할 띠</em><h1>{top_title(m)}</h1><i>@unmyeong_saju.kr</i></div>{rows}</div>{_cta_box(cta)}</body>"""
         return self.still(self.shot(html, out.stem), out, 7, seed, zoom=True)
 
     def forceteller(self, m: Morning, out: Path, seed: int, cta: str = "") -> Path:
@@ -346,10 +347,11 @@ class Renderer:
             .o span{{font-family:'Noto Sans KR';font-size:42px;font-weight:800;margin-top:4px;text-shadow:0 2px 4px rgba(0,0,0,.25)}}
             .o.on{{box-shadow:0 0 0 16px color-mix(in srgb,var(--c) 25%,transparent),0 0 50px var(--c)}}
             svg.ar{{position:absolute;left:0;top:0;z-index:2}}
+            .dg{{position:absolute;inset:0;transform:translateY(-100px) scale(.84);transform-origin:50% 0;z-index:3}}
             .say{{position:absolute;left:70px;right:70px;bottom:{215 if cta else 110}px;z-index:4;background:#fff;border-radius:30px;padding:40px 30px;font-size:56px;font-weight:700;line-height:1.38;text-align:center;white-space:pre-line;color:#1b1b1b;box-shadow:0 10px 30px rgba(0,0,0,.12);word-break:keep-all}}
             </style><body><div class=t><div class=fit data-w=1020>{h1}</div><div class=fit data-w=1020>{h2}</div></div>
-            <div class=art>{wc}<svg class=ar width=1080 height=1320><defs>{marks}</defs>{outer}{inner}</svg>
-            {circles}<div class=say>{t}</div></div>
+            <div class=art>{wc}<div class=dg><svg class=ar width=1080 height=1320><defs>{marks}</defs>{outer}{inner}</svg>
+            {circles}</div><div class=say>{t}</div></div>
             <style>.cta{{position:absolute;z-index:5;bottom:34px;width:100%;text-align:center;white-space:nowrap;font-family:Jua;font-size:62px;line-height:1.18;color:#5b1d8a;text-shadow:0 0 10px #fff,0 0 4px #fff}}</style>{_cta_box(cta)}</body>"""
             pngs.append(self.shot(html, f"{out.stem}-{i}"))
         durs = [7 / len(pngs)] * len(pngs)   # 영상은 7초 (사장님 2026-11-01)
@@ -372,11 +374,11 @@ class Renderer:
         사장님 2026-11-01: 제목이 화면 한가운데 먼저 나오고 → 위로 올라간 뒤 → 1·2·3위가 하나씩 나온다.
         순위마다 밑에 자극적인 한 줄 두 개 (banks.json solo_hype, 엔진 순위 종류와 같은 방향)."""
         l1, l2 = m.data["lines"]
-        hype = B["solo_hype"][m.kind]
+        hype = m.data.get("hype") or B["solo_hype"][m.kind]   # 그 띠의 엔진 근거 말 (text.solo_lines, 설명란과 같은 줄)
         # 사장님 2026-11-01: 제목만 가운데 먼저 → 바로 제목+1·2·3위 네 칸 전체를 한 덩어리로 화면 정가운데에
         top3 = "".join(
             f"<div class=k><div class=h><b>{r.rank}위</b> {EMO[r.ddi]} {ddi(r.ddi)} <i>{years_short(r.ddi)}년생</i></div>"
-            f"<div class=s>{hype[i][0]}<br>{hype[i][1]}</div></div>" for i, r in enumerate(m.rows[:3]))
+            f"<div class=s>{'<br>'.join(hype[i])}</div></div>" for i, r in enumerate(m.rows[:3]))
         title = f"<div class=t><div class='l fit' data-w=1000>{l1}</div><div class='r fit' data-w=1000>{l2}</div></div>"
         html = f"""<style>body{{background:transparent;font-family:'Noto Sans KR'}}
         .c{{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}}
