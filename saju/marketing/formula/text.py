@@ -1669,7 +1669,7 @@ FIX = json.loads((Path(__file__).with_name("judge_fixes.json")).read_text(encodi
 def judge_fix(key: str, pages: list[list[str]]) -> list[list[str]]:
     """심사원 지적으로 고친 문장 (CLAUDE.md 제2조항). judge_fixes.json 의 "all"은 모든 글, 재료 이름 칸은 그 글에만 쓴다.
     고친 뒤에도 같은 재료는 같은 글이 나온다 (심사한 글 = 올리는 글)."""
-    rules = FIX.get("posts", {}).get(key, []) + FIX.get("all", [])   # 그 글 것 먼저, 모든 글 것은 나중에
+    rules = FIX.get("posts", {}).get(key, []) + FIX.get("all", []) + FIX.get("after", {}).get(key, [])   # 그 글 것 먼저, 모든 글 것, 마지막 모습 고치기(after)
     if not rules:
         return pages
     out = []
