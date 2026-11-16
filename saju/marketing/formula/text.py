@@ -31,6 +31,9 @@ from ..content import birth_years
 from ..ranking import KINDS, Period, Row, _god, month_period, rank, year_period
 
 B = json.loads((Path(__file__).with_name("banks.json")).read_text(encoding="utf-8"))
+# 주마다 빼는 주제 (사장님 2026-11-16 "직업 이직은 빼 나머지만"): thread_rules.json skip_week {"첫날": {"kinds": [...], "words": [...]}}
+_SKIP_NOW: dict = {}   # 지금 만드는 주의 skip_week (살구 재료 줄 고를 때도 쓴다)
+SKIP_WEEK = json.loads((Path(__file__).with_name("thread_rules.json")).read_text(encoding="utf-8")).get("skip_week", {})
 KIND_ORDER = ["money", "love", "care", "work", "help", "study", "move"]
 # 잘 터지는 돈·연애를 더 자주 (돈 3, 연애 3, 조심 2, 나머지 1)
 KIND_ROT = ["money", "love", "care", "money", "work", "love", "help", "money", "care", "love", "study", "move"]
@@ -1296,8 +1299,9 @@ def salgu_theme(t: str) -> str:
 
 def _salgu_stream(group: tuple[str, ...]):
     """주제 묶음의 재료 줄: 긴 이야기(salgu_long, 레퍼런스 말투)를 먼저 섞어 쓰고, 그다음 짧은 재료. 다 쓰면 다른 순서로 다시."""
-    long_ = [t for t in B["salgu_long"] if salgu_theme(t) in group]
-    short = [t for t in B["salgu"] if salgu_theme(t) in group]
+    words = _SKIP_NOW.get("words", ())   # 그 주에 빼기로 한 말이 든 재료 줄은 쓰지 않는다 (skip_week)
+    long_ = [t for t in B["salgu_long"] if salgu_theme(t) in group and not any(w in t for w in words)]
+    short = [t for t in B["salgu"] if salgu_theme(t) in group and not any(w in t for w in words)]
     cyc = 0
     while True:
         a, b = long_[:], short[:]
@@ -1503,6 +1507,15 @@ class Day:
         return iter((self.date, self.morning, self.evening))
 
 
+def skipped(c: Evening, skip: dict) -> bool:
+    """그 주에 빼기로 한 주제의 글인가 (thread_rules.json skip_week). 주제는 글 번호(key)의 kind 칸, 말은 본문 전체에서 찾는다."""
+    if not skip:
+        return False
+    if set(c.key.split("-")) & set(skip.get("kinds", ())):
+        return True
+    return any(w in ln for pg in c.pages for ln in pg for w in skip.get("words", ()))
+
+
 def _negative(e: Evening) -> bool:
     return e.kind == "care" or any(sign == "-" for _, _, _, sign in e.facts[:1]) and e.key.startswith(("jone-", "jstem-"))
 
@@ -1524,6 +1537,9 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
     promises: list[tuple[int, str]] = []   # (날, 본글 줄): 같은 약속 줄을 한 주에 두 번 쓰지 않는다
     negs: list[tuple[int, str]] = []       # (날, 'one'|'list'): 사주장인식 조심 글
     onekinds: list[tuple[int, str]] = []   # (날, 주제): 한 장 글 주제
+
+    global _SKIP_NOW
+    skip = _SKIP_NOW = SKIP_WEEK.get(start.isoformat(), {})
 
     def ok(i: int):
         def f(c: Evening) -> bool:
@@ -1565,7 +1581,7 @@ def plan(start: dt.date, days: int, used: set[str] | None = None) -> list[Day]:
         ths, today, new_frames = [], set(), {}
         for s, t, _st in sorted(THREAD_SLOTS, key=lambda x: x[0] != "저녁"):   # 대표 글(저녁)을 먼저 고른다
             avoid = {frames[s]} if s in frames and _st == "jangin" else set()
-            e = pick(slot_candidates(d, s, used), used, facts, today, avoid, ok(i), _st)
+            e = pick((c for c in slot_candidates(d, s, used) if not skipped(c, skip)), used, facts, today, avoid, ok(i), _st)
             _vary_promise(e, [x for j, x in promises if i - j < 7])
             promises += [(i, x) for x in e.pages[0]]
             used |= {e.key, "first:" + e.parts[0]}

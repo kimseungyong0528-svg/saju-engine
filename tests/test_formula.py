@@ -817,3 +817,16 @@ def test_judge_swap(monkeypatch):
     for d in one:   # 같은 날 같은 대상(띠·일간)을 두 번 쓰지 않는다
         subj = [x for s, t, e in d.threads for x in {f[0] for f in e.facts}]
         assert len(subj) == len(set(subj)), (d.date, subj)
+
+
+def test_skip_week_drops_topics(monkeypatch):
+    """사장님 2026-11-16 "직업 이직은 빼 나머지만": skip_week 에 적은 주는 그 주제·말이 든 스레드 글을 고르지 않는다."""
+    start = dt.date(2026, 11, 17)
+    skip = {"kinds": ["work", "move"], "words": ["이직", "직장", "승진"]}
+    monkeypatch.setitem(T.SKIP_WEEK, start.isoformat(), skip)
+    for day in T.plan(start, 3):
+        for _, _, e in day.threads:
+            assert not set(e.key.split("-")) & {"work", "move"}, e.key
+            text = "\n".join(e.parts)
+            assert not any(w in text for w in skip["words"]), (e.key, text)
+    assert T.SKIP_WEEK  # 규칙 파일에 skip_week 가 남아 있다
